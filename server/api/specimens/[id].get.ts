@@ -1,5 +1,4 @@
 import { selectSpecimen } from '~/server/services/specimen-services'
-import { selecteSpecimenSchema } from '~/server/db/schema/specimen'
 
 export default defineEventHandler(async (event) => {
     const { id } = event.context.params
