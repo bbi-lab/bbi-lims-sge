@@ -1,6 +1,6 @@
 import { getAllSpecimens } from '~/server/services/specimen-services'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
     try {
         return await getAllSpecimens()
     } catch (e: any) {

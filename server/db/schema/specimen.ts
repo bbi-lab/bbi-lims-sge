@@ -48,18 +48,17 @@ export const specimens = pgTable('specimens', {
 
 export const selectSpecimenSchema = createSelectSchema(specimens)
 
-export const updateSpecimenSchema = z.object({
-  body: createSelectSchema(specimens, {
+export const updateSpecimenSchema = createSelectSchema(
+  specimens, 
+  {
     createdAt: dateSchema,
     updatedAt: dateSchema,
     deletedAt: dateSchema,
-  }).omit({ id: true }),
-})
+  }
+).omit({ id: true }).partial()
 
-export const insertSpecimenSchema = z.object({
-  body: selectSpecimenSchema.pick({
+export const insertSpecimenSchema = selectSpecimenSchema.pick({
     name: true,
-  }),
 })
 
 export const deleteSpecimenSchema = z.object({
@@ -69,6 +68,6 @@ export const deleteSpecimenSchema = z.object({
 })
 
 export type Specimen = InferSelectModel<typeof specimens>
-export type NewSpecimen = z.infer<typeof insertSpecimenSchema>['body']
-export type UpdateSpecimen = z.infer<typeof updateSpecimenSchema>['body']
-export type DeleteSpecimen = z.infer<typeof deleteSpecimenSchema>['body']
+export type NewSpecimen = z.infer<typeof insertSpecimenSchema>
+export type UpdateSpecimen = z.infer<typeof updateSpecimenSchema>
+export type DeleteSpecimen = z.infer<typeof deleteSpecimenSchema>
