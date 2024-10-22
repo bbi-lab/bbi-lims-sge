@@ -1,11 +1,11 @@
-import process from 'node:process'
 import { defineConfig } from 'drizzle-kit'
+const config = useRuntimeConfig()
 
 export default defineConfig({
   schema: './server/db/schema/*',
   out: './server/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: config.dbUrl
   },
 })
