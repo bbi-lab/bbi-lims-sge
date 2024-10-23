@@ -1,7 +1,7 @@
 import { insertSpecimen } from '~/server/services/specimen-services'
-import { insertSpecimenSchema } from '~/server/db/schema/specimen'
+import { insertSpecimenSchema, type NewSpecimen } from '~/server/db/schema/specimen'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler<{ body: NewSpecimen }>(async (event) => {
     try {
         const body = await readBody(event)
         const values = insertSpecimenSchema.parse(body)
