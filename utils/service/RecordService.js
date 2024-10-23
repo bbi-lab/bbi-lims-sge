@@ -34,7 +34,7 @@ export const RecordService = {
     async deleteRecords(baseUrl, records) {
         const deletedRecords = []
         for (const {id} of records) {
-            const {data} = $fetch(`${baseUrl}/${id}`,  {method: 'DELETE'})
+            const data = await $fetch(`${baseUrl}/${id}`,  {method: 'DELETE'})
             deletedRecords.push(data)
         }
         return deletedRecords

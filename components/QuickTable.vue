@@ -8,6 +8,7 @@ onMounted(async() => {
     records.value = await RecordService.getRecords(props.apiBaseUrl)
 })
 
+const toast = useToast()
 const props = defineProps({
   apiBaseUrl: String,
   schemaName: String,
@@ -15,7 +16,6 @@ const props = defineProps({
 })
 const emit = defineEmits([
     'clicked-record-edit',
-    'clicked-record-delete',
     'clicked-record-add',
     'clicked-multi-delete'
 ])
@@ -24,6 +24,7 @@ const records = ref([])
 const selectedRecords = ref([])
 const tableSchema = ref()
 const dt = ref()
+const displayDeleteConfirmation = ref(false)
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -37,8 +38,14 @@ function formatDate(value) {
 function didClickEditRecord(event) {
     emit('clicked-record-edit', event)
 }
-function didClickDeleteRecord(event) {
-    emit('clicked-record-delete', event)
+function didClickDeleteSelectedRecords(event) {
+    RecordService.deleteRecords(props.apiBaseUrl, selectedRecords.value).then((result) => {
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimens deleted', life: 3000 })
+        const deletedRecordIds = _.map(result, (x) => x.id)
+        records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
+        selectedRecords.value = _.reject(selectedRecords.value, (x) => deletedRecordIds.includes(x.id))
+    })
+    displayDeleteConfirmation.value = false
 }
 function didClickAddRecord(event) {
     emit('clicked-record-add', event)
@@ -50,7 +57,6 @@ function exportCSV() {
 const addOrRefreshRecordId = async (recordId) => {
     const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
-    console.log(existingRecordIndex)
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
     } else {
@@ -62,6 +68,9 @@ const removeRecordId = (recordId) => {
     records.value = _.reject(records.value, {id: recordId})
 }
 
+function confirmDeleteSelected() {
+    displayDeleteConfirmation.value = true
+}
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
 </script>
@@ -113,4 +122,14 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
 
     </DataTable>
+    <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
+        <div class="flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
+            <span>Are you sure you want to proceed?</span>
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
+            <Button label="Yes" icon="pi pi-check" @click="didClickDeleteSelectedRecords" severity="danger" outlined autofocus />
+        </template>
+    </Dialog>
 </template>
