@@ -42,7 +42,6 @@ function saveRecord() {
         // updating single record
         RecordService.updateRecord(props.apiBaseUrl, record.value).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimen updated', life: 3000 });
-            console.log(result)
             emit('record-update', result)
         })
     } else if (!props.recordId) {
@@ -57,9 +56,10 @@ function saveRecord() {
 <template>
     <div v-for="(val, key, index) in formSchema?.properties">
         <template v-if="record && key in record">
-            <div v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
+            <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <DatePicker 
+                    class="w-80"
                     :id="key"
                     v-model.trim="record[key]" 
                     showTime 
@@ -67,18 +67,18 @@ function saveRecord() {
                     dateFormat="yy-mm-dd"
                     hourFormat="24"
                     autofocus
-                    fluid 
                 />
+                <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
             </div>
-            <div v-else-if="val.enum">
+            <div class="mb-5" v-else-if="val.enum">
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <Select :id="key" v-model="record[key]" :options="val.enum" />
             </div>
-            <div v-else-if="val.oneOf">
+            <div class="mb-5" v-else-if="val.oneOf">
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
             </div>
-            <div v-else>
+            <div class="mb-5" v-else>
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <InputText :id="key" v-model="record[key]" />
             </div>

@@ -12,10 +12,12 @@ const specimensTable = ref()
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
     showEditForm.value = true
+    showAddForm.value = false
 }
 
 function didClickRecordAdd() {
     showAddForm.value = true
+    showEditForm.value = false
 }
 function didClickCancelAddForm() {
     showAddForm.value = false
@@ -43,7 +45,7 @@ function didClickRecordDelete(event) {
 </script>
 <template>
     <Splitter>
-        <SplitterPanel>
+        <SplitterPanel :size="50">
             <QuickTable
                 ref="specimensTable"
                 :apiBaseUrl="baseUrl" 
