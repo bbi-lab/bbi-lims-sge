@@ -1,5 +1,5 @@
-import { timestamps } from '~/server/db/helpers/columns'
-import { dateSchema, nullableDateSchema } from '~/server/db/helpers/schemas'
+import { timestamps } from '../helpers/columns'
+import { dateSchema, nullableDateSchema } from '../helpers/schemas'
 // import { users } from '@/server/db/schema/user'
 import { type InferSelectModel, relations } from 'drizzle-orm'
 import { boolean, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'

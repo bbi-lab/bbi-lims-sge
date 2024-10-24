@@ -1,11 +1,11 @@
 import { defineConfig } from 'drizzle-kit'
-const config = useRuntimeConfig()
+import process from 'node:process'
 
 export default defineConfig({
   schema: './server/db/schema/*',
   out: './server/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: config.dbUrl
+    url: process.env.NUXT_DB_URL!
   },
 })
