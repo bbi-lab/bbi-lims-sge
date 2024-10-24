@@ -2,7 +2,9 @@
 const model = ref([
     {
         label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }]
+        items: [
+            { label: 'Specimens', icon: 'pi pi-fw pi-home', to: '/lims/specimens' }
+        ]
     },
     {
         label: 'UI Components',
@@ -25,10 +27,15 @@ const model = ref([
         ]
     },
     {
-        label: 'Pages',
+        label: 'Sample Pages',
         icon: 'pi pi-fw pi-briefcase',
         to: '/',
         items: [
+            {
+                label: 'Dashboard',
+                icon: 'pi pi-fw pi-home',
+                to: '/landing'
+            },
             {
                 label: 'Landing',
                 icon: 'pi pi-fw pi-globe',
