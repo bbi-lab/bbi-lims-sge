@@ -37,6 +37,9 @@ function didDeleteRecord(event) {
     specimensTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
+function didClickRecordDelete(event) {
+    console.log(event)
+}
 </script>
 <template>
     <Splitter>
