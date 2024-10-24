@@ -26,9 +26,7 @@ export default defineEventHandler<{ body: LoginUser }>(async (event) => {
         
           const tokens = generateTokens(existingUser.id)
 
-          console.log('setting')
-          await setUserSession(event, {user: existingUser, secure: tokens, loggedInAt: new Date()})
-          
+          await setUserSession(event, {user: existingUser, secure: tokens, loggedInAt: new Date()})          
           return {success: true}
           
     } catch (e: any) {

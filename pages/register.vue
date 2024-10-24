@@ -1,29 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { AuthService } from '@/utils/service/AuthService'
 const { fetch, loggedIn } = useUserSession()
-
-const toast = useToast()
 
 definePageMeta({
   layout: "empty",
 })
 const router = useRouter()
+const toast = useToast()
 
 const email = ref('');
 const password = ref('');
-const checked = ref(false);
+const confirmPassword = ref('');
+const name = ref('');
+const passwordsMatch = ref(false);
 
-async function onDidClickSignIn(event) {
+watch(confirmPassword, (newValue, oldValue) => {
+  if (newValue != oldValue) {
+    passwordsMatch.value = password.value == newValue
+  }
+})
+
+async function onDidClickSignUp() {
     if (email.value && password.value) {
-        const response = await AuthService.loginUser(email.value, password.value, {event})
-        if (response.success) {
-            // fetching session from server, otherwise loggedIn value may still be false 
-            await fetch()
-            if (loggedIn.value) {
-                router.back()
-            }
+        const result:any = await AuthService.registerUser(name.value, email.value, password.value)
+        if (result.user) {
+            navigateTo('/login')
         } else {
-            toast.add({severity: 'error', summary: response.errorMessage})
+            toast.add({severity: 'error', summary: "Registration failed"})
         }
     }
 }
@@ -37,10 +40,13 @@ async function onDidClickSignIn(event) {
                     <div class="text-center mb-8">
                         <img alt="logo" src="/images/bbi.png" class="w-40 mx-auto mb-2" />
                         <div class="text-surface-900 dark:text-surface-0 text-2xl font-medium mb-4">LIMS</div>
-                        <span class="text-muted-color font-medium">Sign in to continue</span>
+                        <span class="text-muted-color font-medium">Sign up here</span>
                     </div>
 
                     <div>
+                        <label for="name1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Name</label>
+                        <InputText id="name1" type="text" placeholder="Name" class="w-full md:w-[30rem] mb-8" v-model="name" />
+
                         <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
                         <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
 
@@ -53,17 +59,20 @@ async function onDidClickSignIn(event) {
                             class="mb-4"
                             fluid
                             :feedback="false"
-                            @keyup.enter="onDidClickSignIn"
                         ></Password>
-
-                        <div class="flex items-center justify-between mt-2 mb-8 gap-8">
-                            <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
-                            </div>
-                            <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
-                        </div>
-                        <Button label="Sign In" class="w-full" @click="onDidClickSignIn"></Button>
+                        
+                        <label for="password2" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Re-enter Password</label>
+                        <Password 
+                            id="password2"
+                            v-model="confirmPassword"
+                            placeholder="Re-enter Password"
+                            :toggleMask="true"
+                            class="mb-4"
+                            fluid
+                            :feedback="false"
+                        ></Password>
+                        <Message v-if="confirmPassword && !passwordsMatch" class="mb-4" severity="error">Passwords don't match</Message>
+                        <Button label="Register" :class="w-full" :disabled="!passwordsMatch || !name || !email" @click="onDidClickSignUp"></Button>
                     </div>
                 </div>
             </div>
