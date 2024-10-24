@@ -1,5 +1,11 @@
 <script setup>
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+const { clear } = useUserSession();
+
+function logout() {
+    clear()
+    nextTick(() => navigateTo('/login'))
+}
 </script>
 
 <template>
@@ -27,7 +33,7 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
+                    <button type="button" class="layout-topbar-action" @click="logout">
                         <i class="pi pi-user"></i>
                         <span>Profile</span>
                     </button>
