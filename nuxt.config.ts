@@ -1,7 +1,7 @@
 import * as path from "path";
 
 export default defineNuxtConfig({
-    modules: [ "@primevue/nuxt-module", '@pinia/nuxt'],
+    modules: [ "@primevue/nuxt-module", 'nuxt-auth-utils'],
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
     primevue: {
         options: { theme: 'none' },
@@ -23,6 +23,10 @@ export default defineNuxtConfig({
     // set, the default value below is used.
     runtimeConfig: {
         dbUrl: 'postgres://username:password@localhost:5432/db_name',
+        authJwtAccessTokenExpiresIn: '5m',
+        authJwtRefreshTokenExpiresIn: '60m',
+        authJwtAccessTokenSecret: 'access-token-secret-base64',
+        authJwtRefreshTokenSecret: 'refresh-token-secret-base64',
         public: {
             apiBase: '/api',
         }
