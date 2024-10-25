@@ -56,7 +56,7 @@ async function onDidClickSignUp() {
                             v-model="password"
                             placeholder="Password"
                             :toggleMask="true"
-                            class="mb-4"
+                            class="mb-8"
                             fluid
                             :feedback="false"
                         ></Password>
@@ -67,11 +67,11 @@ async function onDidClickSignUp() {
                             v-model="confirmPassword"
                             placeholder="Re-enter Password"
                             :toggleMask="true"
-                            class="mb-4"
+                            class="mb-2"
                             fluid
                             :feedback="false"
                         ></Password>
-                        <Message v-if="confirmPassword && !passwordsMatch" class="mb-4" severity="error">Passwords don't match</Message>
+                        <Message :class="{ invisible: !(confirmPassword && !passwordsMatch), 'mb-6': true }" severity="error">Passwords don't match</Message>
                         <Button label="Register" :class="w-full" :disabled="!passwordsMatch || !name || !email" @click="onDidClickSignUp"></Button>
                     </div>
                 </div>
