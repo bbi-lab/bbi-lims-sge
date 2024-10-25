@@ -1,8 +1,13 @@
-import { getAllSpecimens } from '~/server/services/specimen-services'
+import { selectSpecimens } from '~/server/services/specimen-services'
+import _ from 'lodash'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    // value of q should be JSON Logic formatted condition as string
+    const { q } = getQuery(event) as {q: string}
+    
     try {
-        return await getAllSpecimens()
+        const whereClause = q ? JSON.parse(q) : null
+        return await selectSpecimens(whereClause)
     } catch (e: any) {
         throw createError({
             statusCode: 400,
