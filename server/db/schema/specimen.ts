@@ -2,10 +2,11 @@ import { timestamps } from '../helpers/columns'
 import { dateSchema, nullableDateSchema } from '../helpers/schemas'
 import { users } from '../schema/user'
 import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, PgTableWithColumns, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, PgTableWithColumns, AnyPgColumn, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
+import { RelationsConfig } from '../../utils/db'
 
 export const specimenTypeEnum = pgEnum('specimen_types', ['A', 'B', 'C'])
 
@@ -19,7 +20,7 @@ export const specimens: PgTableWithColumns<any> = pgTable('specimens', {
   deletedBy: uuid('deleted_by').references(() => users.id),
 })
 
-export const specimensRelationsConfig: Record<string, Record<string, any>> = {
+export const specimensRelationsConfig: RelationsConfig = {
   createdBy: {
     fields: [specimens.createdBy],
     referenceTable: users,
