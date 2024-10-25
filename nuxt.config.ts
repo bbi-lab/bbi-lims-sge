@@ -3,6 +3,15 @@ import * as path from "path";
 export default defineNuxtConfig({
     modules: [ "@primevue/nuxt-module", 'nuxt-auth-utils'],
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
+    vite: {
+        css: {
+            preprocessorOptions: {
+            scss: {
+                api: 'modern-compiler'
+            },
+            },
+        },
+    },
     primevue: {
         options: { theme: 'none' },
         autoImport: false,
@@ -12,7 +21,7 @@ export default defineNuxtConfig({
     },
     postcss: {
         plugins: {
-            'postcss-import': {},
+            //'postcss-import': {},
             tailwindcss: {},
             autoprefixer: {}
         }
