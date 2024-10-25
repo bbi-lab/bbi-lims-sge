@@ -9,9 +9,9 @@ definePageMeta({
 })
 const router = useRouter()
 
-const email = ref('');
-const password = ref('');
-const checked = ref(false);
+const email = ref('')
+const password = ref('')
+const checked = ref(false)
 
 async function onDidClickSignIn(event) {
     if (email.value && password.value) {
@@ -20,7 +20,7 @@ async function onDidClickSignIn(event) {
             // fetching session from server, otherwise loggedIn value may still be false 
             await fetch()
             if (loggedIn.value) {
-                router.back()
+                navigateTo(router.currentRoute?.value?.query?.from || '/')
             }
         } else {
             toast.add({severity: 'error', summary: response.errorMessage})
