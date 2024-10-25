@@ -34,7 +34,11 @@ function formatDate(value) {
     const date = value ? new Date(value) : null
     return date ? date.toISOString().split('T')[0] : ''
 }
-
+function getDisplayValue(val, oneOf) {
+    if (!val) return ''
+    const displayValue = _.find(oneOf, {const: val})
+    return displayValue.title
+}
 function didClickEditRecord(event) {
     emit('clicked-record-edit', event)
 }
@@ -116,6 +120,11 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
             <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="key" sortable style="min-width: 16rem">
                 <template #body="slotProps">
                     {{ formatDate(slotProps.data[key]) }}
+                </template>
+            </Column>
+            <Column v-else-if="val.oneOf" :field="key" :header="key" sortable style="min-width: 16rem">
+                <template #body="slotProps">
+                    {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
                 </template>
             </Column>
             <Column v-else-if="key!='id'" :field="key" :header="key" sortable style="min-width: 16rem"></Column>
