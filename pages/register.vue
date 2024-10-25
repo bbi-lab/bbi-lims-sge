@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { AuthService } from '@/utils/service/AuthService'
-const { fetch, loggedIn } = useUserSession()
 
 definePageMeta({
   layout: "empty",
@@ -17,6 +16,11 @@ const passwordsMatch = ref(false);
 watch(confirmPassword, (newValue, oldValue) => {
   if (newValue != oldValue) {
     passwordsMatch.value = password.value == newValue
+  }
+})
+watch(password, (newValue, oldValue) => {
+  if (newValue != oldValue && confirmPassword.value) {
+    passwordsMatch.value = confirmPassword.value == newValue
   }
 })
 
