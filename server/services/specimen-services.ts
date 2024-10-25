@@ -1,12 +1,8 @@
 
 import { specimens, NewSpecimen, UpdateSpecimen} from '~/server/db/schema/specimen'
 import { db } from '~/server/utils/db'
-import {ZodObject} from 'zod'
-import {
-    insertSpecimenSchema,
-    selectSpecimenSchema,
-    updateSpecimenSchema,
-  } from '@/server/db/schema/specimen'
+import { ZodObject } from 'zod'
+import { schemas, specimensRelationsConfig } from '@/server/db/schema/specimen'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 import { eq } from 'drizzle-orm'
@@ -52,19 +48,16 @@ export async function deleteSpecimen(id: any) {
   return deletedSpecimen
 }
 
-export const getSpecimenSchema = (schemaName: any) => {
-    const schemaMap: Record<string, ZodObject<any>> = {
-      select: selectSpecimenSchema,
-      update: updateSpecimenSchema,
-      insert: insertSpecimenSchema,
-    }
+export const getSpecimenJsonSchema = async (schemaName: string) => {
+    if (_.has(schemas, schemaName)) {
+      const currentSchema = schemas[schemaName] as ZodObject<any>
   
-    if (_.has(schemaMap, schemaName)) {
-      const currentSchema = schemaMap[schemaName]
-  
-      // auto-generate JSON Schema from Zod object
-      const jsonSchema = currentSchema ? zodToJsonSchema(currentSchema, { $refStrategy: 'none' }) : null
-  
+      // generate JSON Schema from Zod object
+      const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
+
+      // refine JSON Schema based on relations
+      await refineJsonSchema(jsonSchema, specimensRelationsConfig)
+
       return jsonSchema
     }
     else {

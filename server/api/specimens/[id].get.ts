@@ -1,7 +1,7 @@
 import { selectSpecimen } from '~/server/services/specimen-services'
 
 export default defineEventHandler(async (event) => {
-    const { id } = event.context.params
+    const { id } = event.context.params as {id: string}
     try {
         const selectedSpecimen = await selectSpecimen(id)
         return selectedSpecimen

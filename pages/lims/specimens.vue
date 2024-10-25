@@ -49,7 +49,7 @@ function didClickRecordDelete(event) {
             <QuickTable
                 ref="specimensTable"
                 :apiBaseUrl="baseUrl" 
-                schemaName="select"
+                schemaName="select-specimen-schema"
                 title="Specimens"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
@@ -60,7 +60,7 @@ function didClickRecordDelete(event) {
             <QuickForm
                 v-if="showAddForm"
                 :apiBaseUrl="baseUrl" 
-                schemaName="insert"
+                schemaName="insert-specimen-schema"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -68,7 +68,7 @@ function didClickRecordDelete(event) {
                 v-if="showEditForm"
                 :apiBaseUrl="baseUrl" 
                 :recordId="editingRecordId"
-                schemaName="update"
+                schemaName="update-specimen-schema"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

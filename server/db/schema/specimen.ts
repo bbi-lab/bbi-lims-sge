@@ -1,54 +1,54 @@
 import { timestamps } from '../helpers/columns'
 import { dateSchema, nullableDateSchema } from '../helpers/schemas'
-// import { users } from '@/server/db/schema/user'
+import { users } from '../schema/user'
 import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, PgTableWithColumns, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { z } from 'zod'
+import { z, ZodObject } from 'zod'
 
 export const specimenTypeEnum = pgEnum('specimen_types', ['A', 'B', 'C'])
 
-export const specimens = pgTable('specimens', {
+export const specimens: PgTableWithColumns<any> = pgTable('specimens', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   specimenType: specimenTypeEnum('specimen_type').default('A').notNull(),
   ...timestamps,
-  // createdBy: uuid('created_by').references(() => users.id),
-  // updatedBy: uuid('updated_by').references(() => users.id),
-  // deletedBy: uuid('deleted_by').references(() => users.id),
+  createdBy: uuid('created_by').references(() => users.id),
+  updatedBy: uuid('updated_by').references(() => users.id),
+  deletedBy: uuid('deleted_by').references(() => users.id),
 })
 
-// export const specimensRelationsConfig: Record<string, Record<string, any>> = {
-//   createdBy: {
-//     fields: [specimens.createdBy],
-//     referenceTable: users,
-//     references: [users.id],
-//   },
-//   updatedBy: {
-//     fields: [specimens.createdBy],
-//     referenceTable: users,
-//     references: [users.id],
-//   },
-//   deletedBy: {
-//     fields: [specimens.createdBy],
-//     referenceTable: users,
-//     references: [users.id],
-//   },
-// }
+export const specimensRelationsConfig: Record<string, Record<string, any>> = {
+  createdBy: {
+    fields: [specimens.createdBy],
+    referenceTable: users,
+    references: [users.id],
+  },
+  updatedBy: {
+    fields: [specimens.createdBy],
+    referenceTable: users,
+    references: [users.id],
+  },
+  deletedBy: {
+    fields: [specimens.createdBy],
+    referenceTable: users,
+    references: [users.id],
+  },
+}
 
-// export const specimensRelations = relations(specimens, ({ one }) => (
-//   _.mapValues(specimensRelationsConfig, (x) => {
-//     return one(x.referenceTable, {
-//       fields: x.fields,
-//       references: x.references,
-//     })
-//   })
-// ))
+export const specimensRelations = relations(specimens, ({ one }) => (
+  _.mapValues(specimensRelationsConfig, (x) => {
+    return one(x.referenceTable, {
+      fields: x.fields,
+      references: x.references,
+    })
+  })
+))
 
-export const selectSpecimenSchema = createSelectSchema(specimens)
+const selectSpecimenSchema = createSelectSchema(specimens)
 
-export const updateSpecimenSchema = createSelectSchema(
+const updateSpecimenSchema = createSelectSchema(
   specimens, 
   {
     createdAt: dateSchema,
@@ -57,15 +57,22 @@ export const updateSpecimenSchema = createSelectSchema(
   }
 ).omit({ id: true }).partial()
 
-export const insertSpecimenSchema = selectSpecimenSchema.pick({
+const insertSpecimenSchema = selectSpecimenSchema.pick({
     name: true,
 })
 
-export const deleteSpecimenSchema = z.object({
+const deleteSpecimenSchema = z.object({
   body: selectSpecimenSchema.pick({
     id: true,
   }),
 })
+
+export const schemas: Record<string, ZodObject<any>> = {
+  selectSpecimenSchema,
+  updateSpecimenSchema,
+  insertSpecimenSchema,
+  deleteSpecimenSchema
+}
 
 export type Specimen = InferSelectModel<typeof specimens>
 export type NewSpecimen = z.infer<typeof insertSpecimenSchema>
