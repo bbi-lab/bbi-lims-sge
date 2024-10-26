@@ -21,25 +21,29 @@ export const specimens: PgTableWithColumns<any> = pgTable('specimens', {
 })
 
 export const specimensRelationsConfig: RelationsConfig = {
-  createdBy: {
-    fields: [specimens.createdBy],
-    referenceTable: users,
-    references: [users.id],
+  one:{
+    createdBy: {
+      fields: [specimens.createdBy],
+      referenceTable: users,
+      references: [users.id],
+    },
+    updatedBy: {
+      fields: [specimens.createdBy],
+      referenceTable: users,
+      references: [users.id],
+    },
+    deletedBy: {
+      fields: [specimens.createdBy],
+      referenceTable: users,
+      references: [users.id],
+    },
   },
-  updatedBy: {
-    fields: [specimens.createdBy],
-    referenceTable: users,
-    references: [users.id],
-  },
-  deletedBy: {
-    fields: [specimens.createdBy],
-    referenceTable: users,
-    references: [users.id],
-  },
+  many: {
+  }
 }
 
 export const specimensRelations = relations(specimens, ({ one }) => (
-  _.mapValues(specimensRelationsConfig, (x) => {
+  _.mapValues(specimensRelationsConfig.one, (x) => {
     return one(x.referenceTable, {
       fields: x.fields,
       references: x.references,

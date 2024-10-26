@@ -6,9 +6,18 @@ import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
 export const db:PostgresJsDatabase = drizzle(postgres(config.dbUrl))
 
 export interface RelationsConfig {
-    [fieldName: string]: {
-      fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
-      referenceTable: PgTableWithColumns<any>,
-      references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+    one: {
+      [fieldName: string]: {
+        fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
+        referenceTable: PgTableWithColumns<any>,
+        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+      }
+    },
+    many: {
+      [fieldName: string]: {
+        fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
+        referenceTable: PgTableWithColumns<any>,
+        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+      }
     }
   }
