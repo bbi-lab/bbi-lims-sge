@@ -6,7 +6,7 @@ import { schemas, specimensRelationsConfig } from '@/server/db/schema/specimen'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 import { eq } from 'drizzle-orm'
-import jsonLogic from 'json-logic-js'
+import jsonLogic, { JsonLogicFilter } from 'json-logic-js'
 
 export async function getAllSpecimens() {
     return await db.select().from(specimens)
@@ -20,7 +20,7 @@ export async function selectSpecimens(query:any) {
   const queryFinal  = query ? {filter:[{var:""}, query]} : null
   
   // TODO - apply filter logic as where clause on query above
-  return queryFinal ? jsonLogic.apply(queryFinal, allSpecimens) || [] : allSpecimens
+  return queryFinal ? jsonLogic.apply(queryFinal as JsonLogicFilter, allSpecimens) || [] : allSpecimens
 }
 
 export async function insertSpecimen(values: NewSpecimen) {
