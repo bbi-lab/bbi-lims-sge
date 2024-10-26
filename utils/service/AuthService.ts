@@ -4,7 +4,7 @@ export const AuthService = {
             const response = await $fetch(`http://localhost:3000/api/users/login`, {method: 'POST', body: { email, password }})
             return response
         } catch (err:any) {
-            return {success: false, errorMessage: 'Login failed. Please check your credentials.'}
+            return {success: false, errorMessage: err.statusMessage || 'Login failed. Please check your credentials.'}
         }
     },
 
