@@ -7,7 +7,18 @@ import argon2 from 'argon2'
 import { eq } from 'drizzle-orm'
 
 export async function getAllUsers() {
-    return await db.select().from(users)
+    return await db.query.users.findMany(
+      {
+        with: {
+          userGroupMemberships: {
+            columns: {}, // excluding columns from many-to-many table
+            with: {
+              userGroup: true
+            }
+          }
+        }
+      }
+    )
 }
 
 export async function getUserByUserId(userId: string) {
