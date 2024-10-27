@@ -2,22 +2,32 @@ import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 const config = useRuntimeConfig()
 import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
+import * as userSchema from '@/server/db/schema/user';
+import * as specimenSchema from '@/server/db/schema/specimen';
+import * as geneGroupSchema from '@/server/db/schema/gene-group'
 
-export const db:PostgresJsDatabase = drizzle(postgres(config.dbUrl))
+export const db = drizzle(
+  postgres(config.dbUrl),
+  {
+    schema: {
+      ...userSchema,
+      ...specimenSchema,
+      ...geneGroupSchema,
+    }
+  }
+)
 
 export interface RelationsConfig {
     one: {
-      [fieldName: string]: {
+      [relationName: string]: {
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
         referenceTable: PgTableWithColumns<any>,
         references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
       }
     },
     many: {
-      [fieldName: string]: {
-        fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
-        referenceTable: PgTableWithColumns<any>,
-        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+      [relationName: string]: {
+        table: PgTableWithColumns<any>,
       }
     }
   }
