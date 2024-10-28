@@ -19,4 +19,8 @@ export const geneGroups: PgTableWithColumns<any> = pgTable('gene_groups', {
 
 const selectGeneGroupSchema = createSelectSchema(geneGroups)
 
+export const schemas: Record<string, ZodObject<any>> = {
+  selectGeneGroupSchema,
+}
+
 export type GeneGroup = InferSelectModel<typeof geneGroups>
