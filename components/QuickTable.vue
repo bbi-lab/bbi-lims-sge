@@ -13,6 +13,9 @@ const props = defineProps({
   apiBaseUrl: String,
   schemaName: String,
   title: String,
+  canAdd: {type: Boolean, default: true},
+  canEdit: {type: Boolean, default: true},
+  canDelete: {type: Boolean, default: true},
 })
 const emit = defineEmits([
     'clicked-record-edit',
@@ -94,8 +97,8 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 <h4 class="m-0">{{ props.title }}</h4>
                 <Toolbar>
                     <template #start>
-                        <Button label="Add" icon="pi pi-plus" severity="secondary" class="mr-2" @click="didClickAddRecord" />
-                        <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedRecords || !selectedRecords.length" />
+                        <Button v-if="props.canAdd" label="Add" icon="pi pi-plus" severity="secondary" class="mr-2" @click="didClickAddRecord" />
+                        <Button v-if="props.canDelete" label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedRecords || !selectedRecords.length" />
                     </template>
                     <template #end>
                         <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
@@ -111,7 +114,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
 
         <Column selectionMode="multiple" :exportable="false"></Column>
-        <Column :exportable="false">
+        <Column v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
             </template>
