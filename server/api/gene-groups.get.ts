@@ -1,13 +1,12 @@
 import { selectGeneGroups } from '~/server/services/gene-group-services'
 import _ from 'lodash'
+import { QueryParams, SelectParams, queryToSelectParams } from '../utils/restApi'
 
 export default defineEventHandler(async (event) => {
-    // value of q should be JSON Logic formatted condition as string
-    const { q } = getQuery(event) as {q: string}
-    
     try {
-        const whereClause = q ? JSON.parse(q) : null
-        return await selectGeneGroups(whereClause)
+        const queryParams = getQuery(event) as QueryParams
+        const selectParams = queryToSelectParams(queryParams) as SelectParams
+        return await selectGeneGroups(selectParams)
     } catch (e: any) {
         throw createError({
             statusCode: 400,
