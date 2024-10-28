@@ -16,6 +16,7 @@ const props = defineProps({
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},
   canDelete: {type: Boolean, default: true},
+  rowsPerPageOptions: {type: Array}
 })
 const emit = defineEmits([
     'clicked-record-edit',
@@ -23,6 +24,8 @@ const emit = defineEmits([
     'clicked-multi-delete'
 ])
 
+const paginator = computed(() => !_.isEmpty(props.rowsPerPageOptions))
+const rowsPerPage = computed(() => props.rowsPerPageOptions?.[0] || null)
 const records = ref([])
 const selectedRecords = ref([])
 const tableSchema = ref()
@@ -91,6 +94,9 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         scrollable 
         scrollHeight="flex"
         :filters="filters"
+        :paginator="paginator"
+        :rows="rowsPerPage" 
+        :rowsPerPageOptions="props.rowsPerPageOptions"
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">

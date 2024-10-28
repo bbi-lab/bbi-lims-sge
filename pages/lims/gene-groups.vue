@@ -16,6 +16,7 @@ const baseUrl = `${config.public.apiBase}/gene-groups`
                 :canAdd="false"
                 :canEdit="false"
                 :canDelete="false"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
             />
         </SplitterPanel>
     </Splitter>
