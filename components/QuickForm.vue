@@ -4,11 +4,11 @@ import { RecordService } from '@/utils/service/RecordService'
 
 onMounted(async () => {
     formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
-
+    
     if (props.recordId) {
         record.value = await RecordService.getRecord(props.apiBaseUrl, props.recordId)
     } else {
-        record.value = _.mapValues(formSchema.value?.properties, (x) => null)
+        record.value = _.mapValues(formSchema.value?.properties || [], (x) => null)
     }
 })
 
@@ -27,7 +27,7 @@ const displayDeleteConfirmation = ref(false)
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
         RecordService.deleteRecord(props.apiBaseUrl, record.value.id).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimen deleted', life: 3000 })
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
         })
     }
@@ -39,15 +39,17 @@ function showDeleteConfirmation() {
 }
 function saveRecord() {
     if (_.has(record.value, 'id')) {
-        // updating single record
-        RecordService.updateRecord(props.apiBaseUrl, record.value).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimen updated', life: 3000 });
+        // updating single record - limit to properties in JSON schema
+        const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value?.properties))}
+        RecordService.updateRecord(props.apiBaseUrl, values).then((result) => {
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         })
     } else if (!props.recordId) {
         // new record
-        RecordService.addRecord(props.apiBaseUrl, record.value).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimen added', life: 3000 });
+        const values = _.pick(record.value, Object.keys(formSchema.value?.properties))
+        RecordService.addRecord(props.apiBaseUrl, values).then((result) => {
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
         })
     }
