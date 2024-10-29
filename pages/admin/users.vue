@@ -68,6 +68,7 @@ function didClickRecordDelete(event) {
                 :apiBaseUrl="baseUrl" 
                 :recordId="editingRecordId"
                 schemaName="admin-update-user-schema"
+                :canDelete="false"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

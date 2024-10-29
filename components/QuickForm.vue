@@ -16,6 +16,7 @@ const props = defineProps({
   recordId: String,
   apiBaseUrl: String,
   schemaName: String,
+  canDelete: {type: Boolean, default: true},
 })
 
 const toast = useToast()
@@ -89,7 +90,7 @@ function saveRecord() {
     <div>
         <Button class="m-1" label="Cancel" icon="pi pi-times" text @click="emit('cancel')" />
         <Button class="m-1" label="Save" icon="pi pi-check" @click="saveRecord" />
-        <Button label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
+        <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
         <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
             <div class="flex items-center justify-center">
                 <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
