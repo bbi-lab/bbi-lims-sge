@@ -21,6 +21,7 @@ const props = defineProps({
 const emit = defineEmits([
     'clicked-record-edit',
     'clicked-record-add',
+    'clicked-record-delete',
     'clicked-multi-delete'
 ])
 
