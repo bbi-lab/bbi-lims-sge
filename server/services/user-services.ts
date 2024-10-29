@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas } from '@/server/db/schema/user'
+import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
@@ -24,6 +24,9 @@ export async function getAllUsers() {
     )
 }
 
+export async function getUserGroups() {
+  return await await db.select().from(userGroups)
+}
 export async function getUserByUserId(userId: string) {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
   return user
@@ -237,6 +240,9 @@ export const getUserJsonSchema = async (schemaName: string) => {
     // generate JSON Schema from Zod object
     const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
 
+    // refine JSON Schema based on relations
+    await refineJsonSchema(jsonSchema, usersRelationsConfig)
+    
     return jsonSchema
   }
   else {
