@@ -1,10 +1,13 @@
 import crypto from 'node:crypto'
-import { type NewUser, type UpdateUser, type User, users } from '@/server/db/schema/user'
+import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
 import argon2 from 'argon2'
 import { eq } from 'drizzle-orm'
+import { ZodObject } from 'zod'
+import { zodToJsonSchema } from 'zod-to-json-schema'
+import _ from 'lodash'
 
 export async function getAllUsers() {
     return await db.query.users.findMany(
@@ -197,4 +200,46 @@ export async function updateUser(user: User, { name, email, password }: UpdateUs
   }
 
   return updatedUser
+}
+
+export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
+  if (values.email) {
+    const existingUser = await getUserByEmail(values.email)
+
+    if (existingUser.id != userId) {
+        throw createError({
+            statusCode: 409,
+            statusMessage: 'Email already in use'
+        })
+    }
+  }
+
+  const [updatedUser] = await db
+    .update(users)
+    .set(values)
+    .where(eq(users.id, userId))
+    .returning()
+
+  if (!updatedUser) {
+    throw createError({
+        statusCode: 404,
+        statusMessage: 'USER_NOT_FOUND'
+    })
+  }
+
+  return updatedUser
+}
+
+export const getUserJsonSchema = async (schemaName: string) => {
+  if (_.has(schemas, schemaName)) {
+    const currentSchema = schemas[schemaName] as ZodObject<any>
+
+    // generate JSON Schema from Zod object
+    const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
+
+    return jsonSchema
+  }
+  else {
+      return null
+  }
 }
