@@ -50,6 +50,7 @@ function didClickRecordDelete(event) {
                 :apiBaseUrl="baseUrl" 
                 schemaName="select-user-schema"
                 title="Users"
+                :canAdd="false"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
