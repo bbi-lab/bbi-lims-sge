@@ -1,11 +1,11 @@
 import { getUserByEmail } from '~/server/services/user-services'
-import { loginSchema, type LoginUser } from '~/server/db/schema/user'
+import { schemas, type LoginUser } from '~/server/db/schema/user'
 import argon2 from 'argon2'
 
 export default defineEventHandler<{ body: LoginUser }>(async (event) => {
     try {
         const body = await readBody(event)
-        const values = loginSchema.parse(body)
+        const values = schemas.loginSchema.parse(body)
         const existingUser = await getUserByEmail(values.email)
         
         if (!existingUser) {

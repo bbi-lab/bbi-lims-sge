@@ -1,8 +1,9 @@
 import { type InferSelectModel, relations } from 'drizzle-orm'
 import { boolean, pgTable, primaryKey, integer, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
-import { z } from 'zod'
+import { z, ZodObject } from 'zod'
 import _ from 'lodash'
+import { dateSchema } from '../helpers/schemas'
 
 export const users = pgTable('users', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -47,44 +48,64 @@ export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ 
   }),
 }));
 
-export const selectUserSchema = createSelectSchema(users, {
+const selectUserSchema = createSelectSchema(users, {
   email: schema =>
     schema.email.email().regex(/^([\w.%-]+@[a-z0-9.-]+\.[a-z]{2,6})*$/i),
 })
 
-export const verifyUserSchema = selectUserSchema.pick({
+const verifyUserSchema = selectUserSchema.pick({
     email: true,
     code: true,
 })
 
-export const deleteUserSchema = selectUserSchema.pick({
+const deleteUserSchema = selectUserSchema.pick({
     email: true,
 })
 
-export const loginSchema = selectUserSchema.pick({
+const loginSchema = selectUserSchema.pick({
     email: true,
     password: true,
 })
 
-export const refreshTokensSchema = z.object({
+const refreshTokensSchema = z.object({
   headers: z.object({
     authorization: z.string(),
   }),
 })
 
-export const updateUserSchema = selectUserSchema.pick({
+const updateUserSchema = selectUserSchema.pick({
     name: true,
     email: true,
     password: true,
 }).partial()
 
-export const newUserSchema = selectUserSchema.pick({
+const newUserSchema = selectUserSchema.pick({
     name: true,
     email: true,
     password: true,
 })
 
+const adminUpdateUserSchema = selectUserSchema.extend({
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
+}).omit({
+    id: true, 
+    password: true, 
+    code: true
+})
+
+export const schemas: Record<string, ZodObject<any>> = {
+  selectUserSchema: selectUserSchema.omit({password: true, code: true}),
+  adminUpdateUserSchema,
+  newUserSchema,
+  updateUserSchema,
+  refreshTokensSchema,
+  deleteUserSchema,
+  loginSchema,
+}
+
 export type User = InferSelectModel<typeof users>
 export type NewUser = z.infer<typeof newUserSchema>
 export type LoginUser = z.infer<typeof loginSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
+export type AdminUpdateUser = z.infer<typeof adminUpdateUserSchema>
