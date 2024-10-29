@@ -5,6 +5,7 @@ import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
 import * as userSchema from '@/server/db/schema/user';
 import * as specimenSchema from '@/server/db/schema/specimen';
 import * as geneGroupSchema from '@/server/db/schema/gene-group'
+import {ZodObject} from 'zod'
 
 export const db = drizzle(
   postgres(config.dbUrl),
@@ -28,6 +29,12 @@ export interface RelationsConfig {
     many: {
       [relationName: string]: {
         table: PgTableWithColumns<any>,
+        schema: ZodObject<any>
       }
     }
   }
+
+export async function getRecordsFromTable (table: PgTableWithColumns<any>){
+  const records = await db.select().from(table)
+  return records
+}
