@@ -81,6 +81,10 @@ function saveRecord() {
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
             </div>
+            <div class="mb-5" v-else-if="val.type=='boolean'">
+                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <Checkbox :id="key" v-model="record[key]" :binary="true" />
+            </div>
             <div class="mb-5" v-else>
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <InputText :id="key" v-model="record[key]" />
