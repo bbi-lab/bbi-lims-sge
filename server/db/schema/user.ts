@@ -5,6 +5,7 @@ import { z, ZodObject } from 'zod'
 import _ from 'lodash'
 import { dateSchema } from '../helpers/schemas'
 
+// tables 
 export const users = pgTable('users', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -22,20 +23,35 @@ export const userGroups = pgTable('user_groups', {
   name: varchar('name', { length: 255 }).notNull(),
 })
 
-export const usersRelations = relations(users, ({ many }) => ({
-  userGroupMemberships: many(userGroupMemberships),
-}));
-
-export const userGroupsRelations = relations(userGroups, ({ many }) => ({
-  userGroupMemberships: many(userGroupMemberships),
-}));
-
 export const userGroupMemberships = pgTable('user_group_memberships', {
   userId: uuid('user_id').notNull().references(() => users.id),
   userGroupId: integer('user_group_id').notNull().references(() => userGroups.id),
 }, (t) => ({
   pk: primaryKey({ columns: [t.userId, t.userGroupId] }),
 }))
+
+export const usersRelationsConfig: RelationsConfig = {
+  one:{},
+  many: {
+    userGroupMemberships: {
+      table: userGroupMemberships,
+      schema: createSelectSchema(userGroupMemberships)
+    }
+  }
+}
+
+// relations
+export const usersRelations = relations(users, ({ many }) => (
+  _.mapValues(usersRelationsConfig.many, (x) => {
+    return many(x.table)
+  })
+))
+
+export const userGroupsRelations = relations(userGroups, ({ many }) => ({
+  userGroupMemberships: many(userGroupMemberships),
+}));
+
+
 
 export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ one }) => ({
   userGroup: one(userGroups, {
@@ -48,6 +64,8 @@ export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ 
   }),
 }));
 
+
+// schemas
 const selectUserSchema = createSelectSchema(users, {
   email: schema =>
     schema.email.email().regex(/^([\w.%-]+@[a-z0-9.-]+\.[a-z]{2,6})*$/i),
@@ -104,6 +122,7 @@ export const schemas: Record<string, ZodObject<any>> = {
   loginSchema,
 }
 
+// types
 export type User = InferSelectModel<typeof users>
 export type NewUser = z.infer<typeof newUserSchema>
 export type LoginUser = z.infer<typeof loginSchema>
