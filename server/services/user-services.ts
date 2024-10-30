@@ -1,10 +1,10 @@
 import crypto from 'node:crypto'
-import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig } from '@/server/db/schema/user'
+import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig, userGroupMemberships } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
 import argon2 from 'argon2'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { ZodObject } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
@@ -224,6 +224,15 @@ export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
         })
     }
   }
+
+  const existingGroupMemberships = await db.select().from(userGroupMemberships).where(eq(userGroupMemberships.userId, userId))
+  const relatedRecordsToDelete = _.differenceBy(existingGroupMemberships, values.userGroupMemberships, 'userGroupId')
+  const relatedRecordsToAdd = _.differenceBy(values.userGroupMemberships, existingGroupMemberships, 'userGroupId')
+  
+  if (relatedRecordsToAdd?.length > 0)
+    await db.insert(userGroupMemberships).values(relatedRecordsToAdd)
+  if (relatedRecordsToDelete?.length > 0)
+    await db.delete(userGroupMemberships).where(inArray(userGroupMemberships.userGroupId, _.map(relatedRecordsToDelete, (x) => x.userGroupId)))
 
   const [updatedUser] = await db
     .update(users)
