@@ -119,6 +119,7 @@ const newUserSchema = selectUserSchema.pick({
 const adminUpdateUserSchema = selectUserSchema.extend({
   createdAt: dateSchema,
   updatedAt: dateSchema,
+  userGroupMemberships: z.array(createSelectSchema(userGroupMemberships))
 }).omit({
     id: true, 
     password: true, 

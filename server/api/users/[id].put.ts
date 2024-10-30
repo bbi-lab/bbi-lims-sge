@@ -5,7 +5,8 @@ export default defineEventHandler<{ body: AdminUpdateUser }>(async (event) => {
     const { id } = event.context.params as {id: string}
     try {
         const body = await readBody(event)
-        const values = schemas.adminUpdateUserSchema.parse(body) as AdminUpdateUser
+
+        const values = schemas.adminUpdateUserSchema.strict().parse(body) as AdminUpdateUser
         const updatedUser = await adminUpdateUser(id, values)
         return updatedUser
     } catch (e: any) {
