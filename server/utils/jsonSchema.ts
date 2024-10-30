@@ -3,8 +3,6 @@ import {getAllVerifiedUsersInfo, getUserGroups} from '@/server/services/user-ser
 import { users } from '@/server/db/schema/user'
 import _ from 'lodash'
 import { RelationsConfig, getRecordsFromTable} from "./db"
-import { PgTableWithColumns } from "drizzle-orm/pg-core"
-import { createSelectSchema } from "drizzle-zod"
 
 export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string) {
 
