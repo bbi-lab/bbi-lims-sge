@@ -29,7 +29,10 @@ export interface RelationsConfig {
     many: {
       [relationName: string]: {
         table: PgTableWithColumns<any>,
-        schema: ZodObject<any>
+        schema: ZodObject<any>,
+        fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
+        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+        relationsConfig: RelationsConfig,
       }
     }
   }

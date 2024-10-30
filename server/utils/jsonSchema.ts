@@ -6,7 +6,7 @@ import { RelationsConfig, getRecordsFromTable} from "./db"
 import { PgTableWithColumns } from "drizzle-orm/pg-core"
 import { createSelectSchema } from "drizzle-zod"
 
-export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig) {
+export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string) {
 
     // define JSON schema property as coded list of users, to be applied to JSON schema
     const usersInfo = await getAllVerifiedUsersInfo()
@@ -23,8 +23,8 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
     }
 
     // iterate over properties and replace one-to-many relations with corresponding JsonSchema property
-    const properties = _.get(jsonSchema, 'properties', [])
-    for (const property in properties) {
+    const properties = Object.keys(_.get(jsonSchema, 'properties', {}))
+    for (const property of properties) {
       if (relationsConfig.one && Object.keys(relationsConfig.one).includes(property)) {
         if (_.get(relationsConfig.one, [property, 'referenceTable']) === users) {
           _.set(jsonSchema, ['properties', property], usersJsonSchemaProperty)
@@ -35,8 +35,38 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
     // iterate over many-to-many relations and add each to JSON schema as a new array property
     for (const [key, val] of Object.entries(relationsConfig.many)) {
       const items = await getRecordsFromTable(val.table)
-      const itemsZodSchema = createSelectSchema(val.table)
+      // get full schema of many-to-many table
+      const itemsZodSchema = val.schema
       const itemsJsonSchema = zodToJsonSchema(itemsZodSchema)
+
+      // set foreign key value as default to be used for new items added to array
+      // TODO - add support for composite foreign keys
+      const foreignKeyField = val.fields[0]
+      const foreignKeyPropertyName = _.camelCase(foreignKeyField.name)
+      if (defaultId && foreignKeyPropertyName) {
+        _.set(itemsJsonSchema, ['properties', foreignKeyPropertyName, 'default'], defaultId)
+      }
+
+      if (val.relationsConfig.one) { 
+        // uses first nested "one" relation to link to table at the other end of many-to-many relation
+        const itemsRelationName = Object.keys(val.relationsConfig.one)[0]
+        const itemsRelationConfig = val.relationsConfig.one[itemsRelationName]
+        const itemsRelationsConfigField = itemsRelationConfig.fields[0]
+
+        // get related records
+        const relatedRecords = await getRecordsFromTable(itemsRelationConfig.referenceTable)
+        
+        // convert to JsonSchema property
+        // TODO - needs to handle string IDs and alternative fields for title, composite fields
+        const relatedRecordsJsonSchemaProperty:JsonSchema7AnyType = {
+          type: 'number',
+          oneOf: _.map(relatedRecords, (x) => { return { const: x.id, title: x.name } }),
+        }
+
+        // TODO - this will only be true as long as column name in drizzle table defintion is camel-case version of column name in the database
+        const propNameToReplace = _.camelCase(itemsRelationsConfigField.name)
+        _.set(itemsJsonSchema, ['properties', propNameToReplace], userGroupsJsonSchemaProperty)
+      }
 
       const jsonSchemaArrayProperty:JsonSchema7ArrayType = {
          type: 'array',

@@ -30,12 +30,26 @@ export const userGroupMemberships = pgTable('user_group_memberships', {
   pk: primaryKey({ columns: [t.userId, t.userGroupId] }),
 }))
 
+// relations config
+// defines M:M between users and groups
 export const usersRelationsConfig: RelationsConfig = {
   one:{},
   many: {
     userGroupMemberships: {
       table: userGroupMemberships,
-      schema: createSelectSchema(userGroupMemberships)
+      schema: createSelectSchema(userGroupMemberships),
+      fields: [userGroupMemberships.userId],
+      references: [users.id],
+      relationsConfig: {
+        one:{
+          userGroup: {
+            referenceTable: userGroups,
+            fields: [userGroupMemberships.userGroupId],
+            references: [userGroups.id],
+          }
+        },
+        many:{}
+      }
     }
   }
 }
@@ -51,8 +65,7 @@ export const userGroupsRelations = relations(userGroups, ({ many }) => ({
   userGroupMemberships: many(userGroupMemberships),
 }));
 
-
-
+// TODO - redundant, should be able to generate this from the usersRelationsConfig above
 export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ one }) => ({
   userGroup: one(userGroups, {
     fields: [userGroupMemberships.userGroupId],

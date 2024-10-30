@@ -1,10 +1,9 @@
-import { getUserByUserId } from '~/server/services/user-services'
-import { schemas } from '~/server/db/schema/user'
+import { getUserById } from '~/server/services/user-services'
 
 export default defineEventHandler(async (event) => {
     const { id } = event.context.params as {id: string}
     try {
-        const selectedUser = await getUserByUserId(id)
+        const selectedUser = await getUserById(id)
         return selectedUser
     } catch (e: any) {
         throw createError({

@@ -4,9 +4,10 @@ import { getUserJsonSchema } from '@/server/services/user-services'
 
 export default defineEventHandler(async (event) => {
     const { name } = event.context.params as {name: string}
+    const { id } = getQuery(event) as {id: string}
     try {
           if (_.has(schemas, _.camelCase(name))) {
-            return getUserJsonSchema(_.camelCase(name))
+            return getUserJsonSchema(_.camelCase(name), id)
           } else {
             throw createError({statusCode: 404, statusMessage: 'Unknown schema'})
           }

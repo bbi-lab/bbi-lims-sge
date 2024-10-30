@@ -27,8 +27,16 @@ export async function getAllUsers() {
 export async function getUserGroups() {
   return await await db.select().from(userGroups)
 }
-export async function getUserByUserId(userId: string) {
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+export async function getUserById(userId: string) {
+  const [user] = await db.query.users.findMany(
+    {
+      where: () => eq(users.id, userId),
+      with: {
+        userGroupMemberships: true
+      },
+      limit: 1
+    }
+  )
   return user
 }
 
@@ -233,7 +241,7 @@ export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
   return updatedUser
 }
 
-export const getUserJsonSchema = async (schemaName: string) => {
+export const getUserJsonSchema = async (schemaName: string, id?: string) => {
   if (_.has(schemas, schemaName)) {
     const currentSchema = schemas[schemaName] as ZodObject<any>
 
@@ -241,7 +249,7 @@ export const getUserJsonSchema = async (schemaName: string) => {
     const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
 
     // refine JSON Schema based on relations
-    await refineJsonSchema(jsonSchema, usersRelationsConfig)
+    await refineJsonSchema(jsonSchema, usersRelationsConfig, id)
     
     return jsonSchema
   }

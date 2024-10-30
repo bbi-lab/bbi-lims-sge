@@ -3,12 +3,12 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
 onMounted(async () => {
-    formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
-    
     if (props.recordId) {
+        formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName, props.recordId)
         record.value = await RecordService.getRecord(props.apiBaseUrl, props.recordId)
     } else {
-        record.value = _.mapValues(formSchema.value?.properties || [], (x) => null)
+        formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
+        record.value = _.mapValues(formSchema.value?.properties, (x) => null)
     }
 })
 
@@ -18,11 +18,16 @@ const props = defineProps({
   schemaName: String,
   canDelete: {type: Boolean, default: true},
 })
+const emit = defineEmits([
+    'record-update',
+    'record-add',
+    'record-delete',
+    'cancel'
+])
 
 const toast = useToast()
 const formSchema = ref()
 const record = ref(null)
-const emit = defineEmits(['record-update', 'record-add', 'record-delete', 'cancel'])
 const displayDeleteConfirmation = ref(false)
 
 function deleteRecord() {
@@ -55,6 +60,18 @@ function saveRecord() {
         })
     }
 }
+function addNewItemToArray(array, itemProperties) {
+    const newItem = {}
+    for (const [k,v] of Object.entries(itemProperties)) {
+        // default value for foreign key should be set in JSON schema based on props.recordId 
+        if (v.default) {
+            _.set(newItem, k, v.default)
+        } else {
+            _.set(newItem, k, null)
+        }
+    }
+    array.push(newItem)
+}
 </script>
 <template>
     <div v-for="(val, key, index) in formSchema?.properties">
@@ -84,6 +101,30 @@ function saveRecord() {
             <div class="mb-5" v-else-if="val.type=='boolean'">
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
                 <Checkbox :id="key" v-model="record[key]" :binary="true" />
+            </div>
+            <div class="mb-5" v-else-if="val.type=='array'">
+                <label class="font-bold mb-3 mr-5">{{ key }}</label>
+                <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
+                <!-- Iterate over array items -->
+                <template v-for="(arrayItem, arrayIndex) in record[key]">
+                    <!-- Check that all array item properties are covered by JSON schema -->
+                    <div class="mb-5" v-if="arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                        <template v-for="itemKey in Object.keys(arrayItem)" >
+                            <span class="mr-5" v-if="val.items.properties[itemKey].oneOf">
+                                <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="val.items.properties[itemKey].oneOf" optionLabel="title" optionValue="const" />
+                            </span>
+                            <!-- don't display UUID fields, values should not change -->
+                            <span class="mr-5" v-else-if="val.items.properties[itemKey].format!='uuid'">
+                                <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" />
+                            </span>
+                        </template>
+                        <Button icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                    </div>
+                    <!-- Array properties not covered by JSON schema -->
+                    <template v-else-if="record[key][arrayKey]">
+                        <InputText disabled v-model="record[key][arrayKey]" />
+                    </template>
+                </template>
             </div>
             <div class="mb-5" v-else>
                 <label :for="key" class="block font-bold mb-3">{{ key }}</label>
