@@ -39,13 +39,17 @@ export const usersRelationsConfig: RelationsConfig = {
       table: userGroupMemberships,
       schema: createSelectSchema(userGroupMemberships),
       fields: [userGroupMemberships.userId],
-      references: [users.id],
       relationsConfig: {
         one:{
           userGroup: {
             referenceTable: userGroups,
             fields: [userGroupMemberships.userGroupId],
             references: [userGroups.id],
+          },
+          user: {
+            referenceTable: users,
+            fields: [userGroupMemberships.userId],
+            references: [users.id],
           }
         },
         many:{}
@@ -63,20 +67,16 @@ export const usersRelations = relations(users, ({ many }) => (
 
 export const userGroupsRelations = relations(userGroups, ({ many }) => ({
   userGroupMemberships: many(userGroupMemberships),
-}));
+}))
 
-// TODO - redundant, should be able to generate this from the usersRelationsConfig above
-export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ one }) => ({
-  userGroup: one(userGroups, {
-    fields: [userGroupMemberships.userGroupId],
-    references: [userGroups.id],
-  }),
-  user: one(users, {
-    fields: [userGroupMemberships.userId],
-    references: [users.id],
-  }),
-}));
-
+export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ one }) => (
+  _.mapValues(usersRelationsConfig.many.userGroupMemberships.relationsConfig.one, (x) => {
+    return one(x.referenceTable, {
+      fields: x.fields,
+      references: x.references,
+    })
+  })
+))
 
 // schemas
 const selectUserSchema = createSelectSchema(users, {

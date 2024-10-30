@@ -48,24 +48,29 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
       }
 
       if (val.relationsConfig.one) { 
-        // uses first nested "one" relation to link to table at the other end of many-to-many relation
-        const itemsRelationName = Object.keys(val.relationsConfig.one)[0]
-        const itemsRelationConfig = val.relationsConfig.one[itemsRelationName]
-        const itemsRelationsConfigField = itemsRelationConfig.fields[0]
+        // get first nested "one" relation that doesn't point back to the primary table
+        const itemsRelationName = _.findKey(val.relationsConfig.one, (x) => x.fields != val.fields)
 
-        // get related records
-        const relatedRecords = await getRecordsFromTable(itemsRelationConfig.referenceTable)
-        
-        // convert to JsonSchema property
-        // TODO - needs to handle string IDs and alternative fields for title, composite fields
-        const relatedRecordsJsonSchemaProperty:JsonSchema7AnyType = {
-          type: 'number',
-          oneOf: _.map(relatedRecords, (x) => { return { const: x.id, title: x.name } }),
+        if (itemsRelationName) {
+          const itemsRelationConfig = val.relationsConfig.one[itemsRelationName]
+          const itemsRelationsConfigField = itemsRelationConfig.fields[0]
+
+          // get related records
+          const relatedRecords = await getRecordsFromTable(itemsRelationConfig.referenceTable)
+          
+          // convert to JsonSchema property
+          // TODO - needs to handle string IDs and alternative fields for title, composite fields
+          const relatedRecordsJsonSchemaProperty:JsonSchema7AnyType = {
+            type: 'number',
+            oneOf: _.map(relatedRecords, (x) => { return { const: x.id, title: x.name } }),
+          }
+
+          // TODO - this will only be true as long as column name in drizzle table defintion is camel-case version of column name in the database
+          const propNameToReplace = _.camelCase(itemsRelationsConfigField.name)
+          _.set(itemsJsonSchema, ['properties', propNameToReplace], userGroupsJsonSchemaProperty)
+        } else {
+          throw createError({statusCode: 500})
         }
-
-        // TODO - this will only be true as long as column name in drizzle table defintion is camel-case version of column name in the database
-        const propNameToReplace = _.camelCase(itemsRelationsConfigField.name)
-        _.set(itemsJsonSchema, ['properties', propNameToReplace], userGroupsJsonSchemaProperty)
       }
 
       const jsonSchemaArrayProperty:JsonSchema7ArrayType = {
