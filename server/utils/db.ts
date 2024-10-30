@@ -31,7 +31,6 @@ export interface RelationsConfig {
         table: PgTableWithColumns<any>,
         schema: ZodObject<any>,
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
-        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
         relationsConfig: RelationsConfig,
       }
     }
