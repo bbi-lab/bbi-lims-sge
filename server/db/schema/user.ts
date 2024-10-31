@@ -131,6 +131,14 @@ export const schemas: Record<string, ZodObject<any>> = {
   loginSchema,
 }
 
+const selectUserGroupSchema = createSelectSchema(userGroups)
+const newUserGroupSchema = selectUserGroupSchema.pick({name: true})
+
+export const userGroupSchemas: Record<string, ZodObject<any>> = {
+  selectUserGroupSchema,
+  newUserGroupSchema,
+}
+
 // types
 export type User = InferSelectModel<typeof users>
 export type NewUser = z.infer<typeof newUserSchema>
