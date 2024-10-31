@@ -2,12 +2,11 @@ import { selectSpecimens } from '~/server/services/specimen-services'
 import _ from 'lodash'
 
 export default defineEventHandler(async (event) => {
-    // value of q should be JSON Logic formatted condition as string
-    const { q } = getQuery(event) as {q: string}
-    
+    const queryParams = getQuery(event) as QueryParams
+    const selectParams = queryToSelectParams(queryParams) as SelectParams
+
     try {
-        const whereClause = q ? JSON.parse(q) : null
-        return await selectSpecimens(whereClause)
+        return await selectSpecimens(selectParams)
     } catch (e: any) {
         throw createError({
             statusCode: 400,

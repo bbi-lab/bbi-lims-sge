@@ -1,11 +1,10 @@
 import { getAllUsers } from '~/server/services/user-services'
 
 export default defineEventHandler(async (event) => {
-    const { with: withClause } = getQuery(event) as {with: string}
-    const withClauseObj = withClause ? JSON.parse(withClause) : undefined
-
+    const queryParams = getQuery(event) as QueryParams
+    const selectParams = queryToSelectParams(queryParams) as SelectParams
     try {
-        return await getAllUsers(withClauseObj)
+        return await getAllUsers(selectParams)
     } catch (e: any) {
         throw createError({
             statusCode: 400,

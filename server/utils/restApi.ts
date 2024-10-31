@@ -7,6 +7,7 @@ export interface QueryParams {
     order: string,
     limit: number,
     offset: number,
+    with: string,
 }
 
 export interface SelectParams {
@@ -14,7 +15,8 @@ export interface SelectParams {
     columns: { [key: string]: boolean },
     order: { [key: string]: 'asc' | 'desc' }
     limit: number,
-    offset: number
+    offset: number,
+    with: any,
 }
 
 export function queryToSelectParams<SelectParams>(queryParams: QueryParams) {
@@ -24,11 +26,12 @@ export function queryToSelectParams<SelectParams>(queryParams: QueryParams) {
     }, {}) : null
 
     const selectParams = {
-        where: queryParams.where ? JSON.parse(queryParams.where) : null,
+        where: queryParams.where ? JSON.parse(queryParams.where) : undefined,
         columns: columnsToInclude,
-        order: queryParams.order ? JSON.parse(queryParams.order) : null,
+        order: queryParams.order ? JSON.parse(queryParams.order) : undefined,
         limit: queryParams.limit,
-        offset: queryParams.offset
+        offset: queryParams.offset,
+        with: queryParams.with ? JSON.parse(queryParams.with) : undefined
     } as SelectParams
 
     return selectParams

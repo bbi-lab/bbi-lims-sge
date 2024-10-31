@@ -67,8 +67,7 @@ function exportCSV() {
 }
 
 const addOrRefreshRecordId = async (recordId) => {
-    console.log("REFRESHING")
-    const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId, 'table')
+    const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId, props.withClause)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord

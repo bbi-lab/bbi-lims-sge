@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 export default defineEventHandler(async (event) => {
     if (event.method == 'POST' && ['/api/users/login', '/api/users/register'].includes(event.path)) return
 
@@ -20,8 +22,8 @@ export default defineEventHandler(async (event) => {
         // to support sessions stored in cookies (via nuxt-auth-utils)
         session = await getUserSession(event)
         if (session) {
-            accessToken = session.secure?.accessToken
-            refreshToken = session.secure?.refreshToken
+            accessToken = _.get(session.secure, 'accessToken')
+            refreshToken = _.get(session.secure, 'refreshToken')
         }
     }
 

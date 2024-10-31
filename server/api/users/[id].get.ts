@@ -3,11 +3,12 @@ import { getUserById } from '~/server/services/user-services'
 export default defineEventHandler(async (event) => {
     const { id } = event.context.params as {id: string}
 
-    const { with: withClause } = getQuery(event) as {with: string}
-    const withClauseObj = withClause ? JSON.parse(withClause) : undefined
+    const queryParams = getQuery(event) as QueryParams
+    const selectParams = queryToSelectParams(queryParams) as SelectParams
 
     try {
-        const selectedUser =  await getUserById(id, withClauseObj)
+        // ignoring any order, limit, or offset params
+        const selectedUser =  await getUserById(id, selectParams.with, selectParams.columns)
         return selectedUser
     } catch (e: any) {
         throw createError({
