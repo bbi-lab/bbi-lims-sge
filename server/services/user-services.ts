@@ -8,31 +8,14 @@ import { eq, inArray } from 'drizzle-orm'
 import { ZodObject } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
-import jsonLogic, { JsonLogicFilter } from 'json-logic-js'
+import { applySelectParamsToRecords } from '~/server/utils/restApi'
 
 export async function getAllUsers(selectParams: SelectParams) {
   const allUsers = await db.query.users.findMany({
     columns: selectParams.columns,
     with: selectParams.with,
   })
-
-  // wrapping Json logic query with this so that it will be applied to every item in array
-  // (e.g. query for filtering on property name=='test' would be {"==":[{"var":"name"},"test"]} )
-  const queryFinal  = selectParams.where ? {filter:[{var:""}, selectParams.where]} : null
-
-  // TODO - apply filter logic as where clause on query above
-  let result = queryFinal ? jsonLogic.apply(queryFinal as JsonLogicFilter, allUsers) || [] : allUsers
-
-  if (selectParams.order) {
-      result = _.orderBy(result, Object.keys(selectParams.order), Object.values(selectParams.order))
-  }
-  if (selectParams.offset) {
-      result = _.slice(result, selectParams.offset)
-  }
-  if (selectParams.limit) {
-      result = _.take(result, selectParams.limit)
-  }
-  return result
+  return applySelectParamsToRecords(selectParams, allUsers)
 }
 
 export async function getUserGroups() {
