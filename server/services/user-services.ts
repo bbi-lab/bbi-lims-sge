@@ -146,13 +146,20 @@ export async function deleteUser(id: string) {
         statusMessage: 'USER_NOT_FOUND'
     })
 
-  const [deletedUser] = await db.delete(users).where(eq(users.id, id)).returning({
-    id: users.id,
-    name: users.name,
-    email: users.email,
+  // wrapping in a transaction to delete on multiple tables and rollback if any fail
+  const result = await db.transaction(async (tx) => {
+    // delete group membership before deleting user
+    await tx.delete(userGroupMemberships).where(eq(userGroupMemberships.userId, id))
+
+    const [deletedUser] = await tx.delete(users).where(eq(users.id, id)).returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+    })
+    return deletedUser
   })
 
-  return deletedUser
+  return result
 }
 
 export async function updateUser(user: User, { name, email, password }: UpdateUser) {

@@ -74,7 +74,7 @@ function didClickRecordDelete(event) {
                 :withClause="editWithClause"
                 :recordId="editingRecordId"
                 schemaName="admin-update-user-schema"
-                :canDelete="false"
+                :canDelete="true"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
