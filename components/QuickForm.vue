@@ -79,7 +79,7 @@ function addNewItemToArray(array, itemProperties) {
     <div v-for="(val, key, index) in formSchema?.properties">
         <template v-if="record && key in record">
             <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
-                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <DatePicker 
                     class="w-80"
                     :id="key"
@@ -93,19 +93,19 @@ function addNewItemToArray(array, itemProperties) {
                 <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
             </div>
             <div class="mb-5" v-else-if="val.enum">
-                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <Select :id="key" v-model="record[key]" :options="val.enum" />
             </div>
             <div class="mb-5" v-else-if="val.oneOf">
-                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
             </div>
             <div class="mb-5" v-else-if="val.type=='boolean'">
-                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <Checkbox :id="key" v-model="record[key]" :binary="true" />
             </div>
             <div class="mb-5" v-else-if="val.type=='array'">
-                <label class="font-bold mb-3 mr-5">{{ key }}</label>
+                <label class="font-bold mb-3 mr-5">{{ _.startCase(key) }}</label>
                 <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
                 <!-- Iterate over array items -->
                 <template v-for="(arrayItem, arrayIndex) in record[key]">
@@ -129,7 +129,7 @@ function addNewItemToArray(array, itemProperties) {
                 </template>
             </div>
             <div class="mb-5" v-else>
-                <label :for="key" class="block font-bold mb-3">{{ key }}</label>
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <InputText :id="key" v-model="record[key]" />
             </div>
         </template>

@@ -128,17 +128,17 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
             </template>
         </Column> 
         <template v-for="(val, key, index) in tableSchema?.properties">
-            <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="key" sortable style="min-width: 16rem">
+            <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem">
                 <template #body="slotProps">
                     {{ formatDate(slotProps.data[key]) }}
                 </template>
             </Column>
-            <Column v-else-if="val.oneOf" :field="key" :header="key" sortable style="min-width: 16rem">
+            <Column v-else-if="val.oneOf" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem">
                 <template #body="slotProps">
                     {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
                 </template>
             </Column>
-            <Column v-else-if="key!='id'" :field="key" :header="key" sortable style="min-width: 16rem"></Column>
+            <Column v-else-if="key!='id'" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem"></Column>
         </template>
 
     </DataTable>
