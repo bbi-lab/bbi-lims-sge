@@ -1,11 +1,13 @@
 export const RecordService = {
-    async getRecord(baseUrl: string, id: string) {
-        const record = await $fetch(`${baseUrl}/${id}`)
+    async getRecord(baseUrl: string, id: string, withClause?: Object) {
+        const fetchOptions = withClause ? {query: {with: withClause}} : undefined
+        const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
         return record
     },
 
-    async getRecords(baseUrl: string) {
-        const records = await $fetch(`${baseUrl}`)
+    async getRecords(baseUrl: string, withClause?: Object) {
+        const fetchOptions = withClause ? {query: {with: withClause}} : undefined
+        const records = await $fetch(`${baseUrl}`, fetchOptions)
         return records
     },
 

@@ -3,9 +3,10 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
 onMounted(async () => {
+    console.log(props)
     if (props.recordId) {
         formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName, props.recordId)
-        record.value = await RecordService.getRecord(props.apiBaseUrl, props.recordId)
+        record.value = await RecordService.getRecord(props.apiBaseUrl, props.recordId, props.withClause)
     } else {
         formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
@@ -16,6 +17,7 @@ const props = defineProps({
   recordId: String,
   apiBaseUrl: String,
   schemaName: String,
+  withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
 })
 const emit = defineEmits([

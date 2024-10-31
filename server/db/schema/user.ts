@@ -69,14 +69,14 @@ export const userGroupsRelations = relations(userGroups, ({ many }) => ({
   userGroupMemberships: many(userGroupMemberships),
 }))
 
-export const userGroupMembershipsRelations = relations(userGroupMemberships, ({ one }) => (
+export const userGroupMembershipsRelations = Object.freeze(relations(userGroupMemberships, ({ one }) => (
   _.mapValues(usersRelationsConfig.many.userGroupMemberships.relationsConfig.one, (x) => {
     return one(x.referenceTable, {
       fields: x.fields,
       references: x.references,
     })
   })
-))
+)))
 
 // schemas
 const selectUserSchema = createSelectSchema(users, {

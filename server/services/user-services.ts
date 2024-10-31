@@ -9,17 +9,10 @@ import { ZodObject } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 
-export async function getAllUsers() {
+export async function getAllUsers(withClause?: any) {
     return await db.query.users.findMany(
       {
-        with: {
-          userGroupMemberships: {
-            columns: {}, // excluding columns from many-to-many table
-            with: {
-              userGroup: true
-            }
-          }
-        }
+        with: withClause
       }
     )
 }
@@ -27,13 +20,12 @@ export async function getAllUsers() {
 export async function getUserGroups() {
   return await await db.select().from(userGroups)
 }
-export async function getUserById(userId: string) {
+
+export async function getUserById(userId: string, withClause?: any) {
   const [user] = await db.query.users.findMany(
     {
       where: () => eq(users.id, userId),
-      with: {
-        userGroupMemberships: true
-      },
+      with: withClause,
       limit: 1
     }
   )

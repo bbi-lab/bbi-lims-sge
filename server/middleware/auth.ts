@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
         await clearUserSession(event)
     } else {
         try {
+            console.log(accessToken)
             const {userId} = verifyToken(accessToken)
             console.log(`Verified access token for user: ${userId}`)
         } catch (err: any) {

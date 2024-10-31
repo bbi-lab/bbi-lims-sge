@@ -5,7 +5,7 @@ import { RecordService } from '@/utils/service/RecordService'
 
 onMounted(async() => {
     tableSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
-    records.value = await RecordService.getRecords(props.apiBaseUrl)
+    records.value = await RecordService.getRecords(props.apiBaseUrl, props.withClause)
 })
 
 const toast = useToast()
@@ -13,6 +13,7 @@ const props = defineProps({
   apiBaseUrl: String,
   schemaName: String,
   title: String,
+  withClause: {type: Object},
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},
   canDelete: {type: Boolean, default: true},
@@ -66,7 +67,8 @@ function exportCSV() {
 }
 
 const addOrRefreshRecordId = async (recordId) => {
-    const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId)
+    console.log("REFRESHING")
+    const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId, 'table')
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord

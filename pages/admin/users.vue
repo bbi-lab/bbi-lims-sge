@@ -8,6 +8,9 @@ const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const usersTable = ref()
 
+const editWithClause = Object.freeze({userGroupMemberships:true})
+const displayWithClause = Object.freeze({userGroupMemberships:{columns: {}, with: {userGroup: {columns: {name: true}}}}})
+
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
     showEditForm.value = true
@@ -51,6 +54,7 @@ function didClickRecordDelete(event) {
                 schemaName="select-user-schema"
                 title="Users"
                 :canAdd="false"
+                :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
@@ -66,7 +70,8 @@ function didClickRecordDelete(event) {
             />
             <QuickForm
                 v-if="showEditForm"
-                :apiBaseUrl="baseUrl" 
+                :apiBaseUrl="baseUrl"
+                :withClause="editWithClause"
                 :recordId="editingRecordId"
                 schemaName="admin-update-user-schema"
                 :canDelete="false"
