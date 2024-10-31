@@ -137,8 +137,8 @@ export async function getAllVerifiedUsersInfo() {
     .where(eq(users.isVerified, true))
 }
 
-export async function deleteUser(email: string) {
-  const user = await getUserByEmail(email)
+export async function deleteUser(id: string) {
+  const user = await getUserById(id)
 
   if (!user)
     throw createError({
@@ -146,7 +146,7 @@ export async function deleteUser(email: string) {
         statusMessage: 'USER_NOT_FOUND'
     })
 
-  const [deletedUser] = await db.delete(users).where(eq(users.email, email)).returning({
+  const [deletedUser] = await db.delete(users).where(eq(users.id, id)).returning({
     id: users.id,
     name: users.name,
     email: users.email,
