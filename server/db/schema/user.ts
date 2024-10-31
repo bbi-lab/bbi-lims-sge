@@ -89,10 +89,6 @@ const verifyUserSchema = selectUserSchema.pick({
     code: true,
 })
 
-const deleteUserSchema = selectUserSchema.pick({
-    email: true,
-})
-
 const loginSchema = selectUserSchema.pick({
     email: true,
     password: true,
@@ -132,7 +128,6 @@ export const schemas: Record<string, ZodObject<any>> = {
   newUserSchema,
   updateUserSchema,
   refreshTokensSchema,
-  deleteUserSchema,
   loginSchema,
 }
 
