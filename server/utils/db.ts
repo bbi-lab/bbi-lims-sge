@@ -5,6 +5,8 @@ import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
 import * as userSchema from '@/server/db/schema/user';
 import * as specimenSchema from '@/server/db/schema/specimen';
 import * as geneGroupSchema from '@/server/db/schema/gene-group'
+import * as pcrExperimentSchema from '@/server/db/schema/sge/pcr-experiment'
+
 import {ZodObject} from 'zod'
 
 export const db = drizzle(
@@ -14,6 +16,7 @@ export const db = drizzle(
       ...userSchema,
       ...specimenSchema,
       ...geneGroupSchema,
+      ...pcrExperimentSchema,
     }
   }
 )
