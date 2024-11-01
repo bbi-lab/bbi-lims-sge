@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig, userGroupMemberships } from '@/server/db/schema/user'
+import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig, userGroupMemberships } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
@@ -9,6 +9,7 @@ import { ZodObject } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
+import { InputNumberButtonListeners } from 'primevue/inputnumber'
 
 export async function getAllUsers(selectParams: SelectParams) {
   const allUsers = await db.query.users.findMany({
@@ -18,9 +19,55 @@ export async function getAllUsers(selectParams: SelectParams) {
   return applySelectParamsToRecords(selectParams, allUsers)
 }
 
-export async function getUserGroups() {
-  return await await db.select().from(userGroups)
+export async function getUserGroups(selectParams?: SelectParams) {
+  if (selectParams) {
+    const allUserGroups = await db.query.userGroups.findMany({
+      columns: selectParams.columns,
+      with: selectParams.with,
+    })
+    return applySelectParamsToRecords(selectParams, allUserGroups)
+  } else {
+    return await db.select().from(userGroups)
+  }
 }
+
+export async function addUserGroup(values: NewUserGroup) {
+  const [newUserGroup] = await db
+    .insert(userGroups)
+    .values(values)
+    .returning()
+
+  return newUserGroup
+}
+
+export async function updateUserGroup(id: number, values: UpdateUserGroup) {
+  const [updatedUserGroup] = await db
+    .update(userGroups)
+    .set(values)
+    .where(eq(userGroups.id, id))
+    .returning()
+
+  return updatedUserGroup
+}
+
+export async function selectUserGroup(id: number) {
+  const selectedUserGroup = await db.query.userGroups.findFirst(
+    {
+      where: () => eq(userGroups.id, id)
+    }
+  )
+  return selectedUserGroup
+}
+
+export async function deleteUserGroup(id: number) {
+  const [deletedUserGroup] = await db
+    .delete(userGroups)
+    .where(eq(userGroups.id, id))
+    .returning({ id: userGroups.id })
+
+  return deletedUserGroup
+}
+
 
 export async function getUserById(userId: string, withClause?: any, columns?: any) {
   const [user] = await db.query.users.findMany(
@@ -249,21 +296,4 @@ export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
   }
 
   return updatedUser
-}
-
-export const getUserJsonSchema = async (schemaName: string, id?: string) => {
-  if (_.has(schemas, schemaName)) {
-    const currentSchema = schemas[schemaName] as ZodObject<any>
-
-    // generate JSON Schema from Zod object
-    const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
-
-    // refine JSON Schema based on relations
-    await refineJsonSchema(jsonSchema, usersRelationsConfig, id)
-    
-    return jsonSchema
-  }
-  else {
-      return null
-  }
 }

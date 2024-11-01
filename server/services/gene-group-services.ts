@@ -12,17 +12,3 @@ export async function selectGeneGroups(selectParams: SelectParams) {
     })
     return applySelectParamsToRecords(selectParams, allGeneGroups)
 }
-
-export const getGeneGroupJsonSchema = async (schemaName: string) => {
-    if (_.has(schemas, schemaName)) {
-        const currentSchema = schemas[schemaName] as ZodObject<any>
-
-        // generate JSON Schema from Zod object
-        const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
-
-        return jsonSchema
-    }
-    else {
-        return null
-    }
-}

@@ -125,8 +125,8 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
             </div>
         </template>
 
-        <Column selectionMode="multiple" :exportable="false"></Column>
-        <Column v-if="props.canEdit" :exportable="false">
+        <Column class="w-0.5" selectionMode="multiple" :exportable="false"></Column>
+        <Column class="w-0.5" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
             </template>

@@ -56,20 +56,3 @@ export async function deleteSpecimen(id: any) {
 
   return deletedSpecimen
 }
-
-export const getSpecimenJsonSchema = async (schemaName: string) => {
-    if (_.has(schemas, schemaName)) {
-      const currentSchema = schemas[schemaName] as ZodObject<any>
-  
-      // generate JSON Schema from Zod object
-      const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
-
-      // refine JSON Schema based on relations
-      await refineJsonSchema(jsonSchema, specimensRelationsConfig)
-
-      return jsonSchema
-    }
-    else {
-        return null
-    }
-  }

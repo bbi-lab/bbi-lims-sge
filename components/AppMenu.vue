@@ -11,6 +11,7 @@ const model = ref([
         label: 'Admin',
         items: [
             { label: 'Users', icon: 'pi pi-fw pi-home', to: '/admin/users' },
+            { label: 'Groups', icon: 'pi pi-fw pi-home', to: '/admin/user-groups' },
         ]
     },
     {
