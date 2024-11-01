@@ -1,3 +1,27 @@
+# Quickstart
+
+Install pnpm:
+```
+npm install -g pnpm
+```
+
+Install dependencies:
+```
+pnpm i
+```
+
+Create a new local postgresql database,
+Copy `.env.example` to `.env` and update the database URL,
+then run drizzle-kit push:
+```
+pnpm drizzle-kit push
+```
+
+Launch!
+```
+pnpm run dev
+```
+
 # Nuxt 3 Minimal Starter
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
