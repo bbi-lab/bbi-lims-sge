@@ -3,14 +3,18 @@ import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
 
+const config = useRuntimeConfig()
+const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
+const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
+
 onMounted(async() => {
-    tableSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
-    records.value = await RecordService.getRecords(props.apiBaseUrl, props.withClause)
+    tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause)
 })
 
 const toast = useToast()
 const props = defineProps({
-  apiBaseUrl: String,
+  tableName: String,
   schemaName: String,
   title: String,
   withClause: {type: Object},
@@ -51,7 +55,7 @@ function didClickEditRecord(event) {
     emit('clicked-record-edit', event)
 }
 function didClickDeleteSelectedRecords(event) {
-    RecordService.deleteRecords(props.apiBaseUrl, selectedRecords.value).then((result) => {
+    RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimens deleted', life: 3000 })
         const deletedRecordIds = _.map(result, (x) => x.id)
         records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
@@ -67,7 +71,7 @@ function exportCSV() {
 }
 
 const addOrRefreshRecordId = async (recordId) => {
-    const currentRecord = await RecordService.getRecord(props.apiBaseUrl, recordId, props.withClause)
+    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord

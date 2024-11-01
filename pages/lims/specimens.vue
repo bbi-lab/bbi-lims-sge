@@ -2,8 +2,6 @@
 <script setup>
 const config = useRuntimeConfig()
 
-const baseUrl = `${config.public.apiBase}/specimens`
-
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
@@ -48,7 +46,7 @@ function didClickRecordDelete(event) {
         <SplitterPanel :size="50">
             <QuickTable
                 ref="specimensTable"
-                :apiBaseUrl="baseUrl" 
+                tableName="specimens"
                 schemaName="select-specimen-schema"
                 title="Specimens"
                 @clickedRecordEdit="didClickRecordEdit"
@@ -59,15 +57,15 @@ function didClickRecordDelete(event) {
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
-                :apiBaseUrl="baseUrl" 
+                tableName="specimens"
                 schemaName="insert-specimen-schema"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="showEditForm"
-                :apiBaseUrl="baseUrl" 
                 :recordId="editingRecordId"
+                tableName="specimens"
                 schemaName="update-specimen-schema"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"

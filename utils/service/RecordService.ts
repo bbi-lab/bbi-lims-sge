@@ -11,9 +11,9 @@ export const RecordService = {
         return records
     },
 
-    async getSchema(baseUrl: string, schemaName: string, recordId?: string) {
+    async getSchema(schemaBaseUrl: string, schemaName: string, recordId?: string) {
         const query = recordId ? `?id=${recordId}` : ''
-        const schema = await $fetch(`${baseUrl}/schema/${schemaName}${query}`)
+        const schema = await $fetch(`${schemaBaseUrl}/${schemaName}${query}`)
         return schema
     },
 

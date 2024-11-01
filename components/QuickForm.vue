@@ -2,24 +2,28 @@
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
+const config = useRuntimeConfig()
+const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
+const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
+
 onMounted(async () => {
-    console.log(props)
     if (props.recordId) {
-        formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName, props.recordId)
-        record.value = await RecordService.getRecord(props.apiBaseUrl, props.recordId, props.withClause)
+        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
+        record.value = await RecordService.getRecord(apiBaseUrl.value, props.recordId, props.withClause)
     } else {
-        formSchema.value = await RecordService.getSchema(props.apiBaseUrl, props.schemaName)
+        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
     }
 })
 
 const props = defineProps({
   recordId: String,
-  apiBaseUrl: String,
+  tableName: String,
   schemaName: String,
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
 })
+
 const emit = defineEmits([
     'record-update',
     'record-add',
@@ -34,7 +38,7 @@ const displayDeleteConfirmation = ref(false)
 
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
-        RecordService.deleteRecord(props.apiBaseUrl, record.value.id).then((result) => {
+        RecordService.deleteRecord(apiBaseUrl.value, record.value.id).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
         })
@@ -49,14 +53,14 @@ function saveRecord() {
     if (_.has(record.value, 'id')) {
         // updating single record - limit to properties in JSON schema
         const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value?.properties))}
-        RecordService.updateRecord(props.apiBaseUrl, values).then((result) => {
+        RecordService.updateRecord(apiBaseUrl.value, values).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         })
     } else if (!props.recordId) {
         // new record
         const values = _.pick(record.value, Object.keys(formSchema.value?.properties))
-        RecordService.addRecord(props.apiBaseUrl, values).then((result) => {
+        RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
         })
