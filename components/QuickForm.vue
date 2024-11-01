@@ -56,6 +56,9 @@ function saveRecord() {
         RecordService.updateRecord(apiBaseUrl.value, values).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
+        }).catch(error => {
+            // TODO - when possible, show errors next to the field(s) that failed validation
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         })
     } else if (!props.recordId) {
         // new record
@@ -63,6 +66,9 @@ function saveRecord() {
         RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
+        }).catch(error => {
+            // TODO - when possible, show errors next to the field(s) that failed validation
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         })
     }
 }
@@ -131,6 +137,10 @@ function addNewItemToArray(array, itemProperties) {
                         <InputText disabled v-model="record[key][arrayKey]" />
                     </template>
                 </template>
+            </div>
+            <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
+                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                <InputNumber :id="key" v-model="record[key]" showButtons />
             </div>
             <div class="mb-5" v-else>
                 <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>

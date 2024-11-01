@@ -1,5 +1,5 @@
 import { selectRecord } from '~/server/services/generic-services'
-import { schemas, pcrExperiments, type UpdatePcrExperiment } from '~/server/db/schema/sge/pcr-experiment'
+import { pcrExperiments } from '~/server/db/schema/sge/pcr-experiment'
 import _ from 'lodash'
 
 export default defineEventHandler(async (event) => {

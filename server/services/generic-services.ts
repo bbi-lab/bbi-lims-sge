@@ -40,3 +40,12 @@ export async function updateRecord(table: PgTableWithColumns<any>, id: any, valu
 
     return updatedRecord
 }
+
+export async function deleteRecord(table: PgTableWithColumns<any>, id: any) {
+    const [deletedRecord] = await db
+        .delete(table)
+        .where(eq(table.id, id))
+        .returning({ id: table.id })
+
+    return deletedRecord
+}

@@ -11,8 +11,29 @@ export const pcrExperiments: PgTableWithColumns<any> = pgTable('pcr_experiments'
   name: varchar('name', { length: 255 }),
   round: smallint('round'),
   technician: uuid('technician').references(() => users.id),
-  startedOn: timestamp('started_on').defaultNow().notNull(),
+  startedOn: timestamp('started_on').defaultNow(),
 })
+
+export const pcrExperimentsRelationsConfig: RelationsConfig = {
+  one:{
+    technician: {
+      fields: [pcrExperiments.technician],
+      referenceTable: users,
+      references: [users.id],
+    },
+  },
+  many: {
+  }
+}
+
+export const pcrExperimentsRelations = relations(pcrExperiments, ({ one }) => (
+  _.mapValues(pcrExperimentsRelationsConfig.one, (x) => {
+    return one(x.referenceTable, {
+      fields: x.fields,
+      references: x.references,
+    })
+  })
+))
 
 const selectPcrExperimentSchema = createSelectSchema(pcrExperiments)
 
