@@ -12,9 +12,12 @@ export const plates: PgTableWithColumns<any> = pgTable('plates', {
 })
 
 const selectPlateSchema = createSelectSchema(plates)
+const insertPlateSchema = selectPlateSchema.omit({id: true})
 
 export const schemas: Record<string, ZodObject<any>> = {
     selectPlateSchema,
+    insertPlateSchema,
 }
 
 export type Plate = InferSelectModel<typeof plates>
+export type NewPlate = z.infer<typeof insertPlateSchema>
