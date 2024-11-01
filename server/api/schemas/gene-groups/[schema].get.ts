@@ -1,4 +1,4 @@
-import { schemas } from '@/server/db/schema/user'
+import { schemas } from '@/server/db/schema/gene-group'
 import _ from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
