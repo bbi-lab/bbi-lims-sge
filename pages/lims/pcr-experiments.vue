@@ -4,6 +4,16 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const pcrExperimentsTable = ref()
+const router = useRouter()
+
+
+const rowActions = {
+    plates: {
+        action: (data) => {
+            router.push({path:'/lims/plates', query: {'pcrExperimentId': data.id}})
+        }
+    }
+}
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -47,6 +57,7 @@ function didClickRecordDelete(event) {
                 tableName="pcr-experiments"
                 schemaName="select-pcr-experiment-schema"
                 title="PCR Experiments"
+                :rowActions="rowActions"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"

@@ -9,7 +9,7 @@ const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tabl
 
 onMounted(async() => {
     tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
 })
 
 const toast = useToast()
@@ -17,11 +17,14 @@ const props = defineProps({
   tableName: String,
   schemaName: String,
   title: String,
+  columnHeaders: {type: Object}, // if set, only included columns will be shown
   withClause: {type: Object},
+  where: {type: Object},
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},
   canDelete: {type: Boolean, default: true},
-  rowsPerPageOptions: {type: Array}
+  rowsPerPageOptions: {type: Array},
+  rowActions: {type: Object},
 })
 const emit = defineEmits([
     'clicked-record-edit',
@@ -87,6 +90,10 @@ const removeRecordId = (recordId) => {
 function confirmDeleteSelected() {
     displayDeleteConfirmation.value = true
 }
+function formattedHeader(colName) {
+    return _.get(props.columnHeaders, colName) || _.startCase(colName)
+}
+
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
 </script>
@@ -132,19 +139,25 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
             </template>
         </Column> 
         <template v-for="(val, key, index) in tableSchema?.properties">
-            <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem">
-                <template #body="slotProps">
-                    {{ formatDate(slotProps.data[key]) }}
-                </template>
-            </Column>
-            <Column v-else-if="val.oneOf" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem">
-                <template #body="slotProps">
-                    {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
-                </template>
-            </Column>
-            <Column v-else-if="key!='id'" :field="key" :header="_.startCase(key)" sortable style="min-width: 16rem"></Column>
+            <template v-if="_.isEmpty(columnHeaders) || _.has(columnHeaders, key)">
+                <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data[key]) }}
+                    </template>
+                </Column>
+                <Column v-else-if="val.oneOf" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
+                    </template>
+                </Column>
+                <Column v-else-if="key!='id'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem"></Column>
+            </template>
         </template>
-
+        <Column v-if="rowActions" header="Actions">
+            <template #body="{ data }">
+                <Button v-for="(v, k) in rowActions" :label="_.startCase(k)" @click="v.action(data)" />
+            </template>
+        </Column>
     </DataTable>
     <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
         <div class="flex items-center justify-center">

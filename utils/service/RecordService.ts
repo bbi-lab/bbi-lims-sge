@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 export const RecordService = {
     async getRecord(baseUrl: string, id: string, withClause?: Object) {
         const fetchOptions = withClause ? {query: {with: withClause}} : undefined
@@ -5,8 +7,11 @@ export const RecordService = {
         return record
     },
 
-    async getRecords(baseUrl: string, withClause?: Object) {
-        const fetchOptions = withClause ? {query: {with: withClause}} : undefined
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object) {
+        const fetchOptions = withClause ? {query: {with: withClause}} : {}
+        if (where) {
+            _.set(fetchOptions, ['query', 'where'], where)
+        }
         const records = await $fetch(`${baseUrl}`, fetchOptions)
         return records
     },
