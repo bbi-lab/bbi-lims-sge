@@ -59,7 +59,7 @@ function didClickEditRecord(event) {
 }
 function didClickDeleteSelectedRecords(event) {
     RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Specimens deleted', life: 3000 })
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Records deleted', life: 3000 })
         const deletedRecordIds = _.map(result, (x) => x.id)
         records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
         selectedRecords.value = _.reject(selectedRecords.value, (x) => deletedRecordIds.includes(x.id))
