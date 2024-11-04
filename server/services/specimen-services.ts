@@ -2,9 +2,6 @@
 import { specimens, NewSpecimen, UpdateSpecimen} from '~/server/db/schema/specimen'
 import { db } from '~/server/utils/db'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
-import { ZodObject } from 'zod'
-import { schemas, specimensRelationsConfig } from '@/server/db/schema/specimen'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 import { eq } from 'drizzle-orm'
 
