@@ -1,7 +1,5 @@
 
 <script setup>
-const config = useRuntimeConfig()
-
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
