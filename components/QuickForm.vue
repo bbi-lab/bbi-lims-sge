@@ -14,6 +14,9 @@ onMounted(async () => {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
     }
+    if (props.defaultValues) {
+        _.assign(record.value, props.defaultValues)
+    }
 })
 
 const props = defineProps({
@@ -22,6 +25,7 @@ const props = defineProps({
   schemaName: String,
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
+  defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
 })
 
 const emit = defineEmits([
@@ -87,7 +91,7 @@ function addNewItemToArray(array, itemProperties) {
 </script>
 <template>
     <div v-for="(val, key, index) in formSchema?.properties">
-        <template v-if="record && key in record">
+        <template v-if="record && key in record && !_.has(defaultValues, key)">
             <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
                 <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                 <DatePicker 
