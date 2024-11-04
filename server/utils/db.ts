@@ -7,6 +7,7 @@ import * as specimenSchema from '@/server/db/schema/specimen';
 import * as geneGroupSchema from '@/server/db/schema/gene-group'
 import * as pcrExperimentSchema from '@/server/db/schema/sge/pcr-experiment'
 import * as plateSchema from '@/server/db/schema/sge/plate'
+import * as wellSchema from '@/server/db/schema/sge/well'
 
 import {ZodObject} from 'zod'
 
@@ -18,7 +19,8 @@ export const db = drizzle(
       ...specimenSchema,
       ...geneGroupSchema,
       ...pcrExperimentSchema,
-      ...plateSchema
+      ...plateSchema,
+      ...wellSchema,
     }
   }
 )
