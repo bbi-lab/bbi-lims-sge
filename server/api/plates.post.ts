@@ -4,7 +4,7 @@ import { plates, schemas, type NewPlate } from '~/server/db/schema/sge/plate'
 export default defineEventHandler<{ body: NewPlate }>(async (event) => {
     try {
         const body = await readBody(event)
-        const values = schemas.insertPlate.parse(body)
+        const values = schemas.insertPlateSchema.parse(body)
         const newRecord = await insertRecord(plates, values)
         return newRecord
     } catch (e: any) {
