@@ -131,6 +131,8 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 </IconField>
             </div>
         </template>
+        <template #empty> No data </template>
+        <template #loading> Loading </template>
 
         <Column class="w-0.5" selectionMode="multiple" :exportable="false"></Column>
         <Column class="w-0.5" v-if="props.canEdit" :exportable="false">
