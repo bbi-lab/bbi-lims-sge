@@ -1,6 +1,7 @@
 
 <script setup>
 import _ from 'lodash'
+import { RecordService } from '@/utils/service/RecordService'
 
 const route = useRoute()
 const queryParams = route.query
@@ -9,6 +10,16 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const platesTable = ref()
+
+const config = useRuntimeConfig()
+const tableTitle = ref(null)
+
+onMounted(async() => {
+    if (queryParams.pcrExperimentId) {
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/pcr-experiments`, queryParams.pcrExperimentId)
+        tableTitle.value = `${experiment.name}: plates`
+    }
+})
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -52,12 +63,12 @@ const defaultValues = queryParams
 </script>
 <template>
     <Splitter>
-        <SplitterPanel>
+        <SplitterPanel :size="50">
             <QuickTable
                 ref="platesTable"
                 tableName="plates" 
                 schemaName="select-plate-schema"
-                title="Plates"
+                :title="tableTitle || 'Plates'"
                 :columnHeaders="{name: 'Name'}"
                 :where="whereClauses[0]"
                 :canAdd="true"
