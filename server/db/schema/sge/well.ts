@@ -1,5 +1,5 @@
-import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, PgTableWithColumns, AnyPgColumn, uuid, timestamp, smallint, varchar, integer, primaryKey} from 'drizzle-orm/pg-core'
+import { type InferSelectModel } from 'drizzle-orm'
+import { pgTable, PgTableWithColumns, uuid, smallint, primaryKey} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -14,9 +14,12 @@ export const wells: PgTableWithColumns<any> = pgTable('wells', {
 }))
 
 const selectWellSchema = createSelectSchema(wells)
+const insertWellSchema = z.object({})
 
 export const schemas: Record<string, ZodObject<any>> = {
     selectWellSchema,
+    insertWellSchema
 }
 
 export type Well = InferSelectModel<typeof wells>
+export type NewWell = z.infer<typeof insertWellSchema>

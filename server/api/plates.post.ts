@@ -1,12 +1,11 @@
-import { insertRecord } from '~/server/services/generic-services'
-import { plates, schemas, type NewPlate } from '~/server/db/schema/sge/plate'
+import { insertPlate } from '~/server/services/plate-services'
+import { schemas, type NewPlate } from '~/server/db/schema/sge/plate'
 
 export default defineEventHandler<{ body: NewPlate }>(async (event) => {
     try {
         const body = await readBody(event)
         const values = schemas.insertPlateSchema.parse(body)
-        console.log(values)
-        const newRecord = await insertRecord(plates, values)
+        const newRecord = await insertPlate(values)
         return newRecord
     } catch (e: any) {
         throw createError({
