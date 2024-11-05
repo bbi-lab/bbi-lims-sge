@@ -6,6 +6,15 @@ import { RecordService } from '@/utils/service/RecordService'
 const route = useRoute()
 const queryParams = route.query
 
+const router = useRouter()
+const rowActions = {
+    layout: {
+        action: (data) => {
+            router.push({path:`/lims/plate-diagram/${data.id}`})
+        }
+    }
+}
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
@@ -74,6 +83,7 @@ const defaultValues = queryParams
                 :canAdd="true"
                 :canEdit="true"
                 :canDelete="true"
+                :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
