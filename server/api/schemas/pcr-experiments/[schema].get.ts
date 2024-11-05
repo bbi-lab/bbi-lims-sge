@@ -1,4 +1,5 @@
-import { pcrExperimentsRelationsConfig, schemas } from '~/server/db/schema/sge/pcr-experiment'
+import {  schemas } from '~/server/db/schema/sge/pcr-experiment'
+import { pcrExperimentsRelationsConfig } from '~/server/db/schema/sge/relations'
 import _ from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
@@ -9,7 +10,7 @@ export default defineEventHandler(async (event) => {
         
         // generate JSON Schema from Zod object
         const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
-        
+    
         // refine JSON Schema based on relations
         await refineJsonSchema(jsonSchema, pcrExperimentsRelationsConfig)
 

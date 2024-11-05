@@ -5,6 +5,8 @@ import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { users } from '../user'
 import { dateSchema } from '../../helpers/schemas'
+//import { plates } from '@/server/db/schema/sge/plate'
+//import { pcrExperimentsRelations } from './relations'
 
 export const pcrExperiments: PgTableWithColumns<any> = pgTable('pcr_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -13,27 +15,6 @@ export const pcrExperiments: PgTableWithColumns<any> = pgTable('pcr_experiments'
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
 })
-
-export const pcrExperimentsRelationsConfig: RelationsConfig = {
-  one:{
-    technician: {
-      fields: [pcrExperiments.technician],
-      referenceTable: users,
-      references: [users.id],
-    },
-  },
-  many: {
-  }
-}
-
-export const pcrExperimentsRelations = relations(pcrExperiments, ({ one }) => (
-  _.mapValues(pcrExperimentsRelationsConfig.one, (x) => {
-    return one(x.referenceTable, {
-      fields: x.fields,
-      references: x.references,
-    })
-  })
-))
 
 const selectPcrExperimentSchema = createSelectSchema(pcrExperiments)
 

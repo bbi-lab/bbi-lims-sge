@@ -5,9 +5,10 @@ import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
 import * as userSchema from '@/server/db/schema/user';
 import * as specimenSchema from '@/server/db/schema/specimen';
 import * as geneGroupSchema from '@/server/db/schema/gene-group'
-import * as pcrExperimentSchema from '@/server/db/schema/sge/pcr-experiment'
-import * as plateSchema from '@/server/db/schema/sge/plate'
-import * as wellSchema from '@/server/db/schema/sge/well'
+import {pcrExperiments} from '@/server/db/schema/sge/pcr-experiment'
+import {plates} from '@/server/db/schema/sge/plate'
+import {wells} from '@/server/db/schema/sge/well'
+import {pcrExperimentsRelations, platesRelations, wellsRelations} from '@/server/db/schema/sge/relations'
 
 import {ZodObject} from 'zod'
 
@@ -18,9 +19,12 @@ export const db = drizzle(
       ...userSchema,
       ...specimenSchema,
       ...geneGroupSchema,
-      ...pcrExperimentSchema,
-      ...plateSchema,
-      ...wellSchema,
+      pcrExperiments,
+      plates,
+      wells,
+      platesRelations,
+      pcrExperimentsRelations,
+      wellsRelations,
     }
   }
 )
@@ -30,7 +34,8 @@ export interface RelationsConfig {
       [relationName: string]: {
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
         referenceTable: PgTableWithColumns<any>,
-        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]]
+        references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
+        relationName?: string,
       }
     },
     many: {
@@ -38,7 +43,8 @@ export interface RelationsConfig {
         table: PgTableWithColumns<any>,
         schema: ZodObject<any>,
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
-        relationsConfig: RelationsConfig,
+        relationsConfig?: RelationsConfig,
+        relationName?: string,
       }
     }
   }

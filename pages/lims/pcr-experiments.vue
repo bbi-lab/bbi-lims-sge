@@ -9,6 +9,7 @@ const router = useRouter()
 
 const rowActions = {
     plates: {
+        label: (data) => { return `${data.plates?.length || 0} Plates`},  // for this to work, we need to expand plates
         action: (data) => {
             router.push({path:'/lims/plates', query: {'pcrExperimentId': data.id}})
         }
@@ -58,6 +59,7 @@ function didClickRecordDelete(event) {
                 schemaName="select-pcr-experiment-schema"
                 title="PCR Experiments"
                 :rowActions="rowActions"
+                :withClause="{plates: true}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"

@@ -157,7 +157,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
         <Column v-if="rowActions" header="Actions">
             <template #body="{ data }">
-                <Button v-for="(v, k) in rowActions" :label="_.startCase(k)" @click="v.action(data)" />
+                <Button v-for="(v, k) in rowActions" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
         </Column>
     </DataTable>
