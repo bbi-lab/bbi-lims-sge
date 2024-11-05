@@ -32,6 +32,34 @@ export const userGroupMemberships = pgTable('user_group_memberships', {
 
 // relations config
 // defines M:M between users and groups
+export const userGroupMembershipsRelationsConfig: RelationsConfig = {
+  one:{
+    userGroup: {
+      referenceTable: userGroups,
+      fields: [userGroupMemberships.userGroupId],
+      references: [userGroups.id],
+    },
+    user: {
+      referenceTable: users,
+      fields: [userGroupMemberships.userId],
+      references: [users.id],
+    }
+  },
+  many:{}
+}
+
+export const userGroupsRelationsConfig: RelationsConfig = {
+  one:{},
+  many:{
+    userGroupMemberships: {
+      table: userGroupMemberships,
+      schema: createSelectSchema(userGroupMemberships),
+      fields: [userGroupMemberships.userId],
+      relationsConfig: userGroupMembershipsRelationsConfig
+    }
+  }
+}
+
 export const usersRelationsConfig: RelationsConfig = {
   one:{},
   many: {
@@ -39,44 +67,15 @@ export const usersRelationsConfig: RelationsConfig = {
       table: userGroupMemberships,
       schema: createSelectSchema(userGroupMemberships),
       fields: [userGroupMemberships.userId],
-      relationsConfig: {
-        one:{
-          userGroup: {
-            referenceTable: userGroups,
-            fields: [userGroupMemberships.userGroupId],
-            references: [userGroups.id],
-          },
-          user: {
-            referenceTable: users,
-            fields: [userGroupMemberships.userId],
-            references: [users.id],
-          }
-        },
-        many:{}
-      }
+      relationsConfig: userGroupMembershipsRelationsConfig
     }
   }
 }
 
 // relations
-export const usersRelations = relations(users, ({ many }) => (
-  _.mapValues(usersRelationsConfig.many, (x) => {
-    return many(x.table)
-  })
-))
-
-export const userGroupsRelations = relations(userGroups, ({ many }) => ({
-  userGroupMemberships: many(userGroupMemberships),
-}))
-
-export const userGroupMembershipsRelations = Object.freeze(relations(userGroupMemberships, ({ one }) => (
-  _.mapValues(usersRelationsConfig.many.userGroupMemberships.relationsConfig.one, (x) => {
-    return one(x.referenceTable, {
-      fields: x.fields,
-      references: x.references,
-    })
-  })
-)))
+export const usersRelations = relationsConfigToRelations(users, usersRelationsConfig)
+export const userGroupsRelations = relationsConfigToRelations(userGroups, userGroupsRelationsConfig)
+export const userGroupMembershipsRelations = relationsConfigToRelations(userGroupMemberships, userGroupMembershipsRelationsConfig)
 
 // schemas
 const selectUserSchema = createSelectSchema(users, {

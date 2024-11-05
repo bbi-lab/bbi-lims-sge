@@ -155,9 +155,9 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 <Column v-else-if="key!='id'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem"></Column>
             </template>
         </template>
-        <Column v-if="rowActions" header="Actions">
+        <Column v-if="rowActions">
             <template #body="{ data }">
-                <Button v-for="(v, k) in rowActions" :label="_.startCase(k)" @click="v.action(data)" />
+                <Button v-for="(v, k) in rowActions" severity="info" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
         </Column>
     </DataTable>

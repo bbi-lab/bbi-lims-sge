@@ -13,6 +13,7 @@ export const plates: PgTableWithColumns<any> = pgTable('plates', {
   sizeY: smallint('size_y').notNull().default(8),
 })
 
+
 const selectPlateSchema = createSelectSchema(plates)
 const insertPlateSchema = selectPlateSchema.omit({id: true, sizeX: true, sizeY: true})
 const updatePlateSchema = selectPlateSchema.omit({id: true})

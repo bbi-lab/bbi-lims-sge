@@ -5,11 +5,13 @@ import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { PgTableWithColumns } from 'drizzle-orm/pg-core'
 import { eq } from 'drizzle-orm'
+import '../db/schema/sge/relations'
 
 export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams) {
     const result = await queryBuilder.findMany({
-        columns: selectParams.columns
-    }) 
+        columns: selectParams.columns,
+        with: selectParams.with
+    })
     return applySelectParamsToRecords(selectParams, result)
 }
 

@@ -45,7 +45,7 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
         _.set(itemsJsonSchema, ['properties', foreignKeyPropertyName, 'default'], defaultId)
       }
 
-      if (val.relationsConfig.one) { 
+      if (!_.isEmpty(val.relationsConfig?.one)) { 
         // get first nested "one" relation that doesn't point back to the primary table
         const itemsRelationName = _.findKey(val.relationsConfig.one, (x) => x.fields != val.fields)
 

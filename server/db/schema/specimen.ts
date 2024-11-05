@@ -38,18 +38,10 @@ export const specimensRelationsConfig: RelationsConfig = {
       references: [users.id],
     },
   },
-  many: {
-  }
+  many: {}
 }
 
-export const specimensRelations = relations(specimens, ({ one }) => (
-  _.mapValues(specimensRelationsConfig.one, (x) => {
-    return one(x.referenceTable, {
-      fields: x.fields,
-      references: x.references,
-    })
-  })
-))
+export const specimensRelations = relationsConfigToRelations(specimens, specimensRelationsConfig)
 
 const selectSpecimenSchema = createSelectSchema(specimens)
 
