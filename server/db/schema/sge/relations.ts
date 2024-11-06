@@ -4,7 +4,7 @@ import { pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { wells } from './well'
 import { users } from '../user'
-import { relationsConfigToRelations } from '~/server/utils/db'
+import { relationsConfigToRelations } from '../relations'
 
 export const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{

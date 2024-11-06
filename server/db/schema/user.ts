@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from 'drizzle-orm'
+import { type InferSelectModel } from 'drizzle-orm'
 import { boolean, pgTable, primaryKey, integer, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import { z, ZodObject } from 'zod'
@@ -29,53 +29,6 @@ export const userGroupMemberships = pgTable('user_group_memberships', {
 }, (t) => ({
   pk: primaryKey({ columns: [t.userId, t.userGroupId] }),
 }))
-
-// relations config
-// defines M:M between users and groups
-export const userGroupMembershipsRelationsConfig: RelationsConfig = {
-  one:{
-    userGroup: {
-      referenceTable: userGroups,
-      fields: [userGroupMemberships.userGroupId],
-      references: [userGroups.id],
-    },
-    user: {
-      referenceTable: users,
-      fields: [userGroupMemberships.userId],
-      references: [users.id],
-    }
-  },
-  many:{}
-}
-
-export const userGroupsRelationsConfig: RelationsConfig = {
-  one:{},
-  many:{
-    userGroupMemberships: {
-      table: userGroupMemberships,
-      schema: createSelectSchema(userGroupMemberships),
-      fields: [userGroupMemberships.userId],
-      relationsConfig: userGroupMembershipsRelationsConfig
-    }
-  }
-}
-
-export const usersRelationsConfig: RelationsConfig = {
-  one:{},
-  many: {
-    userGroupMemberships: {
-      table: userGroupMemberships,
-      schema: createSelectSchema(userGroupMemberships),
-      fields: [userGroupMemberships.userId],
-      relationsConfig: userGroupMembershipsRelationsConfig
-    }
-  }
-}
-
-// relations
-export const usersRelations = relationsConfigToRelations(users, usersRelationsConfig)
-export const userGroupsRelations = relationsConfigToRelations(userGroups, userGroupsRelationsConfig)
-export const userGroupMembershipsRelations = relationsConfigToRelations(userGroupMemberships, userGroupMembershipsRelationsConfig)
 
 // schemas
 const selectUserSchema = createSelectSchema(users, {

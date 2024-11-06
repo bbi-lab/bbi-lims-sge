@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from 'drizzle-orm'
+import { type InferSelectModel } from 'drizzle-orm'
 import { pgTable, PgTableWithColumns, uuid, smallint, primaryKey} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'

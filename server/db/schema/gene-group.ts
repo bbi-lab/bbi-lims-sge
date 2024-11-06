@@ -1,9 +1,8 @@
-import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, PgTableWithColumns, AnyPgColumn, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { type InferSelectModel } from 'drizzle-orm'
+import { pgTable, PgTableWithColumns, text, varchar } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { z, ZodObject } from 'zod'
-import { RelationsConfig } from '../../utils/db'
+import { ZodObject } from 'zod'
 
 export const geneGroups: PgTableWithColumns<any> = pgTable('gene_groups', {
   id: varchar('id').notNull().primaryKey(),
