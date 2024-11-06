@@ -9,8 +9,9 @@ import {geneGroups} from '../db/schema/gene-group'
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
 import {plates} from '../db/schema/sge/plate'
 import {wells} from '../db/schema/sge/well'
-import {pcrExperimentsRelations, platesRelations, wellsRelations} from '../db/schema/sge/relations'
-import { relations } from 'drizzle-orm'
+import {projects} from '../db/schema/sge/project'
+import {targets} from '../db/schema/sge/target'
+import {pcrExperimentsRelations, platesRelations, wellsRelations, projectsRelations, targetsRelations} from '../db/schema/sge/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 
@@ -30,9 +31,13 @@ export const db = drizzle(
       pcrExperiments,
       plates,
       wells,
+      projects,
+      targets,
       platesRelations,
       pcrExperimentsRelations,
       wellsRelations,
+      projectsRelations,
+      targetsRelations,
     }
   }
 )
@@ -57,25 +62,6 @@ export interface RelationsConfig {
     }
   }
 
-// export function relationsConfigToRelations(table: PgTableWithColumns<any>, relationsConfig: RelationsConfig) {
-//   return relations(table, ({ one, many }) => (
-//     {
-//         ..._.mapValues(relationsConfig.one, (x) => {
-//             return one(x.referenceTable, {
-//               fields: x.fields,
-//               references: x.references,
-//             })
-//         }),
-//         ..._.mapValues(relationsConfig.many, (x) => {
-//             if (x.relationName) {
-//                 return many(x.table, {relationName: x.relationName})
-//             } else {
-//                 return many(x.table)
-//             }
-//         })
-//     }
-// ))
-// }
 export async function getRecordsFromTable (table: PgTableWithColumns<any>){
   const records = await db.select().from(table)
   return records

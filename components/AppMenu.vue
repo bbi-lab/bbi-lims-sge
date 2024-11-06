@@ -3,8 +3,8 @@ const model = ref([
     {
         label: 'Home',
         items: [
-            { label: 'Specimens', icon: 'pi pi-fw pi-home', to: '/sge/specimens' },
-            { label: 'Gene groups', icon: 'pi pi-fw pi-home', to: '/sge/gene-groups' },
+            { label: 'Projects', icon: 'pi pi-fw pi-home', to: '/sge/projects' },
+            { label: 'Targets', icon: 'pi pi-fw pi-home', to: '/sge/targets' },
             { label: 'PCR experiments', icon: 'pi pi-fw pi-home', to: '/sge/pcr-experiments' }
         ]
     },
