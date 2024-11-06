@@ -12,6 +12,7 @@ import {wells} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {pcrExperimentsRelations, platesRelations, wellsRelations, projectsRelations, targetsRelations} from '../db/schema/sge/relations'
+import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 
@@ -33,6 +34,10 @@ export const db = drizzle(
       wells,
       projects,
       targets,
+
+      usersRelations,
+      userGroupsRelations,
+      userGroupMembershipsRelations,
       platesRelations,
       pcrExperimentsRelations,
       wellsRelations,
