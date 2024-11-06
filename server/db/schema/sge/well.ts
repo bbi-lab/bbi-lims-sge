@@ -6,7 +6,7 @@ import { z, ZodObject } from 'zod'
 import { plates } from './plate'
 
 export const wells: PgTableWithColumns<any> = pgTable('wells', {
-  plateId: uuid('plate_id').references(() => plates.id),
+  plateId: uuid('plate_id').references(() => plates.id).notNull(),
   x: smallint().notNull(),
   y: smallint().notNull(),
 }, (t) => ({
