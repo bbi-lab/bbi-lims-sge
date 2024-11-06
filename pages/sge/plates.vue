@@ -10,7 +10,7 @@ const router = useRouter()
 const rowActions = {
     layout: {
         action: (data) => {
-            router.push({path:`/lims/plate-diagram/${data.id}`})
+            router.push({path:`/sge/plate-diagram/${data.id}`})
         }
     }
 }

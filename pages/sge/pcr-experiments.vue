@@ -11,7 +11,7 @@ const rowActions = {
     plates: {
         label: (data) => { return `${data.plates?.length || 0} Plates`},  // for this to work, we need to expand plates
         action: (data) => {
-            router.push({path:'/lims/plates', query: {'pcrExperimentId': data.id}})
+            router.push({path:'/sge/plates', query: {'pcrExperimentId': data.id}})
         }
     }
 }

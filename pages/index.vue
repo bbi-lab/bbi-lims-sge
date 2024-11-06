@@ -1,5 +1,5 @@
 <script setup>
-    navigateTo('/lims/specimens')
+    navigateTo('/sge/specimens')
 </script>
 <template>
     nothing to see here...
