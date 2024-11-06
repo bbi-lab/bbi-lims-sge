@@ -1,6 +1,7 @@
 
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
+import _ from 'lodash'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -63,6 +64,12 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+
+// convert query params in to JSON Logic to pass as where clause
+// TODO - pass more than just the first to QuickTable
+const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+const defaultValues = queryParams
+
 </script>
 <template>
     <Splitter>
@@ -73,6 +80,7 @@ function didClickRecordDelete(event) {
                 schemaName="select-target-schema"
                 :title="tableTitle"
                 :rowActions="rowActions"
+                :where="whereClauses[0]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
@@ -83,6 +91,7 @@ function didClickRecordDelete(event) {
                 v-if="showAddForm"
                 tableName="targets"
                 schemaName="insert-target-schema"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -91,6 +100,7 @@ function didClickRecordDelete(event) {
                 :recordId="editingRecordId"
                 tableName="targets"
                 schemaName="update-target-schema"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
