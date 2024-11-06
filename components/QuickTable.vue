@@ -18,6 +18,7 @@ const props = defineProps({
   schemaName: String,
   title: String,
   columnHeaders: {type: Object}, // if set, only included columns will be shown
+  columnFormat: {type: Object},
   withClause: {type: Object},
   where: {type: Object},
   canAdd: {type: Boolean, default: true},
@@ -94,6 +95,11 @@ function formattedHeader(colName) {
     return _.get(props.columnHeaders, colName) || _.startCase(colName)
 }
 
+function formattedValue(colName, value) {
+    const formatter = _.get(props, ['columnFormat', colName])
+    return formatter ? formatter(value) : value
+}
+
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
 </script>
@@ -152,7 +158,11 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                         {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
                     </template>
                 </Column>
-                <Column v-else-if="key!='id'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem"></Column>
+                <Column v-else-if="key!='id'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ formattedValue(key, slotProps.data[key]) }}
+                    </template>
+                </Column>
             </template>
         </template>
         <Column v-if="rowActions">

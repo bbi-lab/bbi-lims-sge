@@ -1,4 +1,7 @@
 <script setup>
+import _ from 'lodash';
+import { userGroupMemberships } from '~/server/db/schema/user';
+
 const config = useRuntimeConfig()
 
 const showAddForm = ref(false)
@@ -42,6 +45,10 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+
+const columnFormat = {
+    userGroupMemberships: (val) => { return _.map(val, (x) => x.userGroup?.name).join(', ') }
+}
 </script>
 <template>
     <Splitter>
@@ -53,6 +60,7 @@ function didClickRecordDelete(event) {
                 title="Users"
                 :canAdd="false"
                 :withClause="displayWithClause"
+                :columnFormat="columnFormat"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
