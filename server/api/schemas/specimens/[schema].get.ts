@@ -1,4 +1,6 @@
-import { schemas, specimensRelationsConfig } from '@/server/db/schema/specimen'
+import { schemas } from '@/server/db/schema/specimen'
+import { specimensRelationsConfig } from '@/server/db/schema/relations'
+
 import _ from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 

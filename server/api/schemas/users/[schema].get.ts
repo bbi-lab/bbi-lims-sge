@@ -1,4 +1,5 @@
-import { schemas, usersRelationsConfig } from '@/server/db/schema/user'
+import { schemas } from '@/server/db/schema/user'
+import { usersRelationsConfig } from '@/server/db/schema/relations'
 import _ from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
