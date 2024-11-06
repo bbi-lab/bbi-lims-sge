@@ -34,15 +34,15 @@ function didClickCancelEditForm() {
 }
 
 function didAddRecord(event) {
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
+    projectsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
+    projectsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
-    pcrExperimentsTable.value.removeRecordId(event.id)
+    projectsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 function didClickRecordDelete(event) {
