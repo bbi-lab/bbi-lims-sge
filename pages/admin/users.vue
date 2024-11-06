@@ -46,8 +46,16 @@ function didClickRecordDelete(event) {
     console.log(event)
 }
 
-const columnFormat = {
-    userGroupMemberships: (val) => { return _.map(val, (x) => x.userGroup?.name).join(', ') }
+const columnDefs = {
+    name: {header: 'Name'},
+    email: {header: 'Email'},
+    isAdmin: {header: 'Admin'},
+    isVerified: {header: 'Verified'},
+    userGroupMemberships: {
+        header: 'Groups',
+        format: (val) => { return _.map(val, (x) => x.userGroup?.name).join(', ')}
+    },
+
 }
 </script>
 <template>
@@ -60,7 +68,7 @@ const columnFormat = {
                 title="Users"
                 :canAdd="false"
                 :withClause="displayWithClause"
-                :columnFormat="columnFormat"
+                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"

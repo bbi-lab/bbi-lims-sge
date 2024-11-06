@@ -13,6 +13,16 @@ const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
 
+const displayWithClause = Object.freeze({project:{columns: {name: true}}})
+const columnDefs = {
+    name: {
+        header: 'Name'
+    },
+    project: {
+        header: 'Project',
+        format: (x) => _.get(x, 'name')
+    }
+}
 const rowActions = {
     regions: {
         label: (data) => { return `${data.regions?.length || 0} regions`},  // for this to work, we need to expand regions
@@ -81,6 +91,8 @@ const defaultValues = queryParams
                 :title="tableTitle"
                 :rowActions="rowActions"
                 :where="whereClauses[0]"
+                :columnDefs="columnDefs"
+                :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"

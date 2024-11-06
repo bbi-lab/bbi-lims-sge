@@ -10,6 +10,16 @@ const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tabl
 onMounted(async() => {
     tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
+
+    // if columnDefs prop is not set, calculate from JSON Schema properties
+    columnDefinitions.value = props.columnDefs || _.mapValues(
+        tableSchema.value?.properties, (k,v) => {
+            return {
+                header: _.startCase(v),
+                format: k.format || 'string'
+            }
+        }
+    )
 })
 
 const toast = useToast()
@@ -17,8 +27,7 @@ const props = defineProps({
   tableName: String,
   schemaName: String,
   title: String,
-  columnHeaders: {type: Object}, // if set, only included columns will be shown
-  columnFormat: {type: Object},
+  columnDefs: {type: Object}, // if set, only included columns will be shown
   withClause: {type: Object},
   where: {type: Object},
   canAdd: {type: Boolean, default: true},
@@ -39,6 +48,7 @@ const rowsPerPage = computed(() => props.rowsPerPageOptions?.[0] || null)
 const records = ref([])
 const selectedRecords = ref([])
 const tableSchema = ref()
+const columnDefinitions = ref({})
 const dt = ref()
 const displayDeleteConfirmation = ref(false)
 
@@ -49,11 +59,6 @@ const filters = ref({
 function formatDate(value) {
     const date = value ? new Date(value) : null
     return date ? date.toISOString().split('T')[0] : ''
-}
-function getDisplayValue(val, oneOf) {
-    if (!val) return ''
-    const displayValue = _.find(oneOf, {const: val})
-    return displayValue.title
 }
 function didClickEditRecord(event) {
     emit('clicked-record-edit', event)
@@ -90,14 +95,6 @@ const removeRecordId = (recordId) => {
 
 function confirmDeleteSelected() {
     displayDeleteConfirmation.value = true
-}
-function formattedHeader(colName) {
-    return _.get(props.columnHeaders, colName) || _.startCase(colName)
-}
-
-function formattedValue(colName, value) {
-    const formatter = _.get(props, ['columnFormat', colName])
-    return formatter ? formatter(value) : value
 }
 
 defineExpose({ addOrRefreshRecordId, removeRecordId })
@@ -146,24 +143,22 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
             </template>
         </Column> 
-        <template v-for="(val, key, index) in tableSchema?.properties">
-            <template v-if="_.isEmpty(columnHeaders) || _.has(columnHeaders, key)">
-                <Column v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data[key]) }}
-                    </template>
-                </Column>
-                <Column v-else-if="val.oneOf" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
-                    <template #body="slotProps">
-                        {{ getDisplayValue(slotProps.data[key], val.oneOf) }}
-                    </template>
-                </Column>
-                <Column v-else-if="key!='id'" :field="key" :header="formattedHeader(key)" sortable style="min-width: 16rem">
-                    <template #body="slotProps">
-                        {{ formattedValue(key, slotProps.data[key]) }}
-                    </template>
-                </Column>
-            </template>
+        <template v-for="(v,k) in columnDefinitions">
+            <Column v-if="v.format=='date-time'" :field="k" :header="v.header" sortable style="min-width: 16rem">
+                <template #body="slotProps">
+                    {{ formatDate(slotProps.data[k]) }}
+                </template>
+            </Column>
+            <Column v-else-if="_.isFunction(v.format)" :field="k" :header="v.header" sortable style="min-width: 16rem">
+                <template #body="slotProps">
+                    {{ v.format(slotProps.data[k]) }}
+                </template>
+            </Column>
+            <Column v-else-if="k!='id'" :field="k" :header="v.header" sortable style="min-width: 16rem">
+                <template #body="slotProps">
+                    {{ slotProps.data[k] }}
+                </template>
+            </Column>
         </template>
         <Column v-if="rowActions">
             <template #body="{ data }">

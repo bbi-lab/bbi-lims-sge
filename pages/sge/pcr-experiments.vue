@@ -49,6 +49,19 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+
+const columnDefs = {
+    name: {
+        header: 'Name'
+    },
+    round: {
+        header: 'Round'
+    },
+    startedOn: {
+        header: 'Started On',
+        format: 'date-time'
+    },
+}
 </script>
 <template>
     <Splitter>
@@ -60,7 +73,7 @@ function didClickRecordDelete(event) {
                 title="PCR Experiments"
                 :rowActions="rowActions"
                 :withClause="{plates: true}"
-                :columnHeaders="{'name': 'Name', 'round':'Round', 'startedOn': 'Started on'}"
+                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
