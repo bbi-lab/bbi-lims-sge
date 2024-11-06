@@ -1,5 +1,5 @@
 <script setup>
-    navigateTo('/sge/specimens')
+    navigateTo('/sge/projects')
 </script>
 <template>
     nothing to see here...
