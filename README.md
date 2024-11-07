@@ -1,4 +1,8 @@
-# Quickstart
+# BBI LIMS Nuxt+Drizzle 
+
+Laborartory Inventory Management System built using Nuxt framework and Drizzle ORM.
+
+## Quickstart
 
 Install pnpm:
 ```
@@ -22,78 +26,21 @@ Launch!
 pnpm run dev
 ```
 
-# Nuxt 3 Minimal Starter
+## Docker
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+If the database doesn't exist yet, create a new one using the steps above.
 
-## Setup
-
-Make sure to install the dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+Build the docker image:
+```
+docker build --tag sge-lims .
 ```
 
-## Development Server
+Copy `.env.example` to `.env.docker` and change the database URL's host from `localhost` to `host.docker.internal`.
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+Start a docker container:
+```
+docker run -p 3000:3000 --env-file .env.docker sge-lims
 ```
 
-## Production
 
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Check out the Nuxt [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
