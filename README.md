@@ -34,6 +34,10 @@ Build the docker image:
 ```
 docker build --tag sge-lims .
 ```
+Or for a specific architecture (e.g. linux/arm64, linux/amd64):
+```
+docker build --platform linux/arm64 --tag sge-lims .
+```
 
 Copy `.env.example` to `.env.docker` and change the database URL's host from `localhost` to `host.docker.internal`.
 
