@@ -90,82 +90,86 @@ function addNewItemToArray(array, itemProperties) {
 }
 </script>
 <template>
-    <div v-for="(val, key, index) in formSchema?.properties">
-        <template v-if="record && key in record && !_.has(defaultValues, key)">
-            <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <DatePicker 
-                    class="w-80"
-                    :id="key"
-                    v-model.trim="record[key]" 
-                    showTime 
-                    showIcon
-                    dateFormat="yy-mm-dd"
-                    hourFormat="24"
-                    autofocus
-                />
-                <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
-            </div>
-            <div class="mb-5" v-else-if="val.enum">
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <Select :id="key" v-model="record[key]" :options="val.enum" />
-            </div>
-            <div class="mb-5" v-else-if="val.oneOf">
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
-            </div>
-            <div class="mb-5" v-else-if="val.type=='boolean'">
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <Checkbox :id="key" v-model="record[key]" :binary="true" />
-            </div>
-            <div class="mb-5" v-else-if="val.type=='array'">
-                <label class="font-bold mb-3 mr-5">{{ _.startCase(key) }}</label>
-                <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
-                <!-- Iterate over array items -->
-                <template v-for="(arrayItem, arrayIndex) in record[key]">
-                    <!-- Check that all array item properties are covered by JSON schema -->
-                    <div class="mb-5" v-if="arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
-                        <template v-for="itemKey in Object.keys(arrayItem)" >
-                            <span class="mr-5" v-if="val.items.properties[itemKey].oneOf">
-                                <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="val.items.properties[itemKey].oneOf" optionLabel="title" optionValue="const" />
-                            </span>
-                            <!-- don't display UUID fields, values should not change -->
-                            <span class="mr-5" v-else-if="val.items.properties[itemKey].format!='uuid'">
-                                <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" />
-                            </span>
-                        </template>
-                        <Button icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
-                    </div>
-                    <!-- Array properties not covered by JSON schema -->
-                    <template v-else-if="record[key][arrayKey]">
-                        <InputText disabled v-model="record[key][arrayKey]" />
-                    </template>
+    <!-- repeat the form buttons at the top and bottom if there are 5 or more properties -->
+    <template v-for="n in 2">
+        <div v-if="n==2 || (n<=1 && _.keys(formSchema?.properties).length > 5)">
+            <Button class="m-1" label="Cancel" icon="pi pi-times" text @click="emit('cancel')" />
+            <Button class="m-1" label="Save" icon="pi pi-check" @click="saveRecord" />
+            <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
+            <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
+                <div class="flex items-center justify-center">
+                    <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
+                    <span>Are you sure you want to proceed?</span>
+                </div>
+                <template #footer>
+                    <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
+                    <Button label="Yes" icon="pi pi-check" @click="deleteRecord" severity="danger" outlined autofocus />
                 </template>
-            </div>
-            <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <InputNumber :id="key" v-model="record[key]" showButtons />
-            </div>
-            <div class="mb-5" v-else>
-                <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
-                <InputText :id="key" v-model="record[key]" />
-            </div>
-        </template>
-    </div>
-    <div>
-        <Button class="m-1" label="Cancel" icon="pi pi-times" text @click="emit('cancel')" />
-        <Button class="m-1" label="Save" icon="pi pi-check" @click="saveRecord" />
-        <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
-        <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
-            <div class="flex items-center justify-center">
-                <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
-                <span>Are you sure you want to proceed?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteRecord" severity="danger" outlined autofocus />
+            </Dialog>
+        </div>
+        <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
+            <template v-if="record && key in record && !_.has(defaultValues, key)">
+                <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <DatePicker 
+                        class="w-80"
+                        :id="key"
+                        v-model.trim="record[key]" 
+                        showTime 
+                        showIcon
+                        dateFormat="yy-mm-dd"
+                        hourFormat="24"
+                        autofocus
+                    />
+                    <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
+                </div>
+                <div class="mb-5" v-else-if="val.enum">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <Select :id="key" v-model="record[key]" :options="val.enum" />
+                </div>
+                <div class="mb-5" v-else-if="val.oneOf">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
+                </div>
+                <div class="mb-5" v-else-if="val.type=='boolean'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <Checkbox :id="key" v-model="record[key]" :binary="true" />
+                </div>
+                <div class="mb-5" v-else-if="val.type=='array'">
+                    <label class="font-bold mb-3 mr-5">{{ _.startCase(key) }}</label>
+                    <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
+                    <!-- Iterate over array items -->
+                    <template v-for="(arrayItem, arrayIndex) in record[key]">
+                        <!-- Check that all array item properties are covered by JSON schema -->
+                        <div class="mb-5" v-if="arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                            <template v-for="itemKey in Object.keys(arrayItem)" >
+                                <span class="mr-5" v-if="val.items.properties[itemKey].oneOf">
+                                    <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="val.items.properties[itemKey].oneOf" optionLabel="title" optionValue="const" />
+                                </span>
+                                <!-- don't display UUID fields, values should not change -->
+                                <span class="mr-5" v-else-if="val.items.properties[itemKey].format!='uuid'">
+                                    <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" />
+                                </span>
+                            </template>
+                            <Button icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                        </div>
+                        <!-- Array properties not covered by JSON schema -->
+                        <template v-else-if="record[key][arrayKey]">
+                            <InputText disabled v-model="record[key][arrayKey]" />
+                        </template>
+                    </template>
+                </div>
+                <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <InputNumber :id="key" v-model="record[key]" showButtons />
+                </div>
+                <div class="mb-5" v-else>
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <InputText :id="key" v-model="record[key]" />
+                </div>
             </template>
-        </Dialog>
-    </div>
+        </div>
+        
+    </template>
     
 </template>
