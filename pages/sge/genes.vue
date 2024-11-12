@@ -48,6 +48,7 @@ function didClickRecordDelete(event) {
                 title="Genes"
                 :canAdd="false"
                 :canDelete="false"
+                selectionMode="single"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

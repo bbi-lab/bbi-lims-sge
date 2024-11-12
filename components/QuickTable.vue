@@ -34,6 +34,7 @@ const props = defineProps({
   canEdit: {type: Boolean, default: true},
   canDelete: {type: Boolean, default: true},
   rowsPerPageOptions: {type: Array},
+  selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
 })
 const emit = defineEmits([
@@ -109,6 +110,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         dataKey="id"
         scrollable 
         scrollHeight="flex"
+        :selectionMode="selectionMode"
         :filters="filters"
         :paginator="paginator"
         :rows="rowsPerPage" 
@@ -137,7 +139,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column class="w-0.5" selectionMode="multiple" :exportable="false"></Column>
+        <Column class="w-0.5" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
         <Column class="w-0.5" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
