@@ -11,6 +11,7 @@ import {plates} from '../db/schema/sge/plate'
 import {wells} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
+import {genes} from '../db/schema/sge/gene'
 import {pcrExperimentsRelations, platesRelations, wellsRelations, projectsRelations, targetsRelations} from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -34,6 +35,7 @@ export const db = drizzle(
       wells,
       projects,
       targets,
+      genes,
 
       usersRelations,
       userGroupsRelations,

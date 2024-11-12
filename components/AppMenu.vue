@@ -4,15 +4,17 @@ const model = ref([
         label: 'Home',
         items: [
             { label: 'Projects', icon: 'pi pi-fw pi-home', to: '/sge/projects' },
-            { label: 'Targets', icon: 'pi pi-fw pi-home', to: '/sge/targets' },
-            { label: 'PCR experiments', icon: 'pi pi-fw pi-home', to: '/sge/pcr-experiments' }
+            { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
+            { label: 'Genes', icon: 'pi pi-fw pi-list', to: '/sge/genes' },
+            { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
+            
         ]
     },
     {
         label: 'Admin',
         items: [
-            { label: 'Users', icon: 'pi pi-fw pi-home', to: '/admin/users' },
-            { label: 'Groups', icon: 'pi pi-fw pi-home', to: '/admin/user-groups' },
+            { label: 'Users', icon: 'pi pi-fw pi-user', to: '/admin/users' },
+            { label: 'Groups', icon: 'pi pi-fw pi-users', to: '/admin/user-groups' },
         ]
     },
     {
