@@ -18,9 +18,9 @@ export default defineEventHandler(async (event) => {
         const table = _.get(queryBuilder, 'table')
 
         // ignoring any order, limit, or offset params
-        const selectedPlate = await selectRecord(queryBuilder, table, id, selectParams.with, selectParams.columns)
+        const selectedRecord = await selectRecord(queryBuilder, table, id, selectParams.with, selectParams.columns)
         
-        return selectedPlate
+        return selectedRecord
     } catch (e: any) {
         throw createError({
             statusCode: 400,
