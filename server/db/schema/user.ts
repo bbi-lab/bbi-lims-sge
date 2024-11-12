@@ -74,6 +74,11 @@ const adminUpdateUserSchema = selectUserSchema.extend({
     code: true
 })
 
+const changePasswordSchema = z.object({
+  oldPassword: z.string(),
+  newPassword: z.string(),
+})
+
 export const schemas: Record<string, ZodObject<any>> = {
   selectUserSchema: selectUserSchema.omit({password: true, code: true}),
   adminUpdateUserSchema,
@@ -81,6 +86,7 @@ export const schemas: Record<string, ZodObject<any>> = {
   updateUserSchema,
   refreshTokensSchema,
   loginSchema,
+  changePasswordSchema,
 }
 
 const selectUserGroupSchema = createSelectSchema(userGroups)
@@ -97,6 +103,7 @@ export const userGroupSchemas: Record<string, ZodObject<any>> = {
 export type User = InferSelectModel<typeof users>
 export type NewUser = z.infer<typeof newUserSchema>
 export type LoginUser = z.infer<typeof loginSchema>
+export type ChangePassword = z.infer<typeof changePasswordSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
 export type AdminUpdateUser = z.infer<typeof adminUpdateUserSchema>
 export type NewUserGroup = z.infer<typeof newUserGroupSchema>

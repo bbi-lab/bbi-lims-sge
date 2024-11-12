@@ -260,6 +260,24 @@ export async function updateUser(user: User, { name, email, password }: UpdateUs
 
   return updatedUser
 }
+export async function changePassword(userId: string, password: string) {
+
+  const hashedPassword = await argon2.hash(password) 
+  const [updatedUser] = await db
+    .update(users)
+    .set({password: hashedPassword})
+    .where(eq(users.id, userId))
+    .returning()
+
+  if (!updatedUser) {
+    throw createError({
+        statusCode: 404,
+        statusMessage: 'USER_NOT_FOUND'
+    })
+  }
+
+  return updatedUser
+}
 
 export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
   if (values.email) {
