@@ -47,9 +47,6 @@ const columnDefs = {
     ncbiAccession: {
         header: 'NCBI accession'
     },
-    ncbiAccession: {
-        header: 'NCBI accession'
-    },
     geneId: {
         header: 'Gene ID'
     },
@@ -99,8 +96,6 @@ const columnDefs = {
                 :columnDefs="columnDefs"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
@@ -112,7 +107,6 @@ const columnDefs = {
                 schemaName="update-gene-schema"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>
