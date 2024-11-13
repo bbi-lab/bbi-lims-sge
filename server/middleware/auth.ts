@@ -31,9 +31,7 @@ export default defineEventHandler(async (event) => {
         await clearUserSession(event)
     } else {
         try {
-            console.log(accessToken)
-            const {userId} = verifyToken(accessToken)
-            console.log(`Verified access token for user: ${userId}`)
+            verifyToken(accessToken)
         } catch (err: any) {
             // if expired, attempt token refresh and update user session
             if (session && err.statusCode == '401' && err.message == 'TOKEN EXPIRED' && refreshToken) {
