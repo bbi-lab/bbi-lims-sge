@@ -10,6 +10,7 @@ const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tabl
 onMounted(async() => {
     tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
+    loading.value = false
 
     // if columnDefs prop is not set, calculate from JSON Schema properties
     columnDefinitions.value = props.columnDefs || _.mapValues(
@@ -52,6 +53,7 @@ const tableSchema = ref()
 const columnDefinitions = ref({})
 const dt = ref()
 const displayDeleteConfirmation = ref(false)
+const loading = ref(true)
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -115,6 +117,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         :paginator="paginator"
         :rows="rowsPerPage" 
         :rowsPerPageOptions="props.rowsPerPageOptions"
+        :loading="loading"
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
