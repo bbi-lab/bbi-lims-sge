@@ -105,7 +105,7 @@ const defaultValues = queryParams
             <QuickTable
                 ref="targetsTable"
                 tableName="targets"
-                schemaName="select-target-schema"
+                schemaName="select"
                 :title="tableTitle"
                 :rowActions="rowActions"
                 :where="whereClauses[0]"
@@ -120,7 +120,7 @@ const defaultValues = queryParams
             <QuickForm
                 v-if="showAddForm"
                 tableName="targets"
-                schemaName="insert-target-schema"
+                schemaName="insert"
                 :defaultValues="defaultValues"
                 :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
@@ -130,7 +130,7 @@ const defaultValues = queryParams
                 v-if="showEditForm"
                 :recordId="editingRecordId"
                 tableName="targets"
-                schemaName="update-target-schema"
+                schemaName="update"
                 :defaultValues="defaultValues"
                 :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"

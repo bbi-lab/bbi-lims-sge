@@ -88,7 +88,7 @@ const columnDefs = {
             <QuickTable
                 ref="genesTable"
                 tableName="genes"
-                schemaName="select-gene-schema"
+                schemaName="select"
                 title="Genes"
                 :canAdd="false"
                 :canDelete="false"
@@ -104,7 +104,7 @@ const columnDefs = {
                 :recordId="editingRecordId"
                 tableName="genes"
                 :canDelete="false"
-                schemaName="update-gene-schema"
+                schemaName="update"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
             />

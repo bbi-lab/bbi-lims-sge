@@ -55,9 +55,10 @@ function didClickRecordDelete(event) {
             <QuickTable
                 ref="projectsTable"
                 tableName="projects"
-                schemaName="select-project-schema"
+                schemaName="select"
                 title="SGE Projects"
                 :rowActions="rowActions"
+                :columnDefs="{name: {header: 'Name'}, startedOn: {header: 'Started', format: 'date-time'}}"
                 :withClause="{targets: true}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
@@ -68,7 +69,7 @@ function didClickRecordDelete(event) {
             <QuickForm
                 v-if="showAddForm"
                 tableName="projects"
-                schemaName="insert-project-schema"
+                schemaName="insert"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -76,7 +77,7 @@ function didClickRecordDelete(event) {
                 v-if="showEditForm"
                 :recordId="editingRecordId"
                 tableName="projects"
-                schemaName="update-project-schema"
+                schemaName="update"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
