@@ -6,6 +6,7 @@ import { wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
+import { genes } from './gene'
 import { relationsConfigToRelations } from '../relations'
 
 export const pcrExperimentsRelationsConfig: RelationsConfig = {
@@ -78,6 +79,11 @@ export const targetsRelationsConfig: RelationsConfig = {
             fields: [targets.projectId],
             referenceTable: projects,
             references: [projects.id],
+        },
+        gene: {
+            fields: [targets.geneId],
+            referenceTable: genes,
+            references: [genes.id],
         }
     },
     many: {}
