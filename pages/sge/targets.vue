@@ -13,7 +13,7 @@ const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
 
-const displayWithClause = Object.freeze({project:{columns: {name: true}}})
+const displayWithClause = Object.freeze({project:{columns: {name: true}}, gene:{columns: {symbol: true}}})
 const columnDefs = {
     name: {
         header: 'Name'
@@ -21,13 +21,18 @@ const columnDefs = {
     project: {
         header: 'Project',
         format: (x) => _.get(x, 'name')
+    },
+    gene: {
+        header: 'Gene',
+        format: (x) => _.get(x, 'symbol')
     }
 }
 
 const fieldDefs = {
     geneId: {
-        component: 'autocomplete',
-        options: {
+        label: 'Gene',
+        component: 'AutoCompleter',
+        props: {
             searchBaseUrl: `${config.public.apiBase}/genes`,
             searchFields: ['symbol'],
             valueField: 'id',
