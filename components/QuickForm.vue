@@ -25,6 +25,7 @@ const props = defineProps({
   schemaName: String,
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
+  fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
   defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
 })
 
@@ -109,7 +110,17 @@ function addNewItemToArray(array, itemProperties) {
         </div>
         <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
             <template v-if="record && key in record && !_.has(defaultValues, key)">
-                <div class="mb-5" v-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
+                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='autocomplete'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <AutoCompleter 
+                        v-model="record[key]"
+                        :searchBaseUrl="_.get(fieldDefs, [key, 'options', 'searchBaseUrl'])"
+                        :searchFields="_.get(fieldDefs, [key, 'options', 'searchFields'])"
+                        :valueField="_.get(fieldDefs, [key, 'options', 'valueField'])"
+                        :displayFields="_.get(fieldDefs, [key, 'options', 'displayFields'])"
+                    />
+                </div>
+                <div class="mb-5" v-else-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
                     <DatePicker 
                         class="w-80"

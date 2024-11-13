@@ -23,6 +23,19 @@ const columnDefs = {
         format: (x) => _.get(x, 'name')
     }
 }
+
+const fieldDefs = {
+    geneId: {
+        component: 'autocomplete',
+        options: {
+            searchBaseUrl: `${config.public.apiBase}/genes`,
+            searchFields: ['symbol'],
+            valueField: 'id',
+            displayFields: ['symbol'],
+        }
+    }
+}
+
 const rowActions = {
     regions: {
         label: (data) => { return `${data.regions?.length || 0} regions`},  // for this to work, we need to expand regions
@@ -60,15 +73,15 @@ function didClickCancelEditForm() {
 }
 
 function didAddRecord(event) {
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
+    targetsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
+    targetsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
-    pcrExperimentsTable.value.removeRecordId(event.id)
+    targetsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 function didClickRecordDelete(event) {
@@ -104,6 +117,7 @@ const defaultValues = queryParams
                 tableName="targets"
                 schemaName="insert-target-schema"
                 :defaultValues="defaultValues"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -113,6 +127,7 @@ const defaultValues = queryParams
                 tableName="targets"
                 schemaName="update-target-schema"
                 :defaultValues="defaultValues"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
