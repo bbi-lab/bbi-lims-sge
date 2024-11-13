@@ -54,6 +54,9 @@ function deleteRecord() {
 function showDeleteConfirmation() {
     displayDeleteConfirmation.value = true
 }
+function getLabel(key) {
+    return _.get(props.fieldDefs, [key, 'label'], _.startCase(key))
+}
 function saveRecord() {
     if (_.has(record.value, 'id')) {
         // updating single record - limit to properties in JSON schema
@@ -110,18 +113,15 @@ function addNewItemToArray(array, itemProperties) {
         </div>
         <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
             <template v-if="record && key in record && !_.has(defaultValues, key)">
-                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='autocomplete'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
                     <AutoCompleter 
                         v-model="record[key]"
-                        :searchBaseUrl="_.get(fieldDefs, [key, 'options', 'searchBaseUrl'])"
-                        :searchFields="_.get(fieldDefs, [key, 'options', 'searchFields'])"
-                        :valueField="_.get(fieldDefs, [key, 'options', 'valueField'])"
-                        :displayFields="_.get(fieldDefs, [key, 'options', 'displayFields'])"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
                     />
                 </div>
                 <div class="mb-5" v-else-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
                         class="w-80"
                         :id="key"
@@ -135,19 +135,19 @@ function addNewItemToArray(array, itemProperties) {
                     <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
                 </div>
                 <div class="mb-5" v-else-if="val.enum">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Select :id="key" v-model="record[key]" :options="val.enum" />
                 </div>
                 <div class="mb-5" v-else-if="val.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
                 </div>
                 <div class="mb-5" v-else-if="val.type=='boolean'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox :id="key" v-model="record[key]" :binary="true" />
                 </div>
                 <div class="mb-5" v-else-if="val.type=='array'">
-                    <label class="font-bold mb-3 mr-5">{{ _.startCase(key) }}</label>
+                    <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
                     <!-- Iterate over array items -->
                     <template v-for="(arrayItem, arrayIndex) in record[key]">
@@ -171,11 +171,11 @@ function addNewItemToArray(array, itemProperties) {
                     </template>
                 </div>
                 <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="record[key]" showButtons />
                 </div>
                 <div class="mb-5" v-else>
-                    <label :for="key" class="block font-bold mb-3">{{ _.startCase(key) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputText :id="key" v-model="record[key]" />
                 </div>
             </template>
