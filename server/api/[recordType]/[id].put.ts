@@ -1,13 +1,16 @@
 import { updateRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
+import { schemas } from '~/server/db/schema/sge/zod'
+import { ZodObject } from 'zod'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
 
     try {
         const body = await readBody(event)
-        const query = getQuery(event)
-        const updatedRecord = await updateRecord(_.get(db, ['query', recordType, 'table']), id, body)
+        const updateSchema = schemas[recordType].update as ZodObject<any>
+        const values = updateSchema.parse(body)
+        const updatedRecord = await updateRecord(_.get(db, ['query', recordType, 'table']), id, values)
 
         return updatedRecord
     } catch (e: any) {
