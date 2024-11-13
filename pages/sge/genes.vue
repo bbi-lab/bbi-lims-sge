@@ -14,9 +14,9 @@ function didClickRecordEdit(event) {
 //     showAddForm.value = true
 //     showEditForm.value = false
 // }
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
+// function didClickCancelAddForm() {
+//     showAddForm.value = false
+// }
 function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
@@ -37,6 +37,53 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+const columnDefs = {
+    symbol: {
+        header: 'Symbol'
+    },
+    name: {
+        header: 'Name'
+    },
+    ncbiAccession: {
+        header: 'NCBI accession'
+    },
+    ncbiAccession: {
+        header: 'NCBI accession'
+    },
+    geneId: {
+        header: 'Gene ID'
+    },
+    geneType: {
+        header: 'Gene type'
+    },
+    startPosition: {
+        header: 'Start'
+    },
+    endPosition: {
+        header: 'End'
+    },
+    chromosome: {
+        header: 'Chromosome'
+    },
+    transcriptsAccession: {
+        header: 'Transcripts accession'
+    },
+    proteinAccession: {
+        header: 'Protein accession'
+    },
+    proteinLength: {
+        header: 'proteinLength'
+    },
+    locusTag: {
+        header: 'Locus Tag'
+    },
+    assembly: {
+        header: 'Assembly'
+    },
+    annotation: {
+        header: 'Annotation'
+    },
+}
 </script>
 <template>
     <Splitter>
@@ -49,6 +96,7 @@ function didClickRecordDelete(event) {
                 :canAdd="false"
                 :canDelete="false"
                 selectionMode="single"
+                :columnDefs="columnDefs"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
