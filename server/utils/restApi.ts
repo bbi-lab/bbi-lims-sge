@@ -43,6 +43,8 @@ export function applySelectParamsToRecords(selectParams: SelectParams, records: 
     // (e.g. query for filtering on property name=='test' would be {"==":[{"var":"name"},"test"]} )
     const queryFinal  = selectParams.where ? {filter:[{var:""}, selectParams.where]} : null
     
+    jsonLogic.add_operation("startsWith", (a, b) => _.startsWith(_.toLower(a), _.toLower(b)))
+    
     // TODO - apply filter logic as where clause on query above
     let result = queryFinal ? jsonLogic.apply(queryFinal as JsonLogicFilter, records) || [] : records
 
