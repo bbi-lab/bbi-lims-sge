@@ -18,7 +18,8 @@ const selectGeneSchema = createSelectSchema(genes)
 const updateGeneSchema = selectGeneSchema.omit({id: true})
 
 const selectRegionSchema = createSelectSchema(regions)
-const updateRegionSchema = selectRegionSchema.omit({id: true})
+const insertRegionSchema = selectRegionSchema.omit({id: true, fixedEdits: true})
+const updateRegionSchema = insertRegionSchema
 
 export const schemas: Record<string, Record<string, ZodObject<any>>> = {
     projects: {
@@ -37,6 +38,7 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
     },
     regions: {
         select: selectRegionSchema,
+        insert: insertRegionSchema,
         update: updateRegionSchema,
     }
 }

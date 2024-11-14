@@ -7,6 +7,7 @@ import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
 import { genes } from './gene'
+import { regions } from './region'
 import { relationsConfigToRelations } from '../relations'
 
 export const pcrExperimentsRelationsConfig: RelationsConfig = {
@@ -90,3 +91,16 @@ export const targetsRelationsConfig: RelationsConfig = {
 }
 
 export const targetsRelations = relationsConfigToRelations(targets, targetsRelationsConfig)
+
+export const regionsRelationsConfig: RelationsConfig = {
+    one:{
+        gene: {
+            fields: [regions.geneId],
+            referenceTable: genes,
+            references: [genes.id],
+        }
+    },
+    many: {}
+}
+
+export const regionsRelations = relationsConfigToRelations(regions, regionsRelationsConfig)
