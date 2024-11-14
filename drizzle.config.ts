@@ -6,6 +6,7 @@ export default defineConfig({
   out: './server/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NUXT_DB_URL!
-  },
+    url: process.env.NUXT_DB_URL!,
+    ssl: "require"
+  }
 })
