@@ -54,6 +54,37 @@ function didClickRecordDelete(event) {
     console.log(event)
 }
 
+const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
+const columnDefs = {
+    gene: {
+        header: 'Gene',
+        format: (x) => _.get(x, 'symbol'),
+        index: 0,
+    },
+    geneId: {
+        display: false
+    },
+    snvLibraryStart: {
+        header: 'SNV library start'
+    },
+    snvLibraryEnd: {
+        header: 'SNV library end'
+    }
+}
+
+const fieldDefs = {
+    geneId: {
+        label: 'Gene',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/genes`,
+            searchFields: ['symbol'],
+            valueField: 'id',
+            displayFields: ['symbol'],
+        }
+    }
+}
+
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
@@ -70,6 +101,7 @@ const defaultValues = queryParams
                 :title="tableTitle"
                 :where="whereClauses[0]"
                 :withClause="displayWithClause"
+                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"
@@ -80,6 +112,7 @@ const defaultValues = queryParams
                 v-if="showAddForm"
                 tableName="regions"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 :defaultValues="defaultValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
@@ -89,6 +122,7 @@ const defaultValues = queryParams
                 :recordId="editingRecordId"
                 tableName="regions"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 :defaultValues="defaultValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
