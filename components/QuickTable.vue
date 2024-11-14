@@ -12,8 +12,8 @@ onMounted(async() => {
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
     loading.value = false
 
-    // if columnDefs prop is not set, calculate from JSON Schema properties
-    columnDefinitions.value = props.columnDefs || _.mapValues(
+    // calculate column definitions from JSON Schema properties and merge with columnDefs from props
+    columnDefinitions.value =  _.mapValues(
         tableSchema.value?.properties, (k,v) => {
             return {
                 header: _.startCase(v),
@@ -21,6 +21,8 @@ onMounted(async() => {
             }
         }
     )
+    if (props.columnDefs) columnDefinitions.value = {...columnDefinitions.value, ...props.columnDefs}
+
 })
 
 const toast = useToast()
@@ -44,6 +46,15 @@ const emit = defineEmits([
     'clicked-record-delete',
     'clicked-multi-delete'
 ])
+
+const sortedColumnDefs = computed(() => _.orderBy(
+    _.map(columnDefinitions.value, (v,k) => {return {key: k, ...v}}),
+    [
+      i => _.has(i, 'index'),
+      i => i.index || ''
+    ],
+    ['desc', 'asc'])
+)
 
 const paginator = computed(() => !_.isEmpty(props.rowsPerPageOptions))
 const rowsPerPage = computed(() => props.rowsPerPageOptions?.[0] || null)
@@ -148,22 +159,24 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
             </template>
         </Column> 
-        <template v-for="(v,k) in columnDefinitions">
-            <Column v-if="v.format=='date-time'" :field="k" :header="v.header" sortable style="min-width: 16rem">
-                <template #body="slotProps">
-                    {{ formatDate(slotProps.data[k]) }}
-                </template>
-            </Column>
-            <Column v-else-if="_.isFunction(v.format)" :field="k" :header="v.header" sortable style="min-width: 16rem">
-                <template #body="slotProps">
-                    {{ v.format(slotProps.data[k]) }}
-                </template>
-            </Column>
-            <Column v-else-if="k!='id'" :field="k" :header="v.header" sortable style="min-width: 16rem">
-                <template #body="slotProps">
-                    {{ slotProps.data[k] }}
-                </template>
-            </Column>
+        <template v-for="columnDef in sortedColumnDefs">
+            <template v-if="columnDef.display!==false">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data[k]) }}
+                    </template>
+                </Column>
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ columnDef.format(slotProps.data[columnDef.key]) }}
+                    </template>
+                </Column>
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ slotProps.data[columnDef.key] }}
+                    </template>
+                </Column>
+            </template>
         </template>
         <Column v-if="rowActions">
             <template #body="{ data }">
