@@ -60,15 +60,6 @@ const fieldDefs = {
     }
 }
 
-const rowActions = {
-    regions: {
-        label: (data) => { return `${data.regions?.length || 0} regions`},  // for this to work, we need to expand regions
-        action: (data) => {
-            router.push({path:'/sge/regions', query: {'targetId': data.id}})
-        }
-    }
-}
-
 onMounted(async() => {
     if (queryParams.projectId) {
         const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId)
