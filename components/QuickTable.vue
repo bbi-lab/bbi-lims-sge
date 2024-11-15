@@ -119,6 +119,10 @@ function confirmDeleteSelected() {
     displayDeleteConfirmation.value = true
 }
 
+function columnHeader(columnDef) {
+    return columnDef.header || _.startCase(columnDef.key)
+}
+
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
 </script>
@@ -167,20 +171,20 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
             <template #body="slotProps">
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
             </template>
-        </Column> 
-        <template v-for="columnDef in sortedColumnDefs">
+        </Column>
+        <template v-for="columnDef of sortedColumnDefs">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable style="min-width: 16rem">
                     <template #body="slotProps">
-                        {{ formatDate(slotProps.data[k]) }}
+                        {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" :sort-field="columnDef.format" sortable style="min-width: 16rem">
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :sort-field="columnDef.format" sortable style="min-width: 16rem">
                     <template #body="slotProps">
                         {{ columnDef.format(slotProps.data) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable style="min-width: 16rem">
                     <template #body="slotProps">
                         {{ slotProps.data[columnDef.key] }}
                     </template>
