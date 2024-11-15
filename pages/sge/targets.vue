@@ -30,24 +30,30 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs = {
-    projectId: {
-        display: false
-    },
-    project: {
-        format: (x) => _.get(x, 'project.name')
+    name: {
+        index: 0,
     },
     regionId: {
         display: false
     },
     region: {
         header: 'Gene: Region',
-        format: (x) => `${_.get(x, 'region.gene.symbol')}: ${_.get(x, 'region.name')}`
+        format: (x) => `${_.get(x, 'region.gene.symbol')}: ${_.get(x, 'region.name')}`,
+        index: 1,
+    },
+    projectId: {
+        display: false
+    },
+    project: {
+        format: (x) => _.get(x, 'project.name'),
+        index: 2,
     },
     cycleId: {
         display: false
     },
     cycle: {
-        format: (x) => `${_.get(x, 'cycle.name')}`
+        format: (x) => `${_.get(x, 'cycle.name')}`,
+        index: 3,
     },
 }
 
