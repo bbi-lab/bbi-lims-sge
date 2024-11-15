@@ -4,6 +4,7 @@ const model = ref([
         label: 'Home',
         items: [
             { label: 'Projects', icon: 'pi pi-fw pi-home', to: '/sge/projects' },
+            { label: 'Cycles', icon: 'pi pi-fw pi-spinner-dotted', to: '/sge/cycles' },
             { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
             { label: 'Genes', icon: 'pi pi-fw pi-list', to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
