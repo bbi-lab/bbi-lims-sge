@@ -112,12 +112,13 @@ function addNewItemToArray(array, itemProperties) {
             </Dialog>
         </div>
         <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
-            <template v-if="record && key in record && !_.has(defaultValues, key)">
+            <template v-if="record && key in record">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
                     <AutoCompleter 
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :disabled="_.has(defaultValues, key)"
                     />
                 </div>
                 <div class="mb-5" v-else-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
@@ -131,20 +132,25 @@ function addNewItemToArray(array, itemProperties) {
                         dateFormat="yy-mm-dd"
                         hourFormat="24"
                         autofocus
+                        :disabled="_.has(defaultValues, key)"
                     />
                     <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
                 </div>
                 <div class="mb-5" v-else-if="val.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.enum" />
+                    <Select :id="key" v-model="record[key]" :options="val.enum" :disabled="_.has(defaultValues, key)" />
                 </div>
                 <div class="mb-5" v-else-if="val.oneOf">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" />
+                    <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="_.has(defaultValues, key)"/>
                 </div>
                 <div class="mb-5" v-else-if="val.type=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Checkbox :id="key" v-model="record[key]" :binary="true" />
+                    <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="_.has(defaultValues, key)" />
+                </div>
+                <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="_.has(defaultValues, key)" />
                 </div>
                 <div class="mb-5" v-else-if="val.type=='array'">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
@@ -170,13 +176,9 @@ function addNewItemToArray(array, itemProperties) {
                         </template>
                     </template>
                 </div>
-                <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons />
-                </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputText :id="key" v-model="record[key]" />
+                    <InputText :id="key" v-model="record[key]" :disabled="_.has(defaultValues, key)" />
                 </div>
             </template>
         </div>

@@ -9,6 +9,7 @@ const props = defineProps({
   displayFields: {type: Array, default: ['name']},
   searchWithClause: {type: Object},
   dropdown: {type: Boolean},
+  disabled: {type: Boolean},
 })
 
 const modelValue = defineModel()
@@ -53,6 +54,7 @@ function setModelValue() {
         optionLabel="label"
         @complete="autocompleteSearch"
         @option-select="setModelValue"
-        :dropdown="dropdown" />
-    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
+        :dropdown="dropdown"
+        :disabled="disabled" />
+    <Button v-if="!disabled" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
 </template>
