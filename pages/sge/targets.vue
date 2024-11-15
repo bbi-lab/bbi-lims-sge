@@ -102,6 +102,9 @@ onMounted(async() => {
     if (queryParams.projectId) {
         const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId)
         tableTitle.value = `${project.name}: targets`
+    } else if (queryParams.cycleId) {
+        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, queryParams.cycleId)
+        tableTitle.value = `${cycle.name}: targets`
     } else {
         tableTitle.value = `All Targets`
     }
