@@ -36,9 +36,14 @@ const columnDefs = {
     regionId: {
         display: false
     },
+    gene: {
+        header: 'Gene',
+        format: (x) => `${_.get(x, 'region.gene.symbol')}`,
+        index: 1,
+    },
     region: {
-        header: 'Gene: Region',
-        format: (x) => `${_.get(x, 'region.gene.symbol')}: ${_.get(x, 'region.name')}`,
+        header: 'Region',
+        format: (x) => `${_.get(x, 'region.name')}`,
         index: 1,
     },
     projectId: {
