@@ -81,6 +81,12 @@ const fieldDefs = {
             valueField: 'id',
             displayFields: ['symbol'],
         }
+    },
+    snvLibraryStart: {
+        label: 'SNV library start'
+    },
+    snvLibraryEnd: {
+        label: 'SNV library end'
     }
 }
 
