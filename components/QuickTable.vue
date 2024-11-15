@@ -166,7 +166,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                         {{ formatDate(slotProps.data[k]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" :sort-field="columnDef.sort" sortable style="min-width: 16rem">
                     <template #body="slotProps">
                         {{ columnDef.format(slotProps.data[columnDef.key]) }}
                     </template>
