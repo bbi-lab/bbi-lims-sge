@@ -60,6 +60,7 @@ const columnDefs = {
         header: 'Gene',
         format: (x) => _.get(x, 'symbol'),
         index: 0,
+        sort: (x) => _.get(x, 'gene.symbol')
     },
     geneId: {
         display: false
