@@ -3,6 +3,7 @@ import { projects } from './project'
 import { targets } from './target'
 import { genes } from './gene'
 import { regions } from './region'
+import { cycles } from './cycle'
 import { createSelectSchema } from 'drizzle-zod'
 import { ZodObject } from 'zod'
 
@@ -20,6 +21,10 @@ const updateGeneSchema = selectGeneSchema.omit({id: true})
 const selectRegionSchema = createSelectSchema(regions)
 const insertRegionSchema = selectRegionSchema.omit({id: true, fixedEdits: true})
 const updateRegionSchema = insertRegionSchema
+
+const selectCycleSchema = createSelectSchema(cycles)
+const insertCycleSchema = createSelectSchema(cycles, {startedOn: dateSchema, endedOn: dateSchema}).omit({id: true})
+const updateCycleSchema = insertCycleSchema
 
 export const schemas: Record<string, Record<string, ZodObject<any>>> = {
     projects: {
@@ -40,5 +45,10 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         select: selectRegionSchema,
         insert: insertRegionSchema,
         update: updateRegionSchema,
+    },
+    cycles: {
+        select: selectCycleSchema,
+        insert: insertCycleSchema,
+        update: updateCycleSchema,
     }
 }

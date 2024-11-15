@@ -13,13 +13,15 @@ import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
+import {cycles} from '../db/schema/sge/cycle'
 import {
   pcrExperimentsRelations,
   platesRelations,
   wellsRelations,
   projectsRelations,
   targetsRelations,
-  regionsRelations
+  regionsRelations,
+  cyclesRelations,
 } from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -45,6 +47,7 @@ export const db = drizzle(
       targets,
       genes,
       regions,
+      cycles,
 
       usersRelations,
       userGroupsRelations,
@@ -55,6 +58,7 @@ export const db = drizzle(
       projectsRelations,
       targetsRelations,
       regionsRelations,
+      cyclesRelations,
     }
   }
 )
