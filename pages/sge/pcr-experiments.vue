@@ -1,11 +1,12 @@
 
 <script setup>
+import _ from 'lodash'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const pcrExperimentsTable = ref()
 const router = useRouter()
-
 
 const rowActions = {
     plates: {
@@ -61,6 +62,13 @@ const columnDefs = {
         header: 'Started On',
         format: 'date-time'
     },
+    plates: {
+        display: false,
+    },
+    technician: {
+        header: 'Technician',
+        format: (x) => _.get(x, 'technician.name'),
+    }
 }
 </script>
 <template>
@@ -72,7 +80,7 @@ const columnDefs = {
                 schemaName="select-pcr-experiment-schema"
                 title="PCR Experiments"
                 :rowActions="rowActions"
-                :withClause="{plates: true}"
+                :withClause="{plates: true, technician: {columns: {name: true}}}"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
