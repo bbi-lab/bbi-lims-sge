@@ -23,18 +23,17 @@ const displayWithClause = Object.freeze({
                 columns: {symbol: true}
             }
         }
+    },
+    cycle:{
+        columns: {name: true},
     }
 })
 
 const columnDefs = {
-    name: {
-        header: 'Name'
-    },
     projectId: {
         display: false
     },
     project: {
-        header: 'Project',
         format: (x) => _.get(x, 'project.name')
     },
     regionId: {
@@ -43,6 +42,12 @@ const columnDefs = {
     region: {
         header: 'Gene: Region',
         format: (x) => `${_.get(x, 'region.gene.symbol')}: ${_.get(x, 'region.name')}`
+    },
+    cycleId: {
+        display: false
+    },
+    cycle: {
+        format: (x) => `${_.get(x, 'cycle.name')}`
     },
 }
 

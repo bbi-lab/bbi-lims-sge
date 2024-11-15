@@ -38,47 +38,17 @@ function didClickRecordDelete(event) {
     console.log(event)
 }
 const columnDefs = {
-    symbol: {
-        header: 'Symbol'
-    },
-    name: {
-        header: 'Name'
-    },
     ncbiAccession: {
         header: 'NCBI accession'
     },
     geneId: {
         header: 'Gene ID'
     },
-    geneType: {
-        header: 'Gene type'
-    },
     startPosition: {
         header: 'Start'
     },
     endPosition: {
         header: 'End'
-    },
-    chromosome: {
-        header: 'Chromosome'
-    },
-    transcriptsAccession: {
-        header: 'Transcripts accession'
-    },
-    proteinAccession: {
-        header: 'Protein accession'
-    },
-    proteinLength: {
-        header: 'proteinLength'
-    },
-    locusTag: {
-        header: 'Locus Tag'
-    },
-    assembly: {
-        header: 'Assembly'
-    },
-    annotation: {
-        header: 'Annotation'
     },
 }
 </script>

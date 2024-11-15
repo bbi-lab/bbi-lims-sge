@@ -52,21 +52,13 @@ function didClickRecordDelete(event) {
 }
 
 const columnDefs = {
-    name: {
-        header: 'Name'
-    },
-    round: {
-        header: 'Round'
-    },
     startedOn: {
-        header: 'Started On',
         format: 'date-time'
     },
     plates: {
         display: false,
     },
     technician: {
-        header: 'Technician',
         format: (x) => _.get(x, 'technician.name'),
     }
 }
