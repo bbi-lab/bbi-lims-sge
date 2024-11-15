@@ -1,4 +1,3 @@
-
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
@@ -13,30 +12,37 @@ const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
 
-const displayWithClause = Object.freeze({project:{columns: {name: true}}, gene:{columns: {symbol: true}}})
+const displayWithClause = Object.freeze({project:{columns: {name: true}}, region:{columns: {name: true}}})
 const columnDefs = {
     name: {
         header: 'Name'
+    },
+    projectId: {
+        display: false
     },
     project: {
         header: 'Project',
         format: (x) => _.get(x, 'name')
     },
-    gene: {
-        header: 'Gene',
-        format: (x) => _.get(x, 'symbol')
+    regionId: {
+        display: false
+    },
+    region: {
+        header: 'Region',
+        format: (x) => _.get(x, 'name')
     }
 }
 
 const fieldDefs = {
-    geneId: {
-        label: 'Gene',
+    regionId: {
+        label: 'Region',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/genes`,
-            searchFields: ['symbol'],
+            searchBaseUrl: `${config.public.apiBase}/regions`,
+            searchFields: ['name'],
             valueField: 'id',
-            displayFields: ['symbol'],
+            displayFields: ['name', 'gene.symbol'],
+            searchWithClause: {gene: {columns: {symbol:true}}},
         }
     }
 }

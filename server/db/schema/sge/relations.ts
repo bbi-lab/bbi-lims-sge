@@ -81,10 +81,10 @@ export const targetsRelationsConfig: RelationsConfig = {
             referenceTable: projects,
             references: [projects.id],
         },
-        gene: {
-            fields: [targets.geneId],
-            referenceTable: genes,
-            references: [genes.id],
+        region: {
+            fields: [targets.regionId],
+            referenceTable: regions,
+            references: [regions.id],
         }
     },
     many: {}
