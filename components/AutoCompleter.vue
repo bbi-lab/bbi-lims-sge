@@ -8,6 +8,7 @@ const props = defineProps({
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
   searchWithClause: {type: Object},
+  dropdown: {type: Boolean},
 })
 
 const modelValue = defineModel()
@@ -51,6 +52,7 @@ function setModelValue() {
         :suggestions="suggestions" 
         optionLabel="label"
         @complete="autocompleteSearch"
-        @option-select="setModelValue" />
-    <Button icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
+        @option-select="setModelValue"
+        :dropdown="dropdown" />
+    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
 </template>
