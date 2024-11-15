@@ -57,6 +57,17 @@ const fieldDefs = {
             displayFields: ['gene.symbol', 'name'],
             searchWithClause: {gene: {columns: {symbol:true}}},
         }
+    },
+    projectId: {
+        label: 'Project',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/projects`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
     }
 }
 
