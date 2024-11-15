@@ -58,9 +58,8 @@ const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
 const columnDefs = {
     gene: {
         header: 'Gene',
-        format: (x) => _.get(x, 'symbol'),
+        format: (x) => _.get(x, 'gene.symbol'),
         index: 0,
-        sort: (x) => _.get(x, 'gene.symbol')
     },
     geneId: {
         display: false

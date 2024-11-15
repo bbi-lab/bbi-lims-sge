@@ -35,14 +35,14 @@ const columnDefs = {
     },
     project: {
         header: 'Project',
-        format: (x) => _.get(x, 'name')
+        format: (x) => _.get(x, 'project.name')
     },
     regionId: {
         display: false
     },
     region: {
         header: 'Gene: Region',
-        format: (x) => `${_.get(x, 'gene.symbol')}: ${_.get(x, 'name')}`
+        format: (x) => `${_.get(x, 'region.gene.symbol')}: ${_.get(x, 'region.name')}`
     },
 }
 

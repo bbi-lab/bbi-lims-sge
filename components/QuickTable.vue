@@ -66,6 +66,14 @@ const dt = ref()
 const displayDeleteConfirmation = ref(false)
 const loading = ref(true)
 
+const globalFilterFields = ref([])
+
+watch(sortedColumnDefs, (newValue, oldValue) => {
+  if (newValue != oldValue) {
+    globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : x.key)
+  }
+})
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 })
@@ -129,6 +137,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         :rows="rowsPerPage" 
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
+        :globalFilterFields="globalFilterFields"
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -166,9 +175,9 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                         {{ formatDate(slotProps.data[k]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" :sort-field="columnDef.sort" sortable style="min-width: 16rem">
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnDef.header" :sort-field="columnDef.format" sortable style="min-width: 16rem">
                     <template #body="slotProps">
-                        {{ columnDef.format(slotProps.data[columnDef.key]) }}
+                        {{ columnDef.format(slotProps.data) }}
                     </template>
                 </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnDef.header" sortable style="min-width: 16rem">
