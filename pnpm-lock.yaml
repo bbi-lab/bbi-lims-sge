@@ -35,6 +35,9 @@ importers:
       nuxt-auth-utils:
         specifier: ^0.5.0
         version: 0.5.0(argon2@0.41.1)(magicast@0.3.5)(rollup@4.24.0)
+      papaparse:
+        specifier: ^5.4.1
+        version: 5.4.1
       postgres:
         specifier: ^3.4.5
         version: 3.4.5
@@ -3058,6 +3061,9 @@ packages:
 
   package-manager-detector@0.2.2:
     resolution: {integrity: sha512-VgXbyrSNsml4eHWIvxxG/nTL4wgybMTXCV2Un/+yEc3aDKKU6nQBZjbeP3Pl3qm9Qg92X/1ng4ffvCeD/zwHgg==}
+
+  papaparse@5.4.1:
+    resolution: {integrity: sha512-HipMsgJkZu8br23pW15uvo6sib6wne/4woLZPlFf3rpDyMe9ywEXUsuD7+6K9PRkJlVT51j/sCOYDKGGS3ZJrw==}
 
   parchment@3.0.0:
     resolution: {integrity: sha512-HUrJFQ/StvgmXRcQ1ftY6VEZUq3jA2t9ncFN4F84J/vN0/FPpQF+8FKXb3l6fLces6q0uOHj6NJn+2xvZnxO6A==}
@@ -7408,6 +7414,8 @@ snapshots:
   package-json-from-dist@1.0.1: {}
 
   package-manager-detector@0.2.2: {}
+
+  papaparse@5.4.1: {}
 
   parchment@3.0.0: {}
 

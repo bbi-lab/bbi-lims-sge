@@ -2,6 +2,7 @@
 import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
+import Papa from 'papaparse'
 
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
@@ -98,7 +99,31 @@ function didClickAddRecord(event) {
     emit('clicked-record-add', event)
 }
 function exportCSV() {
-    dt.value.exportCSV()
+    // dt.value.exportCSV()  // default export for PrimeVue DataTable
+
+    // only include columns that are being shown and stringify any objects
+    const colsToInclude = _.map(sortedColumnDefs.value, (x) => x.key)
+    const exportRecords = _.isEmpty(selectedRecords.value) ? records.value : selectedRecords.value
+    for (const record of exportRecords) {
+        for (const [k,v] of Object.entries(record)) {
+            if (!_.includes(colsToInclude, k)) {
+                _.unset(record, k)
+            } else if (_.isObject(v)) {
+                record[k] = JSON.stringify(v)
+            }
+        }
+    }
+    const csv = Papa.unparse(exportRecords)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    // generate filename from table name and current timestamp
+    link.setAttribute('download', `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
 }
 
 const addOrRefreshRecordId = async (recordId) => {
