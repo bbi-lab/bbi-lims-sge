@@ -38,12 +38,12 @@ const columnDefs = {
     },
     gene: {
         header: 'Gene',
-        format: (x) => `${_.get(x, 'region.gene.symbol')}`,
+        format: (x) => _.get(x, 'region.gene.symbol'),
         index: 1,
     },
     region: {
         header: 'Region',
-        format: (x) => `${_.get(x, 'region.name')}`,
+        format: (x) => _.get(x, 'region.name'),
         index: 1,
     },
     projectId: {
@@ -57,7 +57,7 @@ const columnDefs = {
         display: false
     },
     cycle: {
-        format: (x) => `${_.get(x, 'cycle.name')}`,
+        format: (x) => _.get(x, 'cycle.name'),
         index: 3,
     },
 }
@@ -79,6 +79,17 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/projects`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
+    cycleId: {
+        label: 'Cycle',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/cycles`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
