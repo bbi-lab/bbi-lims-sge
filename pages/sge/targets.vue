@@ -12,7 +12,20 @@ const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
 
-const displayWithClause = Object.freeze({project:{columns: {name: true}}, region:{columns: {name: true}}})
+const displayWithClause = Object.freeze({
+    project:{
+        columns: {name: true}
+    },
+    region:{
+        columns: {name: true}, 
+        with: {
+            gene: {
+                columns: {symbol: true}
+            }
+        }
+    }
+})
+
 const columnDefs = {
     name: {
         header: 'Name'
@@ -28,9 +41,9 @@ const columnDefs = {
         display: false
     },
     region: {
-        header: 'Region',
-        format: (x) => _.get(x, 'name')
-    }
+        header: 'Gene: Region',
+        format: (x) => `${_.get(x, 'gene.symbol')}: ${_.get(x, 'name')}`
+    },
 }
 
 const fieldDefs = {
@@ -39,9 +52,9 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/regions`,
-            searchFields: ['name'],
+            searchFields: ['name', 'gene.symbol'],
             valueField: 'id',
-            displayFields: ['name', 'gene.symbol'],
+            displayFields: ['gene.symbol', 'name'],
             searchWithClause: {gene: {columns: {symbol:true}}},
         }
     }
