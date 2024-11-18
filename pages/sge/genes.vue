@@ -75,6 +75,7 @@ const columnDefs = {
                 tableName="genes"
                 :canDelete="false"
                 schemaName="update"
+                :readOnly="true"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
             />
