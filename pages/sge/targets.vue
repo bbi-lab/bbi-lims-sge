@@ -29,6 +29,20 @@ const displayWithClause = Object.freeze({
     }
 })
 
+const rowActions = {
+    plasmids: {
+        label: (data) => { return `${data.plasmids?.length || 0} Plasmids`},
+        action: (data) => {
+            router.push({path:'/sge/plasmids', query: {'targetId': data.id}})
+        }
+    },
+    pellets: {
+        label: (data) => { return `${data.pellets?.length || 0} Pellets`},
+        action: (data) => {
+            router.push({path:'/sge/pellets', query: {'targetId': data.id}})
+        }
+    }
+}
 const columnDefs = {
     name: {
         index: 0,
