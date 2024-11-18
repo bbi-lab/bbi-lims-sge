@@ -3,10 +3,12 @@ import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
+import * as XLSX from 'xlsx'
 
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
+const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
 
 onMounted(async() => {
     tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
@@ -68,6 +70,7 @@ const displayDeleteConfirmation = ref(false)
 const loading = ref(true)
 
 const globalFilterFields = ref([])
+const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
@@ -98,32 +101,60 @@ function didClickDeleteSelectedRecords(event) {
 function didClickAddRecord(event) {
     emit('clicked-record-add', event)
 }
+function getExportRecords() {
+    const recordsToExport = _.isEmpty(selectedRecords.value) ? records.value : selectedRecords.value
+    const exportRecords = []
+    for (const record of recordsToExport) {
+        const exportRecord = {}
+        for (const columnDef of sortedColumnDefs.value) {
+            if (_.isFunction(columnDef.format)) {
+                exportRecord[columnDef.key] = columnDef.format(record)
+            } else if (columnDef.format == 'date-time') {
+                exportRecord[columnDef.key] = formatDate(record[columnDef.key])
+            } else if (columnDef.display !== false) {
+                exportRecord[columnDef.key] = record[columnDef.key]
+            }
+        }
+        exportRecords.push(exportRecord)
+    }
+    return exportRecords
+}
 function exportCSV() {
     // dt.value.exportCSV()  // default export for PrimeVue DataTable
 
-    // only include columns that are being shown and stringify any objects
-    const colsToInclude = _.map(sortedColumnDefs.value, (x) => x.key)
-    const exportRecords = _.isEmpty(selectedRecords.value) ? records.value : selectedRecords.value
-    for (const record of exportRecords) {
-        for (const [k,v] of Object.entries(record)) {
-            if (!_.includes(colsToInclude, k)) {
-                _.unset(record, k)
-            } else if (_.isObject(v)) {
-                record[k] = JSON.stringify(v)
-            }
-        }
-    }
-    const csv = Papa.unparse(exportRecords)
+    const csv = Papa.unparse(getExportRecords())
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
 
     const link = document.createElement('a')
     link.href = url
-    // generate filename from table name and current timestamp
-    link.setAttribute('download', `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}.csv`)
+    link.setAttribute('download', `${exportFilename.value}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+}
+
+const exportXLSX = function() {
+    const exportRecords = getExportRecords()
+    const rows = []
+    
+    // column headers row
+    if (!_.isEmpty(exportRecords)) {
+        rows.push(_.keys(exportRecords[0]))
+    } else {
+        rows.push(_.map(sortedColumnDefs.value, (x) => x.key))
+    }
+
+    // data rows
+    for (const record of exportRecords) {
+        rows.push(_.values(record))
+    }
+    
+    const wb = XLSX.utils.book_new()
+    const ws = XLSX.utils.aoa_to_sheet(rows)
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+    XLSX.writeFile(wb, `${exportFilename.value}.xlsx`)
 }
 
 const addOrRefreshRecordId = async (recordId) => {
@@ -147,7 +178,18 @@ function confirmDeleteSelected() {
 function columnHeader(columnDef) {
     return columnDef.header || _.startCase(columnDef.key)
 }
-
+const exportOptions = ref([
+    {
+        label: 'XLSX',
+        icon: 'pi pi-file-excel',
+        command: () => exportXLSX()
+    },
+    {
+        label: 'CSV',
+        icon: 'pi pi-file',
+        command: () => exportCSV()
+    }
+])
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
 </script>
@@ -173,11 +215,12 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 <h4 class="m-0">{{ props.title }}</h4>
                 <Toolbar>
                     <template #start>
+                        <span class="mr-5">{{ selectionCount }}</span>
                         <Button v-if="props.canAdd" label="Add" icon="pi pi-plus" severity="secondary" class="mr-2" @click="didClickAddRecord" />
                         <Button v-if="props.canDelete" label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedRecords || !selectedRecords.length" />
                     </template>
                     <template #end>
-                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        <SplitButton label="Export" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
                     </template>
                 </Toolbar>
                 <IconField>
