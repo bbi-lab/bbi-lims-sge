@@ -3,21 +3,10 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
 const config = useRuntimeConfig()
+const confirmPopup = useConfirm()
+
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
-
-onMounted(async () => {
-    if (props.recordId) {
-        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
-        record.value = await RecordService.getRecord(apiBaseUrl.value, props.recordId, props.withClause)
-    } else {
-        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
-        record.value = _.mapValues(formSchema.value?.properties, (x) => null)
-    }
-    if (props.defaultValues) {
-        _.assign(record.value, props.defaultValues)
-    }
-})
 
 const props = defineProps({
   recordId: String,
@@ -29,6 +18,34 @@ const props = defineProps({
   defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
 })
 
+onMounted(() => {
+    refreshForm()
+})
+
+watch(() => props.recordId, async (newValue, oldValue) => {
+  if (newValue != oldValue ) {
+    if (dataChanged.value) {
+        displayDiscardConfirmation.value = true
+    } else {
+        refreshForm()
+    }
+  }
+})
+
+const refreshForm = async function() {
+    if (props.recordId) {
+        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
+        record.value = await RecordService.getRecord(apiBaseUrl.value, props.recordId, props.withClause)
+    } else {
+        formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
+        record.value = _.mapValues(formSchema.value?.properties, (x) => null)
+    }
+    if (props.defaultValues) {
+        _.assign(record.value, props.defaultValues)
+    }
+    dataChanged.value = false
+}
+
 const emit = defineEmits([
     'record-update',
     'record-add',
@@ -39,7 +56,19 @@ const emit = defineEmits([
 const toast = useToast()
 const formSchema = ref()
 const record = ref(null)
+const dataChanged = ref(false)
+const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
+const displayDiscardConfirmation = ref(false)
+
+// cannot watch record directly for changes using deep: true, so watching this computed object instead
+const dataChangeWatchObject = computed(() => Object.assign({}, record.value))
+
+watch(dataChangeWatchObject, (newValue, oldValue) => {
+  if (newValue != oldValue && newValue?.id == oldValue?.id ) {
+    dataChanged.value = true
+  }
+})
 
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
@@ -49,6 +78,29 @@ function deleteRecord() {
         })
     }
     displayDeleteConfirmation.value = false
+}
+
+function cancelEdit(event) {
+    if (dataChanged.value) {
+        confirmPopup.require({
+            target: event.target,
+            message: 'Unsaved changes',
+            icon: 'pi pi-exclamation-triangle',
+            rejectProps: {
+                label: 'Go back',
+                severity: 'secondary',
+                outlined: true
+            },
+            acceptProps: {
+                label: 'Discard changes',
+                severity: 'warn'
+            },
+            accept: () => { emit('cancel') },
+            reject: () => { }
+        })
+    } else {
+        emit('cancel')
+    }
 }
 
 function showDeleteConfirmation() {
@@ -97,19 +149,9 @@ function addNewItemToArray(array, itemProperties) {
     <!-- repeat the form buttons at the top and bottom if there are 5 or more properties -->
     <template v-for="n in 2">
         <div v-if="n==2 || (n<=1 && _.keys(formSchema?.properties).length > 5)">
-            <Button class="m-1" label="Cancel" icon="pi pi-times" text @click="emit('cancel')" />
-            <Button class="m-1" label="Save" icon="pi pi-check" @click="saveRecord" />
+            <Button class="m-1" label="Cancel" icon="pi pi-times" text @click="cancelEdit" />
+            <Button class="m-1" label="Save" icon="pi pi-check" :disabled="!dataChanged" @click="saveRecord" />
             <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
-            <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
-                <div class="flex items-center justify-center">
-                    <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
-                    <span>Are you sure you want to proceed?</span>
-                </div>
-                <template #footer>
-                    <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
-                    <Button label="Yes" icon="pi pi-check" @click="deleteRecord" severity="danger" outlined autofocus />
-                </template>
-            </Dialog>
         </div>
         <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
             <template v-if="record && key in record">
@@ -182,7 +224,26 @@ function addNewItemToArray(array, itemProperties) {
                 </div>
             </template>
         </div>
-        
     </template>
-    
+    <Dialog header="Unsaved changes" v-model:visible="displayDiscardConfirmation" :style="{ width: '350px' }" :modal="true">
+        <div class="flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
+            <span>Discard changes without saving?</span>
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" @click="displayDiscardConfirmation=!displayDiscardConfirmation" text severity="secondary" />
+            <Button label="Yes" icon="pi pi-check" @click="discardConfirmed" severity="danger" outlined autofocus />
+        </template>
+    </Dialog>
+    <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
+        <div class="flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
+            <span>Are you sure you want to proceed?</span>
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
+            <Button label="Yes" icon="pi pi-check" @click="deleteRecord" severity="danger" outlined autofocus />
+        </template>
+    </Dialog>
+    <ConfirmPopup></ConfirmPopup>
 </template>
