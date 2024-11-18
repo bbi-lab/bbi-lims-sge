@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
+import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
 
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
@@ -150,11 +150,11 @@ const exportXLSX = function() {
         rows.push(_.values(record))
     }
     
-    const wb = XLSX.utils.book_new()
-    const ws = XLSX.utils.aoa_to_sheet(rows)
+    const wb = XlsxUtils.book_new()
+    const ws = XlsxUtils.aoa_to_sheet(rows)
 
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
-    XLSX.writeFile(wb, `${exportFilename.value}.xlsx`)
+    XlsxUtils.book_append_sheet(wb, ws, 'Sheet1')
+    writeFileXLSX(wb, `${exportFilename.value}.xlsx`)
 }
 
 const addOrRefreshRecordId = async (recordId) => {
