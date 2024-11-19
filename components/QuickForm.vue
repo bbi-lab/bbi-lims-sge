@@ -62,14 +62,11 @@ const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
 const displayDiscardConfirmation = ref(false)
 
-// cannot watch record directly for changes using deep: true, so watching this computed object instead
-const dataChangeWatchObject = computed(() => Object.assign({}, record.value))
-
-watch(dataChangeWatchObject, (newValue, oldValue) => {
-  if (newValue != oldValue && newValue?.id == oldValue?.id ) {
-    dataChanged.value = true
-  }
-})
+watch(record, (newValue, oldValue) => {
+    if (_.isEqual(newValue, oldValue) && newValue?.id == oldValue?.id ) {
+        dataChanged.value = true
+    }
+}, { deep: true })
 
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
