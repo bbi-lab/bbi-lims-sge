@@ -1,6 +1,8 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
+import { harvestExperiments } from './harvest-experiment'
+import { plasmidExperiments } from './plasmid-experiment'
 import { plates } from './plate'
 import { wells } from './well'
 import { users } from '../user'
@@ -27,7 +29,6 @@ export const pcrExperimentsRelationsConfig: RelationsConfig = {
         }
     }
 }
-
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
 
 export const wellsRelationsConfig: RelationsConfig = {
@@ -58,9 +59,7 @@ export const platesRelationsConfig: RelationsConfig = {
         }
     }
 }
-
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
-
 
 export const projectsRelationsConfig: RelationsConfig = {
     one:{},
@@ -72,7 +71,6 @@ export const projectsRelationsConfig: RelationsConfig = {
         }
     }
 }
-
 export const projectsRelations = relationsConfigToRelations(projects, projectsRelationsConfig)
 
 export const targetsRelationsConfig: RelationsConfig = {
@@ -95,7 +93,6 @@ export const targetsRelationsConfig: RelationsConfig = {
     },
     many: {}
 }
-
 export const targetsRelations = relationsConfigToRelations(targets, targetsRelationsConfig)
 
 export const regionsRelationsConfig: RelationsConfig = {
@@ -108,7 +105,6 @@ export const regionsRelationsConfig: RelationsConfig = {
     },
     many: {}
 }
-
 export const regionsRelations = relationsConfigToRelations(regions, regionsRelationsConfig)
 
 export const cyclesRelationsConfig: RelationsConfig = {
@@ -121,5 +117,28 @@ export const cyclesRelationsConfig: RelationsConfig = {
         }
     }
 }
-
 export const cyclesRelations = relationsConfigToRelations(cycles, cyclesRelationsConfig)
+
+export const harvestExperimentsRelationsConfig: RelationsConfig = {
+    one:{
+        technician: {
+            fields: [harvestExperiments.technician],
+            referenceTable: users,
+            references: [users.id],
+        },
+    },
+    many: {}
+}
+export const harvestExperimentsRelations = relationsConfigToRelations(harvestExperiments, harvestExperimentsRelationsConfig)
+
+export const plasmidExperimentsRelationsConfig: RelationsConfig = {
+    one:{
+        technician: {
+            fields: [plasmidExperiments.technician],
+            referenceTable: users,
+            references: [users.id],
+        },
+    },
+    many: {}
+}
+export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)

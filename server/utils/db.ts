@@ -14,6 +14,8 @@ import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
+import { harvestExperiments } from '../db/schema/sge/harvest-experiment'
+import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import {
   pcrExperimentsRelations,
   platesRelations,
@@ -22,6 +24,8 @@ import {
   targetsRelations,
   regionsRelations,
   cyclesRelations,
+  plasmidExperimentsRelations,
+  harvestExperimentsRelations,
 } from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -48,6 +52,8 @@ export const db = drizzle(
       genes,
       regions,
       cycles,
+      harvestExperiments,
+      plasmidExperiments,
 
       usersRelations,
       userGroupsRelations,
@@ -59,6 +65,8 @@ export const db = drizzle(
       targetsRelations,
       regionsRelations,
       cyclesRelations,
+      harvestExperimentsRelations,
+      plasmidExperimentsRelations,
     }
   }
 )
