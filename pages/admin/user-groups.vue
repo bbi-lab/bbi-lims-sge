@@ -34,9 +34,6 @@ function didDeleteRecord(event) {
     userGroupsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickRecordDelete(event) {
-    console.log(event)
-}
 </script>
 <template>
     <Splitter>
@@ -47,10 +44,10 @@ function didClickRecordDelete(event) {
                 schemaName="select-user-group-schema"
                 title="User Groups"
                 :canAdd="true"
+                :canDelete="false"
                 :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">

@@ -30,13 +30,10 @@ function didUpdateRecord(event) {
     projectsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
-    projectsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-function didClickRecordDelete(event) {
-    console.log(event)
-}
+// function didDeleteRecord(event) {
+//     projectsTable.value.removeRecordId(event.id)
+//     showEditForm.value = false
+// }
 const columnDefs = {
     ncbiAccession: {
         header: 'NCBI accession'

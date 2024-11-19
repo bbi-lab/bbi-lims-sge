@@ -50,9 +50,6 @@ function didDeleteRecord(event) {
     regionsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickRecordDelete(event) {
-    console.log(event)
-}
 
 const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
 const columnDefs = {
@@ -109,7 +106,6 @@ const defaultValues = queryParams
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">

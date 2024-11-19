@@ -47,9 +47,6 @@ function didDeleteRecord(event) {
     pcrExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickRecordDelete(event) {
-    console.log(event)
-}
 
 const columnDefs = {
     startedOn: {
@@ -76,7 +73,6 @@ const columnDefs = {
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">

@@ -44,9 +44,6 @@ function didDeleteRecord(event) {
     cyclesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickRecordDelete(event) {
-    console.log(event)
-}
 const columnDefs = {
     startedOn: {
         format: 'date-time'
@@ -72,7 +69,6 @@ const columnDefs = {
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">

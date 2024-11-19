@@ -154,9 +154,6 @@ function didDeleteRecord(event) {
     targetsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickRecordDelete(event) {
-    console.log(event)
-}
 
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
@@ -178,7 +175,6 @@ const defaultValues = queryParams
                 :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
-                @clickedRecordDelete="didClickRecordDelete"
             />
         </SplitterPanel>
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
