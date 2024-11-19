@@ -1,5 +1,6 @@
 import { addUser, getUserByEmail } from '~/server/services/user-services'
 import { schemas, type NewUser } from '~/server/db/schema/user'
+import {isValidPassword} from '~/server/utils/auth'
 
 export default defineEventHandler<{ body: NewUser }>(async (event) => {
     try {
@@ -15,11 +16,7 @@ export default defineEventHandler<{ body: NewUser }>(async (event) => {
             })
         }
 
-        // pattern for minimum of 8 characters with at least one uppercase, one lowercase, one number, one special char
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-        const validPassword = regex.test(values.password)
-
-        if (!validPassword) {
+        if (!isValidPassword(values.password)) {
             throw createError({
                 statusCode: 400,
                 statusMessage: 'Password must be at least 8 characters long and include a combination of uppercase letters, lowercase letters, numbers, and special characters (@$!%*?&)'
