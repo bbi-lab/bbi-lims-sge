@@ -47,6 +47,17 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+const columnDefs = {
+    startedOn: {
+        format: 'date-time'
+    },
+    endedOn: {
+        format: 'date-time'
+    },
+    targets: {
+        display: false,
+    }
+}
 </script>
 <template>
     <Splitter>
@@ -58,7 +69,7 @@ function didClickRecordDelete(event) {
                 title="SGE Cycles"
                 :rowActions="rowActions"
                 :withClause="{targets: true}"
-                :columnDefs="{startedOn: {format: 'date-time'}, endedOn: {format: 'date-time'}}"
+                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
                 @clickedRecordDelete="didClickRecordDelete"

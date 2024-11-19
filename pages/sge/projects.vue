@@ -48,6 +48,14 @@ function didDeleteRecord(event) {
 function didClickRecordDelete(event) {
     console.log(event)
 }
+const columnDefs = {
+    startedOn: {
+        format: 'date-time'
+    },
+    targets: {
+        display: false,
+    }
+}
 </script>
 <template>
     <Splitter>
@@ -58,7 +66,7 @@ function didClickRecordDelete(event) {
                 schemaName="select"
                 title="SGE Projects"
                 :rowActions="rowActions"
-                :columnDefs="{name: {header: 'Name'}, startedOn: {header: 'Started', format: 'date-time'}}"
+                :columnDefs="columnDefs"
                 :withClause="{targets: true}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

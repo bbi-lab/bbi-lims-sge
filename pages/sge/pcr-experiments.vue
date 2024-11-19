@@ -69,7 +69,7 @@ const columnDefs = {
             <QuickTable
                 ref="pcrExperimentsTable"
                 tableName="pcr-experiments"
-                schemaName="select-pcr-experiment-schema"
+                schemaName="select"
                 title="PCR Experiments"
                 :rowActions="rowActions"
                 :withClause="{plates: true, technician: {columns: {name: true}}}"
@@ -83,7 +83,7 @@ const columnDefs = {
             <QuickForm
                 v-if="showAddForm"
                 tableName="pcr-experiments"
-                schemaName="insert-pcr-experiment-schema"
+                schemaName="insert"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -91,7 +91,7 @@ const columnDefs = {
                 v-if="showEditForm"
                 :recordId="editingRecordId"
                 tableName="pcr-experiments"
-                schemaName="update-pcr-experiment-schema"
+                schemaName="update"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
