@@ -35,7 +35,7 @@ const items = ref([
             <button class="layout-menu-button layout-topbar-action" @click="onMenuToggle">
                 <i class="pi pi-bars"></i>
             </button>
-            <div class="font-semibold text-xl">LIMS</div>
+            <div class="font-semibold text-xl">SGE LIMS</div>
         </div>
 
         <div class="layout-topbar-actions">

@@ -1,6 +1,5 @@
 <template>
     <div class="layout-footer">
-        LIMS by
-        <a href="https://brotmanbaty.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">BBI</a>
+        by <a href="https://brotmanbaty.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">BBI</a>
     </div>
 </template>
