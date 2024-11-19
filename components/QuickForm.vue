@@ -159,7 +159,7 @@ function isReadOnly(key) {
             <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
         </div>
         <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
-            <template v-if="record && key in record">
+            <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
                     <AutoCompleter 
