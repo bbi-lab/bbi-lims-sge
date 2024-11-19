@@ -8,9 +8,9 @@ export default defineEventHandler(async (event) => {
 
     try {
         const body = await readBody(event)
-        const updateSchema = schemas[recordType].update as ZodObject<any>
+        const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
         const values = updateSchema.parse(body)
-        const updatedRecord = await updateRecord(_.get(db, ['query', recordType, 'table']), id, values)
+        const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, values)
 
         return updatedRecord
     } catch (e: any) {
