@@ -42,7 +42,6 @@ export default defineEventHandler(async (event) => {
                 } else if (session) {
                     // add new access and refresh tokens to the session
                     await setUserSession(event, {...session, secure: result})
-                    console.log('Refreshed tokens')
                 }
             } else {
                 if (session) await clearUserSession(event)
