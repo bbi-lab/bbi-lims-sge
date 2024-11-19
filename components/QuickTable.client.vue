@@ -95,6 +95,8 @@ function didClickDeleteSelectedRecords(event) {
         const deletedRecordIds = _.map(result, (x) => x.id)
         records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
         selectedRecords.value = _.reject(selectedRecords.value, (x) => deletedRecordIds.includes(x.id))
+    }).catch(error => {
+        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
     })
     displayDeleteConfirmation.value = false
 }

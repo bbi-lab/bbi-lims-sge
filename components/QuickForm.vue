@@ -76,6 +76,8 @@ function deleteRecord() {
         RecordService.deleteRecord(apiBaseUrl.value, record.value.id).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
+        }).catch(error => {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         })
     }
     displayDeleteConfirmation.value = false
