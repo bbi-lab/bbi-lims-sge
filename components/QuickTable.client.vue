@@ -242,17 +242,17 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable style="min-width: 16rem">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :sort-field="columnDef.format" sortable style="min-width: 16rem">
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :sort-field="columnDef.format" sortable>
                     <template #body="slotProps">
                         {{ columnDef.format(slotProps.data) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable style="min-width: 16rem">
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
                     <template #body="slotProps">
                         {{ slotProps.data[columnDef.key] }}
                     </template>
@@ -261,7 +261,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
         <Column v-if="rowActions">
             <template #body="{ data }">
-                <Button class="mr-1" v-for="(v, k) in rowActions" severity="info" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
+                <Button class="mr-1 mb-1" v-for="(v, k) in rowActions" severity="info" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
         </Column>
     </DataTable>
