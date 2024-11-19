@@ -69,6 +69,28 @@ function didClickRecordDelete(event) {
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
 const defaultValues = queryParams
 
+const columnDefs = {
+    pcrExperimentId: {
+        display: false,
+    },
+    sizeX: {
+        display: false,
+    },
+    sizeY: {
+        display: false,
+    },
+    wells: {
+        display: false,
+    }
+}
+const fieldDefs = {
+    pcrExperimentId: {
+        label: 'PCR experiment ID',
+    },
+    wells: {
+        display: false,
+    }
+}
 </script>
 <template>
     <Splitter>
@@ -76,9 +98,9 @@ const defaultValues = queryParams
             <QuickTable
                 ref="platesTable"
                 tableName="plates" 
-                schemaName="select-plate-schema"
+                schemaName="select"
                 :title="tableTitle || 'Plates'"
-                :columnDefs="{name: {header: 'Name'}}"
+                :columnDefs="columnDefs"
                 :where="whereClauses[0]"
                 :canAdd="true"
                 :canEdit="true"
@@ -94,7 +116,8 @@ const defaultValues = queryParams
             <QuickForm
                 v-if="showAddForm"
                 tableName="plates"
-                schemaName="insert-plate-schema"
+                schemaName="insert"
+                :fieldDefs="fieldDefs"
                 :defaultValues="defaultValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
@@ -103,7 +126,8 @@ const defaultValues = queryParams
                 v-if="showEditForm"
                 :recordId="editingRecordId"
                 tableName="plates"
-                schemaName="update-plate-schema"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
                 :defaultValues="defaultValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
