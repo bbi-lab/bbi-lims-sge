@@ -9,6 +9,8 @@ const model = ref([
             { label: 'Genes', icon: 'pi pi-fw pi-list', to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
             { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
+            { label: 'Harvest experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/harvest-experiments' },
+            { label: 'Plasmid experiments', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmid-experiments' },
         ]
     },
     {
