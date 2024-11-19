@@ -13,7 +13,7 @@ import { regions } from './region'
 import { cycles } from './cycle'
 import { relationsConfigToRelations } from '../relations'
 
-export const pcrExperimentsRelationsConfig: RelationsConfig = {
+const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
             fields: [pcrExperiments.technician],
@@ -31,7 +31,7 @@ export const pcrExperimentsRelationsConfig: RelationsConfig = {
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
 
-export const wellsRelationsConfig: RelationsConfig = {
+const wellsRelationsConfig: RelationsConfig = {
     one:{
         plateId: {
             fields: [wells.plateId],
@@ -43,7 +43,7 @@ export const wellsRelationsConfig: RelationsConfig = {
 }
 export const wellsRelations = relationsConfigToRelations(wells, wellsRelationsConfig)
 
-export const platesRelationsConfig: RelationsConfig = {
+const platesRelationsConfig: RelationsConfig = {
     one:{
         pcrExperiment: {
             fields: [plates.pcrExperimentId],
@@ -61,7 +61,7 @@ export const platesRelationsConfig: RelationsConfig = {
 }
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
 
-export const projectsRelationsConfig: RelationsConfig = {
+const projectsRelationsConfig: RelationsConfig = {
     one:{},
     many: {
         targets: {
@@ -73,7 +73,7 @@ export const projectsRelationsConfig: RelationsConfig = {
 }
 export const projectsRelations = relationsConfigToRelations(projects, projectsRelationsConfig)
 
-export const targetsRelationsConfig: RelationsConfig = {
+const targetsRelationsConfig: RelationsConfig = {
     one:{
         project: {
             fields: [targets.projectId],
@@ -95,7 +95,7 @@ export const targetsRelationsConfig: RelationsConfig = {
 }
 export const targetsRelations = relationsConfigToRelations(targets, targetsRelationsConfig)
 
-export const regionsRelationsConfig: RelationsConfig = {
+const regionsRelationsConfig: RelationsConfig = {
     one:{
         gene: {
             fields: [regions.geneId],
@@ -107,7 +107,7 @@ export const regionsRelationsConfig: RelationsConfig = {
 }
 export const regionsRelations = relationsConfigToRelations(regions, regionsRelationsConfig)
 
-export const cyclesRelationsConfig: RelationsConfig = {
+const cyclesRelationsConfig: RelationsConfig = {
     one: {},
     many: {
         targets: {
@@ -119,7 +119,7 @@ export const cyclesRelationsConfig: RelationsConfig = {
 }
 export const cyclesRelations = relationsConfigToRelations(cycles, cyclesRelationsConfig)
 
-export const harvestExperimentsRelationsConfig: RelationsConfig = {
+const harvestExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
             fields: [harvestExperiments.technician],
@@ -131,7 +131,7 @@ export const harvestExperimentsRelationsConfig: RelationsConfig = {
 }
 export const harvestExperimentsRelations = relationsConfigToRelations(harvestExperiments, harvestExperimentsRelationsConfig)
 
-export const plasmidExperimentsRelationsConfig: RelationsConfig = {
+const plasmidExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
             fields: [plasmidExperiments.technician],
@@ -142,3 +142,15 @@ export const plasmidExperimentsRelationsConfig: RelationsConfig = {
     many: {}
 }
 export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
+
+export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
+    wells: wellsRelationsConfig,
+    plates: platesRelationsConfig,
+    projects: projectsRelationsConfig,
+    targets: targetsRelationsConfig,
+    regions: regionsRelationsConfig,
+    cycles: cyclesRelationsConfig,
+    pcrExperiments: pcrExperimentsRelationsConfig,
+    plasmidExperiments: plasmidExperimentsRelationsConfig,
+    harvestExperiments: harvestExperimentsRelationsConfig,
+}
