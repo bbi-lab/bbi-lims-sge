@@ -13,9 +13,7 @@ export const AuthService = {
             const response = await $fetch(`/api/users/register`, {method: 'POST', body: { name, email, password }})
             return response
         } catch (err:any) {
-            // TODO - more detailed error messages
-            return {success: false, errorMessage: 'Registration failed.'}
+            return {success: false, errorMessage: err.statusMessage || 'Registration failed.'}
         }
-        
     },
 }

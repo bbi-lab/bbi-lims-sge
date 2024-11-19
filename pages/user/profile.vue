@@ -7,6 +7,7 @@ const changingPassword = ref(false)
 const oldPassword = ref()
 const newPassword1 = ref()
 const newPassword2 = ref()
+const passwordsMatch = computed(() => newPassword1.value == newPassword2.value)
 
 const updatePassword = function(event) {
     $fetch(`${config.public.apiBase}/users/changepassword`, {
@@ -73,6 +74,7 @@ const updatePassword = function(event) {
                         :toggleMask="true"
                         :feedback="false"
                     />
+                    <Message :class="{ invisible: !(newPassword2 && !passwordsMatch), 'mb-6': true }" severity="error">Passwords don't match</Message>
                 </div>
                 <div>
                     <Button class="m-1" icon="pi" text label="Cancel" @click="changingPassword=false" />

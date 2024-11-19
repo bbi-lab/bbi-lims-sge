@@ -4,33 +4,21 @@ import { AuthService } from '@/utils/service/AuthService'
 definePageMeta({
   layout: "empty",
 })
-const router = useRouter()
 const toast = useToast()
-
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const name = ref('');
-const passwordsMatch = ref(false);
-
-watch(confirmPassword, (newValue, oldValue) => {
-  if (newValue != oldValue) {
-    passwordsMatch.value = password.value == newValue
-  }
-})
-watch(password, (newValue, oldValue) => {
-  if (newValue != oldValue && confirmPassword.value) {
-    passwordsMatch.value = confirmPassword.value == newValue
-  }
-})
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const name = ref('')
+const passwordsMatch = computed(() => password.value == confirmPassword.value)
 
 async function onDidClickSignUp() {
     if (email.value && password.value) {
         const result:any = await AuthService.registerUser(name.value, email.value, password.value)
+        
         if (result.user) {
             navigateTo('/login')
         } else {
-            toast.add({severity: 'error', summary: "Registration failed"})
+            toast.add({severity: 'error', summary: result.errorMessage})
         }
     }
 }
