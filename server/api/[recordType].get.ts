@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         const selectParams = queryToSelectParams(queryParams) as SelectParams
         
         // requires relevant schema to have been passed on drizzle db init
-        const queryBuilder = _.get(db.query, recordType)
+        const queryBuilder = _.get(db.query, _.camelCase(recordType))
         return await selectRecords(queryBuilder, selectParams)
     } catch (e: any) {
         throw createError({

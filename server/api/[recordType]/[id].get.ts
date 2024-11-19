@@ -9,11 +9,11 @@ export default defineEventHandler(async (event) => {
     
     try {
          // requires relevant schema to have been passed on drizzle db init
-        const queryBuilder = _.get(db.query, recordType)
+        const queryBuilder = _.get(db.query, _.camelCase(recordType))
         
         if (!queryBuilder) throw createError({
             statusCode: 500, 
-            statusMessage: `Could not find queryBuilder, check to make sure ${recordType} is included in drizzle db schemas`
+            statusMessage: `Could not find queryBuilder, check to make sure ${_.camelCase(recordType)} is included in drizzle db schemas`
         })
         const table = _.get(queryBuilder, 'table')
 

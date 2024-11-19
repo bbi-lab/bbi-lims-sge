@@ -8,10 +8,10 @@ export default defineEventHandler(async (event) => {
 
     try {
         const body = await readBody(event)
-        const insertSchema = schemas[recordType].insert as ZodObject<any>
+        const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>
         const values = insertSchema.parse(body)
 
-        const newRecord = await insertRecord(_.get(db, ['query', recordType, 'table']), values)
+        const newRecord = await insertRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), values)
         return newRecord
     } catch (e: any) {
         throw createError({
