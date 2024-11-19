@@ -44,7 +44,26 @@ function clearValue() {
     modelValue.value = null
 }
 function setModelValue() {
-    modelValue.value = _.get(currentValue.value, 'code')
+    if (_.has(currentValue.value, 'code')) {
+        modelValue.value = _.get(currentValue.value, 'code')
+    } else {
+        clearValue()
+    }
+}
+async function lostFocus() {
+    if (_.isString(currentValue.value)) {
+        const whereClause = props.searchFields.length > 1 ?
+            {"or": _.map(props.searchFields, (x) => { return {"startsWith": [{"var": x}, currentValue.value] } })} :
+            {"startsWith": [{"var": props.searchFields[0]}, currentValue.value] }
+        
+        const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
+        if (filtered.length == 1) {
+            currentValue.value = {code: _.get(filtered, [0, props.valueField]), label: getDisplayValue(filtered[0]) }
+        } else {
+            currentValue.value = null
+        }
+        setModelValue()
+    }
 }
 </script>
 <template>
@@ -54,6 +73,7 @@ function setModelValue() {
         optionLabel="label"
         @complete="autocompleteSearch"
         @option-select="setModelValue"
+        @blur="lostFocus"
         :dropdown="dropdown"
         :disabled="disabled" />
     <Button v-if="!disabled" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
