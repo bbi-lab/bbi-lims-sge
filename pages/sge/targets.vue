@@ -173,6 +173,7 @@ const defaultValues = queryParams
                 :where="whereClauses[0]"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
