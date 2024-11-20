@@ -6,6 +6,7 @@ import { regions } from './region'
 import { cycles } from './cycle'
 import { harvestExperiments } from './harvest-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
+import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { createSelectSchema } from 'drizzle-zod'
@@ -41,6 +42,10 @@ const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments)
 const insertPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: dateSchema}).omit({id: true})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
+
+const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments)
+const insertExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: dateSchema}).omit({id: true})
+const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
 
 const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
@@ -90,5 +95,10 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         select: selectPlatesSchema,
         insert: insertPlatesSchema,
         update: updatePlatesSchema,
-    }
+    },
+    extractionExperiments: {
+        select: selectExtractionExperimentsSchema,
+        insert: insertExtractionExperimentsSchema,
+        update: updateExtractionExperimentsSchema,
+    },
 }

@@ -11,6 +11,7 @@ const model = ref([
             { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
             { label: 'Harvest experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/harvest-experiments' },
             { label: 'Plasmid experiments', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmid-experiments' },
+            { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
         ]
     },
     {

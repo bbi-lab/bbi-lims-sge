@@ -16,6 +16,7 @@ import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import { harvestExperiments } from '../db/schema/sge/harvest-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
+import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
 import {
   pcrExperimentsRelations,
   platesRelations,
@@ -26,6 +27,7 @@ import {
   cyclesRelations,
   plasmidExperimentsRelations,
   harvestExperimentsRelations,
+  extractionExperimentsRelations,
 } from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -54,6 +56,7 @@ export const db = drizzle(
       cycles,
       harvestExperiments,
       plasmidExperiments,
+      extractionExperiments,
 
       usersRelations,
       userGroupsRelations,
@@ -67,6 +70,7 @@ export const db = drizzle(
       cyclesRelations,
       harvestExperimentsRelations,
       plasmidExperimentsRelations,
+      extractionExperimentsRelations,
     }
   }
 )
