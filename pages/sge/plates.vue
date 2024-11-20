@@ -82,7 +82,14 @@ const columnDefs = {
 }
 const fieldDefs = {
     pcrExperimentId: {
-        label: 'PCR experiment ID',
+        label: 'PCR experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/pcr-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+        }
     },
     wells: {
         display: false,
