@@ -13,18 +13,14 @@ function logout() {
 }
 const items = ref([
     {
-        items: [
-            {
-                label: 'Profile',
-                icon: 'pi pi-user',
-                command: () => navigateTo('/user/profile')
-            },
-            {
-                label: 'Logout',
-                icon: 'pi pi-sign-out',
-                command: () => logout()
-            }
-        ]
+        label: 'Profile',
+        icon: 'pi pi-user',
+        command: () => navigateTo('/user/profile')
+    },
+    {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: () => logout()
     }
 ])
 </script>
