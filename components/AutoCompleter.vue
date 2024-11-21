@@ -51,18 +51,8 @@ function setModelValue() {
     }
 }
 async function lostFocus() {
-    if (_.isString(currentValue.value)) {
-        const whereClause = props.searchFields.length > 1 ?
-            {"or": _.map(props.searchFields, (x) => { return {"startsWith": [{"var": x}, currentValue.value] } })} :
-            {"startsWith": [{"var": props.searchFields[0]}, currentValue.value] }
-        
-        const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
-        if (filtered.length == 1) {
-            currentValue.value = {code: _.get(filtered, [0, props.valueField]), label: getDisplayValue(filtered[0]) }
-        } else {
-            currentValue.value = null
-        }
-        setModelValue()
+    if (!_.has(currentValue.value, 'code')) {
+        clearValue()
     }
 }
 </script>
