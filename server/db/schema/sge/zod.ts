@@ -5,6 +5,7 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { harvestExperiments } from './harvest-experiment'
+import { transfectionExperiments } from './transfection-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
@@ -34,6 +35,10 @@ const updateCycleSchema = insertCycleSchema
 const selectHarvestExperimentsSchema = createSelectSchema(harvestExperiments)
 const insertHarvestExperimentsSchema = createSelectSchema(harvestExperiments, {startedOn: dateSchema}).omit({id: true})
 const updateHarvestExperimentsSchema = insertHarvestExperimentsSchema
+
+const selectTransfectionExperimentsSchema = createSelectSchema(transfectionExperiments)
+const insertTransfectionExperimentsSchema = createSelectSchema(transfectionExperiments, {startedOn: dateSchema}).omit({id: true})
+const updateTransfectionExperimentsSchema = insertTransfectionExperimentsSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
 const insertPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: dateSchema}).omit({id: true})
@@ -80,6 +85,11 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         select: selectHarvestExperimentsSchema,
         insert: insertHarvestExperimentsSchema,
         update: updateHarvestExperimentsSchema,
+    },
+    transfectionExperiments: {
+        select: selectTransfectionExperimentsSchema,
+        insert: insertTransfectionExperimentsSchema,
+        update: updateTransfectionExperimentsSchema,
     },
     plasmidExperiments: {
         select: selectPlasmidExperimentsSchema,

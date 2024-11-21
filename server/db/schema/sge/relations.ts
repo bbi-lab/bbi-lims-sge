@@ -2,7 +2,9 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
 import { harvestExperiments } from './harvest-experiment'
+import { transfectionExperiments } from './transfection-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
+import { extractionExperiments } from './extraction-experiment'
 import { plates } from './plate'
 import { wells } from './well'
 import { users } from '../user'
@@ -12,7 +14,6 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { relationsConfigToRelations } from '../relations'
-import { extractionExperiments } from './extraction-experiment'
 
 const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{
@@ -132,6 +133,18 @@ const harvestExperimentsRelationsConfig: RelationsConfig = {
 }
 export const harvestExperimentsRelations = relationsConfigToRelations(harvestExperiments, harvestExperimentsRelationsConfig)
 
+const transfectionExperimentsRelationsConfig: RelationsConfig = {
+    one:{
+        technician: {
+            fields: [transfectionExperiments.technician],
+            referenceTable: users,
+            references: [users.id],
+        },
+    },
+    many: {}
+}
+export const transfectionExperimentsRelations = relationsConfigToRelations(transfectionExperiments, transfectionExperimentsRelationsConfig)
+
 const plasmidExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
@@ -166,5 +179,6 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     pcrExperiments: pcrExperimentsRelationsConfig,
     plasmidExperiments: plasmidExperimentsRelationsConfig,
     harvestExperiments: harvestExperimentsRelationsConfig,
+    transfectionExperiments: transfectionExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
 }
