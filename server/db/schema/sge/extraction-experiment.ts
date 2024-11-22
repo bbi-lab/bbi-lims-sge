@@ -12,17 +12,3 @@ export const extractionExperiments: PgTableWithColumns<any> = pgTable('extractio
   technician: uuid('technician').references(() => users.id),
   extractedOn: timestamp('extractedOn').defaultNow(),
 })
-
-const selectExtractionExperimentSchema = createSelectSchema(extractionExperiments)
-const insertExtractionExperimentSchema = createSelectSchema(extractionExperiments, {extractedOn: dateSchema}).omit({id: true})
-const updateExtractionExperimentSchema = insertExtractionExperimentSchema
-
-export const schemas: Record<string, ZodObject<any>> = {
-  selectExtractionExperimentSchema,
-  insertExtractionExperimentSchema,
-  updateExtractionExperimentSchema
-}
-
-export type ExtractionExperiment = InferSelectModel<typeof extractionExperiments>
-export type NewExtractionExperiment = z.infer<typeof insertExtractionExperimentSchema>
-export type UpdateExtractionExperiment = z.infer<typeof updateExtractionExperimentSchema>

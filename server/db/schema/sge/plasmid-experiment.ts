@@ -13,17 +13,3 @@ export const plasmidExperiments: PgTableWithColumns<any> = pgTable('plasmid_expe
   startedOn: timestamp('started_on').defaultNow(),
   temperature: decimal('temperature'),
 })
-
-const selectPlasmidExperimentSchema = createSelectSchema(plasmidExperiments)
-const updatePlasmidExperimentSchema = createSelectSchema(plasmidExperiments, {startedOn: dateSchema}).omit({id: true})
-const insertPlasmidExperimentSchema = updatePlasmidExperimentSchema
-
-export const schemas: Record<string, ZodObject<any>> = {
-    selectPlasmidExperimentSchema,
-    updatePlasmidExperimentSchema,
-    insertPlasmidExperimentSchema
-}
-
-export type PlasmidExperiment = InferSelectModel<typeof plasmidExperiments>
-export type NewPlasmidExperiment = z.infer<typeof insertPlasmidExperimentSchema>
-export type UpdatePlasmidExperiment = z.infer<typeof updatePlasmidExperimentSchema>

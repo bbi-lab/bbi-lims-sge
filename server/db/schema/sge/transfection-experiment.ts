@@ -20,17 +20,3 @@ export const transfectionExperimentsTargets: PgTableWithColumns<any> = pgTable('
 }, (t) => ({
   pk: primaryKey({ columns: [t.transfectionExperimentId, t.targetId] }),
 }))
-
-const selectTransfectionExperimentSchema = createSelectSchema(transfectionExperiments)
-const updateTransfectionExperimentSchema = createSelectSchema(transfectionExperiments, {startedOn: dateSchema}).omit({id: true})
-const insertTransfectionExperimentSchema = updateTransfectionExperimentSchema
-
-export const schemas: Record<string, ZodObject<any>> = {
-    selectTransfectionExperimentSchema,
-    updateTransfectionExperimentSchema,
-    insertTransfectionExperimentSchema
-}
-
-export type TransfectionExperiment = InferSelectModel<typeof transfectionExperiments>
-export type NewTransfectionExperiment = z.infer<typeof insertTransfectionExperimentSchema>
-export type UpdateTransfectionExperiment = z.infer<typeof updateTransfectionExperimentSchema>

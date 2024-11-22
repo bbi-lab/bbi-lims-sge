@@ -13,18 +13,3 @@ export const pcrExperiments: PgTableWithColumns<any> = pgTable('pcr_experiments'
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
 })
-
-const selectPcrExperimentSchema = createSelectSchema(pcrExperiments)
-
-const updatePcrExperimentSchema = createSelectSchema(pcrExperiments, {startedOn: dateSchema}).omit({id: true})
-const insertPcrExperimentSchema = updatePcrExperimentSchema
-
-export const schemas: Record<string, ZodObject<any>> = {
-    selectPcrExperimentSchema,
-    updatePcrExperimentSchema,
-    insertPcrExperimentSchema
-}
-
-export type PcrExperiment = InferSelectModel<typeof pcrExperiments>
-export type NewPcrExperiment = z.infer<typeof insertPcrExperimentSchema>
-export type UpdatePcrExperiment = z.infer<typeof updatePcrExperimentSchema>
