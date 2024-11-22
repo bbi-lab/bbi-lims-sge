@@ -2,7 +2,7 @@ import { selectRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 
 export default defineEventHandler(async (event) => {
-    const { recordType, id } = event.context.params as {recordType: string, id: string}
+    const { recordType, id } = event.context.params as {recordType: keyof typeof db.query, id: string}
 
     const queryParams = getQuery(event) as QueryParams
     const selectParams = queryToSelectParams(queryParams) as SelectParams
