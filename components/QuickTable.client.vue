@@ -17,10 +17,15 @@ onMounted(async() => {
 
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
     columnDefinitions.value =  _.mapValues(
-        tableSchema.value?.properties, (k,v) => {
+        tableSchema.value?.properties, (v, k) => {
+            // anyOf typically indicates a nullable field, but we're only concerned with the non-nullable one
+            if (v.anyOf) { 
+                v = _.find(v.anyOf, (x) => x.type != 'null')
+            }
             return {
-                header: _.startCase(v),
-                format: k.format || 'string'
+                header: _.startCase(k),
+                format: v.format || 'string',
+                type: v.type,
             }
         }
     )
@@ -255,7 +260,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
                     <template #body="slotProps">
-                        {{ slotProps.data[columnDef.key] }}
+                        {{ columnDef.type == 'array' ? _.join(slotProps.data[columnDef.key], ', ') : slotProps.data[columnDef.key] }}
                     </template>
                 </Column>
             </template>
