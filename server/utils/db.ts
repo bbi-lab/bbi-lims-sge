@@ -4,8 +4,6 @@ import postgres from 'postgres'
 import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
-import {specimens} from '../db/schema/specimen';
-import {geneGroups} from '../db/schema/gene-group'
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
 import {plates} from '../db/schema/sge/plate'
 import {wells} from '../db/schema/sge/well'
@@ -44,8 +42,6 @@ export const db = drizzle(
       users,
       userGroups,
       userGroupMemberships,
-      specimens,
-      geneGroups,
       pcrExperiments,
       plates,
       wells,

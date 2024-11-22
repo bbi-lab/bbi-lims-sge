@@ -3,7 +3,6 @@ import _ from 'lodash'
 import { users, userGroups, userGroupMemberships } from './user'
 import { PgTableWithColumns } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { specimens } from './specimen'
 
 // relations config
 // defines M:M between users and groups
@@ -71,26 +70,4 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
   export const usersRelations = relationsConfigToRelations(users, usersRelationsConfig)
   export const userGroupsRelations = relationsConfigToRelations(userGroups, userGroupsRelationsConfig)
   export const userGroupMembershipsRelations = relationsConfigToRelations(userGroupMemberships, userGroupMembershipsRelationsConfig)
-  
-  export const specimensRelationsConfig: RelationsConfig = {
-    one:{
-      createdBy: {
-        fields: [specimens.createdBy],
-        referenceTable: users,
-        references: [users.id],
-      },
-      updatedBy: {
-        fields: [specimens.createdBy],
-        referenceTable: users,
-        references: [users.id],
-      },
-      deletedBy: {
-        fields: [specimens.createdBy],
-        referenceTable: users,
-        references: [users.id],
-      },
-    },
-    many: {}
-  }
-  export const specimensRelations = relationsConfigToRelations(specimens, specimensRelationsConfig)
   
