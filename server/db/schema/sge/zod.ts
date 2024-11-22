@@ -24,7 +24,7 @@ const selectGeneSchema = createSelectSchema(genes)
 const updateGeneSchema = selectGeneSchema.omit({id: true})
 
 const selectRegionSchema = createSelectSchema(regions)
-const insertRegionSchema = selectRegionSchema.omit({id: true, fixedEdits: true})
+const insertRegionSchema = selectRegionSchema.omit({id: true})
 const updateRegionSchema = insertRegionSchema
 
 const selectCycleSchema = createSelectSchema(cycles)
