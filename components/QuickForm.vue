@@ -133,17 +133,23 @@ function saveRecord() {
         })
     }
 }
-function addNewItemToArray(array, itemProperties) {
-    const newItem = {}
-    for (const [k,v] of Object.entries(itemProperties)) {
-        // default value for foreign key should be set in JSON schema based on props.recordId 
-        if (v.default) {
-            _.set(newItem, k, v.default)
-        } else {
-            _.set(newItem, k, null)
+function addNewItemToArray(record, key, schemaItems) {
+    if (!_.isArray(record[key])) record[key] = []
+
+    if (schemaItems.properties) {
+        const newItem = {}
+        for (const [k,v] of Object.entries(itemProperties)) {
+            // default value for foreign key should be set in JSON schema based on props.recordId 
+            if (v.default) {
+                _.set(newItem, k, v.default)
+            } else {
+                _.set(newItem, k, null)
+            }
         }
+        record[key].push(newItem)
+    } else if (schemaItems.type == 'string') {
+        record[key].push('')
     }
-    array.push(newItem)
 }
 function isReadOnly(key) {
     return props.readOnly ? true : _.has(props.defaultValues, key)
@@ -157,7 +163,15 @@ function isReadOnly(key) {
             <Button v-if="!readOnly" class="m-1" label="Save" icon="pi pi-check" :disabled="!dataChanged" @click="saveRecord" />
             <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
         </div>
-        <div v-if="n==1" v-for="(val, key, index) in formSchema?.properties">
+        <!-- 
+            - insert the form only on the first iteration (n==1)
+            - `anyOf` properties will typically indicate a nullable field, using :set so val will be the first non-nullable type
+        -->
+        <div 
+            v-if="n==1"
+            v-for="(val, key, index) in formSchema?.properties" 
+            :set="val = val.anyOf ? _.find(val.anyOf, (x) => x.type != 'null') : val"
+        >
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
@@ -200,11 +214,11 @@ function isReadOnly(key) {
                 </div>
                 <div class="mb-5" v-else-if="val.type=='array'">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                    <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record[key], val.items.properties)" />
+                    <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
                     <template v-for="(arrayItem, arrayIndex) in record[key]">
                         <!-- Check that all array item properties are covered by JSON schema -->
-                        <div class="mb-5" v-if="arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                        <div class="mb-5" v-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                             <template v-for="itemKey in Object.keys(arrayItem)" >
                                 <span class="mr-5" v-if="val.items.properties[itemKey].oneOf">
                                     <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="val.items.properties[itemKey].oneOf" optionLabel="title" optionValue="const" />
@@ -214,11 +228,15 @@ function isReadOnly(key) {
                                     <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" />
                                 </span>
                             </template>
-                            <Button icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                        </div>
+                        <div class="mt-2" v-else-if="val.items.type=='string'">
+                            <InputText v-model="record[key][arrayIndex]" />
+                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <!-- Array properties not covered by JSON schema -->
-                        <template v-else-if="record[key][arrayKey]">
-                            <InputText disabled v-model="record[key][arrayKey]" />
+                        <template v-else=>
+                            <InputText disabled v-model="record[key][arrayIndex]" />
                         </template>
                     </template>
                 </div>
