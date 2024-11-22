@@ -14,7 +14,6 @@ import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
-import { harvestExperiments } from '../db/schema/sge/harvest-experiment'
 import { transfectionExperiments } from '../db/schema/sge/transfection-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
@@ -27,7 +26,6 @@ import {
   regionsRelations,
   cyclesRelations,
   plasmidExperimentsRelations,
-  harvestExperimentsRelations,
   transfectionExperimentsRelations,
   extractionExperimentsRelations,
 } from '../db/schema/sge/relations'
@@ -56,7 +54,6 @@ export const db = drizzle(
       genes,
       regions,
       cycles,
-      harvestExperiments,
       transfectionExperiments,
       plasmidExperiments,
       extractionExperiments,
@@ -71,7 +68,6 @@ export const db = drizzle(
       targetsRelations,
       regionsRelations,
       cyclesRelations,
-      harvestExperimentsRelations,
       transfectionExperimentsRelations,
       plasmidExperimentsRelations,
       extractionExperimentsRelations,

@@ -1,7 +1,6 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
-import { harvestExperiments } from './harvest-experiment'
 import { transfectionExperiments } from './transfection-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
@@ -121,18 +120,6 @@ const cyclesRelationsConfig: RelationsConfig = {
 }
 export const cyclesRelations = relationsConfigToRelations(cycles, cyclesRelationsConfig)
 
-const harvestExperimentsRelationsConfig: RelationsConfig = {
-    one:{
-        technician: {
-            fields: [harvestExperiments.technician],
-            referenceTable: users,
-            references: [users.id],
-        },
-    },
-    many: {}
-}
-export const harvestExperimentsRelations = relationsConfigToRelations(harvestExperiments, harvestExperimentsRelationsConfig)
-
 const transfectionExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
@@ -178,7 +165,6 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     plasmidExperiments: plasmidExperimentsRelationsConfig,
-    harvestExperiments: harvestExperimentsRelationsConfig,
     transfectionExperiments: transfectionExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
 }
