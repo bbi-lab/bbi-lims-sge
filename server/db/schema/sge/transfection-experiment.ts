@@ -1,9 +1,10 @@
 import { type InferSelectModel } from 'drizzle-orm'
-import { pgTable, PgTableWithColumns, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, PgTableWithColumns, timestamp, uuid, varchar, primaryKey } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { users } from '../user'
+import { targets } from './target'
 import { dateSchema } from '../../helpers/schemas'
 
 export const transfectionExperiments: PgTableWithColumns<any> = pgTable('transfection_experiments', {
@@ -12,6 +13,13 @@ export const transfectionExperiments: PgTableWithColumns<any> = pgTable('transfe
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
 })
+
+export const transfectionExperimentsTargets: PgTableWithColumns<any> = pgTable('transfection_experiments_targets', {
+  transfectionExperimentId: uuid('transfection_experiment_id').references(() => transfectionExperiments.id),
+  targetId: uuid('target_id').references(() => targets.id),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.transfectionExperimentId, t.targetId] }),
+}))
 
 const selectTransfectionExperimentSchema = createSelectSchema(transfectionExperiments)
 const updateTransfectionExperimentSchema = createSelectSchema(transfectionExperiments, {startedOn: dateSchema}).omit({id: true})
