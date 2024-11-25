@@ -6,8 +6,11 @@ const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const transfectionExperimentsTable = ref()
 const router = useRouter()
+const config = useRuntimeConfig()
 
 const rowActions = {}
+const editWithClause = Object.freeze({transfectionExperimentsTargets: {with: {target:  true}}})
+const displayWithClause = Object.freeze({transfectionExperimentsTargets:{columns: {}, with: {target:  true}}})
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -48,6 +51,26 @@ const columnDefs = {
         format: (x) => _.get(x, 'technician.name'),
     }
 }
+
+const fieldDefs = {
+    'transfectionExperimentsTargets.*': {
+        label: 'Targets',
+        component: 'ManyToMany',
+        props: {
+            baseUrl: `${config.public.apiBase}/transfection-experiments-targets`,
+            fixedValueField: 'transfectionExperimentId',
+            variableField: 'targetId',
+            component: 'AutoCompleter',
+            componentProps: {
+                searchBaseUrl: `${config.public.apiBase}/targets`,
+                searchFields: ['region.gene.symbol', 'region.name', 'name'],
+                valueField: 'id',
+                displayFields: ['region.gene.symbol', 'region.name', 'name'],
+                searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+            },
+        }
+    },
+}
 </script>
 <template>
     <Splitter>
@@ -69,6 +92,7 @@ const columnDefs = {
                 v-if="showAddForm"
                 tableName="transfection-experiments"
                 schemaName="insert"
+                :fieldDefs="{transfectionExperimentsTargets: {display: false}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -77,6 +101,8 @@ const columnDefs = {
                 :recordId="editingRecordId"
                 tableName="transfection-experiments"
                 schemaName="update"
+                :withClause="editWithClause"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
