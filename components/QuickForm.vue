@@ -138,7 +138,7 @@ function addNewItemToArray(record, key, schemaItems) {
 
     if (schemaItems.properties) {
         const newItem = {}
-        for (const [k,v] of Object.entries(itemProperties)) {
+        for (const [k,v] of Object.entries(schemaItems.properties)) {
             // default value for foreign key should be set in JSON schema based on props.recordId 
             if (v.default) {
                 _.set(newItem, k, v.default)
@@ -217,8 +217,16 @@ function isReadOnly(key) {
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
                     <template v-for="(arrayItem, arrayIndex) in record[key]">
+                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
+                            <ManyToMany
+                                v-model="record[key][arrayIndex]"
+                                v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
+                                :disabled="isReadOnly(key)"
+                            />
+                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                        </div>
                         <!-- Check that all array item properties are covered by JSON schema -->
-                        <div class="mb-5" v-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                        <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                             <template v-for="itemKey in Object.keys(arrayItem)" >
                                 <span class="mr-5" v-if="val.items.properties[itemKey].oneOf">
                                     <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="val.items.properties[itemKey].oneOf" optionLabel="title" optionValue="const" />
