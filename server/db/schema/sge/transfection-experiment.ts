@@ -15,8 +15,8 @@ export const transfectionExperiments: PgTableWithColumns<any> = pgTable('transfe
 })
 
 export const transfectionExperimentsTargets: PgTableWithColumns<any> = pgTable('transfection_experiments_targets', {
-  transfectionExperimentId: uuid('transfection_experiment_id').references(() => transfectionExperiments.id),
-  targetId: uuid('target_id').references(() => targets.id),
+  transfectionExperimentId: uuid('transfection_experiment_id').references(() => transfectionExperiments.id).notNull(),
+  targetId: uuid('target_id').references(() => targets.id).notNull(),
 }, (t) => ({
   pk: primaryKey({ columns: [t.transfectionExperimentId, t.targetId] }),
 }))

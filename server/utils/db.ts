@@ -12,7 +12,7 @@ import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
-import { transfectionExperiments } from '../db/schema/sge/transfection-experiment'
+import { transfectionExperiments, transfectionExperimentsTargets } from '../db/schema/sge/transfection-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
 import {
@@ -25,6 +25,7 @@ import {
   cyclesRelations,
   plasmidExperimentsRelations,
   transfectionExperimentsRelations,
+  transfectionExperimentsTargetsRelations,
   extractionExperimentsRelations,
 } from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
@@ -51,6 +52,7 @@ export const db = drizzle(
       regions,
       cycles,
       transfectionExperiments,
+      transfectionExperimentsTargets,
       plasmidExperiments,
       extractionExperiments,
 
@@ -65,6 +67,7 @@ export const db = drizzle(
       regionsRelations,
       cyclesRelations,
       transfectionExperimentsRelations,
+      transfectionExperimentsTargetsRelations,
       plasmidExperimentsRelations,
       extractionExperimentsRelations,
     }

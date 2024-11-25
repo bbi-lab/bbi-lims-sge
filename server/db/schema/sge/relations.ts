@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
-import { transfectionExperiments } from './transfection-experiment'
+import { transfectionExperiments, transfectionExperimentsTargets } from './transfection-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { plates } from './plate'
@@ -92,7 +92,13 @@ const targetsRelationsConfig: RelationsConfig = {
             references: [regions.id],
         }
     },
-    many: {}
+    many: {
+        transfectionExperimentsTargets: {
+            table: transfectionExperimentsTargets,
+            schema: createSelectSchema(transfectionExperimentsTargets),
+            fields: [transfectionExperimentsTargets.targetId],
+        }
+    }
 }
 export const targetsRelations = relationsConfigToRelations(targets, targetsRelationsConfig)
 
@@ -128,9 +134,32 @@ const transfectionExperimentsRelationsConfig: RelationsConfig = {
             references: [users.id],
         },
     },
-    many: {}
+    many: {
+        transfectionExperimentsTargets: {
+            table: transfectionExperimentsTargets,
+            schema: createSelectSchema(transfectionExperimentsTargets),
+            fields: [transfectionExperimentsTargets.transfectionExperimentId],
+        }
+    }
 }
 export const transfectionExperimentsRelations = relationsConfigToRelations(transfectionExperiments, transfectionExperimentsRelationsConfig)
+
+const transfectionExperimentsTargetsRelationsConfig: RelationsConfig = {
+    one:{
+        transfectionExperiment: {
+            fields: [transfectionExperimentsTargets.transfectionExperimentId],
+            referenceTable: transfectionExperiments,
+            references: [transfectionExperiments.id],
+        },
+        target: {
+            fields: [transfectionExperimentsTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {}
+}
+export const transfectionExperimentsTargetsRelations = relationsConfigToRelations(transfectionExperimentsTargets, transfectionExperimentsTargetsRelationsConfig)
 
 const plasmidExperimentsRelationsConfig: RelationsConfig = {
     one:{
