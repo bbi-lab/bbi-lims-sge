@@ -10,6 +10,7 @@ const props = defineProps({
   searchWithClause: {type: Object},
   dropdown: {type: Boolean},
   disabled: {type: Boolean},
+  hideClearButton: {type: Boolean},
 })
 
 const modelValue = defineModel()
@@ -66,5 +67,5 @@ async function lostFocus() {
         @blur="lostFocus"
         :dropdown="dropdown"
         :disabled="disabled" />
-    <Button v-if="!disabled" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
+    <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
 </template>
