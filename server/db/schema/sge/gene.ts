@@ -12,7 +12,7 @@ export const genes: PgTableWithColumns<any> = pgTable('genes', {
   orientation: geneOrientationEnum('orientation'),
   name: varchar('name', { length: 255 }),
   symbol: varchar('symbol', { length: 50 }),
-  geneId: integer('gene_id'),
+  ncbiGeneId: integer('ncbi_gene_id'),
   geneType: varchar('gene_type', { length: 50 }),
   transcriptsAccession: varchar('transcripts_accession', { length: 50 }),
   proteinAcccession: varchar('protein_acccession', { length: 50 }),
