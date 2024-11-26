@@ -9,8 +9,6 @@ const router = useRouter()
 const config = useRuntimeConfig()
 
 const rowActions = {}
-const editWithClause = Object.freeze({transfectionExperimentsTargets: {with: {target:  true}}})
-const displayWithClause = Object.freeze({transfectionExperimentsTargets:{columns: {}, with: {target:  true}}})
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -43,12 +41,41 @@ function didDeleteRecord(event) {
     showEditForm.value = false
 }
 
+
+const editWithClause = Object.freeze({transfectionExperimentsTargets: {with: {target:  true}}})
+const displayWithClause = Object.freeze({
+    technician: {columns: {name: true}},
+    transfectionExperimentsTargets:{
+        columns: {},
+        with: {
+            target:  {
+                columns: {
+                    name: true,
+                },
+                with: {
+                    region:{
+                        columns: {name: true}, 
+                        with: {
+                            gene: {
+                                columns: {symbol: true}
+                            }
+                        }
+                    },
+                }
+            }
+        }
+    },
+})
+
 const columnDefs = {
     startedOn: {
         format: 'date-time'
     },
     technician: {
         format: (x) => _.get(x, 'technician.name'),
+    },
+    transfectionExperimentsTargets: {
+        header: 'Targets',
     }
 }
 
@@ -81,7 +108,7 @@ const fieldDefs = {
                 schemaName="select"
                 title="Transfection experiments"
                 :rowActions="rowActions"
-                :withClause="{technician: {columns: {name: true}}}"
+                :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
