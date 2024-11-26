@@ -107,7 +107,7 @@ function showDeleteConfirmation() {
     displayDeleteConfirmation.value = true
 }
 function getLabel(key) {
-    return _.get(props.fieldDefs, [key, 'label'], _.startCase(key))
+    return _.get(props.fieldDefs, [key, 'label'], _.get(props.fieldDefs, [`${key}.*`, 'label'], _.startCase(key)))
 }
 function saveRecord() {
     if (props.readOnly) return
