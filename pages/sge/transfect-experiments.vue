@@ -75,6 +75,9 @@ const columnDefs = {
     },
     transfectTargets: {
         header: 'Targets',
+        format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
+            return _.join(_.compact([y.target?.region?.gene?.symbol, y.target?.region?.name, y.target?.name]), ': ')
+        }), ', ')
     }
 }
 
