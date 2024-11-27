@@ -15,6 +15,7 @@ const modelValue = defineModel()
 </script>
 <template>
     <AutoCompleter
+        :key="modelValue[variableField]"
         v-if="component=='AutoCompleter'"
         v-model="modelValue[variableField]"
         v-bind="componentProps"
