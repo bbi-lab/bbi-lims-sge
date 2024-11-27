@@ -152,7 +152,7 @@ function addNewItemToArray(record, key, schemaItems) {
     }
 }
 function isReadOnly(key) {
-    return props.readOnly ? true : _.has(props.defaultValues, key)
+    return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 </script>
 <template>

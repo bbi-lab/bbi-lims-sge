@@ -113,10 +113,10 @@ const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
     }
 })
 // Include an AutoCompleter widget for adding new targets
-const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
-
-addFormFieldDefs['targetId'] = {
+editFormFieldDefs['targetId'] = {
+    label: 'Target',
     component: 'AutoCompleter',
+    readOnly: true,
     props: {
         searchBaseUrl: `${config.public.apiBase}/targets`,
         searchFields: ['region.gene.symbol', 'region.name', 'name'],
@@ -125,6 +125,9 @@ addFormFieldDefs['targetId'] = {
         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
     },
 }
+const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
+_.set(addFormFieldDefs, 'targetId.readOnly', false)
+
 const defaultValues = queryParams
 
 </script>
