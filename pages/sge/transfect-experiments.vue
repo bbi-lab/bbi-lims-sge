@@ -6,8 +6,7 @@ const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const transfectionExperimentsTable = ref()
 const config = useRuntimeConfig()
-
-const rowActions = {}
+const router = useRouter()
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -78,6 +77,15 @@ const columnDefs = {
         format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
             return _.join(_.compact([y.target?.region?.gene?.symbol, y.target?.region?.name, y.target?.name]), ': ')
         }), ', ')
+    }
+}
+
+const rowActions = {
+    targets: {
+        label: (data) => { return `${data.transfectTargets?.length || 0} Targets`}, 
+        action: (data) => {
+            router.push({path:'/sge/transfect-targets', query: {'experimentId': data.id}})
+        }
     }
 }
 

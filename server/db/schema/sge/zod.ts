@@ -4,7 +4,7 @@ import { targets } from './target'
 import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
-import { transfectExperiments } from './transfect-experiment'
+import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
@@ -31,9 +31,13 @@ const selectCycleSchema = createSelectSchema(cycles)
 const insertCycleSchema = createSelectSchema(cycles, {startedOn: dateSchema, endedOn: dateSchema}).omit({id: true})
 const updateCycleSchema = insertCycleSchema
 
-const selecttransfectExperimentsSchema = createSelectSchema(transfectExperiments)
-const inserttransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: dateSchema}).omit({id: true})
-const updatetransfectExperimentsSchema = inserttransfectExperimentsSchema
+const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments)
+const insertTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: dateSchema}).omit({id: true})
+const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
+
+const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
+const insertTransfectTargetsSchema = selectTransfectTargetsSchema.omit({id: true})
+const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
 const insertPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: dateSchema}).omit({id: true})
@@ -77,9 +81,14 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         update: updateCycleSchema,
     },
     transfectExperiments: {
-        select: selecttransfectExperimentsSchema,
-        insert: inserttransfectExperimentsSchema,
-        update: updatetransfectExperimentsSchema,
+        select: selectTransfectExperimentsSchema,
+        insert: insertTransfectExperimentsSchema,
+        update: updateTransfectExperimentsSchema,
+    },
+    transfectTargets: {
+        select: selectTransfectTargetsSchema,
+        insert: insertTransfectTargetsSchema,
+        update: updateTransfectTargetsSchema,
     },
     plasmidExperiments: {
         select: selectPlasmidExperimentsSchema,

@@ -1,0 +1,168 @@
+<script setup>
+import { RecordService } from '@/utils/service/RecordService'
+import _ from 'lodash'
+
+const showAddForm = ref(false)
+const showEditForm = ref(false)
+const editingRecordId = ref(null)
+const transfectTargetsTable = ref()
+const tableTitle = ref(null)
+const router = useRouter()
+const config = useRuntimeConfig()
+
+const rowActions = {}
+const route = useRoute()
+const queryParams = route.query
+
+onMounted(async() => {
+    if (queryParams.experimentId) {
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, queryParams.experimentId)
+        tableTitle.value = `${experiment.name}: targets`
+    } else {
+        tableTitle.value = 'Transfection experiment targets'
+    }
+})
+
+function didClickRecordEdit(event) {
+    editingRecordId.value = event.id
+    showEditForm.value = true
+    showAddForm.value = false
+}
+
+function didClickRecordAdd() {
+    showAddForm.value = true
+    showEditForm.value = false
+}
+function didClickCancelAddForm() {
+    showAddForm.value = false
+}
+function didClickCancelEditForm() {
+    editingRecordId.value = null
+    showEditForm.value = false
+}
+
+function didAddRecord(event) {
+    transfectTargetsTable.value.addOrRefreshRecordId(event.id)
+    showAddForm.value = false
+}
+function didUpdateRecord(event) {
+    transfectTargetsTable.value.addOrRefreshRecordId(event.id)
+    showEditForm.value = false
+}
+function didDeleteRecord(event) {
+    transfectTargetsTable.value.removeRecordId(event.id)
+    showEditForm.value = false
+}
+const columnDefs = {
+    target: {
+        format: (x) => { return `${x.target?.region?.gene?.symbol}: ${x.target?.region?.name}: ${x.target?.name}` },
+        index: 0,
+    },
+    experimentId: {
+        display: false,
+    },
+    targetId: {
+        display: false,
+    },
+    snvLibraryConc: {
+        header: 'SNV library conc. (ng/μL)',
+    },
+    snvLibraryTo3ugVol: {
+        header: 'Vol. of SNVlib to 3µg (μL)',
+    },
+    sgRna: {
+        header: 'sgRNA',
+    },
+    sgRnaConc: {
+        header: 'Current sgRNA conc. (ng/μL)'
+    },
+    sgRnaTo12ugVol: {
+        header: 'Vol. of sgRNA to 12µg (μL)'
+    },
+    sgRnaNegControl: {
+        header: 'sgRNA negative control'
+    },
+    hprt1SgRnaConc: {
+        header: 'HPRT1 sgRNA conc. (ng/μL)'
+    },
+    hprt1SgRnaTo12ugVol: {
+        header: 'Vol. of HPRT1 sgRNA to 12µg (μL)'
+    },
+    xfectBuffer: {
+        header: 'Xfect Buffer (μL)'
+    },
+    xfectPolymerPerTransfect: {
+        header: 'Xfect polymer (μL) per transfection'
+    },
+    transfectionCount: {
+        header: '# transfections'
+    },
+    snvLibNeeded: {
+        header: 'SNV library needed (μL)'
+    },
+    sgRnaNeeded: {
+        header: 'sgRNA needed (μL)'
+    }
+}
+
+// Generate field defs from column defs to avoid repeating ourselves
+const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => { 
+    return {
+        display: v.display ?? true, 
+        label: v.header || k,
+    }
+})
+// Include an AutoCompleter widget for adding new targets
+const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
+
+addFormFieldDefs['targetId'] = {
+    component: 'AutoCompleter',
+    props: {
+        searchBaseUrl: `${config.public.apiBase}/targets`,
+        searchFields: ['region.gene.symbol', 'region.name', 'name'],
+        valueField: 'id',
+        displayFields: ['region.gene.symbol', 'region.name', 'name'],
+        searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+    },
+}
+const defaultValues = queryParams
+
+</script>
+<template>
+    <Splitter>
+        <SplitterPanel :size="50">
+            <QuickTable
+                ref="transfectTargetsTable"
+                tableName="transfectTargets"
+                schemaName="select"
+                :title="tableTitle"
+                :rowActions="rowActions"
+                :columnDefs="columnDefs"
+                :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}"
+                @clickedRecordEdit="didClickRecordEdit"
+                @clickedRecordAdd="didClickRecordAdd"
+            />
+        </SplitterPanel>
+        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+            <QuickForm
+                v-if="showAddForm"
+                tableName="transfectTargets"
+                schemaName="insert"
+                :fieldDefs="addFormFieldDefs"
+                :defaultValues="defaultValues"
+                @cancel="didClickCancelAddForm"
+                @recordAdd="didAddRecord"
+            />
+            <QuickForm
+                v-if="showEditForm"
+                :recordId="editingRecordId"
+                tableName="transfectTargets"
+                schemaName="update"
+                :fieldDefs="editFormFieldDefs"
+                @cancel="didClickCancelEditForm"
+                @recordUpdate="didUpdateRecord"
+                @recordDelete="didDeleteRecord"
+            />
+        </SplitterPanel>
+    </Splitter>
+</template>

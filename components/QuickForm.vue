@@ -170,6 +170,7 @@ function isReadOnly(key) {
         <div 
             v-if="n==1"
             v-for="(val, key, index) in formSchema?.properties" 
+            class="mt-5"
             :set="val = val.anyOf ? _.find(val.anyOf, (x) => x.type != 'null') : val"
         >
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
