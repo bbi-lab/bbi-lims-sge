@@ -4,7 +4,7 @@ import { targets } from './target'
 import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
-import { transfectionExperiments } from './transfection-experiment'
+import { transfectExperiments } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
@@ -31,9 +31,9 @@ const selectCycleSchema = createSelectSchema(cycles)
 const insertCycleSchema = createSelectSchema(cycles, {startedOn: dateSchema, endedOn: dateSchema}).omit({id: true})
 const updateCycleSchema = insertCycleSchema
 
-const selectTransfectionExperimentsSchema = createSelectSchema(transfectionExperiments)
-const insertTransfectionExperimentsSchema = createSelectSchema(transfectionExperiments, {startedOn: dateSchema}).omit({id: true})
-const updateTransfectionExperimentsSchema = insertTransfectionExperimentsSchema
+const selecttransfectExperimentsSchema = createSelectSchema(transfectExperiments)
+const inserttransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: dateSchema}).omit({id: true})
+const updatetransfectExperimentsSchema = inserttransfectExperimentsSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
 const insertPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: dateSchema}).omit({id: true})
@@ -76,10 +76,10 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         insert: insertCycleSchema,
         update: updateCycleSchema,
     },
-    transfectionExperiments: {
-        select: selectTransfectionExperimentsSchema,
-        insert: insertTransfectionExperimentsSchema,
-        update: updateTransfectionExperimentsSchema,
+    transfectExperiments: {
+        select: selecttransfectExperimentsSchema,
+        insert: inserttransfectExperimentsSchema,
+        update: updatetransfectExperimentsSchema,
     },
     plasmidExperiments: {
         select: selectPlasmidExperimentsSchema,

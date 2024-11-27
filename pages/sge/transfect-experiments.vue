@@ -5,7 +5,6 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const transfectionExperimentsTable = ref()
-const router = useRouter()
 const config = useRuntimeConfig()
 
 const rowActions = {}
@@ -42,10 +41,10 @@ function didDeleteRecord(event) {
 }
 
 
-const editWithClause = Object.freeze({transfectionExperimentsTargets: {with: {target:  true}}})
+const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
     technician: {columns: {name: true}},
-    transfectionExperimentsTargets:{
+    transfectTargets:{
         columns: {},
         with: {
             target:  {
@@ -74,18 +73,18 @@ const columnDefs = {
     technician: {
         format: (x) => _.get(x, 'technician.name'),
     },
-    transfectionExperimentsTargets: {
+    transfectTargets: {
         header: 'Targets',
     }
 }
 
 const fieldDefs = {
-    'transfectionExperimentsTargets.*': {
+    'transfectTargets.*': {
         label: 'Targets',
         component: 'ManyToMany',
         props: {
-            baseUrl: `${config.public.apiBase}/transfection-experiments-targets`,
-            fixedValueField: 'transfectionExperimentId',
+            baseUrl: `${config.public.apiBase}/transfect-targets`,
+            fixedValueField: 'experimentId',
             variableField: 'targetId',
             component: 'AutoCompleter',
             componentProps: {
@@ -104,7 +103,7 @@ const fieldDefs = {
         <SplitterPanel :size="50">
             <QuickTable
                 ref="transfectionExperimentsTable"
-                tableName="transfection-experiments"
+                tableName="transfect-experiments"
                 schemaName="select"
                 title="Transfection experiments"
                 :rowActions="rowActions"
@@ -117,16 +116,16 @@ const fieldDefs = {
         <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
-                tableName="transfection-experiments"
+                tableName="transfect-experiments"
                 schemaName="insert"
-                :fieldDefs="{transfectionExperimentsTargets: {display: false}}"
+                :fieldDefs="{transfectTargets: {display: false}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="showEditForm"
                 :recordId="editingRecordId"
-                tableName="transfection-experiments"
+                tableName="transfect-experiments"
                 schemaName="update"
                 :withClause="editWithClause"
                 :fieldDefs="fieldDefs"

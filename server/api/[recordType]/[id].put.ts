@@ -2,7 +2,7 @@ import { updateRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
-import { updateTargets } from '~/server/services/transfection-experiment-services'
+import { updateTargets } from '~/server/services/transfect-experiment-services'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
         const values = updateSchema.parse(body)
 
         // many-to-many
-        if (_.camelCase(recordType) == 'transfectionExperiments' && _.isArray(body.transfectionExperimentsTargets)) {
-            await updateTargets(id, _.map(body.transfectionExperimentsTargets, (x) => x.targetId))
+        if (_.camelCase(recordType) == 'transfectExperiments' && _.isArray(body.transfectTargets)) {
+            await updateTargets(id, _.map(body.transfectTargets, (x) => x.targetId))
         }
 
         const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, values)

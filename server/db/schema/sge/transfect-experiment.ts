@@ -7,16 +7,16 @@ import { users } from '../user'
 import { targets } from './target'
 import { dateSchema } from '../../helpers/schemas'
 
-export const transfectionExperiments: PgTableWithColumns<any> = pgTable('transfection_experiments', {
+export const transfectExperiments: PgTableWithColumns<any> = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
 })
 
-export const transfectionExperimentsTargets: PgTableWithColumns<any> = pgTable('transfection_experiments_targets', {
-  transfectionExperimentId: uuid('transfection_experiment_id').references(() => transfectionExperiments.id).notNull(),
+export const transfectTargets: PgTableWithColumns<any> = pgTable('transfect_targets', {
+  experimentId: uuid('experiment_id').references(() => transfectExperiments.id).notNull(),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
 }, (t) => ({
-  pk: primaryKey({ columns: [t.transfectionExperimentId, t.targetId] }),
+  pk: primaryKey({ columns: [t.experimentId, t.targetId] }),
 }))
