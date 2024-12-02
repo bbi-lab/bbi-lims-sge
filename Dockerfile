@@ -1,13 +1,13 @@
 ARG NODE_VERSION=20.18.0
 
-FROM node:${NODE_VERSION}-slim as base
+FROM node:${NODE_VERSION}-slim AS base
 
 ARG PORT=3000
 
 WORKDIR /src
 
 # Build
-FROM base as build
+FROM base AS build
 
 COPY --link package.json package.json .
 COPY --link pnpm-lock.yaml pnpm-lock.yaml .
