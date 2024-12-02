@@ -1,11 +1,6 @@
-import { type InferSelectModel } from 'drizzle-orm'
-import { pgTable, PgTableWithColumns, timestamp, uuid, numeric, integer, varchar } from 'drizzle-orm/pg-core'
-import { createSelectSchema } from 'drizzle-zod'
-import _ from 'lodash'
-import { z, ZodObject } from 'zod'
+import { pgTable, PgTableWithColumns, timestamp, uuid, numeric, integer, varchar, text } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
-import { dateSchema } from '../../helpers/schemas'
 
 export const transfectExperiments: PgTableWithColumns<any> = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -28,7 +23,8 @@ export const transfectTargets: PgTableWithColumns<any> = pgTable('transfect_targ
   hprt1SgRnaTo12ugVol: numeric('hprt1_sg_rna_to_12ug_vol'),
   xfectBuffer: numeric('xfect_buffer'),
   xfectPolymerPerTransfect: numeric('xfect_polymer_per_transfect'),
-  transfectionCount: integer('transfection_Count'),
+  transfectionCount: integer('transfection_count'),
   snvLibNeeded: numeric('snv_lib_needed'),
   sgRnaNeeded: numeric('sg_rna_needed'),
+  notes: text('notes'),
 })
