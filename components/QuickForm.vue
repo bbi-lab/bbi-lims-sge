@@ -224,6 +224,10 @@ function getFieldType(val, key) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="isReadOnly(key)" />
                 </div>
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='integer'">
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" minFractionDigits="0" maxFractionDigits="0" /> 
+                </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
