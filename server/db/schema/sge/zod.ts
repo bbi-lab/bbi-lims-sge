@@ -10,7 +10,7 @@ import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { createSelectSchema } from 'drizzle-zod'
-import { ZodObject } from 'zod'
+import { z, ZodObject } from 'zod'
 
 const selectProjectSchema = createSelectSchema(projects)
 const insertProjectSchema = createSelectSchema(projects, {startedOn: dateSchema}).omit({id: true})
@@ -21,10 +21,20 @@ const insertTargetSchema = selectTargetSchema.omit({id: true})
 const updateTargetSchema = insertTargetSchema
 
 const selectGeneSchema = createSelectSchema(genes)
-const updateGeneSchema = selectGeneSchema.omit({id: true})
+const updateGeneSchema = createSelectSchema(genes, {
+    startPosition: z.bigint({ coerce: true }),
+    endPosition: z.bigint({ coerce: true }),
+    ncbiGeneId: z.bigint({ coerce: true }),
+    proteinLength: z.bigint({ coerce: true }),
+}).omit({id: true}).partial()
 
 const selectRegionSchema = createSelectSchema(regions)
-const insertRegionSchema = selectRegionSchema.omit({id: true})
+const insertRegionSchema = createSelectSchema(regions, {
+    ampliconStart: z.bigint({ coerce: true }),
+    ampliconEnd: z.bigint({ coerce: true }),
+    snvLibraryStart: z.bigint({ coerce: true }),
+    snvLibraryEnd: z.bigint({ coerce: true })
+}).omit({id: true}).partial()
 const updateRegionSchema = insertRegionSchema
 
 const selectCycleSchema = createSelectSchema(cycles)
@@ -36,7 +46,9 @@ const insertTransfectExperimentsSchema = createSelectSchema(transfectExperiments
 const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
 const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
-const insertTransfectTargetsSchema = selectTransfectTargetsSchema.omit({id: true})
+const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
+    transfectionCount: z.bigint({ coerce: true })
+}).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
