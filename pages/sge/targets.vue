@@ -112,7 +112,10 @@ const fieldDefs = {
             displayFields: ['name'],
             dropdown: true,
         }
-    }
+    },
+    transfectTargets: {
+        display: false,
+    },
 }
 
 onMounted(async() => {
