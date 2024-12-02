@@ -55,6 +55,11 @@ const columnDefs = {
         display: false,
     }
 }
+const fieldDefs = {
+    targets: {
+        display: false,
+    }
+}
 </script>
 <template>
     <Splitter>
@@ -76,6 +81,7 @@ const columnDefs = {
                 v-if="showAddForm"
                 tableName="cycles"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -84,6 +90,7 @@ const columnDefs = {
                 :recordId="editingRecordId"
                 tableName="cycles"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
