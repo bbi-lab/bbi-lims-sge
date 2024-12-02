@@ -208,7 +208,6 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         dataKey="id"
         scrollable 
         scrollHeight="flex"
-        :selectionMode="selectionMode"
         :filters="filters"
         :paginator="paginator"
         :rows="rowsPerPage" 
