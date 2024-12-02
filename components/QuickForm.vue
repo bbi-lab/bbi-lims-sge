@@ -154,6 +154,21 @@ function addNewItemToArray(record, key, schemaItems) {
 function isReadOnly(key) {
     return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
+
+function getFieldType(val, key) {
+    const fieldType = _.get(props.fieldDefs, [key, 'type'])
+    if (fieldType) {
+        return fieldType
+    } else if (_.isArray(val.type) && _.includes(val.type, 'null') && val.type.length == 2) {
+        // getting field type for nullable fields
+        return _.find(val.type, (x) => x != 'null')
+    } else if (val.format=='date-time' || val.anyOf?.[0]?.format=='date-time') {
+        return 'date-time'
+    } else {
+        // no field type defined
+        return val.type
+    }
+}
 </script>
 <template>
     <!-- repeat the form buttons at the top and bottom if there are 5 or more properties -->
@@ -182,7 +197,7 @@ function isReadOnly(key) {
                         :disabled="isReadOnly(key)"
                     />
                 </div>
-                <div class="mb-5" v-else-if="val.format=='date-time' || val.anyOf?.[0]?.format=='date-time'">
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
                         class="w-80"
@@ -205,15 +220,15 @@ function isReadOnly(key) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
                 </div>
-                <div class="mb-5" v-else-if="val.type=='boolean'">
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="isReadOnly(key)" />
                 </div>
-                <div class="mb-5" v-else-if="val.type=='number' || _.isEqual(val.type, ['number', 'null'])">
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" />
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
                 </div>
-                <div class="mb-5" v-else-if="val.type=='array'">
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='array'">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
