@@ -74,6 +74,9 @@ const columnDefs = {
         format: (x) => _.get(x, 'cycle.name'),
         index: 3,
     },
+    transfectTargets: {
+        display: false,
+    },
 }
 
 const fieldDefs = {
