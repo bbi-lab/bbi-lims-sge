@@ -78,6 +78,11 @@ const displayWithClause = Object.freeze({
                         }
                     }
                 }
+            },
+            experiment: {
+                columns: {
+                    name: true
+                },
             }
         }
     },
@@ -89,12 +94,14 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs = {
-    transfectTargetId: {
-        display: false,
+    experiment: {
+        format: (x) => { return _.get(x, 'transfectTargetId.experiment.name')},
+        index: 0,
     },
     transfectTargetId: {
         header: 'Target',
-        format: (x) => { return _.get(x, 'transfectTargetId.target.name') || `${_.get(x, 'transfectTargetId.target.region.gene.symbol')} : ${_.get(x, 'transfectTargetId.target.region.name')}`}
+        format: (x) => { return _.get(x, 'transfectTargetId.target.name') || `${_.get(x, 'transfectTargetId.target.region.gene.symbol')} : ${_.get(x, 'transfectTargetId.target.region.name')}`},
+        index: 1,
     },
     harvestedBy: {
         format: (x) => _.get(x, 'harvestedBy.name'),
@@ -110,24 +117,32 @@ const columnDefs = {
 const fieldDefs = {
     transfectTargetId: {
         label: 'Target',
-        component: 'AutoCompleter',
+        component: 'NestedSelect',
         props: {
+            parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
+            parentSearchFields: ['name'],
+            parentValueField: 'id',
+            parentDisplayFields: ['name'],
+            parentIftaLabel: 'Experiment',
+
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
             valueField: 'id',
             displayOptions: {
                 primary: {
                     fields: ['target.name'],
-                },
+                }, 
                 secondary: {
-                    fields: ['target.region.gene.symbol', 'target.region.name'],
-                    operator: 'join',
-                    delimiter: ': ',
-                },
+                    fields: ['target.region.gene.symbol', 'target.region.name']
+                }
             },
-            searchWithClause: {target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}},
+            parentKeyField: 'experimentId',
+            searchWithClause: {
+                target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
+            },
         }
     },
+
     storageBoxId: {
         label: 'Storage box',
         component: 'AutoCompleter',
@@ -140,6 +155,7 @@ const fieldDefs = {
                     fields: ['name'],
                 },
             },
+            dropdown: true,
         }
     },
     storageBoxLoc: {
