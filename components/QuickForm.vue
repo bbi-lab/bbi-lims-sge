@@ -210,7 +210,7 @@ function getFieldType(val, key) {
                         autofocus
                         :disabled="isReadOnly(key)"
                     />
-                    <Button icon="pi pi-times" severity="secondary" outlined @click="record[key]=null" />
+                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
                 <div class="mb-5" v-else-if="val.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -259,18 +259,18 @@ function getFieldType(val, key) {
                             <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <InputText v-model="record[key][arrayIndex]" />
+                            <InputText class="w-80" v-model="record[key][arrayIndex]" />
                             <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <!-- Array properties not covered by JSON schema -->
                         <template v-else=>
-                            <InputText disabled v-model="record[key][arrayIndex]" />
+                            <InputText class="w-80" disabled v-model="record[key][arrayIndex]" />
                         </template>
                     </template>
                 </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputText :id="key" v-model="record[key]" :disabled="isReadOnly(key)" />
+                    <InputText :id="key" v-model="record[key]" class="w-80" :disabled="isReadOnly(key)" />
                 </div>
             </template>
         </div>
