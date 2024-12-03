@@ -197,6 +197,14 @@ function getFieldType(val, key) {
                         :disabled="isReadOnly(key)"
                     />
                 </div>
+                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
+                    <NestedSelect 
+                        v-model="record[key]"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :disabled="isReadOnly(key)"
+                    />
+                </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
