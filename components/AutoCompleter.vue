@@ -26,15 +26,21 @@ const props = defineProps({
   dropdown: {type: Boolean},
   disabled: {type: Boolean},
   hideClearButton: {type: Boolean},
+  iftaLabel: {type: String},
 })
 
 const modelValue = defineModel()
 const currentValue = ref()
 const suggestions = ref([])
 
+const emit = defineEmits([
+    'value-changed'
+])
+
 function getDisplayValue(record) {
     const result = []
     let optionUsed = 'default'
+
     if (props.displayOptions) {
         for (const field of props.displayOptions.primary.fields) {
             if (_.get(record, field)) result.push(_.get(record, field))
@@ -58,20 +64,19 @@ function getDisplayValue(record) {
     const delimiter = _.get(props.displayOptions, [optionUsed, 'delimiter'], ': ')
     const operator = _.get(props.displayOptions, [optionUsed, 'operator'], 'join')
     if (operator=='join') {
-        console.log(result)
-        return _.join(result, delimiter)
+        return _.join(_.compact(result), delimiter)
     } else if (operator=='coalesce') {
         return _.find(result, (value) => !_.isEmpty(value))
     }
-
 }
 
-onMounted(async () => {
-    if (modelValue.value) {
+watch(modelValue, async (newValue, oldValue) => {
+    if (!_.isEqual(newValue, oldValue)) {
         const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
         currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
-    }
-})
+    }},
+    { immediate: true },
+)
 
 async function autocompleteSearch(event) {
     const whereClause = props.searchFields.length > 1 ?
@@ -84,10 +89,12 @@ async function autocompleteSearch(event) {
 function clearValue() {
     currentValue.value = null
     modelValue.value = null
+    emit('value-changed', null)
 }
 function setModelValue() {
     if (_.has(currentValue.value, 'code')) {
         modelValue.value = _.get(currentValue.value, 'code')
+        emit('value-changed', modelValue.value)
     } else {
         clearValue()
     }
@@ -97,18 +104,25 @@ async function lostFocus() {
         clearValue()
     }
 }
+const inputId = useId()
+
 </script>
 <template>
-    <AutoComplete 
-        v-model="currentValue" 
-        class="w-80"
-        :suggestions="suggestions" 
-        optionLabel="label"
-        @complete="autocompleteSearch"
-        @option-select="setModelValue"
-        @blur="lostFocus"
-        :dropdown="dropdown"
-        :disabled="disabled" />
+    <component :is="_.isEmpty(iftaLabel) ? 'span' : 'IftaLabel'">
+        <AutoComplete 
+            v-model="currentValue" 
+            class="w-80"
+            inputId="inputId"
+            :suggestions="suggestions" 
+            optionLabel="label"
+            @complete="autocompleteSearch"
+            @option-select="setModelValue"
+            @blur="lostFocus"
+            :dropdown="dropdown"
+            :disabled="disabled" />
+        <label v-if="!_.isEmpty(iftaLabel)" for="inputId">{{ iftaLabel }}</label>
+    </component>
+    
     <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
 </template>
 
