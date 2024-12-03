@@ -80,6 +80,11 @@ const displayWithClause = Object.freeze({
                 }
             }
         }
+    },
+    storageBoxId: {
+        columns: {
+            name: true,
+        }
     }
 })
 
@@ -96,7 +101,7 @@ const columnDefs = {
     },
     storageBoxId: {
         header: 'Storage',
-        format: (x) => { return _.compact([_.get(x, 'storageBoxId', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+        format: (x) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
     },
     storageBoxLoc: {
         display: false
@@ -122,6 +127,23 @@ const fieldDefs = {
             },
             searchWithClause: {target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}},
         }
+    },
+    storageBoxId: {
+        label: 'Storage box',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayOptions: {
+                primary: {
+                    fields: ['name'],
+                },
+            },
+        }
+    },
+    storageBoxLoc: {
+        label: 'Storage box location'
     },
 }
 
