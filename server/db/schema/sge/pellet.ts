@@ -1,6 +1,7 @@
 import { pgTable, PgTableWithColumns, timestamp, uuid, boolean, varchar, doublePrecision } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
+import { storageBoxes } from './storage-box'
 
 export const pellets: PgTableWithColumns<any> = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -10,6 +11,6 @@ export const pellets: PgTableWithColumns<any> = pgTable('pellets', {
   isCurrent: boolean('is_current'),
   isBackup: boolean('is_backup'),
   quant: doublePrecision('quant'),
-  storageBoxId: uuid('storage_box_id'),
+  storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
   storageBoxLoc: varchar('storage_box_loc'),
 })
