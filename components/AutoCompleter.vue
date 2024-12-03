@@ -23,6 +23,7 @@ const props = defineProps({
   */
   displayOptions: {type: Object},
   searchWithClause: {type: Object},
+  searchWhereClause: {type: Object},
   dropdown: {type: Boolean},
   disabled: {type: Boolean},
   hideClearButton: {type: Boolean},
@@ -79,10 +80,15 @@ watch(modelValue, async (newValue, oldValue) => {
 )
 
 async function autocompleteSearch(event) {
-    const whereClause = props.searchFields.length > 1 ?
+    let whereClause = props.searchFields.length > 1 ?
         {"or": _.map(props.searchFields, (x) => { return {"startsWith": [{"var": x}, event.query] } })} :
         {"startsWith": [{"var": props.searchFields[0]}, event.query] }
+
+    if (props.searchWhereClause) {
+        whereClause = {"and": [whereClause, props.searchWhereClause]}
+    }
     const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
+
     suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x) }})
 }
 
