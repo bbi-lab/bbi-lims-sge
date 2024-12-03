@@ -13,6 +13,7 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { pellets } from './pellet'
+import { storageBoxes } from './storage-box'
 import { relationsConfigToRelations } from '../relations'
 
 const pcrExperimentsRelationsConfig: RelationsConfig = {
@@ -198,10 +199,27 @@ const pelletsRelationsConfig: RelationsConfig = {
             referenceTable: transfectTargets,
             references: [transfectTargets.id],
         },
+        storageBoxId: {
+            fields: [pellets.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
     },
     many: {}
 }
 export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
+
+const storageBoxesRelationsConfig: RelationsConfig = {
+    one: {},
+    many: {
+        pellets: {
+            table: pellets,
+            schema: createSelectSchema(pellets),
+            fields: [pellets.storageBoxId],
+        }
+    }
+}
+export const storageBoxesRelations = relationsConfigToRelations(storageBoxes, storageBoxesRelationsConfig)
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wells: wellsRelationsConfig,
@@ -215,4 +233,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
     pellets: pelletsRelationsConfig,
+    storageBoxes: storageBoxesRelationsConfig,
 }
