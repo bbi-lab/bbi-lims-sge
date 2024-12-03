@@ -15,6 +15,8 @@ const model = ref([
             { label: 'Transfection experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/transfect-experiments' },
             { label: 'Plasmid experiments', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmid-experiments' },
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
+            { label: 'Pellets', icon: 'pi pi-fw pi-circle-fill', to: '/sge/pellets' },
+            { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
         ]
     },
     {
