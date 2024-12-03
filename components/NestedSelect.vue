@@ -15,6 +15,7 @@ const props = defineProps({
   displayFields: {type: Array, default: ['name']},
   displayOptions: {type: Object},
   searchWithClause: {type: Object},
+  searchWhereClause: {type: Object},
   parentKeyField: {type: String, required: true},
 
   hideClearButton: {type: Boolean}
@@ -22,11 +23,23 @@ const props = defineProps({
 
 const modelValue = defineModel()
 const parentValue = ref()
+const searchWhereClauseFinal = ref()
+
 
 onMounted(async () => {
     if (modelValue.value) {
         const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value)
         parentValue.value = _.get(record, props.parentKeyField)
+    }
+})
+
+watch(parentValue, (newValue, oldValue) => {
+    if (!_.isEmpty(newValue, oldValue)) {
+        const filter = {"==":[{"var": props.parentKeyField}, newValue]}
+        searchWhereClauseFinal.value = props.searchWhereClause ? {and: [
+                filter,
+                props.searchWhereClause
+            ]} : filter
     }
 })
 
@@ -64,6 +77,7 @@ function clearValues(event) {
                 :displayFields="displayFields"
                 :displayOptions="displayOptions"
                 :searchWithClause="searchWithClause"
+                :searchWhereClause="searchWhereClauseFinal"
                 :dropdown="true"
                 :disabled="_.isEmpty(parentValue)"
                 :hideClearButton="true"
