@@ -9,6 +9,7 @@ import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
+import { pellets } from './pellet'
 import { createSelectSchema } from 'drizzle-zod'
 import { z, ZodObject } from 'zod'
 
@@ -67,6 +68,10 @@ const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
 const updatePlatesSchema = insertPlatesSchema
 
+const selectPelletsSchema = createSelectSchema(pellets)
+const insertPelletsSchema = createSelectSchema(pellets, {harvestedOn: dateSchema}).omit({id: true})
+const updatePelletsSchema = insertPelletsSchema
+
 export const schemas: Record<string, Record<string, ZodObject<any>>> = {
     projects: {
         select: selectProjectSchema,
@@ -121,5 +126,10 @@ export const schemas: Record<string, Record<string, ZodObject<any>>> = {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
         update: updateExtractionExperimentsSchema,
+    },
+    pellets: {
+        select: selectPelletsSchema,
+        insert: insertPelletsSchema,
+        update: updatePelletsSchema,
     },
 }

@@ -12,6 +12,7 @@ import { targets } from './target'
 import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
+import { pellets } from './pellet'
 import { relationsConfigToRelations } from '../relations'
 
 const pcrExperimentsRelationsConfig: RelationsConfig = {
@@ -185,6 +186,23 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
 }
 export const extractionExperimentsRelations = relationsConfigToRelations(extractionExperiments, extractionExperimentsRelationsConfig)
 
+const pelletsRelationsConfig: RelationsConfig = {
+    one:{
+        harvestedBy: {
+            fields: [pellets.harvestedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        transfectTargetId: {
+            fields: [pellets.transfectTargetId],
+            referenceTable: transfectTargets,
+            references: [transfectTargets.id],
+        },
+    },
+    many: {}
+}
+export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
@@ -196,4 +214,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     plasmidExperiments: plasmidExperimentsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
+    pellets: pelletsRelationsConfig,
 }
