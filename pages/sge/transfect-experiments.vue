@@ -102,7 +102,7 @@ const fieldDefs = {
                 searchBaseUrl: `${config.public.apiBase}/targets`,
                 searchFields: ['region.gene.symbol', 'region.name', 'name'],
                 valueField: 'id',
-                displayFields: ['region.gene.symbol', 'region.name', 'name'],
+                displayOptions: {primary: {fields: ['name']}, secondary: {fields: ['region.gene.symbol', 'region.name'], operator: 'join', seperator: ': '}},
                 searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
             },
         }
