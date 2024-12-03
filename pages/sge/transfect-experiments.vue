@@ -1,5 +1,6 @@
 <script setup>
 import _ from 'lodash'
+import moment from 'moment'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -77,7 +78,14 @@ const columnDefs = {
         format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
             return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
         }), ', ')
-    }
+    },
+    currentDay: {
+        header: 'Current day #',
+        format: (x) => { 
+            const days = moment().diff(moment(x.startedOn), 'days')
+            return `Day ${days > 17 ? '17+' : days}` 
+        }
+    },
 }
 
 const rowActions = {
@@ -86,7 +94,14 @@ const rowActions = {
         action: (data) => {
             router.push({path:'/sge/transfect-targets', query: {'experimentId': data.id}})
         }
-    }
+    },
+    pellets: {
+        label: (data) => { return `${data.transfectPellets?.length || 0} Pellets`}, 
+        action: (data) => {
+            router.push({path:'/sge/pellets', query: {'experimentId': data.id}})
+        }
+    },
+
 }
 
 const fieldDefs = {
