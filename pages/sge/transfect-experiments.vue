@@ -108,6 +108,8 @@ const fieldDefs = {
     'transfectTargets.*': {
         label: 'Targets',
         component: 'ManyToMany',
+        canDelete: false,
+        canUpdate: false,
         props: {
             baseUrl: `${config.public.apiBase}/transfect-targets`,
             fixedValueField: 'experimentId',

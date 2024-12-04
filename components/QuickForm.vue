@@ -244,14 +244,14 @@ function getFieldType(val, key) {
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
-                    <template v-for="(arrayItem, arrayIndex) in record[key]">
+                    <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]">
                         <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
                             <ManyToMany
                                 v-model="record[key][arrayIndex]"
                                 v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                :disabled="isReadOnly(key)"
+                                :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
                             />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <Button v-if="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <!-- Check that all array item properties are covered by JSON schema -->
                         <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
@@ -274,7 +274,7 @@ function getFieldType(val, key) {
                         <template v-else=>
                             <InputText class="w-80" disabled v-model="record[key][arrayIndex]" />
                         </template>
-                    </template>
+                    </div>
                 </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
