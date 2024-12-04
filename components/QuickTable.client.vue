@@ -87,9 +87,10 @@ const filters = ref({
 })
 
 function formatDate(value) {
-    const date = value ? new Date(value) : null
-    return date ? date.toISOString().split('T')[0] : ''
+    const isoDate = value ? new Date(value) : null
+    return isoDate?.toLocaleDateString('fr-CA') || ''
 }
+
 function didClickEditRecord(event) {
     emit('clicked-record-edit', event)
 }
@@ -266,7 +267,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
         <Column v-if="rowActions">
             <template #body="{ data }">
-                <Button class="mr-1 mb-1" v-for="(v, k) in rowActions" severity="info" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
+                <Button class="mr-1 mb-1" v-for="(v, k) in rowActions" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
         </Column>
     </DataTable>
