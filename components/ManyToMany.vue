@@ -1,5 +1,4 @@
 <script setup>
-import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 
 const props = defineProps({
