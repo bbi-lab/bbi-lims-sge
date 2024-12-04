@@ -83,7 +83,7 @@ const columnDefs = {
         header: 'Current day #',
         format: (x) => { 
             const days = moment().diff(moment(x.startedOn), 'days')
-            return `Day ${days > 17 ? '17+' : days}` 
+            return days ? `Day ${days > 17 ? '17+' : days}` : ''
         }
     },
 }
@@ -100,6 +100,13 @@ const rowActions = {
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'experimentId': data.id}})
         }
+    },
+    harvest: {
+        label: () => 'Harvest', 
+        action: (data) => {
+            router.push({path:`/sge/transfect-experiment/${data.id}/harvest`})
+        },
+        severity: 'warn',
     },
 
 }
