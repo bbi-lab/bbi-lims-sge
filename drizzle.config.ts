@@ -6,7 +6,11 @@ export default defineConfig({
   out: './server/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NUXT_DB_URL!,
-    ssl: "require"
+    host: process.env.NUXT_DB_HOST || 'localhost',
+    port: Number(process.env.NUXT_DB_PORT || '5432'),
+    user: process.env.NUXT_DB_USER || 'postgres',
+    password: process.env.NUXT_DB_PASSWORD || 'postgres',
+    database: process.env.NUXT_DB_DATABASE_NAME || '',
+    ssl: 'require'
   }
 })

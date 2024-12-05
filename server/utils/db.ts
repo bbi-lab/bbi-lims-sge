@@ -41,7 +41,14 @@ import _ from 'lodash'
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
 
 export const db = drizzle(
-  postgres(config?.dbUrl || process.env.NUXT_DB_URL),
+  postgres({
+    host: config?.dbHost || process.env.NUXT_DB_HOST || 'localhost',
+    port: config?.dbPort || (process.env.NUXT_DB_PORT ? parseInt(process.env.NUXT_DB_PORT) : null) || 5432,
+    database: config?.dbDatabaseName || process.env.NUXT_DB_DATABASE_NAME || 'sge_lims_db',
+    user: config?.dbUsername || process.env.NUXT_DB_USER || 'postgres',
+    password: config?.dbPassword || process.env.NUXT_DB_PASSWORD || 'postgres',
+    ssl: config?.dbSsl || (process.env.NUXT_DB_SSL != null ? process.env.NUXT_DB_SSL.toLowerCase() == 'true' : false)
+  }),
   {
     schema: {
       users,
