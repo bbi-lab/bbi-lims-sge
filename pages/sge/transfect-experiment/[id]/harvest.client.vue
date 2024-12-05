@@ -62,8 +62,8 @@ function formatTargetName(val) {
 
 const timeElapsed = computed(() => {
     const duration = moment.duration(moment(now.value).diff(moment(currentExperiment.value.startedOn)))
-    if (duration.days() < 18) {
-        return `${duration.days()} days, ${duration.hours().toString().padStart(2, '0')}:${duration.minutes().toString().padStart(2, '0')}:${duration.seconds().toString().padStart(2, '0')}`
+    if (Math.floor(duration.asDays()) < 18) {
+        return `${Math.floor(duration.asDays())} days, ${duration.hours().toString().padStart(2, '0')}:${duration.minutes().toString().padStart(2, '0')}:${duration.seconds().toString().padStart(2, '0')}`
     } else {
         return '>17 days'
     }
