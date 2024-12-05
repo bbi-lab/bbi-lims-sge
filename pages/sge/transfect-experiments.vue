@@ -107,6 +107,8 @@ const rowActions = {
             router.push({path:`/sge/transfect-experiment/${data.id}/harvest`})
         },
         severity: 'warn',
+        icon: 'pi pi-bolt',
+        iconPos: 'right',
     },
 
 }
