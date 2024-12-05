@@ -21,8 +21,8 @@ const now = ref(new Date())
 const availableProtocols = [{code: 'AllPrep', label: 'AllPrep'}, {code: 'DNeasy', label: 'DNeasy'}]
 
 // set min date to Day 5, max to Day 17
-const minDate = computed(() => currentExperiment.value?.startedOn ? moment(currentExperiment.value.startedOn).add(5, 'days').set({ hour: 0, minute: 0 }).toDate() : new Date())
-const maxDate = computed(() => moment(minDate?.value).add(12, 'days').set({ hour: 23, minute: 59 }).toDate())
+const minDate = computed(() => currentExperiment.value?.startedOn ? moment(currentExperiment.value.startedOn).add(5, 'days').toDate() : new Date()) // .set({ hour: 0, minute: 0 })
+const maxDate = computed(() => moment(minDate?.value).add(12, 'days').toDate()) // .set({ hour: 23, minute: 59 })
 // disable all dates in min/max range except Day 5, 9, 13, and 17
 const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
 
