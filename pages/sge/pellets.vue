@@ -175,6 +175,7 @@ const defaultValues = queryParams
             <QuickTable
                 ref="pelletsTable"
                 tableName="pellets"
+                title="Pellets"
                 schemaName="select"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
