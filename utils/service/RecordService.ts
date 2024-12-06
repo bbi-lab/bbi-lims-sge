@@ -30,8 +30,14 @@ export const RecordService = {
 
     async addRecord(baseUrl: string, record: any) {
         const {id, ...values} = record
-        const newRecord = await $fetch(`${baseUrl}`, {method: 'POST', body: values})
-        return newRecord
+        const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: [values]})
+        return _.get(newRecords, 0)
+    },
+
+    async addRecords(baseUrl: string, records: any) {
+        const recordsCopy = _.map(records, (x) => _.omit(x, 'id'))
+        const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: recordsCopy})
+        return newRecords
     },
 
     async deleteRecord(baseUrl: string, id: string) {

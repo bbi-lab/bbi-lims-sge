@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { insertRecord } from '~/server/services/generic-services'
+import { insertRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 
@@ -9,10 +9,10 @@ export default defineEventHandler(async (event) => {
     try {
         const body = await readBody(event)
         const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>
-        const values = insertSchema.parse(body)
+        const records = _.map(body, (x) => insertSchema.parse(x) )
 
-        const newRecord = await insertRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), values)
-        return newRecord
+        const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
+        return newRecords
     } catch (e: any) {
         throw createError({
             statusCode: 400,

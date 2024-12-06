@@ -32,7 +32,15 @@ export async function insertRecord(table: PgTableWithColumns<any>, values: any) 
   
     return newRecord
   }
+
+export async function insertRecords(table: PgTableWithColumns<any>, records: Array<any>) {
+    const newRecords = await db
+      .insert(table)
+      .values(records)
+      .returning()
   
+    return newRecords
+  }
 export async function updateRecord(table: PgTableWithColumns<any>, id: any, values: any) {
     const [updatedRecord] = await db
         .update(table)
