@@ -23,7 +23,7 @@ onMounted(async() => {
                 v = _.find(v.anyOf, (x) => x.type != 'null')
             }
             return {
-                header: _.startCase(k),
+                header: formatFieldLabel(k),
                 format: v.format || 'string',
                 type: v.type,
             }

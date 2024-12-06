@@ -107,7 +107,7 @@ function showDeleteConfirmation() {
     displayDeleteConfirmation.value = true
 }
 function getLabel(key) {
-    return _.get(props.fieldDefs, [key, 'label'], _.get(props.fieldDefs, [`${key}.*`, 'label'], _.startCase(key)))
+    return _.get(props.fieldDefs, [key, 'label'], _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key)))
 }
 function saveRecord() {
     if (props.readOnly) return
@@ -190,7 +190,7 @@ function getFieldType(val, key) {
         >
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <AutoCompleter 
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
@@ -198,7 +198,7 @@ function getFieldType(val, key) {
                     />
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], _.startCase(key)) }}</label>
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <NestedSelect 
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
