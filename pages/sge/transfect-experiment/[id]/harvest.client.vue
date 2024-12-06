@@ -5,6 +5,8 @@ import _ from 'lodash'
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
+const toast = useToast()
 const experimentId = route.params.id
 
 const currentExperiment = ref()
@@ -90,19 +92,34 @@ function submitPellets() {
         _.set(pellet, 'transfectTargetId', pellet.target.code)
         _.unset(pellet, 'target')
     }
-    const result = RecordService.addRecords(`${config.public.apiBase}/pellets`, newPellets)
+    
+    RecordService.addRecords(`${config.public.apiBase}/pellets`, newPellets).then((result) => {
+        toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} Records added`, life: 3000 })
+        pelletsToAdd.value = []
+    }).catch(error => {
+        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+    })
 }
 
 </script>
 <template>
     <div v-if="currentExperiment">
-        <div class="grid grid-cols-12 bg-white p-5">
-            <div class="col-span-12">
-                <h5>Experiment: {{currentExperiment?.name}}</h5>
+        <div class="grid grid-cols-12 p-5">
+            <div class="col-span-12 md:col-span-6 lg:col-span-6 xl:col-span-4">
+                <h5>Experiment: {{currentExperiment.name}}</h5>
                 <div>Started on: {{ formatDateTime(currentExperiment.startedOn) }}</div>
                 <div v-if="currentExperiment.startedOn">Time elapsed: {{ timeElapsed }}</div>
-                <hr>
             </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 mt-5">
+                <Button 
+                    size="large"
+                    icon="pi pi-chevron-right"
+                    iconPos="right"
+                    severity="info"
+                    label="View pellets"
+                    @click="router.push({path:'/sge/pellets', query: {'experimentId': currentExperiment.id}})" />
+            </div>
+            <hr class="col-span-12">
             <div class="col-span-12">
                 <h5>New harvest</h5>
             </div>
@@ -225,7 +242,7 @@ function submitPellets() {
                         size="large"
                         icon="pi pi-bolt"
                         severity="warn"
-                        class="mt-5"
+                        class="mt-5 mr-5"
                         :label="`Submit ${pelletsToAdd.length} pellets`"
                         :disabled="!pelletsToAdd.length"
                         @click="submitPellets" />
