@@ -81,6 +81,7 @@ const displayWithClause = Object.freeze({
             },
             experiment: {
                 columns: {
+                    id: true,
                     name: true
                 },
             }
@@ -179,7 +180,9 @@ const defaultValues = queryParams
                 schemaName="select"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
+                :where="whereClauses[0]"
                 :title="tableTitle"
+                :canAdd="false"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

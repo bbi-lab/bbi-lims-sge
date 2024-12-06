@@ -111,7 +111,7 @@ const rowActions = {
     pellets: {
         label: (data) => { return `${getPelletCount(data.transfectTargets)} Pellets`}, 
         action: (data) => {
-            router.push({path:'/sge/pellets', query: {'experimentId': data.id}})
+            router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
         }
     },
     harvest: {

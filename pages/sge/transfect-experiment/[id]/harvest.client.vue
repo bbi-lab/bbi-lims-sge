@@ -117,7 +117,7 @@ function submitPellets() {
                     iconPos="right"
                     severity="info"
                     label="View pellets"
-                    @click="router.push({path:'/sge/pellets', query: {'experimentId': currentExperiment.id}})" />
+                    @click="router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': currentExperiment.id}})" />
             </div>
             <hr class="col-span-12">
             <div class="col-span-12">
