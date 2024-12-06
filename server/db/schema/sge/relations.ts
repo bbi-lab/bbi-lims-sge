@@ -159,7 +159,13 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
             references: [targets.id],
         },
     },
-    many: {}
+    many: {
+        pellets: {
+            table: pellets,
+            schema: createSelectSchema(pellets),
+            fields: [pellets.transfectTargetId]
+        }
+    }
 }
 export const transfectTargetsRelations = relationsConfigToRelations(transfectTargets, transfectTargetsRelationsConfig)
 

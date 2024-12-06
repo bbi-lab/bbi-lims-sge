@@ -39,7 +39,15 @@ function didDeleteRecord(event) {
     transfectionExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-
+function getPelletCount(targets) {
+    if (_.isArray(targets)) {
+        return _.reduce(targets, (sum, {pellets}) => {
+            return sum + (pellets?.length || 0)
+        }, 0)
+    } else {
+        return 0
+    }
+}
 
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
@@ -60,6 +68,11 @@ const displayWithClause = Object.freeze({
                             }
                         }
                     },
+                }
+            },
+            pellets: {
+                columns: {
+                    id: true
                 }
             }
         }
@@ -96,7 +109,7 @@ const rowActions = {
         }
     },
     pellets: {
-        label: (data) => { return `${data.transfectPellets?.length || 0} Pellets`}, 
+        label: (data) => { return `${getPelletCount(data.transfectTargets)} Pellets`}, 
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'experimentId': data.id}})
         }
