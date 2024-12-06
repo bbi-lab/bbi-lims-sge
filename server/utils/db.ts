@@ -40,22 +40,8 @@ import _ from 'lodash'
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
 
-const dbSsl = config?.dbSsl || 
-    process.env.NUXT_DB_SSL === 'require' ? 'require' :
-    process.env.NUXT_DB_SSL === 'allow' ? 'allow' :
-    process.env.NUXT_DB_SSL === 'prefer' ? 'prefer' :
-    process.env.NUXT_DB_SSL === 'verify-full' ? 'verify-full' :
-    process.env.NUXT_DB_SSL === 'true' ? true : false
-
 export const db = drizzle(
-  postgres({
-    host: config?.dbHost || process.env.NUXT_DB_HOST || 'localhost',
-    port: config?.dbPort || (process.env.NUXT_DB_PORT ? parseInt(process.env.NUXT_DB_PORT) : null) || 5432,
-    database: config?.dbDatabaseName || process.env.NUXT_DB_DATABASE_NAME || 'sge_lims_db',
-    user: config?.dbUsername || process.env.NUXT_DB_USER || 'postgres',
-    password: config?.dbPassword || process.env.NUXT_DB_PASSWORD || 'postgres',
-    ssl: dbSsl,
-  }),
+  postgres(config?.dbUrl || process.env.NUXT_DB_URL),
   {
     schema: {
       users,
