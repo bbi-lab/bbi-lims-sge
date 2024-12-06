@@ -70,7 +70,7 @@ const insertPlatesSchema = selectPlatesSchema.omit({id: true})
 const updatePlatesSchema = insertPlatesSchema
 
 const selectPelletsSchema = createSelectSchema(pellets)
-const insertPelletsSchema = createSelectSchema(pellets, {harvestedOn: dateSchema}).omit({id: true})
+const insertPelletsSchema = createSelectSchema(pellets, {harvestedOn: dateSchema}).omit({id: true}).partial()
 const updatePelletsSchema = insertPelletsSchema
 
 const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
