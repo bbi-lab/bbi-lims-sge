@@ -38,8 +38,8 @@ export function queryToSelectParams<SelectParams>(queryParams: QueryParams) {
     return selectParams
 }
 
-export function applySelectParamsToRecords(selectParams: SelectParams, records: any[]) {
-// wrapping Json logic query with this so that it will be applied to every item in array
+export function applySelectParamsToRecords<T>(selectParams: SelectParams, records: T): T {
+    // wrapping Json logic query with this so that it will be applied to every item in array
     // (e.g. query for filtering on property name=='test' would be {"==":[{"var":"name"},"test"]} )
     const queryFinal  = selectParams.where ? {filter:[{var:""}, selectParams.where]} : null
     
