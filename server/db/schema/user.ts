@@ -106,5 +106,6 @@ export type LoginUser = z.infer<typeof loginSchema>
 export type ChangePassword = z.infer<typeof changePasswordSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
 export type AdminUpdateUser = z.infer<typeof adminUpdateUserSchema>
+export type UserGroup = InferSelectModel<typeof userGroups>
 export type NewUserGroup = z.infer<typeof newUserGroupSchema>
 export type UpdateUserGroup = z.infer<typeof updateUserGroupSchema>

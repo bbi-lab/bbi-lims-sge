@@ -1,15 +1,12 @@
 import crypto from 'node:crypto'
-import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, schemas, userGroups, usersRelationsConfig, userGroupMemberships } from '@/server/db/schema/user'
+import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
 import argon2 from 'argon2'
 import { eq, inArray } from 'drizzle-orm'
-import { ZodObject } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 import _ from 'lodash'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
-import { InputNumberButtonListeners } from 'primevue/inputnumber'
 
 export async function getAllUsers(selectParams: SelectParams) {
   const allUsers = await db.query.users.findMany({

@@ -1,5 +1,5 @@
 import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, PgTableWithColumns, AnyPgColumn, text, timestamp, smallint, uuid, varchar, integer, primaryKey} from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, PgTableWithColumns, type AnyPgColumn, text, timestamp, smallint, uuid, varchar, integer, primaryKey} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'

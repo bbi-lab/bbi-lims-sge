@@ -3,7 +3,7 @@ import _ from 'lodash'
 import {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { PgTableWithColumns } from 'drizzle-orm/pg-core'
+import { type PgTableWithColumns } from 'drizzle-orm/pg-core'
 import { eq } from 'drizzle-orm'
 import '../db/schema/sge/relations'
 

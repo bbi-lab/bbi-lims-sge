@@ -1,6 +1,6 @@
-import { JsonLogicAll } from "json-logic-js"
+import { type JsonLogicAll } from "json-logic-js"
 import _ from 'lodash'
-import jsonLogic, { JsonLogicFilter } from 'json-logic-js'
+import jsonLogic, { type JsonLogicFilter } from 'json-logic-js'
 
 export interface QueryParams {
     where: string,

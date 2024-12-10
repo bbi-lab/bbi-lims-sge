@@ -3,7 +3,7 @@ import { relationsConfigs } from '@/server/db/schema/sge/relations'
 import _ from 'lodash'
 import { ZodObject, ZodTypeAny } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
-import { RelationsConfig } from '~/server/utils/db'
+import { type RelationsConfig } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
     const { recordType, schema } = event.context.params as {recordType: string, schema: string}

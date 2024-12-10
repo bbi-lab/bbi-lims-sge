@@ -1,7 +1,7 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
-import { PgTableWithColumns, AnyPgColumn } from 'drizzle-orm/pg-core'
+import { type PgTableWithColumns, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'

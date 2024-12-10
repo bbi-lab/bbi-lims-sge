@@ -1,8 +1,9 @@
-import zodToJsonSchema, { JsonSchema7AnyType, JsonSchema7ArrayType, JsonSchema7SetType, JsonSchema7Type } from "zod-to-json-schema"
+import zodToJsonSchema, { type JsonSchema7AnyType, type JsonSchema7ArrayType, type JsonSchema7SetType, type JsonSchema7Type } from "zod-to-json-schema"
 import {getAllVerifiedUsersInfo, getUserGroups} from '@/server/services/user-services'
 import { users } from '@/server/db/schema/user'
 import _ from 'lodash'
-import { RelationsConfig, getRecordsFromTable} from "./db"
+import { type RelationsConfig, getRecordsFromTable} from "./db"
+import { type UserGroup } from "@/server/db/schema/user"
 
 export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string) {
 
@@ -14,7 +15,7 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
     }
 
     // define JSON schema property to select a user group
-    const userGroups = await getUserGroups()
+    const userGroups = await getUserGroups() as UserGroup[]
     const userGroupsJsonSchemaProperty:JsonSchema7AnyType = {
       type: 'string',
       oneOf: _.map(userGroups, (x) => { return { const: x.id, title: x.name } }),

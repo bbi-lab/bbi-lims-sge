@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { users, userGroups, userGroupMemberships } from './user'
-import { PgTableWithColumns } from 'drizzle-orm/pg-core'
+import { type PgTableWithColumns } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 // relations config
