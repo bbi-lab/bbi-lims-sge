@@ -1,11 +1,11 @@
 import { type InferSelectModel, relations } from 'drizzle-orm'
-import { boolean, pgEnum, pgTable, PgTableWithColumns, type AnyPgColumn, text, timestamp, smallint, uuid, varchar, integer, primaryKey} from 'drizzle-orm/pg-core'
+import { pgTable, smallint, uuid, varchar} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { pcrExperiments } from './pcr-experiment'
 
-export const plates: PgTableWithColumns<any> = pgTable('plates', {
+export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
   name: varchar('name', { length: 255 }).notNull(),

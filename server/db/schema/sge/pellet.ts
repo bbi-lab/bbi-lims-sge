@@ -3,7 +3,7 @@ import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
 import { storageBoxes } from './storage-box'
 
-export const pellets: PgTableWithColumns<any> = pgTable('pellets', {
+export const pellets = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
   replicates: varchar('replicates', { length: 3 }).array(),

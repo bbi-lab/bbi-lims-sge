@@ -12,7 +12,7 @@ import { plates } from './plate'
 import { pellets } from './pellet'
 import { storageBoxes } from './storage-box'
 import { createSelectSchema } from 'drizzle-zod'
-import { z, ZodObject } from 'zod'
+import { z } from 'zod'
 
 const selectProjectSchema = createSelectSchema(projects)
 const insertProjectSchema = createSelectSchema(projects, {startedOn: dateSchema}).omit({id: true})
@@ -77,7 +77,7 @@ const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
 const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true})
 const updateStorageBoxesSchema = insertStorageBoxesSchema
 
-export const schemas: Record<string, Record<string, ZodObject<any>>> = {
+export const schemas = {
     projects: {
         select: selectProjectSchema,
         insert: insertProjectSchema,

@@ -3,7 +3,7 @@ import _ from 'lodash'
 
 export const geneOrientationEnum = pgEnum('gene_orientations', ['plus', 'minus'])
 
-export const genes: PgTableWithColumns<any> = pgTable('genes', {
+export const genes = pgTable('genes', {
   id: uuid('id').primaryKey().defaultRandom().notNull(),
   ncbiAccession: varchar('ncbi_accession', { length: 50 }),
   startPosition: integer('start_position'),

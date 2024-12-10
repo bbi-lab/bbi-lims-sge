@@ -2,14 +2,14 @@ import { pgTable, PgTableWithColumns, timestamp, uuid, numeric, integer, varchar
 import { users } from '../user'
 import { targets } from './target'
 
-export const transfectExperiments: PgTableWithColumns<any> = pgTable('transfect_experiments', {
+export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
 })
 
-export const transfectTargets: PgTableWithColumns<any> = pgTable('transfect_targets', {
+export const transfectTargets = pgTable('transfect_targets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   experimentId: uuid('experiment_id').references(() => transfectExperiments.id).notNull(),
   targetId: uuid('target_id').references(() => targets.id).notNull(),

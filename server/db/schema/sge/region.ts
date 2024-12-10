@@ -3,7 +3,7 @@ import {sql} from 'drizzle-orm'
 import _ from 'lodash'
 import {genes} from './gene'
 
-export const regions: PgTableWithColumns<any> = pgTable('regions', {
+export const regions = pgTable('regions', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   geneId: uuid('gene_id').references(() => genes.id).notNull(),

@@ -4,7 +4,7 @@ import {projects} from './project'
 import {regions} from './region'
 import {cycles} from './cycle'
 
-export const targets: PgTableWithColumns<any> = pgTable('targets', {
+export const targets = pgTable('targets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   projectId: uuid('project_id').references(() => projects.id),

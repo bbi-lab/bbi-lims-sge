@@ -6,7 +6,7 @@ import { z, ZodObject } from 'zod'
 import { users } from '../user'
 import { dateSchema } from '../../helpers/schemas'
 
-export const pcrExperiments: PgTableWithColumns<any> = pgTable('pcr_experiments', {
+export const pcrExperiments = pgTable('pcr_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   round: smallint('round'),

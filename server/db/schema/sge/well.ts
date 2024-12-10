@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { plates } from './plate'
 
-export const wells: PgTableWithColumns<any> = pgTable('wells', {
+export const wells = pgTable('wells', {
   plateId: uuid('plate_id').references(() => plates.id).notNull(),
   x: smallint().notNull(),
   y: smallint().notNull(),

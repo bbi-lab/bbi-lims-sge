@@ -1,7 +1,7 @@
-import { pgTable, PgTableWithColumns, uuid, varchar, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 
-export const cycles: PgTableWithColumns<any> = pgTable('cycles', {
+export const cycles = pgTable('cycles', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   startedOn: timestamp('started_on').defaultNow(),
