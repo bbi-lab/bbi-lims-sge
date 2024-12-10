@@ -40,46 +40,48 @@ import _ from 'lodash'
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
 
+export const schemaTables = {
+  users,
+  userGroups,
+  userGroupMemberships,
+  pcrExperiments,
+  plates,
+  wells,
+  projects,
+  targets,
+  genes,
+  regions,
+  cycles,
+  pellets,
+  storageBoxes,
+  transfectExperiments,
+  transfectTargets,
+  plasmidExperiments,
+  extractionExperiments,
+}
+
+export const schemaRelations = {
+  usersRelations,
+  userGroupsRelations,
+  userGroupMembershipsRelations,
+  platesRelations,
+  pcrExperimentsRelations,
+  wellsRelations,
+  projectsRelations,
+  targetsRelations,
+  regionsRelations,
+  cyclesRelations,
+  pelletsRelations,
+  storageBoxesRelations,
+  transfectExperimentsRelations,
+  transfectTargetsRelations,
+  plasmidExperimentsRelations,
+  extractionExperimentsRelations,
+}
+
 export const db = drizzle(
   postgres(config?.dbUrl || process.env.NUXT_DB_URL),
-  {
-    schema: {
-      users,
-      userGroups,
-      userGroupMemberships,
-      pcrExperiments,
-      plates,
-      wells,
-      projects,
-      targets,
-      genes,
-      regions,
-      cycles,
-      pellets,
-      storageBoxes,
-      transfectExperiments,
-      transfectTargets,
-      plasmidExperiments,
-      extractionExperiments,
-
-      usersRelations,
-      userGroupsRelations,
-      userGroupMembershipsRelations,
-      platesRelations,
-      pcrExperimentsRelations,
-      wellsRelations,
-      projectsRelations,
-      targetsRelations,
-      regionsRelations,
-      cyclesRelations,
-      pelletsRelations,
-      storageBoxesRelations,
-      transfectExperimentsRelations,
-      transfectTargetsRelations,
-      plasmidExperimentsRelations,
-      extractionExperimentsRelations,
-    }
-  }
+  {schema: {...schemaTables, ...schemaRelations}}
 )
 
 export interface RelationsConfig {
