@@ -4,14 +4,16 @@ import {schema} from '../server/utils/db'
 type Schema = typeof schema
 type TSchema = ExtractTablesWithRelations<Schema>
 
-export type IncludeRelation<TableName extends keyof TSchema> = DBQueryConfig<
+export type TableNames = keyof TSchema
+
+export type IncludeRelation<TableName extends TableNames> = DBQueryConfig<
   'one' | 'many',
   boolean,
   TSchema,
   TSchema[TableName]
 >['with']
 
-export type IncludeColumns<TableName extends keyof TSchema> = DBQueryConfig<
+export type IncludeColumns<TableName extends TableNames> = DBQueryConfig<
   'one' | 'many',
   boolean,
   TSchema,
