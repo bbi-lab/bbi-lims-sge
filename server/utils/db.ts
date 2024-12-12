@@ -40,7 +40,7 @@ import _ from 'lodash'
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
 
-export const schemaTables = {
+export const schema = {
   users,
   userGroups,
   userGroupMemberships,
@@ -58,9 +58,6 @@ export const schemaTables = {
   transfectTargets,
   plasmidExperiments,
   extractionExperiments,
-}
-
-export const schemaRelations = {
   usersRelations,
   userGroupsRelations,
   userGroupMembershipsRelations,
@@ -81,7 +78,9 @@ export const schemaRelations = {
 
 export const db = drizzle(
   postgres(config?.dbUrl || process.env.NUXT_DB_URL),
-  {schema: {...schemaTables, ...schemaRelations}}
+  {
+    schema
+  }
 )
 
 export interface RelationsConfig {

@@ -45,4 +45,13 @@ export default defineNuxtConfig({
             apiBase: '/api',
         }
     },
+    nitro: {
+        imports: {
+            dirs: ['server/utils', 'shared'],
+        },
+    },
+    imports: {
+        dirs: ['composables', 'utils', 'shared'],
+    },
+
 });
