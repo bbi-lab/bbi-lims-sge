@@ -1,3 +1,4 @@
+import type { DBQueryConfig } from 'drizzle-orm'
 import _ from 'lodash'
 
 export const RecordService = {
@@ -5,6 +6,13 @@ export const RecordService = {
         const fetchOptions = withClause ? {query: {with: withClause}} : undefined
         const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
         return record
+    },
+
+    async getRecordTyped<FetchType>(tableName: TableNames, id: string, withClause: DBQueryConfig["with"], columns: DBQueryConfig["columns"]) {
+        const fetchOptions = {query: {with: withClause, columns }}
+        const record = await useFetch<FetchType>(`/api/${tableName}/${id}`, fetchOptions)
+    
+        return record.data as FetchType
     },
 
     async getRecords(baseUrl: string, withClause?: Object, where?: Object) {
