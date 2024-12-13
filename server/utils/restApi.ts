@@ -21,10 +21,11 @@ export interface SelectParams {
 }
 
 export function queryToSelectParams<SelectParams>(queryParams: QueryParams) {
-    const columnsToInclude = queryParams.columns ? _.reduce(JSON.parse(queryParams.columns), (obj:any,key:string) => {
+    // if columns is array, convert to object with boolean property set to true for each entry
+    const columnsToInclude = queryParams.columns ? (_.isArray(JSON.parse(queryParams.columns)) ? _.reduce(JSON.parse(queryParams.columns), (obj:any,key:string) => {
         obj[key] = true
         return obj
-    }, {}) : null
+    }, {}) : JSON.parse(queryParams.columns)) : undefined
 
     const selectParams = {
         where: queryParams.where ? JSON.parse(queryParams.where) : undefined,
