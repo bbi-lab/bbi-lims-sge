@@ -1,6 +1,7 @@
 <script setup>
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
+import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
@@ -109,7 +110,7 @@ function showDeleteConfirmation() {
 function getLabel(key) {
     return _.get(props.fieldDefs, [key, 'label'], _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key)))
 }
-function saveRecord() {
+async function saveRecord() {
     if (props.readOnly) return
     if (_.has(record.value, 'id')) {
         // updating single record - limit to properties in JSON schema
@@ -124,13 +125,24 @@ function saveRecord() {
     } else if (!props.recordId) {
         // new record
         const values = _.pick(record.value, Object.keys(formSchema.value?.properties))
-        RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
+
+        // TODO - Two methods are available, either using a custom class or generic service. The use of custom classes with this component
+        // can likely be dynamic if underlying classes are defined consistently with 2 properties: id (primary key) and data (everything else).
+        if (props.tableName=='transfect-experiments') {
+            const newExperiment = new TransfectionExperiment(values)
+            const result = await newExperiment.create()
+            if (result.success) {
+                emit('record-add', {id: newExperiment.id, ...newExperiment.data})
+            }
+        } else {
+            RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
-        }).catch(error => {
-            // TODO - when possible, show errors next to the field(s) that failed validation
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-        })
+            }).catch(error => {
+                // TODO - when possible, show errors next to the field(s) that failed validation
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            })
+        }
     }
 }
 function addNewItemToArray(record, key, schemaItems) {

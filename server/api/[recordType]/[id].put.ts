@@ -13,9 +13,9 @@ export default defineEventHandler(async (event) => {
         const values = updateSchema.parse(body)
 
         // many-to-many
-        if (_.camelCase(recordType) == 'transfectExperiments' && _.isArray(body.transfectTargets)) {
-            await updateTargets(id, _.map(body.transfectTargets, (x) => x.targetId))
-        }
+        // if (_.camelCase(recordType) == 'transfectExperiments' && _.isArray(body.transfectTargets)) {
+        //     await updateTargets(id, _.map(body.transfectTargets, (x) => x.targetId))
+        // }
 
         const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, values)
 
