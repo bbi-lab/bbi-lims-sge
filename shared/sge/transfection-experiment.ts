@@ -17,10 +17,10 @@ const transfectionExperimentUpdate = transfectionExperimentSelect.omit({id: true
 type TransfectionExperimentSelect = z.infer<typeof transfectionExperimentSelect>
 type TransfectionExperimentUpdate = z.infer<typeof transfectionExperimentUpdate>
 
-const pelletInsert = createInsertSchema(pellets)
+const pelletInsert = createInsertSchema(pellets).merge(z.object({ replicates: z.string().array() }))
 export type PelletInsert = z.infer<typeof pelletInsert>
 
-const pelletSelect = createSelectSchema(pellets)
+const pelletSelect = createSelectSchema(pellets).merge(z.object({ replicates: z.string().array() }))
 type PelletSelect = z.infer<typeof pelletSelect>
 
 const transfectionTargetSelect = createSelectSchema(transfectTargets)

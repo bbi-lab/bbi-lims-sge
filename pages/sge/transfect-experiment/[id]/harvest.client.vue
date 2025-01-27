@@ -145,7 +145,7 @@ async function submitPellets() {
     })
     const response = await experiment.addPellets(newPellets)
     if (response?.success) {
-        toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data.length} Records added`, life: 3000 })
+        toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records added`, life: 3000 })
         pelletsToAdd.value = []
     } else {
         toast.add({ severity: 'error', summary: 'Error adding pellets', life: 3000 })
