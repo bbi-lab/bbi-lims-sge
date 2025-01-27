@@ -10,4 +10,5 @@ export const targets = pgTable('targets', {
   projectId: uuid('project_id').references(() => projects.id),
   cycleId: uuid('cycle_id').references(() => cycles.id),
   regionId: uuid('region_id').references(() => regions.id).notNull(),
+  fixedEdits: varchar('fixed_edits', { length: 255 }).array(),
 })

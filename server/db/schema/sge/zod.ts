@@ -19,7 +19,11 @@ const insertProjectSchema = createSelectSchema(projects, {startedOn: dateSchema}
 const updateProjectSchema = insertProjectSchema
 
 const selectTargetSchema = createSelectSchema(targets)
-const insertTargetSchema = selectTargetSchema.omit({id: true})
+const insertTargetSchema = selectTargetSchema.omit({id: true}).merge(
+    z.object({
+     fixedEdits: z.string().refine((value) => /^g[.][0-9]+[ACGT]>[ACGT]$/.test(value ?? ""), 'HGVS format required').array() 
+    }
+))
 const updateTargetSchema = insertTargetSchema
 
 const selectGeneSchema = createSelectSchema(genes)
