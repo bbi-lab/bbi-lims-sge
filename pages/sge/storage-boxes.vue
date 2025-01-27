@@ -49,7 +49,6 @@ const fieldDefs = {
                 tableName="storageBoxes"
                 schemaName="select"
                 title="Storage boxes"
-                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
