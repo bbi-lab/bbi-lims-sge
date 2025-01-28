@@ -15,6 +15,13 @@
       "when": 1738082148650,
       "tag": "0001_useful_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1738106511616,
+      "tag": "0002_huge_ozymandias",
+      "breakpoints": true
     }
   ]
 }
