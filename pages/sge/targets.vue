@@ -58,21 +58,25 @@ const columnDefs = {
     region: {
         header: 'Region',
         format: (x) => _.get(x, 'region.name'),
-        index: 1,
+        index: 2,
     },
     projectId: {
         display: false
     },
     project: {
         format: (x) => _.get(x, 'project.name'),
-        index: 2,
+        index: 3,
     },
     cycleId: {
         display: false
     },
     cycle: {
         format: (x) => _.get(x, 'cycle.name'),
-        index: 3,
+        index: 4,
+    },
+    fixedEdits: {
+        format: (x) => _.isArray(x.fixedEdits) ? x.fixedEdits.join(', ') : '',
+        index: 5,
     },
     transfectTargets: {
         display: false,
