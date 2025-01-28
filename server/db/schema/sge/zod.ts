@@ -21,6 +21,7 @@ const updateProjectSchema = insertProjectSchema
 const selectTargetSchema = createSelectSchema(targets)
 const insertTargetSchema = selectTargetSchema.omit({id: true}).merge(
     z.object({
+     skipPositions: z.bigint({ coerce: true }).array(),
      fixedEdits: z.string().refine((value) => /^g[.][0-9]+[ACGT]>[ACGT]$/.test(value ?? ""), 'HGVS format required').array() 
     }
 ))
