@@ -161,6 +161,8 @@ function addNewItemToArray(record, key, schemaItems) {
         record[key].push(newItem)
     } else if (schemaItems.type == 'string') {
         record[key].push('')
+    } else if (schemaItems.type == 'integer') {
+        record[key].push(null)
     }
 }
 function isReadOnly(key) {
@@ -280,6 +282,10 @@ function getFieldType(val, key) {
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='string'">
                             <InputText class="w-80" v-model="record[key][arrayIndex]" />
+                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                        </div>
+                        <div class="mt-2" v-else-if="val.items.type=='integer'">
+                            <InputNumber class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
                             <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <!-- Array properties not covered by JSON schema -->
