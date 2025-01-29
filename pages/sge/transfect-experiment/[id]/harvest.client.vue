@@ -51,8 +51,8 @@ const harvestProtocol = ref()
 const now = ref(new Date())
 
 // set min date to Day 5, max to Day 17
-const minDate = computed(() => experiment?.data?.startedOn ? moment(experiment?.data?.startedOn).add(5, 'days').toDate() : new Date()) // .set({ hour: 0, minute: 0 })
-const maxDate = computed(() => moment(minDate?.value).add(12, 'days').toDate()) // .set({ hour: 23, minute: 59 })
+const minDate = computed(() => experiment?.data?.startedOn ? moment(experiment?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
+const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
 
 // disable all dates in min/max range except Day 5, 9, 13, and 17
 const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
@@ -276,7 +276,7 @@ async function submitPellets() {
                         :disabledDates="disabledDates"
                         :disabled="!targetsSelected"
                     />
-                    <span class="italic ml-5" v-if="harvestDateTime">Day {{ moment(harvestDateTime).diff(moment(experiment?.startedOn), 'days') }}</span>
+                    <span class="italic ml-5" v-if="harvestDateTime">Day {{ moment(harvestDateTime).diff(moment(experiment.data?.startedOn).set( {hour: 0, minute: 0}), 'days') }}</span>
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
                     <label for="harvestByInput" class="block font-bold">Harvested by</label>
