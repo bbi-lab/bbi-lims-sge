@@ -17,6 +17,7 @@ const model = ref([
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
             { label: 'Pellets', icon: 'pi pi-fw pi-circle-fill', to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
+            { label: 'Reagent Lots', icon: 'pi pi-fw pi-bolt', to: '/sge/lots' },
         ]
     },
     {
