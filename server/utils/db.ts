@@ -13,6 +13,7 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
+import {lots} from '../db/schema/sge/lots'
 import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
@@ -53,6 +54,7 @@ export const schema = {
   regions,
   cycles,
   pellets,
+  lots,
   storageBoxes,
   transfectExperiments,
   transfectTargets,

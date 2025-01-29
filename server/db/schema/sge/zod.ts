@@ -13,6 +13,7 @@ import { pellets } from './pellet'
 import { storageBoxes } from './storage-box'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
+import { lots } from './lots'
 
 const selectProjectSchema = createSelectSchema(projects)
 const insertProjectSchema = createSelectSchema(projects, {startedOn: dateSchema}).omit({id: true})
@@ -82,6 +83,10 @@ const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
 const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true})
 const updateStorageBoxesSchema = insertStorageBoxesSchema
 
+const selectLotsSchema = createSelectSchema(lots)
+const insertLotsSchema = createSelectSchema(lots, {startedUseOn: dateSchema, endedUseOn: dateSchema, expiresOn: dateSchema}).omit({id: true})
+const updateLotsSchema = insertLotsSchema
+
 export const schemas = {
     projects: {
         select: selectProjectSchema,
@@ -147,4 +152,9 @@ export const schemas = {
         insert: insertStorageBoxesSchema,
         update: updateStorageBoxesSchema,
     },
+    lots: {
+        select: selectLotsSchema,
+        insert: insertLotsSchema,
+        update: updateLotsSchema,
+    }
 }
