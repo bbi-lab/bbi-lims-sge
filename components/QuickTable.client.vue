@@ -247,7 +247,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <template #loading> Loading </template>
 
         <Column v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
-        <Column class="whitespace-nowrap" v-if="props.canEdit" :exportable="false">
+        <Column class="whitespace-nowrap !p-0" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <div class="group">
                     <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
@@ -274,7 +274,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 </Column>
             </template>
         </template>
-        <Column v-if="rowActionsEnd">
+        <Column class="whitespace-nowrap" v-if="rowActionsEnd">
             <template #body="{ data }">
                 <Button class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" v-for="(v, k) in rowActionsEnd" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
