@@ -26,7 +26,7 @@ const displayWithClause = Object.freeze({
         columns: {name: true}, 
         with: {
             gene: {
-                columns: {symbol: true}
+                columns: {symbol: true, chromosome: true}
             }
         }
     },
@@ -71,33 +71,38 @@ const columnDefs = {
     regionId: {
         display: false
     },
+    chromosome: {
+        header: 'Chromosome',
+        format: (x) => _.get(x, 'region.gene.chromosome'),
+        index: 1,
+    },
     gene: {
         header: 'Gene',
         format: (x) => _.get(x, 'region.gene.symbol'),
-        index: 1,
+        index: 2,
     },
     region: {
         header: 'Region',
         format: (x) => _.get(x, 'region.name'),
-        index: 2,
+        index: 3,
     },
     projectId: {
         display: false
     },
     project: {
         format: (x) => _.get(x, 'project.name'),
-        index: 3,
+        index: 4,
     },
     cycleId: {
         display: false
     },
     cycle: {
         format: (x) => _.get(x, 'cycle.name'),
-        index: 4,
+        index: 5,
     },
     fixedEdits: {
         format: (x) => _.isArray(x.fixedEdits) ? x.fixedEdits.join(', ') : '',
-        index: 5,
+        index: 6,
     },
     transfectTargets: {
         display: false,
