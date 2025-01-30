@@ -1,9 +1,7 @@
 import type { DBQueryConfig } from "drizzle-orm"
-import { integer } from "drizzle-orm/pg-core"
 import { createSelectSchema } from "drizzle-zod"
 import _ from "lodash"
 import type { z } from "zod"
-import { dateSchema } from "~/server/db/helpers/schemas"
 import { targets } from "~/server/db/schema/sge/target"
 
 const targetSelect = createSelectSchema(targets)
@@ -62,9 +60,8 @@ export class Target {
     }
 
     // copy existing target and append auto-incrementing version number
-    async duplicate() {
+    async getDuplicate() {
         if (this.data) {
-
             try {
                 const existingTargetName = this.data.name || ''
                 const targetBaseName = _.split(existingTargetName, '_v')[0]
@@ -89,15 +86,16 @@ export class Target {
                     }
                 } else if (lastTarget.length == 0 && !existingTargetName.includes('_v')) {
                     newTargetName = `${existingTargetName}_v2`
+                } 
+
+                if (newTargetName) {
+                    return {...this.data, id: undefined, name: newTargetName}
                 } else {
-                    return {success: false, message:  'Invalid target name'}
+                    throw createError({
+                        statusCode: 500,
+                        statusMessage: 'Error: could not calculate new target version number'
+                    })
                 }
-                
-                const response = await $fetch<TargetSelect[]>(baseUrl, {method: 'POST', body: [{...this.data, name: newTargetName}]})
-                if (response.length == 1) {
-                    return {success: true, message: `Added ${newTargetName}`, id: response[0].id}
-                }
-                return {success: false}
             } catch (err) {
                 throw createError({
                     statusCode: 500,

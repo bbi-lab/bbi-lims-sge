@@ -76,6 +76,11 @@ const loading = ref(true)
 const globalFilterFields = ref([])
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
+// TODO: add support for posititing buttons in any column. For now, 0 or negative index action buttons will be combined into the first column, 
+// any positive or non-indexed action buttons will be combined into the last column
+const rowActionsStart = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => _.isNumber(value.index) && value.index < 1) : {})
+const rowActionsEnd = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => !_.has(value, 'index') || value.index > 1) : {})
+
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
     globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : x.key)
@@ -241,10 +246,11 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column class="w-0.5" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
-        <Column class="w-0.5" v-if="props.canEdit" :exportable="false">
+        <Column v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
+        <Column class="whitespace-nowrap" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
+                <Button :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
             </template>
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
@@ -266,9 +272,9 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                 </Column>
             </template>
         </template>
-        <Column v-if="rowActions">
+        <Column v-if="rowActionsEnd">
             <template #body="{ data }">
-                <Button class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" v-for="(v, k) in rowActions" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
+                <Button class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" v-for="(v, k) in rowActionsEnd" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
             </template>
         </Column>
     </DataTable>

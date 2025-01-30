@@ -18,6 +18,7 @@ const props = defineProps({
   canDelete: {type: Boolean, default: true},
   fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
   defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
+  values: {type: Object},
 })
 
 onMounted(() => {
@@ -44,6 +45,9 @@ const refreshForm = async function() {
     }
     if (props.defaultValues) {
         _.assign(record.value, props.defaultValues)
+    }
+    if (props.values) {
+        _.assign(record.value, props.values)
     }
     dataChanged.value = false
 }
@@ -112,7 +116,7 @@ function getLabel(key) {
 }
 async function saveRecord() {
     if (props.readOnly) return
-    if (_.has(record.value, 'id')) {
+    if (_.has(record.value, 'id') && record.value.id) {
         // updating single record - limit to properties in JSON schema
         const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value?.properties))}
         RecordService.updateRecord(apiBaseUrl.value, values).then((result) => {

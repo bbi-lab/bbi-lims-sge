@@ -15,6 +15,8 @@ const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
 const toast = useToast()
+const confirmPopup = useConfirm()
+const addRecordValues = ref()
 
 const displayWithClause = Object.freeze({
     project:{
@@ -47,15 +49,16 @@ const rowActions = {
         }
     },
     duplicate: {
+        index: -1,  // places this button at the beginning of the row next to edit button
+        icon: 'pi pi-copy',
         action: async (data) => {
             const target = new Target(data.id)
             await target.fetch()
-            const result = await target.duplicate()
-            if (result.success) {
-                targetsTable.value.addOrRefreshRecordId(result.id)
-                toast.add({ severity: 'success', summary: result.message || 'Target added', life: 3000 })
-            } else {
-                toast.add({ severity: 'error', summary: result.message || 'Error', life: 3000 })
+            const result = await target.getDuplicate()
+            if (!_.isEmpty(result)) { 
+                addRecordValues.value = result
+                showAddForm.value = true
+                showEditForm.value = false
             }
         }
     }
@@ -218,6 +221,7 @@ const defaultValues = queryParams
                 schemaName="insert"
                 :defaultValues="defaultValues"
                 :fieldDefs="fieldDefs"
+                :values="addRecordValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
