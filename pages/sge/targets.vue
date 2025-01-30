@@ -1,6 +1,9 @@
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import  {
+    Target,
+} from '~/shared/sge/target'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -11,6 +14,7 @@ const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
+const toast = useToast()
 
 const displayWithClause = Object.freeze({
     project:{
@@ -40,6 +44,19 @@ const rowActions = {
         label: (data) => { return `${data.pellets?.length || 0} Pellets`},
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'targetId': data.id}})
+        }
+    },
+    duplicate: {
+        action: async (data) => {
+            const target = new Target(data.id)
+            await target.fetch()
+            const result = await target.duplicate()
+            if (result.success) {
+                targetsTable.value.addOrRefreshRecordId(result.id)
+                toast.add({ severity: 'success', summary: result.message || 'Target added', life: 3000 })
+            } else {
+                toast.add({ severity: 'error', summary: result.message || 'Error', life: 3000 })
+            }
         }
     }
 }
