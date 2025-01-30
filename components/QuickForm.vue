@@ -46,10 +46,11 @@ const refreshForm = async function() {
     if (props.defaultValues) {
         _.assign(record.value, props.defaultValues)
     }
+    dataChanged.value = false
     if (props.values) {
         _.assign(record.value, props.values)
+        dataChanged.value = true
     }
-    dataChanged.value = false
 }
 
 const emit = defineEmits([

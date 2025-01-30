@@ -249,8 +249,10 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <Column v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
         <Column class="whitespace-nowrap" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
-                <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
-                <Button :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
+                <div class="group">
+                    <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
+                    <Button :class="v.class" :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
+                </div>
             </template>
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
