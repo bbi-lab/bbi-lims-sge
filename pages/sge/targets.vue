@@ -51,6 +51,7 @@ const rowActions = {
     duplicate: {
         index: -1,  // places this button at the beginning of the row next to edit button
         icon: 'pi pi-copy',
+        class: 'invisible group-hover:visible',  // display on hover only
         action: async (data) => {
             const target = new Target(data.id)
             await target.fetch()
