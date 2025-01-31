@@ -52,7 +52,15 @@ function getPelletCount(targets) {
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
     technician: {columns: {name: true}},
-    transfectLotUsage: {columns: {id: true}},
+    transfectLotUsage: {columns: {},  
+        with: {
+            lot:  {
+                columns: {
+                    lotNumber: true
+                }
+            },
+        }
+    },
     transfectTargets:{
         columns: {},
         with: {
@@ -93,6 +101,12 @@ const columnDefs = {
             return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
         }), ', ')
     },
+    transfectLotUsage: {
+        header: 'Reagents',
+        format: (x) => _.join(_.uniq(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
+            return  y.lot.lotNumber
+        })), ', ')
+    },
     currentDay: {
         header: 'Current day #',
         format: (x) => { 
@@ -116,7 +130,7 @@ const rowActions = {
         }
     },
     reagents: {
-        label: (data) => { return `${data.transfectLotUsage?.length || 0} Reagents`},
+        label: (data) => { return `${data.transfectLotUsage?.length || 0} Reagent Use`},
         action: (data) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/lot-usage`})
         }
