@@ -2,6 +2,8 @@
 import _ from 'lodash'
 const { user } = useUserSession()
 
+import DotsTriangle from '~icons/mdi/dots-triangle'
+
 const model = ref([
     {
         label: 'Home',
@@ -15,7 +17,7 @@ const model = ref([
             { label: 'Transfection experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/transfect-experiments' },
             { label: 'Plasmid experiments', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmid-experiments' },
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
-            { label: 'Pellets', icon: 'pi pi-fw pi-circle-fill', to: '/sge/pellets' },
+            { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
             { label: 'Reagent Lots', icon: 'pi pi-fw pi-bolt', to: '/sge/lots' },
         ]
