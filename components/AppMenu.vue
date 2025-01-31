@@ -4,6 +4,7 @@ const { user } = useUserSession()
 
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
+import DnaIcon from '~icons/mdi/dna'
 
 const model = ref([
     {
@@ -12,7 +13,7 @@ const model = ref([
             { label: 'Projects', icon: 'pi pi-fw pi-home', to: '/sge/projects' },
             { label: 'Cycles', icon: 'pi pi-fw pi-spinner-dotted', to: '/sge/cycles' },
             { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
-            { label: 'Genes', icon: 'pi pi-fw pi-list', to: '/sge/genes' },
+            { label: 'Genes', iconComponent: DnaIcon, to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
             { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
             { label: 'Transfection experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/transfect-experiments' },
