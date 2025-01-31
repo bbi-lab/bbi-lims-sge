@@ -12,11 +12,11 @@ const config = useRuntimeConfig()
 
 const rowActions = {}
 const route = useRoute()
-const queryParams = route.query
+//const queryParams = route.query
 
 onMounted(async() => {
-    if (queryParams.experimentId) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, queryParams.experimentId)
+    if (route.params.id) {
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id)
         tableTitle.value = `${experiment.name}: targets`
     } else {
         tableTitle.value = 'Transfection experiment targets'
@@ -128,7 +128,7 @@ editFormFieldDefs['targetId'] = {
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const defaultValues = queryParams
+const defaultValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
@@ -141,6 +141,7 @@ const defaultValues = queryParams
                 :title="tableTitle"
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
+                :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
                 :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

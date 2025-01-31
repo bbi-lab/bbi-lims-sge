@@ -106,7 +106,7 @@ const rowActions = {
     targets: {
         label: (data) => { return `${data.transfectTargets?.length || 0} Targets`}, 
         action: (data) => {
-            router.push({path:'/sge/transfect-targets', query: {'experimentId': data.id}})
+            router.push({path:`/sge/transfect-experiment/${data.id}/targets`})
         }
     },
     pellets: {
