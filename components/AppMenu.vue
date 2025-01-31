@@ -21,7 +21,12 @@ const model = ref([
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
-            { label: 'Reagent Lots', iconComponent: BeakerOutline, to: '/sge/lots' },
+            { label: 'Reagents', iconComponent: BeakerOutline,
+                items: [
+                    { label: 'Lots', to: '/sge/lots' },
+                    { label: 'Reagent List', to: '/sge/reagents' },
+                ]
+            },
         ]
     },
     {

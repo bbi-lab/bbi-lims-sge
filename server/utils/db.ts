@@ -37,6 +37,7 @@ import {
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
+import { reagents } from '../db/schema/sge/reagents';
 
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
@@ -56,6 +57,7 @@ export const schema = {
   cycles,
   pellets,
   lots,
+  reagents,
   storageBoxes,
   transfectExperiments,
   transfectTargets,
