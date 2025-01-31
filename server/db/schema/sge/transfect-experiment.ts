@@ -7,6 +7,8 @@ export const transfectExperiments = pgTable('transfect_experiments', {
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
+  transfectionCount: integer('transfection_count'),
+  replicateCount: integer('replicates_count'),
 })
 
 export const transfectTargets = pgTable('transfect_targets', {
