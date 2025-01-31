@@ -3,6 +3,7 @@ import _ from 'lodash'
 const { user } = useUserSession()
 
 import DotsTriangle from '~icons/mdi/dots-triangle'
+import BeakerOutline from '~icons/mdi/beaker-outline'
 
 const model = ref([
     {
@@ -19,7 +20,7 @@ const model = ref([
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
-            { label: 'Reagent Lots', icon: 'pi pi-fw pi-bolt', to: '/sge/lots' },
+            { label: 'Reagent Lots', iconComponent: BeakerOutline, to: '/sge/lots' },
         ]
     },
     {
