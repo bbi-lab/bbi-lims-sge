@@ -50,6 +50,13 @@
       "when": 1738343106762,
       "tag": "0006_burly_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1738361182512,
+      "tag": "0007_conscious_gambit",
+      "breakpoints": true
     }
   ]
 }
