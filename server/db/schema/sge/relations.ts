@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
-import { transfectExperiments, transfectTargets } from './transfect-experiment'
+import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { plates } from './plate'
@@ -15,6 +15,7 @@ import { cycles } from './cycle'
 import { pellets } from './pellet'
 import { storageBoxes } from './storage-box'
 import { relationsConfigToRelations } from '../relations'
+import { lots } from './lots'
 
 const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{
@@ -141,6 +142,11 @@ const transfectExperimentsRelationsConfig: RelationsConfig = {
             table: transfectTargets,
             schema: createSelectSchema(transfectTargets),
             fields: [transfectTargets.experimentId],
+        },
+        transfectLotUsage: {
+            table: transfectLotUsage,
+            schema: createSelectSchema(transfectLotUsage),
+            fields: [transfectLotUsage.experimentId],
         }
     }
 }
@@ -168,6 +174,23 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
     }
 }
 export const transfectTargetsRelations = relationsConfigToRelations(transfectTargets, transfectTargetsRelationsConfig)
+
+const transfectLotUsageRelationsConfig: RelationsConfig = {
+    one:{
+        experiment: {
+            fields: [transfectLotUsage.experimentId],
+            referenceTable: transfectExperiments,
+            references: [transfectExperiments.id],
+        },
+        lot: {
+            fields: [transfectLotUsage.lotId],
+            referenceTable: lots,
+            references: [lots.id],
+        },
+    },
+    many: {}
+}
+export const transfectLotUsageRelations = relationsConfigToRelations(transfectLotUsage, transfectLotUsageRelationsConfig)
 
 const plasmidExperimentsRelationsConfig: RelationsConfig = {
     one:{

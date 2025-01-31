@@ -4,7 +4,7 @@ import { targets } from './target'
 import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
-import { transfectExperiments, transfectTargets } from './transfect-experiment'
+import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
@@ -58,6 +58,10 @@ const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
     transfectionCount: z.bigint({ coerce: true })
 }).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
+
+const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage)
+const insertTransfectLotUsageSchema = createSelectSchema(transfectLotUsage).omit({id: true}).partial()
+const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
 const insertPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: dateSchema}).omit({id: true})
@@ -121,6 +125,11 @@ export const schemas = {
         select: selectTransfectTargetsSchema,
         insert: insertTransfectTargetsSchema,
         update: updateTransfectTargetsSchema,
+    },
+    transfectLotUsage: {
+        select: selectTransfectLotUsageSchema,
+        insert: insertTransfectLotUsageSchema,
+        update: updateTransfectLotUsageSchema,
     },
     plasmidExperiments: {
         select: selectPlasmidExperimentsSchema,

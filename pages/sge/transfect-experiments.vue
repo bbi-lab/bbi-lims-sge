@@ -52,6 +52,7 @@ function getPelletCount(targets) {
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
     technician: {columns: {name: true}},
+    transfectLotUsage: {columns: {id: true}},
     transfectTargets:{
         columns: {},
         with: {
@@ -112,6 +113,12 @@ const rowActions = {
         label: (data) => { return `${getPelletCount(data.transfectTargets)} Pellets`}, 
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
+        }
+    },
+    reagents: {
+        label: (data) => { return `${data.transfectLotUsage?.length || 0} Reagents`},
+        action: (data) => {
+            router.push({path:'/sge/transfect-lot-usage', query: {'experimentId': data.id}})
         }
     },
     harvest: {

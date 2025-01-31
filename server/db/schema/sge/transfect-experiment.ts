@@ -1,6 +1,7 @@
 import { pgTable, PgTableWithColumns, timestamp, uuid, numeric, integer, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
+import { lots } from './lots'
 
 export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -29,4 +30,12 @@ export const transfectTargets = pgTable('transfect_targets', {
   snvLibNeeded: doublePrecision('snv_lib_needed'),
   sgRnaNeeded: doublePrecision('sg_rna_needed'),
   notes: text('notes'),
+})
+
+export const transfectLotUsage = pgTable('transfect_lot_usage', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  experimentId: uuid('experiment_id').references(() => transfectExperiments.id).notNull(),
+  lotId: uuid('lot_id').references(() => lots.id).notNull(),
+  concentration: doublePrecision('concentration'),
+  usageOn: timestamp('usage_on').defaultNow(),
 })
