@@ -276,7 +276,18 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
         <Column class="whitespace-nowrap" v-if="rowActionsEnd">
             <template #body="{ data }">
-                <Button class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" v-for="(v, k) in rowActionsEnd" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
+                <div class="flex items-start">
+                    <template v-for="(v, k) in rowActionsEnd">
+                        <Button v-tooltip.top="v.tooltip" v-if="!v.iconComponent" class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)" />
+                        <Button v-tooltip.top="v.tooltip" v-if="v.iconComponent" class="mr-1 mb-1" :severity="v.severity || 'info'" :label="v.label ? v.label(data) : _.startCase(k)" @click="v.action(data)">
+                            <template #icon>
+                                <span :class="`pi pi-fw p-button-icon ${v.iconPos=='right' ? 'p-button-icon-right' : ''} inline-block`">
+                                    <component :is="v.iconComponent" />
+                                </span>
+                            </template>
+                        </Button>
+                    </template>
+                </div>
             </template>
         </Column>
     </DataTable>
