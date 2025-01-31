@@ -212,7 +212,7 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         v-model:selection="selectedRecords"
         :value="records"
         dataKey="id"
-        nullSortOrder="-1"
+        :nullSortOrder="-1"
         scrollable 
         scrollHeight="flex"
         :filters="filters"
