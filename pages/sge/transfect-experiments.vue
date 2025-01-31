@@ -1,6 +1,8 @@
 <script setup>
 import _ from 'lodash'
 import moment from 'moment'
+import DotsTriangle from '~icons/mdi/dots-triangle'
+import BeakerOutline from '~icons/mdi/beaker-outline'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -118,22 +120,31 @@ const columnDefs = {
 
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.transfectTargets?.length || 0} Targets`}, 
+        label: (data) => { return `${data.transfectTargets?.length || 0}`}, 
         action: (data) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/targets`})
-        }
+        },
+        icon: 'pi pi-fw pi-bullseye',
+        iconPos: 'right',
+        tooltip: 'Targets',
     },
     pellets: {
-        label: (data) => { return `${getPelletCount(data.transfectTargets)} Pellets`}, 
+        label: (data) => { return `${getPelletCount(data.transfectTargets)}`}, 
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
-        }
+        },
+        iconComponent: DotsTriangle,
+        iconPos: 'right',
+        tooltip: 'Pellets',
     },
     reagents: {
-        label: (data) => { return `${data.transfectLotUsage?.length || 0} Reagent Use`},
+        label: (data) => { return `${data.transfectLotUsage?.length || 0}`},
         action: (data) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/lot-usage`})
-        }
+        },
+        iconComponent: BeakerOutline,
+        iconPos: 'right',
+        tooltip: 'Reagents',
     },
     harvest: {
         label: () => 'Harvest', 
