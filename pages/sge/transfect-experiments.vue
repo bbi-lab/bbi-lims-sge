@@ -118,7 +118,7 @@ const rowActions = {
     reagents: {
         label: (data) => { return `${data.transfectLotUsage?.length || 0} Reagents`},
         action: (data) => {
-            router.push({path:'/sge/transfect-lot-usage', query: {'experimentId': data.id}})
+            router.push({path:`/sge/transfect-experiment/${data.id}/lot-usage`})
         }
     },
     harvest: {

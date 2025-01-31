@@ -261,6 +261,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     plasmidExperiments: plasmidExperimentsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
+    transfectLotUsageRelations: transfectLotUsageRelationsConfig,
     pellets: pelletsRelationsConfig,
     storageBoxes: storageBoxesRelationsConfig,
 }

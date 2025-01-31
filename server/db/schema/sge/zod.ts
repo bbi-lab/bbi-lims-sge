@@ -60,7 +60,7 @@ const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
 const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage)
-const insertTransfectLotUsageSchema = createSelectSchema(transfectLotUsage).omit({id: true}).partial()
+const insertTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usageOn: dateSchema}).omit({id: true}).partial()
 const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
 const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
