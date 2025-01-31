@@ -55,7 +55,12 @@ const columnDefs = {
     lotId: {
         display: false,
     },
+    material: {
+        index: 1,
+        format: (x) => x.lot?.material,
+    },
     lot: {
+        header: 'Lot #',
         format: (x) => x.lot?.lotNumber,
         index: 0,
     },
@@ -70,7 +75,7 @@ const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
 })
 // Include an AutoCompleter widget for adding new targets
 editFormFieldDefs['lotId'] = {
-    label: 'Target',
+    label: 'Lot',
     component: 'AutoCompleter',
     props: {
         searchBaseUrl: `${config.public.apiBase}/lots`,
@@ -97,7 +102,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
-                :withClause="{lot: {columns: {lotNumber: true}}}"
+                :withClause="{lot: {columns: {lotNumber: true, material: true}}}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
