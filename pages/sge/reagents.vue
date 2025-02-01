@@ -51,7 +51,6 @@ function didDeleteRecord(event) {
                 schemaName="select"
                 title="Reagents"
                 :rowActions="rowActions"
-                :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />

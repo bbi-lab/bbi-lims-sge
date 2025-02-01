@@ -5,7 +5,7 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const lotsTable = ref()
-const router = useRouter()
+const config = useRuntimeConfig()
 
 const rowActions = {}
 
@@ -50,8 +50,23 @@ const columnDefs = {
     expiresOn: {
         format: 'date-time'
     },
+    reagent: {
+        format: (x) => _.get(x, 'reagent.name'),
+    },
 }
 
+const fieldDefs = {
+    reagent: {
+        label: 'Reagent',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/reagents`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+        }
+    }
+}
 </script>
 <template>
     <Splitter>
@@ -63,6 +78,7 @@ const columnDefs = {
                 title="Lots"
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
+                :withClause="{reagent: true}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
@@ -72,6 +88,7 @@ const columnDefs = {
                 v-if="showAddForm"
                 tableName="lots"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -80,6 +97,7 @@ const columnDefs = {
                 :recordId="editingRecordId"
                 tableName="lots"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

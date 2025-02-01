@@ -16,6 +16,7 @@ import { pellets } from './pellet'
 import { storageBoxes } from './storage-box'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
+import { reagents } from './reagents'
 
 const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{
@@ -250,6 +251,18 @@ const storageBoxesRelationsConfig: RelationsConfig = {
 }
 export const storageBoxesRelations = relationsConfigToRelations(storageBoxes, storageBoxesRelationsConfig)
 
+const lotsRelationsConfig: RelationsConfig = {
+    one: {
+        reagent: {
+            fields: [lots.reagent],
+            referenceTable: reagents,
+            references: [reagents.id],
+        },
+    },
+    many: {}
+}
+export const lotsRelations = relationsConfigToRelations(lots, lotsRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
@@ -264,4 +277,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     transfectLotUsageRelations: transfectLotUsageRelationsConfig,
     pellets: pelletsRelationsConfig,
     storageBoxes: storageBoxesRelationsConfig,
+    lots: lotsRelationsConfig,
 }

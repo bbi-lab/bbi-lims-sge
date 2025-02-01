@@ -55,15 +55,18 @@ const columnDefs = {
     lotId: {
         display: false,
     },
-    material: {
+    reagent: {
         index: 1,
-        format: (x) => x.lot?.material,
+        format: (x) => x.lot?.reagent.name,
     },
     lot: {
         header: 'Lot #',
         format: (x) => x.lot?.lotNumber,
         index: 0,
     },
+    concentration: {
+        format: (x) => `${x.concentration} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`
+    }
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
@@ -73,18 +76,21 @@ const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
         label: v.header || k,
     }
 })
+_.set(editFormFieldDefs, 'concentration.label', (data) => `Concentration (${data?.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})`)
+
 // Include an AutoCompleter widget for adding new targets
 editFormFieldDefs['lotId'] = {
     label: 'Lot',
     component: 'AutoCompleter',
     props: {
         searchBaseUrl: `${config.public.apiBase}/lots`,
-        searchFields: ['lotNumber', 'material'],
+        searchFields: ['lotNumber', 'reagent.name'],
         valueField: 'id',
-        displayOptions: {primary: {fields: ['lotNumber', 'material'], operator: 'join', seperator: ': '}},
-        // searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+        displayOptions: {primary: {fields: ['lotNumber', 'reagent.name'], operator: 'join', seperator: ': '}},
+        searchWithClause: {reagent: {columns: {name: true}}},
     },
 }
+
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
@@ -102,7 +108,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
-                :withClause="{lot: {columns: {lotNumber: true, material: true}}}"
+                :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
@@ -114,6 +120,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
                 :defaultValues="defaultValues"
+                :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -123,6 +130,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 tableName="transfectLotUsage"
                 schemaName="update"
                 :fieldDefs="editFormFieldDefs"
+                :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

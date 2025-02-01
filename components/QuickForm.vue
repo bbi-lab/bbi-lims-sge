@@ -113,7 +113,14 @@ function showDeleteConfirmation() {
     displayDeleteConfirmation.value = true
 }
 function getLabel(key) {
-    return _.get(props.fieldDefs, [key, 'label'], _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key)))
+    const label = _.get(props.fieldDefs, [key, 'label'])
+    if (_.isFunction(label)) {
+        return label(_.cloneDeep(record.value))
+    } else if (label) {
+        return label
+    } else {
+        return _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key))
+    }
 }
 async function saveRecord() {
     if (props.readOnly) return
