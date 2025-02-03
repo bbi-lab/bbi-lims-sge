@@ -39,7 +39,21 @@ function didDeleteRecord(event) {
     showEditForm.value = false
 }
 
-//const columnDefs = {}
+const columnDefs = {
+    name: {
+        index: 0,
+    },
+    concentration: {
+        format: ({soluteUnit, volumeUnit}) => { return soluteUnit && volumeUnit ? `${soluteUnit}/${volumeUnit}` : ''},
+        index: 1,
+    },
+    soluteUnit: {
+        display: false,
+    },
+    volumeUnit: {
+        display: false,
+    }
+}
 
 </script>
 <template>
@@ -50,6 +64,7 @@ function didDeleteRecord(event) {
                 tableName="reagents"
                 schemaName="select"
                 title="Reagents"
+                :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
