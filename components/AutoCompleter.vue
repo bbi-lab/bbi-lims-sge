@@ -7,21 +7,7 @@ const props = defineProps({
   searchFields: {type: Array, default: ['name']},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  /* 
-    EX:
-    displayOptions: {
-        primary: {
-            fields: ['name', 'desc'],
-            operator: 'coalesce',
-        },
-        secondary: {
-            fields: ['another.value', 'another.value2'],
-            operator: 'join',
-            delimiter: '; ',
-        }
-    }
-  */
-  displayOptions: {type: Object},
+  displayFormat: {type: Object},  // callback function to return formatted string
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   dropdown: {type: Boolean},
@@ -40,34 +26,14 @@ const emit = defineEmits([
 
 function getDisplayValue(record) {
     const result = []
-    let optionUsed = 'default'
 
-    if (props.displayOptions) {
-        for (const field of props.displayOptions.primary.fields) {
-            if (_.get(record, field)) result.push(_.get(record, field))
-        }
-        if (result.length>0) {
-            optionUsed = 'primary'
-        } else {
-            if (props.displayOptions?.secondary) {
-                for (const field of props.displayOptions.secondary.fields) {
-                    result.push(_.get(record, field))
-                }
-                optionUsed = 'secondary'
-            }
-        }
+    if (_.isFunction(props.displayFormat)) {
+        return props.displayFormat(record)
     } else {
         for (const field of props.displayFields) {
             result.push(_.get(record, field))
         }
-    }
-
-    const delimiter = _.get(props.displayOptions, [optionUsed, 'delimiter'], ': ')
-    const operator = _.get(props.displayOptions, [optionUsed, 'operator'], 'join')
-    if (operator=='join') {
-        return _.join(_.compact(result), delimiter)
-    } else if (operator=='coalesce') {
-        return _.find(result, (value) => !_.isEmpty(value))
+        return _.join(_.compact(result), ': ')
     }
 }
 

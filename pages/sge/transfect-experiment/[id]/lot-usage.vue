@@ -86,7 +86,7 @@ editFormFieldDefs['lotId'] = {
         searchBaseUrl: `${config.public.apiBase}/lots`,
         searchFields: ['lotNumber', 'reagent.name'],
         valueField: 'id',
-        displayOptions: {primary: {fields: ['lotNumber', 'reagent.name'], operator: 'join', seperator: ': '}},
+        displayFormat: (x) => `${x.lotNumber}: ${x.reagent.name}`,
         searchWithClause: {reagent: {columns: {name: true}}},
     },
 }

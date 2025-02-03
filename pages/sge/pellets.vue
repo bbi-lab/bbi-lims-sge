@@ -151,11 +151,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
             searchFields: ['name'],
             valueField: 'id',
-            displayOptions: {
-                primary: {
-                    fields: ['name'],
-                },
-            },
+            displayFields: ['name'],
             dropdown: true,
         }
     },

@@ -63,7 +63,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/reagents`,
             searchFields: ['name'],
             valueField: 'id',
-            displayFields: ['name'],
+            displayFormat: (x) => { return `${x.name} (${x.soluteUnit}/${x.volumeUnit})` },
         }
     }
 }
