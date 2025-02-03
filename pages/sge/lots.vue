@@ -50,8 +50,16 @@ const columnDefs = {
     expiresOn: {
         format: 'date-time'
     },
+    lotNumber: {
+        index: 0,
+    },
     reagent: {
         format: (x) => _.get(x, 'reagent.name'),
+        index: 1,
+    },
+    concentration: {
+        format: ({concentration, reagent}) => { return reagent.soluteUnit && reagent.volumeUnit ? `${concentration || '--'} ${reagent.soluteUnit}/${reagent.volumeUnit}` : ''},
+        index: 2,
     },
 }
 

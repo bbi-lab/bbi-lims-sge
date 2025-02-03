@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, varchar, smallint, text } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, varchar, smallint, text, numeric } from 'drizzle-orm/pg-core'
 import { reagents } from './reagents'
 
 export const lots = pgTable('lots', {
@@ -14,6 +14,7 @@ export const lots = pgTable('lots', {
       'used'
     ]}
   ),
+  concentration: numeric('concentration'),
   startedUseOn: timestamp('started_use_on'),
   endedUseOn: timestamp('ended_use_on'),
   expiresOn: timestamp('expires_on'),
