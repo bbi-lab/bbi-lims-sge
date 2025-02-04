@@ -76,7 +76,7 @@ const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
         label: v.header || k,
     }
 })
-_.set(editFormFieldDefs, 'concentration.label', (data) => `Concentration (${data?.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})`)
+_.set(editFormFieldDefs, 'concentration.label', (data) => data.lot?.reagent ? `Concentration (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Concentration')
 
 // Include an AutoCompleter widget for adding new targets
 editFormFieldDefs['lotId'] = {
