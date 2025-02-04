@@ -71,10 +71,14 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/reagents`,
             searchFields: ['name'],
             valueField: 'id',
-            displayFormat: (x) => { return `${x.name} (${x.soluteUnit}/${x.volumeUnit})` },
+            displayFields: ['name'],
         }
+    },
+    concentration: {
+        label: (data) => data.reagent ? `Concentration (${data.reagent?.soluteUnit}/${data.reagent?.volumeUnit})` : 'Concentration'
     }
 }
+
 </script>
 <template>
     <Splitter>
@@ -97,6 +101,7 @@ const fieldDefs = {
                 tableName="lots"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :withClause="{reagent: true}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -106,6 +111,7 @@ const fieldDefs = {
                 tableName="lots"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :withClause="{reagent: true}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
