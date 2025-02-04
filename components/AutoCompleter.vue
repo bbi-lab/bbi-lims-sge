@@ -40,8 +40,9 @@ function getDisplayValue(record) {
 
 watch(modelValue, async (newValue, oldValue) => {
     if (newValue && !_.isEqual(newValue, oldValue)) {
-        const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
-        currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
+        const recordId = _.isString(modelValue.value) ?  modelValue.value : modelValue.value?.id
+        const record = await RecordService.getRecord(props.searchBaseUrl, recordId, props.searchWithClause)
+        currentValue.value = {code: recordId, label: getDisplayValue(record) }
     }},
     { immediate: true },
 )
