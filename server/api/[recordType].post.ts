@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         const body = await readBody(event)
         const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>
         const records = _.map(body, (x) => {
-            const record = _.mapValues(x, (value) => _.isEmpty(value) ? null : value)
+            const record = _.mapValues(x, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
             return insertSchema.parse(record)
         })
 
