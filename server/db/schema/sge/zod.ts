@@ -1,4 +1,4 @@
-import { dateSchema } from '../../helpers/schemas'
+import { dateSchema, nullableDateSchema } from '../../helpers/schemas'
 import { projects } from './project'
 import { targets } from './target'
 import { genes } from './gene'
@@ -89,7 +89,7 @@ const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true
 const updateStorageBoxesSchema = insertStorageBoxesSchema
 
 const selectLotsSchema = createSelectSchema(lots)
-const insertLotsSchema = createSelectSchema(lots, {startedUseOn: dateSchema, endedUseOn: dateSchema, expiresOn: dateSchema}).omit({id: true})
+const insertLotsSchema = createSelectSchema(lots, {startedUseOn: nullableDateSchema, endedUseOn: nullableDateSchema, expiresOn: nullableDateSchema}).omit({id: true})
 const updateLotsSchema = insertLotsSchema
 
 const selectReagentsSchema = createSelectSchema(reagents)
