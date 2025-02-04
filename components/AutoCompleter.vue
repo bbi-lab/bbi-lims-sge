@@ -14,6 +14,7 @@ const props = defineProps({
   disabled: {type: Boolean},
   hideClearButton: {type: Boolean},
   iftaLabel: {type: String},
+  inputId: {type: String},
 })
 
 const modelValue = defineModel()
@@ -38,7 +39,7 @@ function getDisplayValue(record) {
 }
 
 watch(modelValue, async (newValue, oldValue) => {
-    if (!_.isEqual(newValue, oldValue)) {
+    if (newValue && !_.isEqual(newValue, oldValue)) {
         const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
         currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
     }},
@@ -76,7 +77,10 @@ async function lostFocus() {
         clearValue()
     }
 }
-const inputId = useId()
+defineExpose({
+    clearValue,
+})
+//const inputId = useId()
 
 </script>
 <template>
@@ -84,7 +88,7 @@ const inputId = useId()
         <AutoComplete 
             v-model="currentValue" 
             class="w-80"
-            inputId="inputId"
+            :id="inputId"
             :suggestions="suggestions" 
             optionLabel="label"
             @complete="autocompleteSearch"
@@ -92,7 +96,7 @@ const inputId = useId()
             @blur="lostFocus"
             :dropdown="dropdown"
             :disabled="disabled" />
-        <label v-if="!_.isEmpty(iftaLabel)" for="inputId">{{ iftaLabel }}</label>
+        <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
     </component>
     
     <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />

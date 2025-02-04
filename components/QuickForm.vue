@@ -74,6 +74,37 @@ watch(record, (newValue, oldValue) => {
     }
 }, { deep: true })
 
+function addErrorsToForm(formErrors) {
+    // remove any previous validation errors
+    const existingErrors = document.querySelectorAll('.lims-validation-error')
+    existingErrors.forEach((x) => {
+        x.previousElementSibling.querySelector('input').classList.remove('border-red-500')
+        x.remove()
+    })
+
+    // add error text and styling
+    for (const e of formErrors) {
+        const elementId = e.path?.[0]
+        const element = document.getElementById(elementId)
+
+        // get input element
+        let inputElement
+        if (element.tagName == 'INPUT') {
+            inputElement = element
+        } else {
+            inputElement = element.querySelector('input')
+        }
+
+        if (inputElement) {
+            inputElement.classList.add('border-red-500')
+            const errorMsg = document.createElement('div')
+            errorMsg.setAttribute('class', 'lims-validation-error text-red-500')
+            errorMsg.textContent = e.message
+            element.after(errorMsg)
+        }
+    }
+}
+
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
         RecordService.deleteRecord(apiBaseUrl.value, record.value.id).then((result) => {
@@ -131,8 +162,15 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            // TODO - when possible, show errors next to the field(s) that failed validation
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            let formErrors
+            try {
+                formErrors = JSON.parse(error.statusMessage)
+            } catch(e) {} 
+            if (formErrors) {
+                addErrorsToForm(formErrors)
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            }
         })
     } else if (!props.recordId) {
         // new record
@@ -151,8 +189,12 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
             }).catch(error => {
-                // TODO - when possible, show errors next to the field(s) that failed validation
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+                const formErrors = _.isString(error.statusMessage) ? JSON.parse(error.statusMessage) : error.statusMessage
+                if (formErrors) {
+                    addErrorsToForm(formErrors)
+                } else {
+                    toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+                }    
             })
         }
     }
@@ -218,6 +260,7 @@ function getFieldType(val, key) {
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <AutoCompleter 
+                        :input-id="key"
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
@@ -226,6 +269,7 @@ function getFieldType(val, key) {
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <NestedSelect 
+                        :input-id="key"
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"

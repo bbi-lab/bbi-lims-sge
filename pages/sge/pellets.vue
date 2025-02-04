@@ -129,14 +129,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
             valueField: 'id',
-            displayOptions: {
-                primary: {
-                    fields: ['target.name'],
-                }, 
-                secondary: {
-                    fields: ['target.region.gene.symbol', 'target.region.name']
-                }
-            },
+            displayFormat: (x) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
             parentKeyField: 'experimentId',
             searchWithClause: {
                 target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},

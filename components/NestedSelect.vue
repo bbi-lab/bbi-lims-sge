@@ -13,16 +13,19 @@ const props = defineProps({
   searchBaseUrl: {type: String, required: true},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  displayOptions: {type: Object},
+  displayFormat: {type: Object},
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   parentKeyField: {type: String, required: true},
 
-  hideClearButton: {type: Boolean}
+  hideClearButton: {type: Boolean},
+  inputId: {type: String},
 })
 
 const modelValue = defineModel()
 const parentValue = ref()
+const parentAutoCompleter = ref()
+const autoCompleter = ref()
 const searchWhereClauseFinal = ref()
 
 
@@ -44,11 +47,11 @@ watch(parentValue, (newValue, oldValue) => {
 })
 
 function parentValueChanged(event) {
-    modelValue.value = ''
+    modelValue.value = null
 }
 function clearValues(event) {
-    parentValue.value = ''
-    modelValue.value = ''
+    autoCompleter.value.clearValue()
+    parentAutoCompleter.value.clearValue()
 }
 </script>
 <template>
@@ -56,12 +59,12 @@ function clearValues(event) {
         <div class="mb-5">
             <AutoCompleter
                 v-model="parentValue"
+                ref="parentAutoCompleter"
                 :iftaLabel="parentIftaLabel"
                 :searchBaseUrl="parentSearchBaseUrl"
                 :searchFields="parentDisplayFields"
                 :valueField="parentValueField"
                 :displayFields="parentDisplayFields"
-                :displayOptions="parentDisplayOptions"
                 :searchWithClause="parentSearchWithClause"
                 :dropdown="true"
                 :hideClearButton="true"
@@ -71,11 +74,12 @@ function clearValues(event) {
         <div>
             <AutoCompleter 
                 v-model="modelValue"
+                ref="autoCompleter"
+                :input-id="inputId"
                 :searchBaseUrl="searchBaseUrl"
                 :searchFields="displayFields"
                 :valueField="valueField"
-                :displayFields="displayFields"
-                :displayOptions="displayOptions"
+                :displayFormat="displayFormat"
                 :searchWithClause="searchWithClause"
                 :searchWhereClause="searchWhereClauseFinal"
                 :dropdown="true"
