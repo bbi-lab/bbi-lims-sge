@@ -10,7 +10,8 @@ export default defineEventHandler(async (event) => {
     try {
         const body = await readBody(event)
         const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
-        const values = updateSchema.parse(body)
+        const values = _.mapValues(body, (value) => _.isEmpty(value) ? null : value)
+        const parsedValues = updateSchema.parse(values)
 
         // many-to-many
         if (_.camelCase(recordType) == 'transfectExperiments' && _.isArray(body.transfectTargets)) {
