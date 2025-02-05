@@ -21,20 +21,6 @@ const props = defineProps({
   values: {type: Object},
 })
 
-onMounted(() => {
-    refreshForm()
-})
-
-watch(() => props.recordId, async (newValue, oldValue) => {
-  if (newValue != oldValue ) {
-    if (dataChanged.value) {
-        displayDiscardConfirmation.value = true
-    } else {
-        refreshForm()
-    }
-  }
-})
-
 const refreshForm = async function() {
     if (props.recordId) {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
@@ -68,9 +54,30 @@ const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
 const displayDiscardConfirmation = ref(false)
 
-watch(record, (newValue, oldValue) => {
-    if (_.isEqual(newValue, oldValue) && newValue?.id == oldValue?.id ) {
-        dataChanged.value = true
+watch(() => props.recordId, (newValue, oldValue) => {
+  if (newValue != oldValue ) {
+    if (dataChanged.value) {
+        displayDiscardConfirmation.value = true
+    } else {
+        refreshForm()
+    }
+  }
+}, { immediate: true })
+
+// watching cloned record for changes to prevent issue where newValue and oldValue are equal
+// https://vuejs.org/guide/essentials/watchers.html#deep-watchers
+const recordClone = computed(() => _.cloneDeep(record.value))
+watch(() => recordClone.value, (newValue, oldValue) => {
+    if (!_.isEqual(newValue, oldValue) && newValue?.id == oldValue?.id ) {
+        // make sure changes are not result of replacing foreign key string values with objects (e.x. using withClause)
+        const changes =_.differenceWith(_.toPairs(oldValue), _.toPairs(newValue), _.isEqual)
+        _.keys(_.fromPairs(changes)).forEach((k) => {
+            const oldVal = _.get(oldValue, [k, 'id'], oldValue?.[k])
+            const newVal = _.get(newValue, [k, 'id'], newValue?.[k])
+            if (oldVal != newVal) {
+                dataChanged.value = true
+            }
+        })
     }
 }, { deep: true })
 
