@@ -17,9 +17,16 @@ export default defineEventHandler(async (event) => {
         const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
         return newRecords
     } catch (e: any) {
+        let data
+        try {
+            data = JSON.parse(e.message)
+        } catch (e) {
+            data = {}
+        }
         throw createError({
             statusCode: 400,
-            statusMessage: e.message
+            statusMessage: e.message,
+            data
         })
     }
 })

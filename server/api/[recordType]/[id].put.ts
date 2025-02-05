@@ -22,9 +22,16 @@ export default defineEventHandler(async (event) => {
 
         return updatedRecord
     } catch (e: any) {
+        let data
+        try {
+            data = JSON.parse(e.message)
+        } catch (e) {
+            data = {}
+        }
         throw createError({
             statusCode: 400,
-            statusMessage: e.message
+            statusMessage: e.message,
+            data
         })
     }
 })

@@ -76,10 +76,12 @@ watch(record, (newValue, oldValue) => {
 
 function addErrorsToForm(formErrors) {
     // remove any previous validation errors
-    const existingErrors = document.querySelectorAll('.lims-validation-error')
-    existingErrors.forEach((x) => {
-        x.previousElementSibling.querySelector('input').classList.remove('border-red-500')
-        x.remove()
+    document.querySelectorAll('.lims-validation-error').forEach((x) => x.remove())
+    
+    // remove red outline from inputs
+    const existingErrorsInputs = document.querySelectorAll('.lims-validation-error-input')
+    existingErrorsInputs.forEach((x) => {
+        x.classList.remove('lims-validation-error-input', 'border-red-500')
     })
 
     // add error text and styling
@@ -96,7 +98,7 @@ function addErrorsToForm(formErrors) {
         }
 
         if (inputElement) {
-            inputElement.classList.add('border-red-500')
+            inputElement.classList.add('lims-validation-error-input', '!border-red-500')
             const errorMsg = document.createElement('div')
             errorMsg.setAttribute('class', 'lims-validation-error text-red-500')
             errorMsg.textContent = e.message
@@ -162,12 +164,8 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            let formErrors
-            try {
-                formErrors = JSON.parse(error.statusMessage)
-            } catch(e) {} 
-            if (formErrors) {
-                addErrorsToForm(formErrors)
+            if (_.isArray(error.data?.data)) {
+                addErrorsToForm(error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             }
@@ -186,12 +184,11 @@ async function saveRecord() {
             }
         } else {
             RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
-            emit('record-add', result)
+                toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
+                emit('record-add', result)
             }).catch(error => {
-                const formErrors = _.isString(error.statusMessage) ? JSON.parse(error.statusMessage) : error.statusMessage
-                if (formErrors) {
-                    addErrorsToForm(formErrors)
+                if (_.isArray(error.data?.data)) {
+                    addErrorsToForm(error.data.data)
                 } else {
                     toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
                 }    

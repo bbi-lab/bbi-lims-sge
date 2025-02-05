@@ -7,7 +7,7 @@ const props = defineProps({
   searchFields: {type: Array, default: ['name']},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  displayFormat: {type: Object},  // callback function to return formatted string
+  displayFormat: {type: Function},  // callback function to return formatted string
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   dropdown: {type: Boolean},
@@ -40,9 +40,11 @@ function getDisplayValue(record) {
 
 watch(modelValue, async (newValue, oldValue) => {
     if (newValue && !_.isEqual(newValue, oldValue)) {
-        const recordId = _.isString(modelValue.value) ?  modelValue.value : modelValue.value?.id
-        const record = await RecordService.getRecord(props.searchBaseUrl, recordId, props.searchWithClause)
-        currentValue.value = {code: recordId, label: getDisplayValue(record) }
+        modelValue.value = _.isString(newValue) ?  newValue : _.get(newValue, props.valueField)
+        if (_.isString(modelValue.value)) {
+            const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
+            currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
+        }
     }},
     { immediate: true },
 )
