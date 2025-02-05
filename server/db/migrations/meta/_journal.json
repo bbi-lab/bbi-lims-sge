@@ -71,6 +71,13 @@
       "when": 1738625129219,
       "tag": "0009_productive_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1738799432574,
+      "tag": "0010_last_leper_queen",
+      "breakpoints": true
     }
   ]
 }
