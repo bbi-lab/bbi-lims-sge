@@ -57,9 +57,19 @@ const columnDefs = {
         format: (x) => _.get(x, 'reagent.name'),
         index: 1,
     },
+    inHouse: {
+        index: 2,
+    },
+    status: {
+        index: 3,
+    },
     concentration: {
         format: ({concentration, reagent}) => { return reagent.soluteUnit && reagent.volumeUnit ? `${concentration || '--'} ${reagent.soluteUnit}/${reagent.volumeUnit}` : ''},
-        index: 2,
+        index: 4,
+    },
+    startingVolume: {
+        format: ({startingVolume, reagent}) => { return reagent.volumeUnit ? `${startingVolume || '--'} ${reagent.volumeUnit}` : ''},
+        index: 5,
     },
 }
 
@@ -80,6 +90,15 @@ const fieldDefs = {
                 return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})` 
             } else {
                 return 'Concentration'
+            }
+        }
+    },
+    startingVolume: {
+        label: (_data, relatedData) => {
+            if (_.isObject(relatedData?.reagent)) {
+                return `Starting Volume (${relatedData.reagent?.volumeUnit})` 
+            } else {
+                return 'Starting Volume'
             }
         }
     }
