@@ -18,6 +18,7 @@ const props = defineProps({
 })
 
 const modelValue = defineModel()
+const modelValueObj = defineModel('obj')
 const currentValue = ref()
 const suggestions = ref([])
 
@@ -39,8 +40,16 @@ function getDisplayValue(record) {
 }
 
 watch(modelValue, async (newValue, oldValue) => {
+    
     if (newValue && !_.isEqual(newValue, oldValue)) {
+        if (_.isObject(newValue)) {
+            modelValueObj.value = newValue
+        } else if (_.isEmpty(newValue)) {
+            modelValueObj.value = null
+        }
+
         modelValue.value = _.isString(newValue) ?  newValue : _.get(newValue, props.valueField)
+        
         if (_.isString(modelValue.value)) {
             const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
             currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
@@ -59,17 +68,19 @@ async function autocompleteSearch(event) {
     }
     const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
 
-    suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x) }})
+    suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x), record: x }})
 }
 
 function clearValue() {
     currentValue.value = null
     modelValue.value = null
+    modelValueObj.value = null
     emit('value-changed', null)
 }
 function setModelValue() {
     if (_.has(currentValue.value, 'code')) {
         modelValue.value = _.get(currentValue.value, 'code')
+        modelValueObj.value = _.get(currentValue.value, 'record')
         emit('value-changed', modelValue.value)
     } else {
         clearValue()

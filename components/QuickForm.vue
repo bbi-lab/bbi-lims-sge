@@ -49,10 +49,13 @@ const emit = defineEmits([
 const toast = useToast()
 const formSchema = ref()
 const record = ref(null)
+const relatedRecords = ref({})
 const dataChanged = ref(false)
 const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
 const displayDiscardConfirmation = ref(false)
+
+onMounted(() => refreshForm())
 
 watch(() => props.recordId, (newValue, oldValue) => {
   if (newValue != oldValue ) {
@@ -62,7 +65,7 @@ watch(() => props.recordId, (newValue, oldValue) => {
         refreshForm()
     }
   }
-}, { immediate: true })
+})
 
 // watching cloned record for changes to prevent issue where newValue and oldValue are equal
 // https://vuejs.org/guide/essentials/watchers.html#deep-watchers
@@ -155,7 +158,7 @@ function showDeleteConfirmation() {
 function getLabel(key) {
     const label = _.get(props.fieldDefs, [key, 'label'])
     if (_.isFunction(label)) {
-        return label(_.cloneDeep(record.value))
+        return label(_.cloneDeep(record.value), _.cloneDeep(relatedRecords.value))
     } else if (label) {
         return label
     } else {
@@ -266,6 +269,7 @@ function getFieldType(val, key) {
                     <AutoCompleter 
                         :input-id="key"
                         v-model="record[key]"
+                        v-model:obj="relatedRecords[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
                     />

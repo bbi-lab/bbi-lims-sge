@@ -75,7 +75,13 @@ const fieldDefs = {
         }
     },
     concentration: {
-        label: (data) => data.reagent ? `Concentration (${data.reagent?.soluteUnit}/${data.reagent?.volumeUnit})` : 'Concentration'
+        label: (_data, relatedData) => {
+            if (_.isObject(relatedData?.reagent)) {
+                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})` 
+            } else {
+                return 'Concentration'
+            }
+        }
     }
 }
 
