@@ -267,6 +267,11 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                         {{ columnDef.format(slotProps.data) }}
                     </template>
                 </Column>
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
+                    <template #body="slotProps">
+                        {{ slotProps.data[columnDef.key] ? '✓' : '' }}
+                    </template>
+                </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
                     <template #body="slotProps">
                         {{ columnDef.type == 'array' ? _.join(slotProps.data[columnDef.key], ', ') : slotProps.data[columnDef.key] }}
