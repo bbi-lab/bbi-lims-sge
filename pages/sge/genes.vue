@@ -1,4 +1,5 @@
 <script setup>
+import _ from 'lodash'
 import Papa from 'papaparse'
 
 const showAddForm = ref(false)
@@ -6,6 +7,7 @@ const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const projectsTable = ref()
 const config = useRuntimeConfig()
+const toast = useToast()
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -41,15 +43,19 @@ const rowActions = {
     targets: {
         action: async (data) => {
             const result = await $fetch(`${config.public.apiBase}/custom/genes/${data.id}/export-targets`)
-            const csv = Papa.unparse(result, {delimiter: '\t'})
-            const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' })
-            const url = URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', `${data.symbol}_targets.tsv`)
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
+            if (!_.isEmpty(result)) {
+                const csv = Papa.unparse(result, {delimiter: '\t'})
+                const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' })
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.setAttribute('download', `${data.symbol}_targets.tsv`)
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+            } else {
+                toast.add({severity: 'warn', summary: 'No targets found'})
+            }
         },
         icon: 'pi pi-fw pi-download',
         iconPos: 'right',
