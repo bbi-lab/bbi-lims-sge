@@ -78,6 +78,13 @@
       "when": 1738799432574,
       "tag": "0010_last_leper_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1738854928284,
+      "tag": "0011_dusty_mandrill",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import {cycles} from './cycle'
 
 export const targets = pgTable('targets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).unique(),
+  name: varchar('name', { length: 255 }).notNull().unique(),
   projectId: uuid('project_id').references(() => projects.id),
   cycleId: uuid('cycle_id').references(() => cycles.id),
   regionId: uuid('region_id').references(() => regions.id).notNull(),
