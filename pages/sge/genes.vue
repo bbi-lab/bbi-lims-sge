@@ -1,8 +1,11 @@
 <script setup>
+import Papa from 'papaparse'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const projectsTable = ref()
+const config = useRuntimeConfig()
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -34,6 +37,25 @@ function didUpdateRecord(event) {
 //     projectsTable.value.removeRecordId(event.id)
 //     showEditForm.value = false
 // }
+const rowActions = {
+    targets: {
+        action: async (data) => {
+            const result = await $fetch(`${config.public.apiBase}/custom/genes/${data.id}/export-targets`)
+            const csv = Papa.unparse(result, {delimiter: '\t'})
+            const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', `${data.symbol}_targets.tsv`)
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        },
+        icon: 'pi pi-fw pi-download',
+        iconPos: 'right',
+        tooltip: 'Targets',
+    },
+}
 const columnDefs = {
     ncbiAccession: {
         header: 'NCBI accession'
@@ -61,6 +83,7 @@ const columnDefs = {
                 :canDelete="false"
                 selectionMode="single"
                 :columnDefs="columnDefs"
+                :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
             />

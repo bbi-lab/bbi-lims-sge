@@ -18,6 +18,18 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 
+const genesRelationsConfig: RelationsConfig = {
+    one: {},
+    many: {
+        regions: {
+            table: regions,
+            schema: createSelectSchema(regions),
+            fields: [regions.geneId]
+        }
+    }
+}
+export const genesRelations = relationsConfigToRelations(genes, genesRelationsConfig)
+
 const pcrExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
@@ -114,7 +126,13 @@ const regionsRelationsConfig: RelationsConfig = {
             references: [genes.id],
         }
     },
-    many: {}
+    many: {
+        targets: {
+            table: targets,
+            schema: createSelectSchema(targets),
+            fields: [targets.regionId]
+        }
+    }
 }
 export const regionsRelations = relationsConfigToRelations(regions, regionsRelationsConfig)
 
@@ -269,6 +287,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     projects: projectsRelationsConfig,
     targets: targetsRelationsConfig,
     regions: regionsRelationsConfig,
+    genes: genesRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     plasmidExperiments: plasmidExperimentsRelationsConfig,
