@@ -73,7 +73,7 @@ const columnDefs = {
     },
     chromosome: {
         header: 'Chromosome',
-        format: (x) => _.get(x, 'region.gene.chromosome'),
+        format: (x) => _.has(x, 'region.gene.chromosome') ? `chr${x.region.gene.chromosome}`: '',
         index: 1,
     },
     gene: {
