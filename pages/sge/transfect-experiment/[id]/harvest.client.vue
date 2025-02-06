@@ -50,6 +50,7 @@ const harvestBy = ref()
 const harvestProtocol = ref()
 const now = ref(new Date())
 
+const validReplicatesLimited = computed(() => experiment?.data?.replicateCount ? _.filter(VALID_REPLICATES, (x) => !_.startsWith(x, 'R') || parseInt(x.slice(-1)) <= (experiment.data?.replicateCount ?? 0)) : VALID_REPLICATES)
 // set min date to Day 5, max to Day 17
 const minDate = computed(() => experiment?.data?.startedOn ? moment(experiment?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
 const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
@@ -179,7 +180,7 @@ async function submitPellets() {
                 <Listbox id="harvestTargetsInput" v-model="selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
                 
                 <label for="harvestReplicatesInput" class="block font-bold">Replicates</label>
-                <MultiSelect id="harvestReplicatesInput" v-model="selectedReplicates" :options="valuesToCodedList(VALID_REPLICATES)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
+                <MultiSelect id="harvestReplicatesInput" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                 <div class="flex items-stretch w-60">
