@@ -246,19 +246,13 @@ function getFieldType(val, key) {
 }
 </script>
 <template>
-    <!-- repeat the form buttons at the top and bottom if there are 5 or more properties -->
-    <template v-for="n in 2">
-        <div v-if="n==2 || (n<=1 && _.keys(formSchema?.properties).length > 5)">
-            <Button class="m-1" :label="readOnly ? 'Close' : 'Cancel'" icon="pi pi-times" text @click="cancelEdit" />
-            <Button v-if="!readOnly" class="m-1" label="Save" icon="pi pi-check" :disabled="!dataChanged" @click="saveRecord" />
-            <Button v-if="canDelete" label="Delete" icon="pi pi-trash" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
-        </div>
-        <!-- 
-            - insert the form only on the first iteration (n==1)
-            - `anyOf` properties will typically indicate a nullable field, using :set so val will be the first non-nullable type
-        -->
-        <div 
-            v-if="n==1"
+    <div class="m-2 w-full flex justify-center">
+        <Button class="ml-1" v-tooltip="'Cancel'" severity="info" icon="pi pi-undo" size="small" @click="cancelEdit" />
+        <Button v-if="!readOnly" class="ml-1" v-tooltip="'Save'" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecord" />
+        <Button v-if="canDelete" class="ml-1" v-tooltip="'Delete'" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
+    </div>
+    <div class="pl-8 pb-24 h-full overflow-y-scroll">
+        <div
             v-for="(val, key, index) in formSchema?.properties" 
             class="mt-5"
             :set="val = val.anyOf ? _.find(val.anyOf, (x) => x.type != 'null') : val"
@@ -364,7 +358,7 @@ function getFieldType(val, key) {
                 </div>
             </template>
         </div>
-    </template>
+    </div>
     <Dialog header="Unsaved changes" v-model:visible="displayDiscardConfirmation" :style="{ width: '350px' }" :modal="true">
         <div class="flex items-center justify-center">
             <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />

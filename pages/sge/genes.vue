@@ -94,7 +94,7 @@ const columnDefs = {
                 @clickedRecordEdit="didClickRecordEdit"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8 overflow-y-scroll" v-if="showAddForm || showEditForm">
+        <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm 
                 v-if="showEditForm"
                 :recordId="editingRecordId"

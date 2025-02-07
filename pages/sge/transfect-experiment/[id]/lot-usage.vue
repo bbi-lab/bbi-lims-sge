@@ -113,7 +113,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8 overflow-y-scroll" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="transfectLotUsage"
