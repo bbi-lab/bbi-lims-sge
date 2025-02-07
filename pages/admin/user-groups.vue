@@ -36,7 +36,7 @@ function didDeleteRecord(event) {
 }
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="userGroupsTable"
@@ -50,7 +50,7 @@ function didDeleteRecord(event) {
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+        <SplitterPanel class="p-8 overflow-y-scroll" v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="user-groups"

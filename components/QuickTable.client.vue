@@ -246,8 +246,8 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column class="w-0" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
-        <Column class="whitespace-nowrap !p-0 w-0" v-if="props.canEdit" :exportable="false">
+        <Column class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
+        <Column :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit" :exportable="false">
             <template #body="slotProps">
                 <div class="group">
                     <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
