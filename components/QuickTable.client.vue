@@ -29,8 +29,7 @@ onMounted(async() => {
             }
         }
     )
-    if (props.columnDefs) columnDefinitions.value = {...columnDefinitions.value, ...props.columnDefs}
-
+    if (props.columnDefs) columnDefinitions.value = _.merge(columnDefinitions.value, props.columnDefs)
 })
 
 const toast = useToast()
@@ -47,6 +46,7 @@ const props = defineProps({
   rowsPerPageOptions: {type: Array},
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
+  showColumnFilters: {type: Boolean, default: false},
 })
 const emit = defineEmits([
     'clicked-record-edit',
@@ -55,7 +55,7 @@ const emit = defineEmits([
 ])
 
 const sortedColumnDefs = computed(() => _.orderBy(
-    _.map(columnDefinitions.value, (v,k) => {return {key: k, ...v}}),
+    _.map(columnDefinitions.value, (v,k) => {return {key: k, path: v.path || k, ...v}}),
     [
       i => _.has(i, 'index'),
       i => i.index || ''
@@ -72,23 +72,35 @@ const columnDefinitions = ref({})
 const dt = ref()
 const displayDeleteConfirmation = ref(false)
 const loading = ref(true)
+const filteringInProgress = ref(false)
 
 const globalFilterFields = ref([])
+const globalSearchTerm = ref(null)
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
+const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
 // TODO: add support for posititing buttons in any column. For now, 0 or negative index action buttons will be combined into the first column, 
 // any positive or non-indexed action buttons will be combined into the last column
 const rowActionsStart = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => _.isNumber(value.index) && value.index < 1) : {})
 const rowActionsEnd = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => !_.has(value, 'index') || value.index > 1) : {})
 
+const displayColumnFilters = ref(false)
+function toggleColumnFilters() {
+    displayColumnFilters.value = !displayColumnFilters.value
+}
+
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
-    globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : x.key)
-  }
-})
+    globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : (x.path ?? x.key))
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    if (props.showColumnFilters) {
+        const filtersEntries = newValue.reduce((acc, colDef) => {
+            acc[colDef.path || colDef.key] = { value: null, matchMode: FilterMatchMode.CONTAINS }
+            return acc
+        }, {})
+        filters.value = _.merge({global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, filtersEntries)
+    }
+  }
 })
 
 function formatDate(value) {
@@ -122,9 +134,9 @@ function getExportRecords() {
             if (_.isFunction(columnDef.format)) {
                 exportRecord[columnDef.key] = columnDef.format(record)
             } else if (columnDef.format == 'date-time') {
-                exportRecord[columnDef.key] = formatDate(record[columnDef.key])
+                exportRecord[columnDef.key] = formatDate(_.get(record, columnDef.path ?? columnDef.key))
             } else if (columnDef.display !== false) {
-                exportRecord[columnDef.key] = record[columnDef.key]
+                exportRecord[columnDef.key] = _.get(record, columnDef.path ?? columnDef.key)
             }
         }
         exportRecords.push(exportRecord)
@@ -204,6 +216,16 @@ const exportOptions = ref([
 ])
 defineExpose({ addOrRefreshRecordId, removeRecordId })
 
+function setGlobalSearchTerm() {
+    _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
+}
+
+function debounceSearch(f) {
+    filteringInProgress.value = true
+    return _.debounce(() => {
+        f()
+}, 1000)}
+
 </script>
 
 <template>
@@ -215,12 +237,17 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         :nullSortOrder="-1"
         scrollable 
         scrollHeight="flex"
-        :filters="filters"
+        v-model:filters="filters"
         :paginator="paginator"
         :rows="rowsPerPage" 
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
+        table-class="border-collapse"
+        filterHeaderClass="border-collapse"
+        :filter-display="displayColumnFilters ? 'row' : ''"
         :globalFilterFields="globalFilterFields"
+        @update:filters="filteringInProgress = true"
+        @filter="filteringInProgress = false"
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -233,13 +260,14 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
                     </template>
                     <template #end>
                         <SplitButton label="Export" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
+                        <ProgressSpinner :class="`size-8 ml-2 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
                 </Toolbar>
                 <IconField>
                     <InputIcon>
                         <i class="pi pi-search" />
                     </InputIcon>
-                    <InputText v-model="filters['global'].value" placeholder="Search..." />
+                    <InputText v-model="globalSearchTerm" placeholder="Search..." @input="debounceSearch(setGlobalSearchTerm)()"/>
                 </IconField>
             </div>
         </template>
@@ -247,34 +275,49 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         <template #loading> Loading </template>
 
         <Column class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
-        <Column :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit" :exportable="false">
+        <Column :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
+            <template v-if="showColumnFilters" #header>
+                <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/> 
+            </template>
             <template #body="slotProps">
                 <div class="group">
-                    <Button icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
+                    <Button v-if="props.canEdit" icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
                     <Button :class="v.class" :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
                 </div>
             </template>
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="_.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :sort-field="columnDef.format" sortable>
+                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" :sort-field="columnDef.format" :filter-field="columnDef.path" sortable>
+                    <template v-if="_.has(filters, columnDef.path) || _.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
                     <template #body="slotProps">
                         {{ columnDef.format(slotProps.data) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="_.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
                     <template #body="slotProps">
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.key" :header="columnHeader(columnDef)" sortable>
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
                     <template #body="slotProps">
-                        {{ columnDef.type == 'array' ? _.join(slotProps.data[columnDef.key], ', ') : slotProps.data[columnDef.key] }}
+                        {{ columnDef.type == 'array' ? _.join(_.get(slotProps.data, columnDef.path), ', ') : _.get(slotProps.data, columnDef.path) }}
                     </template>
                 </Column>
             </template>
@@ -307,3 +350,12 @@ defineExpose({ addOrRefreshRecordId, removeRecordId })
         </template>
     </Dialog>
 </template>
+
+<style>
+.p-datatable-header-cell {
+    border-bottom-width: 0px;
+}
+.p-datatable-thead > tr:last-child {
+    border-bottom-width: 1px;
+}
+</style>
