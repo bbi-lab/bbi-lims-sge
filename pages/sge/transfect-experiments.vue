@@ -95,7 +95,7 @@ const columnDefs = {
         format: 'date-time'
     },
     technician: {
-        format: (x) => _.get(x, 'technician.name'),
+        path: 'technician.name',
     },
     transfectTargets: {
         header: 'Targets',

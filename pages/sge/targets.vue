@@ -78,26 +78,26 @@ const columnDefs = {
     },
     gene: {
         header: 'Gene',
-        format: (x) => _.get(x, 'region.gene.symbol'),
+        path: 'region.gene.symbol',
         index: 2,
     },
     region: {
         header: 'Region',
-        format: (x) => _.get(x, 'region.name'),
+        path: 'region.name',
         index: 3,
     },
     projectId: {
         display: false
     },
     project: {
-        format: (x) => _.get(x, 'project.name'),
+        path: 'project.name',
         index: 4,
     },
     cycleId: {
         display: false
     },
     cycle: {
-        format: (x) => _.get(x, 'cycle.name'),
+        path: 'cycle.name',
         index: 5,
     },
     fixedEdits: {
@@ -210,6 +210,7 @@ const defaultValues = queryParams
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :showColumnFilters="true"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />

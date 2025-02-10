@@ -57,11 +57,11 @@ const columnDefs = {
     },
     reagent: {
         index: 1,
-        format: (x) => x.lot?.reagent.name,
+        path: 'lot.reagent.name',
     },
     lot: {
         header: 'Lot #',
-        format: (x) => x.lot?.lotNumber,
+        path: 'lot.lotNumber',
         index: 0,
     },
     concentration: {

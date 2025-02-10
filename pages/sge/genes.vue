@@ -91,6 +91,7 @@ const columnDefs = {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :showColumnFilters="true"
                 @clickedRecordEdit="didClickRecordEdit"
             />
         </SplitterPanel>

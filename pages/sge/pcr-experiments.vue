@@ -56,7 +56,7 @@ const columnDefs = {
         display: false,
     },
     technician: {
-        format: (x) => _.get(x, 'technician.name'),
+        path: 'technician.name',
     }
 }
 </script>

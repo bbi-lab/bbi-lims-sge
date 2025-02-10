@@ -96,7 +96,7 @@ const displayWithClause = Object.freeze({
 
 const columnDefs = {
     experiment: {
-        format: (x) => { return _.get(x, 'transfectTargetId.experiment.name')},
+        path: 'transfectTargetId.experiment.name',
         index: 0,
     },
     transfectTargetId: {
@@ -105,7 +105,7 @@ const columnDefs = {
         index: 1,
     },
     harvestedBy: {
-        format: (x) => _.get(x, 'harvestedBy.name'),
+        path: 'harvestedBy.name',
     },
     storageBoxId: {
         header: 'Storage',

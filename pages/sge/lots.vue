@@ -54,7 +54,7 @@ const columnDefs = {
         index: 0,
     },
     reagent: {
-        format: (x) => _.get(x, 'reagent.name'),
+        path: 'reagent.name',
         index: 1,
     },
     inHouse: {

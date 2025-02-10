@@ -54,7 +54,7 @@ function didDeleteRecord(event) {
 const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
 const columnDefs = {
     gene: {
-        format: (x) => _.get(x, 'gene.symbol'),
+        path: 'gene.symbol',
         index: 0,
     },
     geneId: {
