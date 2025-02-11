@@ -13,6 +13,8 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
+import {plasmids} from '../db/schema/sge/plasmid'
+import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
@@ -29,6 +31,8 @@ import {
   cyclesRelations,
   pelletsRelations,
   lotsRelations,
+  plasmidsRelations,
+  nucleicAcidsRelations,
   storageBoxesRelations,
   plasmidExperimentsRelations,
   transfectExperimentsRelations,
@@ -40,6 +44,7 @@ import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents';
+import { nucleicAcids } from '../db/schema/sge/nucleic-acid';
 
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
@@ -57,6 +62,8 @@ export const schema = {
   genes,
   regions,
   cycles,
+  plasmids,
+  nucleicAcids,
   pellets,
   lots,
   reagents,
@@ -77,6 +84,8 @@ export const schema = {
   regionsRelations,
   genesRelations,
   cyclesRelations,
+  plasmidsRelations,
+  nucleicAcidsRelations,
   pelletsRelations,
   lotsRelations,
   storageBoxesRelations,

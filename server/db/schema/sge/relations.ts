@@ -17,6 +17,8 @@ import { storageBoxes } from './storage-box'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
+import { plasmids } from './plasmid'
+import { nucleicAcids } from './nucleic-acid'
 
 const genesRelationsConfig: RelationsConfig = {
     one: {},
@@ -281,6 +283,50 @@ const lotsRelationsConfig: RelationsConfig = {
 }
 export const lotsRelations = relationsConfigToRelations(lots, lotsRelationsConfig)
 
+const plasmidsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [plasmids.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        plasmidExperiment: {
+            fields: [plasmids.plasmidExperimentId],
+            referenceTable: plasmidExperiments,
+            references: [plasmidExperiments.id],
+        },
+        storageBox: {
+            fields: [plasmids.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
+    },
+    many: {}
+}
+export const plasmidsRelations = relationsConfigToRelations(plasmids, plasmidsRelationsConfig)
+
+const nucleicAcidsRelationsConfig: RelationsConfig = {
+    one: {
+        extractionExperiment: {
+            fields: [nucleicAcids.extractionExperimentId],
+            referenceTable: extractionExperiments,
+            references: [extractionExperiments.id],
+        },
+        storageBox: {
+            fields: [plasmids.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
+        pellet: {
+            fields: [nucleicAcids.pelletId],
+            referenceTable: pellets,
+            references: [pellets.id],
+        },
+    },
+    many: {}
+}
+export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
@@ -288,6 +334,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     targets: targetsRelationsConfig,
     regions: regionsRelationsConfig,
     genes: genesRelationsConfig,
+    plasmids: plasmidsRelationsConfig,
+    nucleicAcids: nucleicAcidsRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     plasmidExperiments: plasmidExperimentsRelationsConfig,

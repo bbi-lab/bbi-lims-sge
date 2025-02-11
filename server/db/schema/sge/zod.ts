@@ -15,6 +15,8 @@ import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
+import { plasmids } from './plasmid'
+import { nucleicAcids } from './nucleic-acid'
 
 const selectProjectSchema = createSelectSchema(projects)
 const insertProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema}).omit({id: true})
@@ -96,6 +98,14 @@ const selectReagentsSchema = createSelectSchema(reagents)
 const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
+const selectPlasmidsSchema = createSelectSchema(plasmids)
+const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
+const updatePlasmidsSchema = insertPlasmidsSchema
+
+const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
+const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true})
+const updateNucleicAcidsSchema = insertNucleicAcidsSchema
+
 export const schemas = {
     projects: {
         select: selectProjectSchema,
@@ -155,6 +165,16 @@ export const schemas = {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
         update: updateExtractionExperimentsSchema,
+    },
+    plasmids: {
+        select: selectPlasmidsSchema,
+        insert: insertPlasmidsSchema,
+        update: updatePlasmidsSchema,
+    },
+    nucleicAcids: {
+        select: selectNucleicAcidsSchema,
+        insert: insertNucleicAcidsSchema,
+        update: updateNucleicAcidsSchema,
     },
     pellets: {
         select: selectPelletsSchema,
