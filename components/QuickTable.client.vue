@@ -9,18 +9,24 @@ const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
 
-onMounted(async() => {
-    tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
-
+const refreshFormattedValues = (ids?: string[]) => {
     const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
 
     // set displayValue for columns with formatting functions
     for (const [k, v] of _.entries(formattedColumnDefs)) {
-        for (const r of records.value) {
+        const rows = ids ? _.filter(records.value, (x: any) => ids.includes(x.id)) : records.value
+        for (const r of rows) {
             _.set(r, [k, 'displayValue'], v.format(r))
         }
     }
+}
+
+onMounted(async() => {
+    tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
+
+    refreshFormattedValues()
+    
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
     columnDefinitions.value =  _.mapValues(
         tableSchema.value?.properties, (v, k) => {
@@ -195,6 +201,7 @@ const addOrRefreshRecordId = async (recordId) => {
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
+        refreshFormattedValues([recordId])
     } else {
         records.value = _.concat(records.value, currentRecord)
     }
