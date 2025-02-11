@@ -65,10 +65,14 @@ const columnDefs = {
     },
     concentration: {
         format: ({concentration, reagent}) => { return reagent.soluteUnit && reagent.volumeUnit ? `${concentration || '--'} ${reagent.soluteUnit}/${reagent.volumeUnit}` : ''},
+        path: 'concentration.displayValue',
+        type: 'string',
         index: 4,
     },
     startingVolume: {
         format: ({startingVolume, reagent}) => { return reagent.volumeUnit ? `${startingVolume || '--'} ${reagent.volumeUnit}` : ''},
+        path: 'startingVolume.displayValue',
+        type: 'string',
         index: 5,
     },
 }

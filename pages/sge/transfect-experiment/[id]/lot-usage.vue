@@ -65,7 +65,9 @@ const columnDefs = {
         index: 0,
     },
     concentration: {
-        format: (x) => `${x.concentration} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`
+        format: (x) => `${x.concentration} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
+        path: 'concentration.displayValue',
+        type: 'string',
     }
 }
 

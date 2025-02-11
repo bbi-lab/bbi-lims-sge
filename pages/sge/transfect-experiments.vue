@@ -101,20 +101,26 @@ const columnDefs = {
         header: 'Targets',
         format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
             return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
-        }), ', ')
+        }), ', '),
+        path: 'transfectTargets.displayValue',
+        type: 'string',
     },
     transfectLotUsage: {
         header: 'Reagents',
-        format: (x) => _.join(_.uniq(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
+        format: (x) => _.join(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
             return  y.lot.lotNumber
-        })), ', ')
+        }), ', '),
+        path: 'transfectLotUsage.displayValue',
+        type: 'string',
     },
     currentDay: {
         header: 'Current day #',
         format: (x) => { 
             const days = moment().diff(moment(x.startedOn), 'days')
             return days ? `Day ${days > 17 ? '17+' : days}` : ''
-        }
+        },
+        path: 'currentDay.displayValue',
+        type: 'string',
     },
 }
 

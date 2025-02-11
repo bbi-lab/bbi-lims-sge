@@ -1,20 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
-
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
 
 onMounted(async() => {
-    tableSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
+    tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
-    loading.value = false
 
+    const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
+
+    // set displayValue for columns with formatting functions
+    for (const [k, v] of _.entries(formattedColumnDefs)) {
+        for (const r of records.value) {
+            _.set(r, [k, 'displayValue'], v.format(r))
+        }
+    }
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
     columnDefinitions.value =  _.mapValues(
         tableSchema.value?.properties, (v, k) => {
@@ -29,7 +35,10 @@ onMounted(async() => {
             }
         }
     )
-    if (props.columnDefs) columnDefinitions.value = _.merge(columnDefinitions.value, props.columnDefs)
+    // merge column definitions inferred from schema with those passed via props
+    columnDefinitions.value = _.merge(columnDefinitions.value, props.columnDefs)
+
+    loading.value = false
 })
 
 const toast = useToast()
@@ -103,15 +112,15 @@ watch(sortedColumnDefs, (newValue, oldValue) => {
   }
 })
 
-function formatDate(value) {
+function formatDate(value: string) {
     const isoDate = value ? new Date(value) : null
     return isoDate?.toLocaleDateString('fr-CA') || ''
 }
 
-function didClickEditRecord(event) {
+function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
 }
-function didClickDeleteSelectedRecords(event) {
+function didClickDeleteSelectedRecords(event: MouseEvent) {
     RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Records deleted', life: 3000 })
         const deletedRecordIds = _.map(result, (x) => x.id)
@@ -122,7 +131,7 @@ function didClickDeleteSelectedRecords(event) {
     })
     displayDeleteConfirmation.value = false
 }
-function didClickAddRecord(event) {
+function didClickAddRecord(event: MouseEvent) {
     emit('clicked-record-add', event)
 }
 function getExportRecords() {
@@ -191,7 +200,7 @@ const addOrRefreshRecordId = async (recordId) => {
     }
 }
 
-const removeRecordId = (recordId) => {
+const removeRecordId = (recordId: string) => {
     records.value = _.reject(records.value, {id: recordId})
 }
 
@@ -199,7 +208,7 @@ function confirmDeleteSelected() {
     displayDeleteConfirmation.value = true
 }
 
-function columnHeader(columnDef) {
+function columnHeader(columnDef: Object) {
     return columnDef.header || _.startCase(columnDef.key)
 }
 const exportOptions = ref([
@@ -220,7 +229,7 @@ function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
 }
 
-function debounceSearch(f) {
+function debounceSearch(f: Function) {
     filteringInProgress.value = true
     return _.debounce(() => {
         f()
@@ -239,12 +248,12 @@ function debounceSearch(f) {
         scrollHeight="flex"
         v-model:filters="filters"
         :paginator="paginator"
-        :rows="rowsPerPage" 
+        :rows="rowsPerPage"
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
         table-class="border-collapse"
         filterHeaderClass="border-collapse"
-        :filter-display="displayColumnFilters ? 'row' : ''"
+        :filter-display="displayColumnFilters ? 'row' : undefined"
         :globalFilterFields="globalFilterFields"
         @update:filters="filteringInProgress = true"
         @filter="filteringInProgress = false"
@@ -288,24 +297,16 @@ function debounceSearch(f) {
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
-                    <template v-if="_.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="_.isFunction(columnDef.format)" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" :sort-field="columnDef.format" :filter-field="columnDef.path" sortable>
-                    <template v-if="_.has(filters, columnDef.path) || _.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
-                    </template>
-                    <template #body="slotProps">
-                        {{ columnDef.format(slotProps.data) }}
-                    </template>
-                </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.key" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
-                    <template v-if="_.has(filters, columnDef.key)" #filter="{ filterModel, filterCallback }">
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
                     <template #body="slotProps">

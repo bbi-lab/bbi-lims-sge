@@ -102,6 +102,8 @@ const columnDefs = {
     transfectTargetId: {
         header: 'Target',
         format: (x) => { return _.get(x, 'transfectTargetId.target.name') || `${_.get(x, 'transfectTargetId.target.region.gene.symbol')} : ${_.get(x, 'transfectTargetId.target.region.name')}`},
+        path: 'transfectTargetId.displayValue',
+        type: 'string',
         index: 1,
     },
     harvestedBy: {
@@ -110,6 +112,8 @@ const columnDefs = {
     storageBoxId: {
         header: 'Storage',
         format: (x) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+        path: 'storageBoxId.displayValue',
+        type: 'string',
     },
     storageBoxLoc: {
         display: false

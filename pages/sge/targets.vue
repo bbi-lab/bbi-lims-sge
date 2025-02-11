@@ -74,6 +74,8 @@ const columnDefs = {
     chromosome: {
         header: 'Chromosome',
         format: (x) => _.has(x, 'region.gene.chromosome') ? `chr${x.region.gene.chromosome}`: '',
+        path: 'chromosome.displayValue',
+        type: 'string',
         index: 1,
     },
     gene: {
@@ -102,6 +104,8 @@ const columnDefs = {
     },
     fixedEdits: {
         format: (x) => _.isArray(x.fixedEdits) ? x.fixedEdits.join(', ') : '',
+        path: 'fixedEdits.displayValue',
+        type: 'string',
         index: 6,
     },
     transfectTargets: {

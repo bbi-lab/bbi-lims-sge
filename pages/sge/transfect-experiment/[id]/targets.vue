@@ -56,6 +56,8 @@ function didDeleteRecord(event) {
 const columnDefs = {
     target: {
         format: (x) => { return x.target?.name || `${x.target?.region?.gene?.symbol}: ${x.target?.region?.name}` },
+        path: 'target.displayValue',
+        type: 'string',
         index: 0,
     },
     experimentId: {

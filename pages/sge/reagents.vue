@@ -43,8 +43,10 @@ const columnDefs = {
     name: {
         index: 0,
     },
-    concentration_unit: {
+    concentrationUnit: {
         format: ({soluteUnit, volumeUnit}) => { return soluteUnit && volumeUnit ? `${soluteUnit}/${volumeUnit}` : ''},
+        path: 'concentrationUnit.displayValue',
+        type: 'string',
         index: 1,
     },
     soluteUnit: {
