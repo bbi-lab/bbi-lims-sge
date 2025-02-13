@@ -32,12 +32,12 @@ const updatePassword = function(event) {
     <div class=" flex items-center justify-center">
         <div class="flex flex-col" v-if="user">
             <div class="mb-5">
-                <label :for="userName" class="block font-bold mb-3">Name</label>
-                <InputText disabled :id="userName" v-model="user.name" />
+                <label for="userName" class="block font-bold mb-3">Name</label>
+                <InputText disabled id="userName" v-model="user.name" />
             </div>
             <div class="mb-5">
-                <label :for="userEmail" class="block font-bold mb-3">Email</label>
-                <InputText disabled :id="userEmail" v-model="user.email" />
+                <label for="userEmail" class="block font-bold mb-3">Email</label>
+                <InputText disabled id="userEmail" v-model="user.email" />
             </div>
             <div v-if="!changingPassword" class="mb-5">
                 <label for="userPassword" class="block font-bold mb-3">Password</label>
