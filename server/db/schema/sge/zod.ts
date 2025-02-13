@@ -58,7 +58,7 @@ const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
 const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
 const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
-    transfectionCount: z.bigint({ coerce: true })
+    transfectionCount: z.bigint({ coerce: true }).nullish()
 }).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
