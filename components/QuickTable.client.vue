@@ -4,10 +4,18 @@ import { FilterMatchMode } from '@primevue/core/api'
 import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
+import {v4 as uuidv4} from 'uuid'
+import CogOff from '~icons/mdi/cog-off-outline'
+
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
+
+const route = useRoute()
+const localStorageColumnOrderId = `columnOrder::${route.path}`
+const hasLocalStorageColumnOrder = ref(false)
+const dtKey = ref(uuidv4())
 
 const refreshFormattedValues = (ids?: string[]) => {
     const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
@@ -28,7 +36,7 @@ onMounted(async() => {
     refreshFormattedValues()
     
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
-    columnDefinitions.value =  _.mapValues(
+    const tableColumnDefinitions =  _.mapValues(
         tableSchema.value?.properties, (v, k) => {
             // anyOf typically indicates a nullable field, but we're only concerned with the non-nullable one
             if (v.anyOf) { 
@@ -42,7 +50,7 @@ onMounted(async() => {
         }
     )
     // merge column definitions inferred from schema with those passed via props
-    columnDefinitions.value = _.merge(columnDefinitions.value, props.columnDefs)
+    columnDefinitions.value = _.merge(tableColumnDefinitions, props.columnDefs)
 
     loading.value = false
 })
@@ -58,7 +66,7 @@ const props = defineProps({
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},
   canDelete: {type: Boolean, default: true},
-  rowsPerPageOptions: {type: Array},
+  rowsPerPageOptions: {type: Array as PropType<Array<number>> },
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
@@ -69,27 +77,49 @@ const emit = defineEmits([
     'clicked-multi-delete'
 ])
 
-const sortedColumnDefs = computed(() => _.orderBy(
-    _.map(columnDefinitions.value, (v,k) => {return {key: k, path: v.path || k, ...v}}),
-    [
-      i => _.has(i, 'index'),
-      i => i.index || ''
-    ],
-    ['desc', 'asc'])
+const sortedColumnDefs = computed(() => {
+    const savedColumnOrder = JSON.parse(localStorage.getItem(localStorageColumnOrderId) || "{}")
+    if (!_.isEmpty(savedColumnOrder)) hasLocalStorageColumnOrder.value = true
+
+    const columnDefsWithPaths = _.map(columnDefinitions.value, (v,k) => {
+        const {path, ...rest} = v
+        return {key: k, path: path ?? k, ...rest}}
+    )
+    return _.orderBy(
+        columnDefsWithPaths,
+        [
+        i => _.has(i, 'index') || _.has(savedColumnOrder, i['path']),
+        i => _.get(savedColumnOrder, i['path']) || i.index || ''
+        ],
+        ['desc', 'asc'])
+    }
 )
 
+interface ColumnDefinition {
+    header?: string,
+    index?: string,
+    format?: string | ((data: any) => string),
+    path?: string,
+    type?: string,
+    display?: boolean,
+}
+interface SortedColumnDefinition extends ColumnDefinition {
+    key: string
+}
+export interface ColumnDefinitions {[key: string]: ColumnDefinition}
+type GlobalFilterField = string | ((data: any) => string)
+
 const paginator = computed(() => !_.isEmpty(props.rowsPerPageOptions))
-const rowsPerPage = computed(() => props.rowsPerPageOptions?.[0] || null)
-const records = ref([])
-const selectedRecords = ref([])
+const rowsPerPage: ComputedRef<number> = computed(() => _.get(props.rowsPerPageOptions, 0) as number)
+const records: Ref<any[]> = ref([])
+const selectedRecords: Ref<any[]> = ref([])
 const tableSchema = ref()
-const columnDefinitions = ref({})
+const columnDefinitions: Ref<ColumnDefinitions> = ref({})
 const dt = ref()
 const displayDeleteConfirmation = ref(false)
 const loading = ref(true)
 const filteringInProgress = ref(false)
-
-const globalFilterFields = ref([])
+const globalFilterFields: Ref<GlobalFilterField[]> = ref([])
 const globalSearchTerm = ref(null)
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
@@ -110,7 +140,8 @@ watch(sortedColumnDefs, (newValue, oldValue) => {
 
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
-            acc[colDef.path || colDef.key] = { value: null, matchMode: FilterMatchMode.CONTAINS }
+            const key = colDef.path || colDef.key
+            _.set(acc, key, { value: null, matchMode: FilterMatchMode.CONTAINS })
             return acc
         }, {})
         filters.value = _.merge({global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, filtersEntries)
@@ -147,11 +178,11 @@ function getExportRecords() {
         const exportRecord = {}
         for (const columnDef of sortedColumnDefs.value) {
             if (_.isFunction(columnDef.format)) {
-                exportRecord[columnDef.key] = columnDef.format(record)
+                _.set(exportRecord, columnDef.key, columnDef.format(record))
             } else if (columnDef.format == 'date-time') {
-                exportRecord[columnDef.key] = formatDate(_.get(record, columnDef.path ?? columnDef.key))
+                _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
             } else if (columnDef.display !== false) {
-                exportRecord[columnDef.key] = _.get(record, columnDef.path ?? columnDef.key)
+                _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
             }
         }
         exportRecords.push(exportRecord)
@@ -196,15 +227,15 @@ const exportXLSX = function() {
     writeFileXLSX(wb, `${exportFilename.value}.xlsx`)
 }
 
-const addOrRefreshRecordId = async (recordId) => {
+const addOrRefreshRecordId = async (recordId: string) => {
     const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
-        refreshFormattedValues([recordId])
     } else {
         records.value = _.concat(records.value, currentRecord)
     }
+    refreshFormattedValues([recordId])
 }
 
 const removeRecordId = (recordId: string) => {
@@ -215,9 +246,10 @@ function confirmDeleteSelected() {
     displayDeleteConfirmation.value = true
 }
 
-function columnHeader(columnDef: Object) {
-    return columnDef.header || _.startCase(columnDef.key)
+function columnHeader(sortedColumnDef: SortedColumnDefinition) {
+    return sortedColumnDef.header || _.startCase(sortedColumnDef.key)
 }
+
 const exportOptions = ref([
     {
         label: 'XLSX',
@@ -242,11 +274,23 @@ function debounceSearch(f: Function) {
         f()
 }, 1000)}
 
+function onColReorder() {
+    const newColumnOrder = _.mapValues(_.keyBy(_.map(dt.value.columns, (v, i) => {return {index: i, value: v.props.field || v.props.columnKey}}), 'value'), 'index')
+    localStorage.setItem(localStorageColumnOrderId, JSON.stringify(newColumnOrder))
+    hasLocalStorageColumnOrder.value = true
+}
+
+async function clearSettings() {
+    localStorage.removeItem(localStorageColumnOrderId)
+    hasLocalStorageColumnOrder.value = false
+    dtKey.value = uuidv4()
+}
 </script>
 
 <template>
     <DataTable
         ref="dt"
+        :key="dtKey" 
         v-model:selection="selectedRecords"
         :value="records"
         dataKey="id"
@@ -255,6 +299,8 @@ function debounceSearch(f: Function) {
         scrollHeight="flex"
         v-model:filters="filters"
         :paginator="paginator"
+        :reorderableColumns="true"
+        @columnReorder="onColReorder"
         :rows="rowsPerPage"
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
@@ -276,6 +322,11 @@ function debounceSearch(f: Function) {
                     </template>
                     <template #end>
                         <SplitButton label="Export" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
+                        <Button severity="secondary" :class="`ml-2 ${hasLocalStorageColumnOrder ? 'visible' : 'invisible'}`" v-tooltip="{value: 'Clear settings', showDelay: 1000}" @click="clearSettings">
+                            <template #default>
+                                <CogOff />
+                            </template>
+                        </Button>
                         <ProgressSpinner :class="`size-8 ml-2 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
                 </Toolbar>
@@ -290,8 +341,8 @@ function debounceSearch(f: Function) {
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
-        <Column :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
+        <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
+        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
             <template v-if="showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/> 
             </template>
@@ -304,7 +355,7 @@ function debounceSearch(f: Function) {
         </Column>
         <template v-for="columnDef of sortedColumnDefs">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
                     <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -312,7 +363,7 @@ function debounceSearch(f: Function) {
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
                     <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -320,7 +371,7 @@ function debounceSearch(f: Function) {
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
                     <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -330,7 +381,7 @@ function debounceSearch(f: Function) {
                 </Column>
             </template>
         </template>
-        <Column class="whitespace-nowrap" v-if="rowActionsEnd">
+        <Column class="whitespace-nowrap" v-if="rowActionsEnd" columnKey="rowActions" :reorderableColumn="false" >
             <template #body="{ data }">
                 <div class="flex items-start">
                     <template v-for="(v, k) in rowActionsEnd">
