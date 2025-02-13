@@ -141,7 +141,7 @@ watch(sortedColumnDefs, (newValue, oldValue) => {
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
             const key = colDef.path || colDef.key
-            _.set(acc, key, { value: null, matchMode: FilterMatchMode.CONTAINS })
+            _.set(acc,[key],{ value: null, matchMode: FilterMatchMode.CONTAINS })
             return acc
         }, {})
         filters.value = _.merge({global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, filtersEntries)
