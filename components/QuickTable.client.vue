@@ -52,9 +52,9 @@ onMounted(async() => {
 
     visibleColumnsOptions.value = _.compact(_.map(columnDefinitions.value, (v, k) => { if (k != 'id' && v.display !== false) return {name: k, code: k}}))
     
-    const savedColumnVisibility = _.get(JSON.parse(localStorage.getItem(localStorageKey) || "{}"), 'columnVisibility')
+    clientSettings.value = JSON.parse(localStorage.getItem(localStorageKey) || "{}")
     
-    visibleColumns.value = savedColumnVisibility ?? visibleColumnsOptions.value
+    visibleColumns.value = _.get(clientSettings.value, 'columnVisibility', visibleColumnsOptions.value)
     loading.value = false
 })
 
@@ -81,7 +81,7 @@ const emit = defineEmits([
 ])
 
 const sortedColumnDefs = computed(() => {
-    const savedColumnOrder = _.get(JSON.parse(localStorage.getItem(localStorageKey) || "{}"), 'columnOrder')
+    const savedColumnOrder = _.get(clientSettings.value, 'columnOrder')
     
     const columnDefsWithPaths = _.map(columnDefinitions.value, (v,k) => {
         const {path, ...rest} = v
@@ -122,6 +122,7 @@ const selectedRecords: Ref<any[]> = ref([])
 const tableSchema = ref()
 const columnDefinitions: Ref<ColumnDefinitions> = ref({})
 const dt = ref()
+const clientSettings = ref()
 const displayDeleteConfirmation = ref(false)
 const loading = ref(true)
 const showSettings = ref(false)
@@ -184,18 +185,24 @@ function getExportRecords() {
     for (const record of recordsToExport) {
         const exportRecord = {}
         for (const columnDef of sortedColumnDefs.value) {
-            if (_.isFunction(columnDef.format)) {
-                _.set(exportRecord, columnDef.key, columnDef.format(record))
-            } else if (columnDef.format == 'date-time') {
-                _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
-            } else if (columnDef.display !== false) {
-                _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
+            if (_.map(visibleColumns.value, (x) => x.code).includes(columnDef.key)) {
+                if (_.isFunction(columnDef.format)) {
+                    _.set(exportRecord, columnDef.key, columnDef.format(record))
+                } else if (columnDef.format == 'date-time') {
+                    _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
+                } else if (columnDef.type == 'array') {
+                    const joined = _.join(_.get(record, columnDef.path ?? columnDef.key), ', ') 
+                    _.set(exportRecord, columnDef.key, joined)
+                } else {
+                    _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
+                }
             }
         }
         exportRecords.push(exportRecord)
     }
     return exportRecords
 }
+
 function exportCSV() {
     // dt.value.exportCSV()  // default export for PrimeVue DataTable
 
@@ -285,19 +292,22 @@ function clearSettings() {
     // set column visibility to defaults
     visibleColumns.value = visibleColumnsOptions.value
 
-    // clear saved values
+     // clear saved values
+    clientSettings.value = {}
     localStorage.removeItem(localStorageKey)
 
     // force datatable to refresh
     dtKey.value = uuidv4()
 }
 
-function saveSettings() {
+function updateColOrder() {
     const newColumnOrder = _.mapValues(_.keyBy(_.map(dt.value.columns, (v, i) => {return {index: i, value: v.props.field || v.props.columnKey}}), 'value'), 'index')
-    localStorage.setItem(localStorageKey, JSON.stringify({
-        columnOrder: newColumnOrder,
-        columnVisibility: visibleColumns.value,
-    }))
+    _.set(clientSettings.value, 'columnOrder', newColumnOrder)
+}
+
+function saveSettings() {
+    _.set(clientSettings.value, 'columnVisibility', visibleColumns.value)
+    localStorage.setItem(localStorageKey, JSON.stringify(clientSettings.value))
     showSettings.value = false
 }
 
@@ -320,6 +330,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         v-model:filters="filters"
         :paginator="paginator"
         :reorderableColumns="true"
+        @column-reorder="updateColOrder"
         :rows="rowsPerPage"
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
@@ -378,7 +389,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <template v-for="columnDef of filterByColumnVisibility(sortedColumnDefs)">
             <template v-if="columnDef.display!==false">
                 <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
-                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                    <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
                     <template #body="slotProps">
@@ -386,7 +397,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </template>
                 </Column>
                 <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
-                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                    <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
                     <template #body="slotProps">
@@ -394,10 +405,10 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </template>
                 </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
-                    <template v-if="_.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                    <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
-                    <template #body="slotProps">
+                    <template v-if="columnDef.path" #body="slotProps">
                         {{ columnDef.type == 'array' ? _.join(_.get(slotProps.data, columnDef.path), ', ') : _.get(slotProps.data, columnDef.path) }}
                     </template>
                 </Column>
