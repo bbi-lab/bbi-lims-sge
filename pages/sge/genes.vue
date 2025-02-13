@@ -66,8 +66,8 @@ const columnDefs = {
     ncbiAccession: {
         header: 'NCBI accession'
     },
-    geneId: {
-        header: 'Gene ID'
+    ncbiGeneId: {
+        header: 'NCBI Gene ID'
     },
     startPosition: {
         header: 'Start'
