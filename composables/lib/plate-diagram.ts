@@ -128,7 +128,7 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                 const rows = _.range(1, size.y + 1)
                 
                 const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => { 
-                    return w.inSelectionRange ? 'blue' : (w.selected ? 'black' : 'none')
+                    return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'none')
                 }
 
                 const updateWellOutlines: () => void = () => {
@@ -185,7 +185,7 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                             .html(w.tooltip)
                             .style("opacity", 1)
                     d3.select(this)
-                        .style("stroke", "black")
+                        .style("stroke", "var(--p-text-color)")
                         .style("opacity", 1)
                 }
 
@@ -271,7 +271,7 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                         .attr("height", y.bandwidth() - wellSpacing.y)
                         .style("fill", function(w:PlateDiagramWell) { return w.color || "#ddd"})
                         .style("stroke-width", 2)
-                        .style("stroke", function(w:PlateDiagramWell) { return w.selected ? 'black' : 'none'})
+                        .style("stroke", function(w:PlateDiagramWell) { return w.selected ? 'var(--p-text-color)' : 'none'})
                         .style("opacity", 0.8)
                     .on("mouseover", mouseover)
                     .on("mousemove", mousemove)
