@@ -110,7 +110,6 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
             return plate
         },
 
-        
         render: (container: HTMLElement) => {
             _container = container
 
@@ -141,6 +140,34 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                     }
                 }
 
+                const selectRow: (event: MouseEvent) => void = (event: MouseEvent) => {
+                    const rowNumber = d3.select(event.target as SVGRectElement).datum()
+                    wells.forEach(well => {
+                        if (well.y == rowNumber) {
+                            well.selected = event.metaKey ? !well.selected : true
+                        } else if (!event.metaKey) {
+                            well.selected = false
+                        }
+                    })
+                    if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
+                    
+                    updateWellOutlines()
+                }
+
+                const selectColumn: (event: MouseEvent) => void = (event: MouseEvent) => {
+                    const colNumber = d3.select(event.target as SVGRectElement).datum()
+                    wells.forEach(well => {
+                        if (well.x == colNumber) {
+                            well.selected = event.metaKey ? !well.selected : true
+                        } else if (!event.metaKey) {
+                            well.selected = false
+                        }
+                    })
+                    if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
+                    
+                    updateWellOutlines()
+                }
+
                 // Build X scales and axis:
                 const x = d3.scaleBand()
                     .range([ 0, plateWidth() ])
@@ -148,8 +175,12 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                     .padding(0.1);
                 svg.append("g")
                     .style("font-size", 15)
+                    .style("user-select", "none")
                     .attr("transform", "translate(0," + plateHeight() + ")")
                     .call(d3.axisBottom(x).tickSize(0))
+                    .on('click', function(event) {
+                        selectColumn(event)
+                    })
                     .select(".domain").remove()
 
                 // Build Y scales and axis:
@@ -159,7 +190,11 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                     .padding(0.1);
                 svg.append("g")
                     .style("font-size", 15)
+                    .style("user-select", "none")
                     .call(d3.axisLeft(y).tickSize(0).tickFormat(n => numberToChar(parseInt(n))))
+                    .on('click', function(event) {
+                        selectRow(event)
+                    })
                     .select(".domain").remove()
 
                 // Build color scale
@@ -225,8 +260,7 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                     updateWellOutlines()
                 }
                 const mouseup = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
-                    if (wellRangeSelected && wellSelectionStart) {
-
+                    if (wellSelectionStart) {
                         // if mouseup and mousedown are the same well, treat as a click
                        if (wellSelectionStart == w && !event.metaKey) {
                             wells.forEach(well => { if (well !== w) {well.selected = false} else {well.selected = true} })
@@ -242,10 +276,9 @@ export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): 
                                 }
                                 well.inSelectionRange = false
                             })
-                            wellRangeSelected(wells.filter(w => w.selected))
                         }
-
                     }
+                    if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
                     wellSelectionStart = null
                     wells.forEach(w => w.inSelectionRange = false)
                     updateWellOutlines()
