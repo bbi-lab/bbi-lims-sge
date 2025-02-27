@@ -56,7 +56,7 @@ const columnDefs = {
 }
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="usersTable"
@@ -71,7 +71,7 @@ const columnDefs = {
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="users"

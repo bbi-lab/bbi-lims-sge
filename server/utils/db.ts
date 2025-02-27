@@ -13,8 +13,11 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
+import {plasmids} from '../db/schema/sge/plasmid'
+import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
+import {lots} from '../db/schema/sge/lots'
 import {storageBoxes} from '../db/schema/sge/storage-box'
-import { transfectExperiments, transfectTargets } from '../db/schema/sge/transfect-experiment'
+import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
 import {
@@ -24,17 +27,24 @@ import {
   projectsRelations,
   targetsRelations,
   regionsRelations,
+  genesRelations,
   cyclesRelations,
   pelletsRelations,
+  lotsRelations,
+  plasmidsRelations,
+  nucleicAcidsRelations,
   storageBoxesRelations,
   plasmidExperimentsRelations,
   transfectExperimentsRelations,
   transfectTargetsRelations,
+  transfectLotUsageRelations,
   extractionExperimentsRelations,
 } from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
+import { reagents } from '../db/schema/sge/reagents';
+import { nucleicAcids } from '../db/schema/sge/nucleic-acid';
 
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
@@ -52,10 +62,15 @@ export const schema = {
   genes,
   regions,
   cycles,
+  plasmids,
+  nucleicAcids,
   pellets,
+  lots,
+  reagents,
   storageBoxes,
   transfectExperiments,
   transfectTargets,
+  transfectLotUsage,
   plasmidExperiments,
   extractionExperiments,
   usersRelations,
@@ -67,11 +82,16 @@ export const schema = {
   projectsRelations,
   targetsRelations,
   regionsRelations,
+  genesRelations,
   cyclesRelations,
+  plasmidsRelations,
+  nucleicAcidsRelations,
   pelletsRelations,
+  lotsRelations,
   storageBoxesRelations,
   transfectExperimentsRelations,
   transfectTargetsRelations,
+  transfectLotUsageRelations,
   plasmidExperimentsRelations,
   extractionExperimentsRelations,
 }

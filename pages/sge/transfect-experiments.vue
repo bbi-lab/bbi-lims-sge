@@ -1,6 +1,8 @@
 <script setup>
 import _ from 'lodash'
 import moment from 'moment'
+import DotsTriangle from '~icons/mdi/dots-triangle'
+import BeakerOutline from '~icons/mdi/beaker-outline'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -52,6 +54,15 @@ function getPelletCount(targets) {
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
     technician: {columns: {name: true}},
+    transfectLotUsage: {columns: {},  
+        with: {
+            lot:  {
+                columns: {
+                    lotNumber: true
+                }
+            },
+        }
+    },
     transfectTargets:{
         columns: {},
         with: {
@@ -84,35 +95,62 @@ const columnDefs = {
         format: 'date-time'
     },
     technician: {
-        format: (x) => _.get(x, 'technician.name'),
+        path: 'technician.name',
     },
     transfectTargets: {
         header: 'Targets',
         format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
             return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
-        }), ', ')
+        }), ', '),
+        path: 'transfectTargets.displayValue',
+        type: 'string',
+    },
+    transfectLotUsage: {
+        header: 'Reagents',
+        format: (x) => _.join(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
+            return  y.lot.lotNumber
+        }), ', '),
+        path: 'transfectLotUsage.displayValue',
+        type: 'string',
     },
     currentDay: {
         header: 'Current day #',
         format: (x) => { 
             const days = moment().diff(moment(x.startedOn), 'days')
             return days ? `Day ${days > 17 ? '17+' : days}` : ''
-        }
+        },
+        path: 'currentDay.displayValue',
+        type: 'string',
     },
 }
 
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.transfectTargets?.length || 0} Targets`}, 
+        label: (data) => { return `${data.transfectTargets?.length || 0}`}, 
         action: (data) => {
-            router.push({path:'/sge/transfect-targets', query: {'experimentId': data.id}})
-        }
+            router.push({path:`/sge/transfect-experiment/${data.id}/targets`})
+        },
+        icon: 'pi pi-fw pi-bullseye',
+        iconPos: 'right',
+        tooltip: 'Targets',
     },
     pellets: {
-        label: (data) => { return `${getPelletCount(data.transfectTargets)} Pellets`}, 
+        label: (data) => { return `${getPelletCount(data.transfectTargets)}`}, 
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
-        }
+        },
+        iconComponent: DotsTriangle,
+        iconPos: 'right',
+        tooltip: 'Pellets',
+    },
+    reagents: {
+        label: (data) => { return `${data.transfectLotUsage?.length || 0}`},
+        action: (data) => {
+            router.push({path:`/sge/transfect-experiment/${data.id}/lot-usage`})
+        },
+        iconComponent: BeakerOutline,
+        iconPos: 'right',
+        tooltip: 'Reagents',
     },
     harvest: {
         label: () => 'Harvest', 
@@ -141,7 +179,9 @@ const fieldDefs = {
                 searchBaseUrl: `${config.public.apiBase}/targets`,
                 searchFields: ['region.gene.symbol', 'region.name', 'name'],
                 valueField: 'id',
-                displayOptions: {primary: {fields: ['name']}, secondary: {fields: ['region.gene.symbol', 'region.name'], operator: 'join', seperator: ': '}},
+                displayFormat: (x) => {
+                    return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+                },
                 searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
             },
         }
@@ -149,7 +189,7 @@ const fieldDefs = {
 }
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="transfectionExperimentsTable"
@@ -163,7 +203,7 @@ const fieldDefs = {
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="transfect-experiments"

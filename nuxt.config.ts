@@ -1,7 +1,8 @@
-import * as path from "path";
+import IconsResolver from 'unplugin-icons/resolver'
+import ViteComponents from 'unplugin-vue-components/vite'
 
 export default defineNuxtConfig({
-    modules: [ "@primevue/nuxt-module", 'nuxt-auth-utils'],
+    modules: [ "@primevue/nuxt-module", 'nuxt-auth-utils', 'unplugin-icons/nuxt'],
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
     vite: {
         css: {
@@ -11,6 +12,17 @@ export default defineNuxtConfig({
             },
             },
         },
+        plugins: [
+            ViteComponents({
+              resolvers: [
+                IconsResolver({
+                  prefix: '',
+                  strict: true,
+                }),
+              ],
+              dts: true,
+            }),
+          ],
     },
     primevue: {
         options: { theme: 'none' },

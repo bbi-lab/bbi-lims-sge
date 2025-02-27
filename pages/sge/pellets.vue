@@ -96,20 +96,24 @@ const displayWithClause = Object.freeze({
 
 const columnDefs = {
     experiment: {
-        format: (x) => { return _.get(x, 'transfectTargetId.experiment.name')},
+        path: 'transfectTargetId.experiment.name',
         index: 0,
     },
     transfectTargetId: {
         header: 'Target',
         format: (x) => { return _.get(x, 'transfectTargetId.target.name') || `${_.get(x, 'transfectTargetId.target.region.gene.symbol')} : ${_.get(x, 'transfectTargetId.target.region.name')}`},
+        path: 'transfectTargetId.displayValue',
+        type: 'string',
         index: 1,
     },
     harvestedBy: {
-        format: (x) => _.get(x, 'harvestedBy.name'),
+        path: 'harvestedBy.name',
     },
     storageBoxId: {
         header: 'Storage',
         format: (x) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+        path: 'storageBoxId.displayValue',
+        type: 'string',
     },
     storageBoxLoc: {
         display: false
@@ -129,14 +133,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
             valueField: 'id',
-            displayOptions: {
-                primary: {
-                    fields: ['target.name'],
-                }, 
-                secondary: {
-                    fields: ['target.region.gene.symbol', 'target.region.name']
-                }
-            },
+            displayFormat: (x) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
             parentKeyField: 'experimentId',
             searchWithClause: {
                 target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
@@ -151,11 +148,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
             searchFields: ['name'],
             valueField: 'id',
-            displayOptions: {
-                primary: {
-                    fields: ['name'],
-                },
-            },
+            displayFields: ['name'],
             dropdown: true,
         }
     },
@@ -171,7 +164,7 @@ const defaultValues = queryParams
 
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="pelletsTable"
@@ -188,7 +181,7 @@ const defaultValues = queryParams
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="pellets"

@@ -12,5 +12,4 @@ export const regions = pgTable('regions', {
   ampliconSequence: varchar('amplicon_sequence', {length: 255}),
   snvLibraryStart: integer('snv_library_start'),
   snvLibraryEnd: integer('snv_library_end'),
-  fixedEdits: varchar('fixed_edits', { length: 255 }).array(),
 })

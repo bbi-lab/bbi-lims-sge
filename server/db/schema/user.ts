@@ -1,6 +1,6 @@
 import { type InferSelectModel } from 'drizzle-orm'
 import { boolean, pgTable, primaryKey, integer, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
-import { createSelectSchema } from 'drizzle-zod'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z, ZodObject } from 'zod'
 import _ from 'lodash'
 import { dateSchema } from '../helpers/schemas'
@@ -32,8 +32,7 @@ export const userGroupMemberships = pgTable('user_group_memberships', {
 
 // schemas
 const selectUserSchema = createSelectSchema(users, {
-  email: schema =>
-    schema.email.email().regex(/^([\w.%-]+@[a-z0-9.-]+\.[a-z]{2,6})*$/i),
+  email: (schema:any) => schema.email(),
 })
 
 const verifyUserSchema = selectUserSchema.pick({

@@ -12,11 +12,11 @@ const config = useRuntimeConfig()
 
 const rowActions = {}
 const route = useRoute()
-const queryParams = route.query
+//const queryParams = route.query
 
 onMounted(async() => {
-    if (queryParams.experimentId) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, queryParams.experimentId)
+    if (route.params.id) {
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id)
         tableTitle.value = `${experiment.name}: targets`
     } else {
         tableTitle.value = 'Transfection experiment targets'
@@ -56,6 +56,8 @@ function didDeleteRecord(event) {
 const columnDefs = {
     target: {
         format: (x) => { return x.target?.name || `${x.target?.region?.gene?.symbol}: ${x.target?.region?.name}` },
+        path: 'target.displayValue',
+        type: 'string',
         index: 0,
     },
     experimentId: {
@@ -121,18 +123,20 @@ editFormFieldDefs['targetId'] = {
         searchBaseUrl: `${config.public.apiBase}/targets`,
         searchFields: ['region.gene.symbol', 'region.name', 'name'],
         valueField: 'id',
-        displayOptions: {primary: {fields: ['name']}, secondary: {fields: ['region.gene.symbol', 'region.name'], operator: 'join', seperator: ': '}},
+        displayFormat: (x) => {
+            return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+        },
         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
     },
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const defaultValues = queryParams
+const defaultValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="transfectTargetsTable"
@@ -141,12 +145,13 @@ const defaultValues = queryParams
                 :title="tableTitle"
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
+                :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
                 :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="transfectTargets"

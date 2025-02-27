@@ -2,6 +2,12 @@
 import _ from 'lodash'
 const { user } = useUserSession()
 
+import DotsTriangle from '~icons/mdi/dots-triangle'
+import BeakerOutline from '~icons/mdi/beaker-outline'
+import Circles from '~icons/mdi/gamepad-circle-outline'
+import Hexagon from '~icons/mdi/hexagon-outline'
+import DnaIcon from '~icons/mdi/dna'
+
 const model = ref([
     {
         label: 'Home',
@@ -9,14 +15,22 @@ const model = ref([
             { label: 'Projects', icon: 'pi pi-fw pi-home', to: '/sge/projects' },
             { label: 'Cycles', icon: 'pi pi-fw pi-spinner-dotted', to: '/sge/cycles' },
             { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
-            { label: 'Genes', icon: 'pi pi-fw pi-list', to: '/sge/genes' },
+            { label: 'Genes', iconComponent: DnaIcon, to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
+            { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
+            { label: 'Nucleic Acids', iconComponent: Hexagon, to: '/sge/nucleic-acids' },
             { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
             { label: 'Transfection experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/transfect-experiments' },
-            { label: 'Plasmid experiments', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmid-experiments' },
+            { label: 'Plasmid experiments', iconComponent: Circles, to: '/sge/plasmid-experiments' },
             { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
-            { label: 'Pellets', icon: 'pi pi-fw pi-circle-fill', to: '/sge/pellets' },
+            { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
+            { label: 'Reagents', iconComponent: BeakerOutline,
+                items: [
+                    { label: 'Lots', to: '/sge/lots' },
+                    { label: 'Reagent List', to: '/sge/reagents' },
+                ]
+            },
         ]
     },
     {

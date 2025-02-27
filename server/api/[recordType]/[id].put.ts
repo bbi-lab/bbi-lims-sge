@@ -10,20 +10,28 @@ export default defineEventHandler(async (event) => {
     try {
         const body = await readBody(event)
         const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
-        const values = updateSchema.parse(body)
+        const values = _.mapValues(body, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
+        const parsedValues = updateSchema.parse(values)
 
         // many-to-many
         if (_.camelCase(recordType) == 'transfectExperiments' && _.isArray(body.transfectTargets)) {
             await updateTargets(id, _.map(body.transfectTargets, (x) => x.targetId))
         }
 
-        const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, values)
+        const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, parsedValues)
 
         return updatedRecord
     } catch (e: any) {
+        let data
+        try {
+            data = JSON.parse(e.message)
+        } catch (e) {
+            data = {}
+        }
         throw createError({
             statusCode: 400,
-            statusMessage: e.message
+            statusMessage: e.message,
+            data
         })
     }
 })

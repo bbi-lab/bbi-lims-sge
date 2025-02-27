@@ -15,12 +15,12 @@ export const RecordService = {
         return record.data as FetchType
     },
 
-    async getRecords(baseUrl: string, withClause?: Object, where?: Object) {
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object): Promise<any[]> {
         const fetchOptions = withClause ? {query: {with: withClause}} : {}
         if (where) {
             _.set(fetchOptions, ['query', 'where'], where)
         }
-        const records = await $fetch(`${baseUrl}`, fetchOptions)
+        const records = await $fetch(`${baseUrl}`, fetchOptions) as any[]
         return records
     },
 

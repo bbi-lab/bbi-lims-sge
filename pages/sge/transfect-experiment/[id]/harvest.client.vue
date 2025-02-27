@@ -1,35 +1,75 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import moment from 'moment'
 import _ from 'lodash'
+<<<<<<< HEAD
 import {TransfectionExperiment} from '~/shared/sge/transfection-experiment'
+=======
+import  {
+    TransfectionExperiment,
+    type PelletInsert,
+    VALID_PROTOCOLS,
+    VALID_REPLICATES,
+} from '~/shared/sge/transfection-experiment'
+>>>>>>> develop
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const experimentId = route.params.id
+const experimentId = route.params.id as string
+const loaded = ref(false)
 
-const currentExperiment = ref()
+let experiment: TransfectionExperiment
+let allTargets: {label: string, code: string}[] = []
+
 const harvestDateTime = ref()
-const allTargets = ref([])
-const pelletsToAdd = ref([])
-const formData = ref({})
+
+interface FormFields {
+    pctPassaged?: number
+    pctHarvested?: number
+    d3Confluency?: number
+    dnaConcentration?: number
+    dnaVolume?: number
+    dnaYield?: number
+    rnaConcentration?: number
+    rnaVolume?: number
+    rnaYield?: number
+    isBackup?: boolean
+    harvestNotes?: string
+}
+const formData = ref<FormFields>({})
+
+interface Pellet extends Partial<FormFields> {
+    target: {label: string, code: string}
+    replicates: string[]
+}
+
+const pelletsToAdd = ref<Pellet[]>([])
+
+const selectedTargets = ref<{label: string, code: string}[]>([])
+const selectedReplicates = ref<{label: string, code: string}[]>([])
+
 const harvestBy = ref()
 const harvestProtocol = ref()
 const now = ref(new Date())
-const validProtocols = ['AllPrep', 'DNeasy']
-const validReplicates = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
 
+const validReplicatesLimited = computed(() => experiment?.data?.replicateCount ? _.filter(VALID_REPLICATES, (x) => !_.startsWith(x, 'R') || parseInt(x.slice(-1)) <= (experiment.data?.replicateCount ?? 0)) : VALID_REPLICATES)
 // set min date to Day 5, max to Day 17
+<<<<<<< HEAD
 const minDate = computed(() => currentExperiment.value?.startedOn ? moment(currentExperiment.value.startedOn).add(5, 'days').toDate() : new Date()) // .set({ hour: 0, minute: 0 })
 const maxDate = computed(() => moment(minDate?.value).add(12, 'days').toDate()) // .set({ hour: 23, minute: 59 })
+=======
+const minDate = computed(() => experiment?.data?.startedOn ? moment(experiment?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
+const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
+>>>>>>> develop
 
 // disable all dates in min/max range except Day 5, 9, 13, and 17
 const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
-const targetsSelected = computed (() => {return !_.isEmpty(formData.value?.selectedTargets)})
-const replicatesSelected = computed (() => {return !_.isEmpty(formData.value?.selectedReplicates)})
+const targetsSelected = computed (() => {return !_.isEmpty(selectedTargets.value)})
+const replicatesSelected = computed (() => {return !_.isEmpty(selectedReplicates.value)})
 
+<<<<<<< HEAD
 // watch(currentExperiment, (newValue, oldValue) => {
 //     if (!_.isEqual(newValue, oldValue)) {
 //         allTargets.value = _.map(newValue.transfectTargets, (x) => { return {label: formatTargetName(x.target), code: x.id}})
@@ -40,6 +80,12 @@ onMounted(async() => {
     if (experimentId) {
         currentExperiment.value = new TransfectionExperiment(experimentId)
         await currentExperiment.value.fetch({
+=======
+
+onMounted(async() => {
+    if (experimentId) {
+        const withClause = {
+>>>>>>> develop
             transfectTargets: {
                 columns: {id: true},
                 with: {
@@ -58,6 +104,7 @@ onMounted(async() => {
                     }
                 }
             }
+<<<<<<< HEAD
         })
         allTargets.value = _.map(currentExperiment.value.transfectTargets, (x) => { return {label: formatTargetName(x.target), code: x.id}})
         
@@ -65,6 +112,19 @@ onMounted(async() => {
         //     `${config.public.apiBase}/transfect-experiments`,
         //     experimentId,
         //     {transfectTargets: {columns: {id: true}, with: {target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}}})
+=======
+        }
+        experiment = new TransfectionExperiment(experimentId, withClause)
+        await experiment.fetch()
+
+        if (_.isArray(experiment.transfectTargets)) {
+            allTargets = _.map(
+                experiment.transfectTargets, 
+                (x: any) => { return {label: formatTargetName(x.target), code: x.id}}
+            )
+        }
+        loaded.value = true
+>>>>>>> develop
     }
     const intervalId = setInterval(() => {
       now.value = new Date()
@@ -75,12 +135,11 @@ onMounted(async() => {
     })
 })
 
-function formatDateTime(value) {
-    const isoDate = value ? new Date(value) : null
-    return isoDate ? `${isoDate.toLocaleDateString('fr-CA')} @ ${isoDate.toLocaleTimeString('en-GB')}` : ''
+function formatDateTime(value: Date) {
+    return value ? `${value.toLocaleDateString('fr-CA')} @ ${value.toLocaleTimeString('en-GB')}` : ''
 }
 
-function formatTargetName(val) {
+function formatTargetName(val: any) {
     const targetName = _.get(val, 'name')
     const regionName = _.get(val, 'region.name')
     const geneSymbol = _.get(val, 'region.gene.symbol')
@@ -88,7 +147,7 @@ function formatTargetName(val) {
 }
 
 const timeElapsed = computed(() => {
-    const duration = moment.duration(moment(now.value).diff(moment(currentExperiment.value.startedOn)))
+    const duration = moment.duration(moment(now.value).diff(moment(experiment.data?.startedOn)))
     if (Math.floor(duration.asDays()) < 18) {
         return `${Math.floor(duration.asDays())} days, ${duration.hours().toString().padStart(2, '0')}:${duration.minutes().toString().padStart(2, '0')}:${duration.seconds().toString().padStart(2, '0')}`
     } else {
@@ -96,44 +155,44 @@ const timeElapsed = computed(() => {
     }
 })
 
-function valuesToCodedList(array) {
+function valuesToCodedList(array: any[]) {
     return _.map(array, (x) => {return {code: x, label: x}})
 }
 
 function addDraftPellets() {
-    for (const target of formData.value?.selectedTargets) {
-        pelletsToAdd.value.push({
+    const pellets:Pellet[] = []
+    for (const target of selectedTargets.value) {
+        pellets.push({
             target,
-            replicates: _.map(formData.value.selectedReplicates, (x) => x.code),
+            replicates: _.map(selectedReplicates.value, (x) => x.code),
             ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
         })
     }
-
+    pelletsToAdd.value = pellets
 }
 
-function submitPellets() {
-    const newPellets = _.cloneDeep(pelletsToAdd.value)
-    for (const pellet of newPellets) {
-        _.set(pellet, 'transfectTargetId', pellet.target.code)
-        _.unset(pellet, 'target')
-    }
-    
-    RecordService.addRecords(`${config.public.apiBase}/pellets`, newPellets).then((result) => {
-        toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} Records added`, life: 3000 })
-        pelletsToAdd.value = []
-    }).catch(error => {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+async function submitPellets() {
+    const newPellets = _.map(pelletsToAdd.value, (x) => { 
+        const {target, ...vals} = x
+        return {...vals, transfectTargetId: target.code}
     })
+    const response = await experiment.addPellets(newPellets)
+    if (response?.success) {
+        toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records added`, life: 3000 })
+        pelletsToAdd.value = []
+    } else {
+        toast.add({ severity: 'error', summary: 'Error adding pellets', life: 3000 })
+    }
 }
 
 </script>
 <template>
-    <div v-if="currentExperiment">
+    <div v-if="loaded">
         <div class="grid grid-cols-12 p-5">
             <div class="col-span-12 md:col-span-6 lg:col-span-6 xl:col-span-4">
-                <h5>Experiment: {{currentExperiment.name}}</h5>
-                <div>Started on: {{ formatDateTime(currentExperiment.startedOn) }}</div>
-                <div v-if="currentExperiment.startedOn">Time elapsed: {{ timeElapsed }}</div>
+                <h5>Experiment: {{experiment.data?.name}}</h5>
+                <div>Started on: {{ experiment.data?.startedOn ? formatDateTime(experiment.data.startedOn) : '' }}</div>
+                <div v-if="experiment.data?.startedOn">Time elapsed: {{ timeElapsed }}</div>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 mt-5">
                 <Button 
@@ -142,7 +201,7 @@ function submitPellets() {
                     iconPos="right"
                     severity="info"
                     label="View pellets"
-                    @click="router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': currentExperiment.id}})" />
+                    @click="router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': experiment.id}})" />
             </div>
             <hr class="col-span-12">
             <div class="col-span-12">
@@ -150,10 +209,10 @@ function submitPellets() {
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
                 <label for="harvestTargetsInput" class="block font-bold">Targets</label>
-                <Listbox id="harvestTargetsInput" v-model="formData.selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
+                <Listbox id="harvestTargetsInput" v-model="selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
                 
                 <label for="harvestReplicatesInput" class="block font-bold">Replicates</label>
-                <MultiSelect id="harvestReplicatesInput" v-model="formData.selectedReplicates" :options="valuesToCodedList(validReplicates)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
+                <MultiSelect id="harvestReplicatesInput" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                 <div class="flex items-stretch w-60">
@@ -250,7 +309,7 @@ function submitPellets() {
                         :disabledDates="disabledDates"
                         :disabled="!targetsSelected"
                     />
-                    <span class="italic ml-5" v-if="harvestDateTime">Day {{ moment(harvestDateTime).diff(moment(currentExperiment.startedOn), 'days') }}</span>
+                    <span class="italic ml-5" v-if="harvestDateTime">Day {{ moment(harvestDateTime).diff(moment(experiment.data?.startedOn).set( {hour: 0, minute: 0}), 'days') }}</span>
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
                     <label for="harvestByInput" class="block font-bold">Harvested by</label>
@@ -260,7 +319,7 @@ function submitPellets() {
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-2 space-y-2">
                     <label for="harvestProtocolInput" class="block font-bold">Protocol</label>
-                    <Select class="w-48" id="harvestProtocolInput" v-model="harvestProtocol" :options="valuesToCodedList(validProtocols)" optionLabel="label" :disabled="!targetsSelected" />
+                    <Select class="w-48" id="harvestProtocolInput" v-model="harvestProtocol" :options="valuesToCodedList(VALID_PROTOCOLS)" optionLabel="label" :disabled="!targetsSelected" />
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-1 xl:col-span-1 space-y-2">
                     <Button 

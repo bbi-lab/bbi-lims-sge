@@ -1,6 +1,9 @@
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import  {
+    Target,
+} from '~/shared/sge/target'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -11,6 +14,9 @@ const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
+const toast = useToast()
+const confirmPopup = useConfirm()
+const addRecordValues = ref()
 
 const displayWithClause = Object.freeze({
     project:{
@@ -20,7 +26,7 @@ const displayWithClause = Object.freeze({
         columns: {name: true}, 
         with: {
             gene: {
-                columns: {symbol: true}
+                columns: {symbol: true, chromosome: true}
             }
         }
     },
@@ -41,6 +47,21 @@ const rowActions = {
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'targetId': data.id}})
         }
+    },
+    duplicate: {
+        index: -1,  // places this button at the beginning of the row next to edit button
+        icon: 'pi pi-copy',
+        class: 'invisible group-hover:visible',  // display on hover only
+        action: async (data) => {
+            const target = new Target(data.id)
+            await target.fetch()
+            const result = await target.getDuplicate()
+            if (!_.isEmpty(result)) { 
+                addRecordValues.value = result
+                showAddForm.value = true
+                showEditForm.value = false
+            }
+        }
     }
 }
 const columnDefs = {
@@ -50,29 +71,42 @@ const columnDefs = {
     regionId: {
         display: false
     },
+    chromosome: {
+        header: 'Chromosome',
+        format: (x) => _.has(x, 'region.gene.chromosome') ? `chr${x.region.gene.chromosome}`: '',
+        path: 'chromosome.displayValue',
+        type: 'string',
+        index: 1,
+    },
     gene: {
         header: 'Gene',
-        format: (x) => _.get(x, 'region.gene.symbol'),
-        index: 1,
+        path: 'region.gene.symbol',
+        index: 2,
     },
     region: {
         header: 'Region',
-        format: (x) => _.get(x, 'region.name'),
-        index: 1,
+        path: 'region.name',
+        index: 3,
     },
     projectId: {
         display: false
     },
     project: {
-        format: (x) => _.get(x, 'project.name'),
-        index: 2,
+        path: 'project.name',
+        index: 4,
     },
     cycleId: {
         display: false
     },
     cycle: {
-        format: (x) => _.get(x, 'cycle.name'),
-        index: 3,
+        path: 'cycle.name',
+        index: 5,
+    },
+    fixedEdits: {
+        format: (x) => _.isArray(x.fixedEdits) ? x.fixedEdits.join(', ') : '',
+        path: 'fixedEdits.displayValue',
+        type: 'string',
+        index: 6,
     },
     transfectTargets: {
         display: false,
@@ -87,13 +121,7 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/regions`,
             searchFields: ['name', 'gene.symbol'],
             valueField: 'id',
-            displayOptions: {
-                primary: {
-                    fields: ['gene.symbol', 'name'],
-                    operator: 'join',
-                    delimiter: ': ',
-                },
-            },
+            displayFormat: (x) => `${x.gene.symbol}: ${x.name}`,
             searchWithClause: {gene: {columns: {symbol:true}}},
         }
     },
@@ -174,7 +202,7 @@ const defaultValues = queryParams
 
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="targetsTable"
@@ -186,17 +214,19 @@ const defaultValues = queryParams
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :showColumnFilters="true"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="targets"
                 schemaName="insert"
                 :defaultValues="defaultValues"
                 :fieldDefs="fieldDefs"
+                :values="addRecordValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />

@@ -7,30 +7,18 @@ const props = defineProps({
   searchFields: {type: Array, default: ['name']},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  /* 
-    EX:
-    displayOptions: {
-        primary: {
-            fields: ['name', 'desc'],
-            operator: 'coalesce',
-        },
-        secondary: {
-            fields: ['another.value', 'another.value2'],
-            operator: 'join',
-            delimiter: '; ',
-        }
-    }
-  */
-  displayOptions: {type: Object},
+  displayFormat: {type: Function},  // callback function to return formatted string
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   dropdown: {type: Boolean},
   disabled: {type: Boolean},
   hideClearButton: {type: Boolean},
   iftaLabel: {type: String},
+  inputId: {type: String},
 })
 
 const modelValue = defineModel()
+const modelValueObj = defineModel('obj')
 const currentValue = ref()
 const suggestions = ref([])
 
@@ -40,41 +28,32 @@ const emit = defineEmits([
 
 function getDisplayValue(record) {
     const result = []
-    let optionUsed = 'default'
 
-    if (props.displayOptions) {
-        for (const field of props.displayOptions.primary.fields) {
-            if (_.get(record, field)) result.push(_.get(record, field))
-        }
-        if (result.length>0) {
-            optionUsed = 'primary'
-        } else {
-            if (props.displayOptions?.secondary) {
-                for (const field of props.displayOptions.secondary.fields) {
-                    result.push(_.get(record, field))
-                }
-                optionUsed = 'secondary'
-            }
-        }
+    if (_.isFunction(props.displayFormat)) {
+        return props.displayFormat(record)
     } else {
         for (const field of props.displayFields) {
             result.push(_.get(record, field))
         }
-    }
-
-    const delimiter = _.get(props.displayOptions, [optionUsed, 'delimiter'], ': ')
-    const operator = _.get(props.displayOptions, [optionUsed, 'operator'], 'join')
-    if (operator=='join') {
-        return _.join(_.compact(result), delimiter)
-    } else if (operator=='coalesce') {
-        return _.find(result, (value) => !_.isEmpty(value))
+        return _.join(_.compact(result), ': ')
     }
 }
 
 watch(modelValue, async (newValue, oldValue) => {
-    if (!_.isEqual(newValue, oldValue)) {
-        const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
-        currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
+    
+    if (newValue && !_.isEqual(newValue, oldValue)) {
+        if (_.isObject(newValue)) {
+            modelValueObj.value = newValue
+        } else if (_.isEmpty(newValue)) {
+            modelValueObj.value = null
+        }
+
+        modelValue.value = _.isString(newValue) ?  newValue : _.get(newValue, props.valueField)
+        
+        if (_.isString(modelValue.value)) {
+            const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
+            currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
+        }
     }},
     { immediate: true },
 )
@@ -89,17 +68,19 @@ async function autocompleteSearch(event) {
     }
     const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
 
-    suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x) }})
+    suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x), record: x }})
 }
 
 function clearValue() {
     currentValue.value = null
     modelValue.value = null
+    modelValueObj.value = null
     emit('value-changed', null)
 }
 function setModelValue() {
     if (_.has(currentValue.value, 'code')) {
         modelValue.value = _.get(currentValue.value, 'code')
+        modelValueObj.value = _.get(currentValue.value, 'record')
         emit('value-changed', modelValue.value)
     } else {
         clearValue()
@@ -110,7 +91,10 @@ async function lostFocus() {
         clearValue()
     }
 }
-const inputId = useId()
+defineExpose({
+    clearValue,
+})
+//const inputId = useId()
 
 </script>
 <template>
@@ -118,7 +102,7 @@ const inputId = useId()
         <AutoComplete 
             v-model="currentValue" 
             class="w-80"
-            inputId="inputId"
+            :id="inputId"
             :suggestions="suggestions" 
             optionLabel="label"
             @complete="autocompleteSearch"
@@ -126,7 +110,7 @@ const inputId = useId()
             @blur="lostFocus"
             :dropdown="dropdown"
             :disabled="disabled" />
-        <label v-if="!_.isEmpty(iftaLabel)" for="inputId">{{ iftaLabel }}</label>
+        <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
     </component>
     
     <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />

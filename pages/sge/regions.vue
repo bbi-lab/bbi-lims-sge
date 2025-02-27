@@ -54,7 +54,7 @@ function didDeleteRecord(event) {
 const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
 const columnDefs = {
     gene: {
-        format: (x) => _.get(x, 'gene.symbol'),
+        path: 'gene.symbol',
         index: 0,
     },
     geneId: {
@@ -94,7 +94,7 @@ const defaultValues = queryParams
 
 </script>
 <template>
-    <Splitter>
+    <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="regionsTable"
@@ -109,7 +109,7 @@ const defaultValues = queryParams
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-        <SplitterPanel class="p-8" v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="regions"
