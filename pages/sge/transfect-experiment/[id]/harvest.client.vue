@@ -2,16 +2,12 @@
 import { RecordService } from '@/utils/service/RecordService'
 import moment from 'moment'
 import _ from 'lodash'
-<<<<<<< HEAD
-import {TransfectionExperiment} from '~/shared/sge/transfection-experiment'
-=======
 import  {
     TransfectionExperiment,
     type PelletInsert,
     VALID_PROTOCOLS,
     VALID_REPLICATES,
 } from '~/shared/sge/transfection-experiment'
->>>>>>> develop
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -56,36 +52,18 @@ const now = ref(new Date())
 
 const validReplicatesLimited = computed(() => experiment?.data?.replicateCount ? _.filter(VALID_REPLICATES, (x) => !_.startsWith(x, 'R') || parseInt(x.slice(-1)) <= (experiment.data?.replicateCount ?? 0)) : VALID_REPLICATES)
 // set min date to Day 5, max to Day 17
-<<<<<<< HEAD
-const minDate = computed(() => currentExperiment.value?.startedOn ? moment(currentExperiment.value.startedOn).add(5, 'days').toDate() : new Date()) // .set({ hour: 0, minute: 0 })
-const maxDate = computed(() => moment(minDate?.value).add(12, 'days').toDate()) // .set({ hour: 23, minute: 59 })
-=======
 const minDate = computed(() => experiment?.data?.startedOn ? moment(experiment?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
 const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
->>>>>>> develop
 
 // disable all dates in min/max range except Day 5, 9, 13, and 17
 const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
 const targetsSelected = computed (() => {return !_.isEmpty(selectedTargets.value)})
 const replicatesSelected = computed (() => {return !_.isEmpty(selectedReplicates.value)})
 
-<<<<<<< HEAD
-// watch(currentExperiment, (newValue, oldValue) => {
-//     if (!_.isEqual(newValue, oldValue)) {
-//         allTargets.value = _.map(newValue.transfectTargets, (x) => { return {label: formatTargetName(x.target), code: x.id}})
-//     }
-// })
-
-onMounted(async() => {
-    if (experimentId) {
-        currentExperiment.value = new TransfectionExperiment(experimentId)
-        await currentExperiment.value.fetch({
-=======
 
 onMounted(async() => {
     if (experimentId) {
         const withClause = {
->>>>>>> develop
             transfectTargets: {
                 columns: {id: true},
                 with: {
@@ -104,15 +82,6 @@ onMounted(async() => {
                     }
                 }
             }
-<<<<<<< HEAD
-        })
-        allTargets.value = _.map(currentExperiment.value.transfectTargets, (x) => { return {label: formatTargetName(x.target), code: x.id}})
-        
-        // currentExperiment.value = await RecordService.getRecord(
-        //     `${config.public.apiBase}/transfect-experiments`,
-        //     experimentId,
-        //     {transfectTargets: {columns: {id: true}, with: {target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}}})
-=======
         }
         experiment = new TransfectionExperiment(experimentId, withClause)
         await experiment.fetch()
@@ -124,7 +93,6 @@ onMounted(async() => {
             )
         }
         loaded.value = true
->>>>>>> develop
     }
     const intervalId = setInterval(() => {
       now.value = new Date()
