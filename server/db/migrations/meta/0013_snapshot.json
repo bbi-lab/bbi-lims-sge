@@ -1,0 +1,1874 @@
+{
+  "id": "fd7475a0-bb89-4b22-8865-99e23b769835",
+  "prevId": "2595e69a-294d-4474-929d-0629c7d94fd4",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cycles": {
+      "name": "cycles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_on": {
+          "name": "started_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "ended_on": {
+          "name": "ended_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.extraction_experiments": {
+      "name": "extraction_experiments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "technician": {
+          "name": "technician",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "extractedOn": {
+          "name": "extractedOn",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "extraction_experiments_technician_users_id_fk": {
+          "name": "extraction_experiments_technician_users_id_fk",
+          "tableFrom": "extraction_experiments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "technician"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.genes": {
+      "name": "genes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ncbi_accession": {
+          "name": "ncbi_accession",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_position": {
+          "name": "start_position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_position": {
+          "name": "end_position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chromosome": {
+          "name": "chromosome",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "orientation": {
+          "name": "orientation",
+          "type": "gene_orientations",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "symbol": {
+          "name": "symbol",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ncbi_gene_id": {
+          "name": "ncbi_gene_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gene_type": {
+          "name": "gene_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transcripts_accession": {
+          "name": "transcripts_accession",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "protein_acccession": {
+          "name": "protein_acccession",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "protein_length": {
+          "name": "protein_length",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "locus_tag": {
+          "name": "locus_tag",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assembly": {
+          "name": "assembly",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "annotation": {
+          "name": "annotation",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lots": {
+      "name": "lots",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reagent_id": {
+          "name": "reagent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "in_house": {
+          "name": "in_house",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concentration": {
+          "name": "concentration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "starting_volume": {
+          "name": "starting_volume",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prepared_on": {
+          "name": "prepared_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stored_on": {
+          "name": "stored_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_use_on": {
+          "name": "started_use_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ended_use_on": {
+          "name": "ended_use_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_on": {
+          "name": "expires_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lots_reagent_id_reagents_id_fk": {
+          "name": "lots_reagent_id_reagents_id_fk",
+          "tableFrom": "lots",
+          "tableTo": "reagents",
+          "columnsFrom": [
+            "reagent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.nucleic_acids": {
+      "name": "nucleic_acids",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "extraction_experiment_id": {
+          "name": "extraction_experiment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_id": {
+          "name": "storage_box_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_loc": {
+          "name": "storage_box_loc",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concentration": {
+          "name": "concentration",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pellet_id": {
+          "name": "pellet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "nucleic_acids_extraction_experiment_id_extraction_experiments_id_fk": {
+          "name": "nucleic_acids_extraction_experiment_id_extraction_experiments_id_fk",
+          "tableFrom": "nucleic_acids",
+          "tableTo": "extraction_experiments",
+          "columnsFrom": [
+            "extraction_experiment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "nucleic_acids_storage_box_id_storage_boxes_id_fk": {
+          "name": "nucleic_acids_storage_box_id_storage_boxes_id_fk",
+          "tableFrom": "nucleic_acids",
+          "tableTo": "storage_boxes",
+          "columnsFrom": [
+            "storage_box_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "nucleic_acids_pellet_id_pellets_id_fk": {
+          "name": "nucleic_acids_pellet_id_pellets_id_fk",
+          "tableFrom": "nucleic_acids",
+          "tableTo": "pellets",
+          "columnsFrom": [
+            "pellet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pcr_experiments": {
+      "name": "pcr_experiments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "round": {
+          "name": "round",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "technician": {
+          "name": "technician",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_on": {
+          "name": "started_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pcr_experiments_technician_users_id_fk": {
+          "name": "pcr_experiments_technician_users_id_fk",
+          "tableFrom": "pcr_experiments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "technician"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pellets": {
+      "name": "pellets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "transfect_target_id": {
+          "name": "transfect_target_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "replicates": {
+          "name": "replicates",
+          "type": "varchar(3)[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvested_on": {
+          "name": "harvested_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvested_by": {
+          "name": "harvested_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_current": {
+          "name": "is_current",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_backup": {
+          "name": "is_backup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quant": {
+          "name": "quant",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_id": {
+          "name": "storage_box_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_loc": {
+          "name": "storage_box_loc",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "d3_confluency": {
+          "name": "d3_confluency",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dna_concentration": {
+          "name": "dna_concentration",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dna_volume": {
+          "name": "dna_volume",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dna_yield": {
+          "name": "dna_yield",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rna_concentration": {
+          "name": "rna_concentration",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rna_volume": {
+          "name": "rna_volume",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rna_yield": {
+          "name": "rna_yield",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pct_passaged": {
+          "name": "pct_passaged",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pct_harvested": {
+          "name": "pct_harvested",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pellets_transfect_target_id_transfect_targets_id_fk": {
+          "name": "pellets_transfect_target_id_transfect_targets_id_fk",
+          "tableFrom": "pellets",
+          "tableTo": "transfect_targets",
+          "columnsFrom": [
+            "transfect_target_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pellets_harvested_by_users_id_fk": {
+          "name": "pellets_harvested_by_users_id_fk",
+          "tableFrom": "pellets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "harvested_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pellets_storage_box_id_storage_boxes_id_fk": {
+          "name": "pellets_storage_box_id_storage_boxes_id_fk",
+          "tableFrom": "pellets",
+          "tableTo": "storage_boxes",
+          "columnsFrom": [
+            "storage_box_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plasmid_experiments": {
+      "name": "plasmid_experiments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "technician": {
+          "name": "technician",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_on": {
+          "name": "started_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "temperature": {
+          "name": "temperature",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plasmid_experiments_technician_users_id_fk": {
+          "name": "plasmid_experiments_technician_users_id_fk",
+          "tableFrom": "plasmid_experiments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "technician"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plasmids": {
+      "name": "plasmids",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "plasmid_type": {
+          "name": "plasmid_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volume": {
+          "name": "volume",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quant": {
+          "name": "quant",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plasmid_experiment_id": {
+          "name": "plasmid_experiment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_id": {
+          "name": "storage_box_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_box_loc": {
+          "name": "storage_box_loc",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verification_status": {
+          "name": "verification_status",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plasmids_target_id_targets_id_fk": {
+          "name": "plasmids_target_id_targets_id_fk",
+          "tableFrom": "plasmids",
+          "tableTo": "targets",
+          "columnsFrom": [
+            "target_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "plasmids_plasmid_experiment_id_plasmid_experiments_id_fk": {
+          "name": "plasmids_plasmid_experiment_id_plasmid_experiments_id_fk",
+          "tableFrom": "plasmids",
+          "tableTo": "plasmid_experiments",
+          "columnsFrom": [
+            "plasmid_experiment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "plasmids_storage_box_id_storage_boxes_id_fk": {
+          "name": "plasmids_storage_box_id_storage_boxes_id_fk",
+          "tableFrom": "plasmids",
+          "tableTo": "storage_boxes",
+          "columnsFrom": [
+            "storage_box_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plates": {
+      "name": "plates",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "pcr_experiment_id": {
+          "name": "pcr_experiment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size_x": {
+          "name": "size_x",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 12
+        },
+        "size_y": {
+          "name": "size_y",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 8
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plates_pcr_experiment_id_pcr_experiments_id_fk": {
+          "name": "plates_pcr_experiment_id_pcr_experiments_id_fk",
+          "tableFrom": "plates",
+          "tableTo": "pcr_experiments",
+          "columnsFrom": [
+            "pcr_experiment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.amplification_primers": {
+      "name": "amplification_primers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence_type": {
+          "name": "sequence_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.homology_arm_primers": {
+      "name": "homology_arm_primers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence_type": {
+          "name": "sequence_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cloning_strategy": {
+          "name": "cloning_strategy",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.linearization_primers": {
+      "name": "linearization_primers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence_type": {
+          "name": "sequence_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.projects": {
+      "name": "projects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_on": {
+          "name": "started_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.reagents": {
+      "name": "reagents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "solute_unit": {
+          "name": "solute_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volume_unit": {
+          "name": "volume_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "reagents_name_unique": {
+          "name": "reagents_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.regions": {
+      "name": "regions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gene_id": {
+          "name": "gene_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amplicon_start": {
+          "name": "amplicon_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amplicon_end": {
+          "name": "amplicon_end",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amplicon_sequence": {
+          "name": "amplicon_sequence",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snv_library_start": {
+          "name": "snv_library_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snv_library_end": {
+          "name": "snv_library_end",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "regions_gene_id_genes_id_fk": {
+          "name": "regions_gene_id_genes_id_fk",
+          "tableFrom": "regions",
+          "tableTo": "genes",
+          "columnsFrom": [
+            "gene_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.storage_boxes": {
+      "name": "storage_boxes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.targets": {
+      "name": "targets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cycle_id": {
+          "name": "cycle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region_id": {
+          "name": "region_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edit_start": {
+          "name": "edit_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "edit_stop": {
+          "name": "edit_stop",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amp_start": {
+          "name": "amp_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amp_stop": {
+          "name": "amp_stop",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cigar": {
+          "name": "cigar",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skip_positions": {
+          "name": "skip_positions",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fixed_edits": {
+          "name": "fixed_edits",
+          "type": "varchar(255)[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "targets_project_id_projects_id_fk": {
+          "name": "targets_project_id_projects_id_fk",
+          "tableFrom": "targets",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "targets_cycle_id_cycles_id_fk": {
+          "name": "targets_cycle_id_cycles_id_fk",
+          "tableFrom": "targets",
+          "tableTo": "cycles",
+          "columnsFrom": [
+            "cycle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "targets_region_id_regions_id_fk": {
+          "name": "targets_region_id_regions_id_fk",
+          "tableFrom": "targets",
+          "tableTo": "regions",
+          "columnsFrom": [
+            "region_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "targets_name_unique": {
+          "name": "targets_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transfect_experiments": {
+      "name": "transfect_experiments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "technician": {
+          "name": "technician",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_on": {
+          "name": "started_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "transfection_count": {
+          "name": "transfection_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "replicates_count": {
+          "name": "replicates_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transfect_experiments_technician_users_id_fk": {
+          "name": "transfect_experiments_technician_users_id_fk",
+          "tableFrom": "transfect_experiments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "technician"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transfect_lot_usage": {
+      "name": "transfect_lot_usage",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "experiment_id": {
+          "name": "experiment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lot_id": {
+          "name": "lot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concentration": {
+          "name": "concentration",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usage_on": {
+          "name": "usage_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transfect_lot_usage_experiment_id_transfect_experiments_id_fk": {
+          "name": "transfect_lot_usage_experiment_id_transfect_experiments_id_fk",
+          "tableFrom": "transfect_lot_usage",
+          "tableTo": "transfect_experiments",
+          "columnsFrom": [
+            "experiment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfect_lot_usage_lot_id_lots_id_fk": {
+          "name": "transfect_lot_usage_lot_id_lots_id_fk",
+          "tableFrom": "transfect_lot_usage",
+          "tableTo": "lots",
+          "columnsFrom": [
+            "lot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transfect_targets": {
+      "name": "transfect_targets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "experiment_id": {
+          "name": "experiment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "snv_library_conc": {
+          "name": "snv_library_conc",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snv_library_to_3ug_vol": {
+          "name": "snv_library_to_3ug_vol",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sg_rna": {
+          "name": "sg_rna",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sg_rna_conc": {
+          "name": "sg_rna_conc",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sg_rna_to_12ug_vol": {
+          "name": "sg_rna_to_12ug_vol",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sg_rna_neg_control": {
+          "name": "sg_rna_neg_control",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hprt1_sg_rna_conc": {
+          "name": "hprt1_sg_rna_conc",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hprt1_sg_rna_to_12ug_vol": {
+          "name": "hprt1_sg_rna_to_12ug_vol",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xfect_buffer": {
+          "name": "xfect_buffer",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xfect_polymer_per_transfect": {
+          "name": "xfect_polymer_per_transfect",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transfection_count": {
+          "name": "transfection_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snv_lib_needed": {
+          "name": "snv_lib_needed",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sg_rna_needed": {
+          "name": "sg_rna_needed",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transfect_targets_experiment_id_transfect_experiments_id_fk": {
+          "name": "transfect_targets_experiment_id_transfect_experiments_id_fk",
+          "tableFrom": "transfect_targets",
+          "tableTo": "transfect_experiments",
+          "columnsFrom": [
+            "experiment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfect_targets_target_id_targets_id_fk": {
+          "name": "transfect_targets_target_id_targets_id_fk",
+          "tableFrom": "transfect_targets",
+          "tableTo": "targets",
+          "columnsFrom": [
+            "target_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.wells": {
+      "name": "wells",
+      "schema": "",
+      "columns": {
+        "plate_id": {
+          "name": "plate_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "x": {
+          "name": "x",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "y": {
+          "name": "y",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "wells_plate_id_plates_id_fk": {
+          "name": "wells_plate_id_plates_id_fk",
+          "tableFrom": "wells",
+          "tableTo": "plates",
+          "columnsFrom": [
+            "plate_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "wells_plate_id_x_y_pk": {
+          "name": "wells_plate_id_x_y_pk",
+          "columns": [
+            "plate_id",
+            "x",
+            "y"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_group_memberships": {
+      "name": "user_group_memberships",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_group_memberships_user_id_users_id_fk": {
+          "name": "user_group_memberships_user_id_users_id_fk",
+          "tableFrom": "user_group_memberships",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_group_memberships_user_group_id_user_groups_id_fk": {
+          "name": "user_group_memberships_user_group_id_user_groups_id_fk",
+          "tableFrom": "user_group_memberships",
+          "tableTo": "user_groups",
+          "columnsFrom": [
+            "user_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_group_memberships_user_id_user_group_id_pk": {
+          "name": "user_group_memberships_user_id_user_group_id_pk",
+          "columns": [
+            "user_id",
+            "user_group_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_groups": {
+      "name": "user_groups",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "user_groups_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_admin": {
+          "name": "is_admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_verified": {
+          "name": "is_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.gene_orientations": {
+      "name": "gene_orientations",
+      "schema": "public",
+      "values": [
+        "plus",
+        "minus"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

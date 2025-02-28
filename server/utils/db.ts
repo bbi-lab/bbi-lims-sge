@@ -43,14 +43,15 @@ import {
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
-import { reagents } from '../db/schema/sge/reagents';
-import { nucleicAcids } from '../db/schema/sge/nucleic-acid';
+import { reagents } from '../db/schema/sge/reagents'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers } from '../db/schema/sge/primer'
 
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
 
 export const schema = {
+  // tables
   users,
   userGroups,
   userGroupMemberships,
@@ -73,6 +74,11 @@ export const schema = {
   transfectLotUsage,
   plasmidExperiments,
   extractionExperiments,
+  amplificationPrimers,
+  linearizationPrimers,
+  homologyArmPrimers,
+
+  // relations
   usersRelations,
   userGroupsRelations,
   userGroupMembershipsRelations,

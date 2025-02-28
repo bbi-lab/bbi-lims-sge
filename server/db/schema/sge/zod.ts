@@ -17,6 +17,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
+import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 
 const selectProjectSchema = createSelectSchema(projects)
 const insertProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema}).omit({id: true})
@@ -105,6 +106,18 @@ const updatePlasmidsSchema = insertPlasmidsSchema
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true})
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
+
+const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
+const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers).omit({id: true})
+const updateAmplificationPrimerSchema = insertAmplificationPrimerSchema
+
+const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
+const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers).omit({id: true})
+const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
+
+const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
+const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers).omit({id: true})
+const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
 export const schemas = {
     projects: {
@@ -195,5 +208,20 @@ export const schemas = {
         select: selectReagentsSchema,
         insert: insertReagentsSchema,
         update: updateReagentsSchema,
-    }
+    },
+    amplificationPrimers: {
+        select: selectAmplificationPrimerSchema,
+        insert: insertAmplificationPrimerSchema,
+        update: updateAmplificationPrimerSchema,
+    },
+    homologyArmPrimers: {
+        select: selectHomologyArmPrimerSchema,
+        insert: insertHomologyArmPrimerSchema,
+        update: updateHomologyArmPrimerSchema,
+    },
+    linearizationPrimers: {
+        select: selectLinearizationPrimerSchema,
+        insert: insertLinearizationPrimerSchema,
+        update: updateLinearizationPrimerSchema,
+    },
 }

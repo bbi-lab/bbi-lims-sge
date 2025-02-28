@@ -7,6 +7,7 @@ import BeakerOutline from '~icons/mdi/beaker-outline'
 import Circles from '~icons/mdi/gamepad-circle-outline'
 import Hexagon from '~icons/mdi/hexagon-outline'
 import DnaIcon from '~icons/mdi/dna'
+import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 
 const model = ref([
     {
@@ -31,6 +32,13 @@ const model = ref([
                     { label: 'Reagent List', to: '/sge/reagents' },
                 ]
             },
+            { label: 'Primers', iconComponent: IcBaselineStraighten, style: 'transform: scale(1, -1)',
+                items: [
+                    { label: 'Amplification', to: '/sge/amplification-primers' },
+                    { label: 'Linearization', to: '/sge/linearization-primers' },
+                    { label: 'Homology Arm', to: '/sge/homology-arm-primers' },
+                ]
+            }
         ]
     },
     {
