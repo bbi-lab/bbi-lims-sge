@@ -43,6 +43,11 @@ const displayWithClause = Object.freeze({
             name: true
         },
         with: {
+            project: {
+                columns: {
+                    name: true
+                }
+            },
             region: {
                 columns: {
                     name: true
@@ -71,6 +76,13 @@ const columnDefs = {
         path: 'targetId.displayValue',
         type: 'string',
         index: 2,
+    },
+    project: {
+        format: (x) => {
+            return x.target?.project?.name || ''
+        },
+        path: 'project.displayValue',
+        index: 3,
     },
 }
 
