@@ -34,5 +34,5 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
     cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}),
     notes: text('notes'),
 }, (table) => [
-  check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
