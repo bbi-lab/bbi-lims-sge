@@ -1,0 +1,1 @@
+ALTER TABLE "homology_arm_primers" ALTER COLUMN "sequence" DROP NOT NULL;

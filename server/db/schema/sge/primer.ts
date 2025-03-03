@@ -29,7 +29,7 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull(),
-    sequence: varchar('sequence', { length: 255 }).notNull(),
+    sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
     cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}),
     notes: text('notes'),
