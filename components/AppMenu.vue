@@ -4,10 +4,10 @@ const { user } = useUserSession()
 
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
-import Circles from '~icons/mdi/gamepad-circle-outline'
 import Hexagon from '~icons/mdi/hexagon-outline'
 import DnaIcon from '~icons/mdi/dna'
 import IcBaselineStraighten from '~icons/ic/baseline-straighten'
+import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 
 const model = ref([
     {
@@ -20,12 +20,16 @@ const model = ref([
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
             { label: 'Nucleic Acids', iconComponent: Hexagon, to: '/sge/nucleic-acids' },
-            { label: 'PCR experiments', icon: 'pi pi-fw pi-qrcode', to: '/sge/pcr-experiments' },
-            { label: 'Transfection experiments', icon: 'pi pi-fw pi-sparkles', to: '/sge/transfect-experiments' },
-            { label: 'Plasmid experiments', iconComponent: Circles, to: '/sge/plasmid-experiments' },
-            { label: 'Extraction experiments', icon: 'pi pi-fw pi-directions', to: '/sge/extraction-experiments' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
+            { label: 'Experiments', iconComponent: IconParkSolidExperiment,
+                items: [
+                    { label: 'PCR', to: '/sge/pcr-experiments' },
+                    { label: 'Transfection', to: '/sge/transfect-experiments' },
+                    { label: 'Plasmid', to: '/sge/plasmid-experiments' },
+                    { label: 'Extraction', to: '/sge/extraction-experiments' },
+                ]
+            },
             { label: 'Reagents', iconComponent: BeakerOutline,
                 items: [
                     { label: 'Lots', to: '/sge/lots' },
