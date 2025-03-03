@@ -249,7 +249,7 @@ function getFieldType(val, key) {
     <div class="m-2 w-full flex justify-center">
         <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`, showDelay: 1000}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecord" />
-        <Button v-if="canDelete" class="ml-1" v-tooltip="{value: 'Delete', showDelay: 1000}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
+        <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete', showDelay: 1000}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
     <div class="pl-8 pb-24 h-full overflow-y-scroll">
         <div
