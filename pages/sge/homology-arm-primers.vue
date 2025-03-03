@@ -1,4 +1,7 @@
 <script setup>
+import _ from 'lodash'
+
+const config = useRuntimeConfig()
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
@@ -34,6 +37,54 @@ function didDeleteRecord(event) {
     homologyArmPrimersTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
+const displayWithClause = Object.freeze({
+    target: {
+        columns: {
+            name: true
+        },
+        with: {
+            region: {
+                columns: {
+                    name: true
+                },
+                with: {
+                    gene: {
+                        columns: {
+                            symbol: true
+                        }
+                    }
+                }
+            }
+        }
+    },
+})
+
+const columnDefs = {
+    name: {
+        index: 1
+    },
+    targetId: {
+        header: 'Target',
+        format: (x) => { return _.get(x, 'target.name') || `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}`},
+        path: 'targetId.displayValue',
+        type: 'string',
+        index: 2,
+    },
+}
+
+const fieldDefs = {
+    targetId: {
+        label: 'Target',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/targets`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -43,6 +94,8 @@ function didDeleteRecord(event) {
                 tableName="homology-arm-primers"
                 schemaName="select"
                 title="Homology Arm Primers"
+                :with-clause="displayWithClause"
+                :column-defs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
@@ -52,6 +105,7 @@ function didDeleteRecord(event) {
                 v-if="showAddForm"
                 tableName="homology-arm-primers"
                 schemaName="insert"
+                :field-defs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -60,6 +114,7 @@ function didDeleteRecord(event) {
                 :recordId="editingRecordId"
                 tableName="homology-arm-primers"
                 schemaName="update"
+                :field-defs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

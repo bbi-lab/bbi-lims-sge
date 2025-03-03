@@ -20,26 +20,7 @@ import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
-import {
-  pcrExperimentsRelations,
-  platesRelations,
-  wellsRelations,
-  projectsRelations,
-  targetsRelations,
-  regionsRelations,
-  genesRelations,
-  cyclesRelations,
-  pelletsRelations,
-  lotsRelations,
-  plasmidsRelations,
-  nucleicAcidsRelations,
-  storageBoxesRelations,
-  plasmidExperimentsRelations,
-  transfectExperimentsRelations,
-  transfectTargetsRelations,
-  transfectLotUsageRelations,
-  extractionExperimentsRelations,
-} from '../db/schema/sge/relations'
+import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import _ from 'lodash'
@@ -82,24 +63,27 @@ export const schema = {
   usersRelations,
   userGroupsRelations,
   userGroupMembershipsRelations,
-  platesRelations,
-  pcrExperimentsRelations,
-  wellsRelations,
-  projectsRelations,
-  targetsRelations,
-  regionsRelations,
-  genesRelations,
-  cyclesRelations,
-  plasmidsRelations,
-  nucleicAcidsRelations,
-  pelletsRelations,
-  lotsRelations,
-  storageBoxesRelations,
-  transfectExperimentsRelations,
-  transfectTargetsRelations,
-  transfectLotUsageRelations,
-  plasmidExperimentsRelations,
-  extractionExperimentsRelations,
+  platesRelations: sgeRelations.platesRelations,
+  pcrExperimentsRelations: sgeRelations.pcrExperimentsRelations,
+  wellsRelations: sgeRelations.wellsRelations,
+  projectsRelations: sgeRelations.projectsRelations,
+  targetsRelations: sgeRelations.targetsRelations,
+  regionsRelations: sgeRelations.regionsRelations,
+  genesRelations: sgeRelations.genesRelations,
+  cyclesRelations: sgeRelations.cyclesRelations,
+  plasmidsRelations: sgeRelations.plasmidsRelations,
+  nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
+  pelletsRelations: sgeRelations.pelletsRelations,
+  lotsRelations: sgeRelations.lotsRelations,
+  storageBoxesRelations: sgeRelations.storageBoxesRelations,
+  transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
+  transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
+  transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
+  plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
+  extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
+  amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
+  linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
+  homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
 }
 
 export const db = drizzle(
