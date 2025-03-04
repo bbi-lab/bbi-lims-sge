@@ -50,9 +50,9 @@ const columnDefs = {
     isVerified: {header: 'Verified'},
     userGroupMemberships: {
         header: 'Groups',
-        format: ({userGroupMemberships}) => { return _.map(userGroupMemberships, (x) => x.userGroup?.name).join(', ')}
+        format: ({userGroupMemberships}) => {  return _.map(userGroupMemberships, (x) => x.userGroup?.name)},
+        path: 'userGroupMemberships.displayValue',
     },
-
 }
 </script>
 <template>
