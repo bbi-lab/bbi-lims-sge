@@ -1,6 +1,7 @@
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import DotsTriangle from '~icons/mdi/dots-triangle'
 import  {
     Target,
 } from '~/shared/sge/target'
@@ -37,16 +38,22 @@ const displayWithClause = Object.freeze({
 
 const rowActions = {
     plasmids: {
-        label: (data) => { return `${data.plasmids?.length || 0} Plasmids`},
+        label: (data) => { return `${data.plasmids?.length || 0}`},
         action: (data) => {
             router.push({path:'/sge/plasmids', query: {'targetId': data.id}})
-        }
+        },
+        icon: 'pi pi-fw pi-spinner',
+        iconPos: 'right',
+        tooltip: 'Plasmids',
     },
     pellets: {
-        label: (data) => { return `${data.pellets?.length || 0} Pellets`},
+        label: (data) => { return `${data.pellets?.length || 0}`},
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'targetId': data.id}})
-        }
+        },
+        iconComponent: DotsTriangle,
+        iconPos: 'right',
+        tooltip: 'Pellets',
     },
     duplicate: {
         index: -1,  // places this button at the beginning of the row next to edit button

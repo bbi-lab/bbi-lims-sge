@@ -6,15 +6,6 @@ const editingRecordId = ref(null)
 const projectsTable = ref()
 const router = useRouter()
 
-const rowActions = {
-    targets: {
-        label: (data) => { return `${data.targets?.length || 0} Targets`},  // for this to work, we need to expand targets
-        action: (data) => {
-            router.push({path:'/sge/targets', query: {'projectId': data.id}})
-        }
-    }
-}
-
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
     showEditForm.value = true
@@ -51,6 +42,17 @@ const columnDefs = {
     },
     targets: {
         display: false,
+    }
+}
+const rowActions = {
+    targets: {
+        label: (data) => { return `${data.targets?.length || 0}`},
+        action: (data) => {
+            router.push({path:'/sge/targets', query: {'projectId': data.id}})
+        },
+        icon: 'pi pi-fw pi-bullseye',
+        iconPos: 'right',
+        tooltip: 'Targets',
     }
 }
 const fieldDefs = {

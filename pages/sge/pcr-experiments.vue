@@ -1,21 +1,13 @@
 
 <script setup>
 import _ from 'lodash'
+import PhGridNineFill from '~icons/ph/grid-nine-fill';
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const pcrExperimentsTable = ref()
 const router = useRouter()
-
-const rowActions = {
-    plates: {
-        label: (data) => { return `${data.plates?.length || 0} Plates`},  // for this to work, we need to expand plates
-        action: (data) => {
-            router.push({path:'/sge/plates', query: {'pcrExperimentId': data.id}})
-        }
-    }
-}
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -57,6 +49,17 @@ const columnDefs = {
     },
     technician: {
         path: 'technician.name',
+    }
+}
+const rowActions = {
+    plates: {
+        label: (data) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+        action: (data) => {
+            router.push({path:'/sge/plates', query: {'pcrExperimentId': data.id}})
+        },
+        iconComponent: PhGridNineFill,
+        iconPos: 'right',
+        tooltip: 'Plates',
     }
 }
 </script>
