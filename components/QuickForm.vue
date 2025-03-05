@@ -302,6 +302,19 @@ function getFieldType(val: any, key: string) {
                         :disabled="isReadOnly(key)"
                     />
                 </div>
+                <div class="mb-5" v-else-if="getFieldType(val, key)=='date'">
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                    <DatePicker
+                        class="w-80"
+                        :id="key"
+                        v-model.trim="record[key]"
+                        showIcon
+                        dateFormat="yy-mm-dd"
+                        autofocus
+                        :disabled="isReadOnly(key)"
+                    />
+                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
+                </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
