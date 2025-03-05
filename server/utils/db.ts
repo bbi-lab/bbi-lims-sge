@@ -86,8 +86,10 @@ export const schema = {
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
 }
 
+const DB_URL = config ? `postgresql://${config.dbUsername}:${config.dbPassword}@${config.dbHost}:${config.dbPort}/${config.dbDatabaseName}` : `postgresql://${process.env.NUXT_DB_USER}:${process.env.NUXT_DB_PASSWORD}@${process.env.NUXT_DB_HOST}:${process.env.NUXT_DB_PORT}/${process.env.NUXT_DB_DATABASE_NAME}`
+
 export const db = drizzle(
-  postgres(config?.dbUrl || process.env.NUXT_DB_URL),
+  postgres(DB_URL),
   {
     schema
   }
