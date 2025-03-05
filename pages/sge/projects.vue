@@ -2,7 +2,9 @@
 <script setup>
 const showAddForm = ref(false)
 const showEditForm = ref(false)
+const showMultipleEditForm = ref(false)
 const editingRecordId = ref(null)
+const editingMultipleRecordsIds = ref([])
 const projectsTable = ref()
 const router = useRouter()
 
@@ -11,10 +13,16 @@ function didClickRecordEdit(event) {
     showEditForm.value = true
     showAddForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
 function didClickRecordAdd() {
     showAddForm.value = true
     showEditForm.value = false
+    showMultipleEditForm.value = false
 }
 function didClickCancelAddForm() {
     showAddForm.value = false
@@ -23,13 +31,22 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
 function didAddRecord(event) {
     projectsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
     projectsTable.value.addOrRefreshRecordId(event.id)
+    showEditForm.value = false
+}
+function didUpdateMultipleRecords(ids) {
+    ids.forEach(id => {
+        projectsTable.value.addOrRefreshRecordId(id)
+    })
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
@@ -58,6 +75,9 @@ const rowActions = {
 const fieldDefs = {
     targets: {
         display: false,
+    },
+    startedOn: {
+        type: 'date',
     }
 }
 </script>
@@ -72,11 +92,13 @@ const fieldDefs = {
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :withClause="{targets: true}"
+                :canEditMultiple="true"
                 @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="projects"
@@ -94,6 +116,15 @@ const fieldDefs = {
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="projects"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>
