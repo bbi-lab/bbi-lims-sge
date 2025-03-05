@@ -29,6 +29,7 @@
         "zod": "^3.23.8"
     },
     "dependencies": {
+        "@primeuix/styles": "^1.0.0",
         "@primevue/core": "^4.3.1",
         "argon2": "^0.41.1",
         "chart.js": "^4.4.6",
