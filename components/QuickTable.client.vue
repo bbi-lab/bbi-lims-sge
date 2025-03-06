@@ -75,6 +75,7 @@ const props = defineProps({
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
+  selectionDisabled: {type: Boolean, default: false},
 })
 const emit = defineEmits([
     'clicked-record-edit',
@@ -380,7 +381,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
+        <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" />
         <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
             <template v-if="showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/> 
