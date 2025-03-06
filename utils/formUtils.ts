@@ -40,7 +40,7 @@ export const addNewItemToArray = (record: RecordType, key: string, schemaItems: 
     }
 }
 
-export const getFieldType = (val: any, key: string, fieldDefs: Record<string, SchemaItems>) => {
+export const getFieldType = (val: any, key: string, fieldDefs: Record<string, SchemaItems> | undefined) => {
     const fieldType = _.get(fieldDefs, [key, 'type'])
     if (fieldType) {
         return fieldType
