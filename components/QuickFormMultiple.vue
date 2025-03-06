@@ -2,6 +2,7 @@
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
+import GrommetIconsRevert from '~icons/grommet-icons/revert'
 
 // types here can be refined further based on JsonSchema, but this is a good starting point
 interface SchemaItems {
@@ -247,7 +248,7 @@ function getLabel(key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber
                         :id="key"
-                        :class="inputClasses[key]"
+                        :inputClass="inputClasses[key]"
                         v-model="combinedRecord[key]"
                         showButtons
                         :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
@@ -260,7 +261,7 @@ function getLabel(key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber
                         :id="key"
-                        :class="inputClasses[key]"
+                        :inputClass="inputClasses[key]"
                         v-model="combinedRecord[key]"
                         showButtons :disabled="isReadOnly(key)"
                         :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
@@ -269,8 +270,22 @@ function getLabel(key: string) {
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
-                    <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                    <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                    <div class="flex items-start">
+                        <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
+                        <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" tooltip="Add value" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" tooltip="Revert values" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                        </div>
+                    <div class="group">
+                        <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} sets of values` : ''}}</span>
+                        <span v-else-if="_.isEmpty(combinedRecord[key])" class="pl-3">No values</span>
+
+                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]==null" tooltip="Overwrite values" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                    </div>
+
                     <!-- Iterate over array items -->
                     <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key]">
                         <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
