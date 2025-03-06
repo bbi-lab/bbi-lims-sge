@@ -46,6 +46,11 @@ const previousCombinedRecord = ref<Record<string, any>>({})
 const relatedRecords = ref<Record<string, any>>({})
 const conflictingValueCounts = ref<Record<string, number>>({})
 
+const inputClasses = computed(() => {
+    return _.mapValues(combinedRecord.value, (value, key) => {
+        return _.has(conflictingValueCounts.value, key) && value == null ? 'bg-surface-200 dark:bg-gray-800' : ''
+    })
+})
 onMounted(() => refreshForm())
 
 const refreshForm = async function() {
@@ -152,11 +157,13 @@ function getLabel(key: string) {
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <AutoCompleter 
+                    <AutoCompleter
                         :input-id="key"
+                        :inputClass="inputClasses[key]"
                         v-model="combinedRecord[key]"
                         v-model:obj="relatedRecords[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
                 </div>
@@ -172,8 +179,9 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
-                        class="w-80"
                         :id="key"
+                        class="w-80"
+                        :inputClass="inputClasses[key]"
                         v-model.trim="combinedRecord[key]"
                         showIcon
                         dateFormat="yy-mm-dd"
@@ -186,8 +194,9 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
-                        class="w-80"
                         :id="key"
+                        class="w-80"
+                        :inputClass="inputClasses[key]"
                         v-model.trim="combinedRecord[key]" 
                         showTime 
                         showIcon
@@ -201,11 +210,26 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="val?.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="combinedRecord[key]" :options="val.enum" :disabled="isReadOnly(key)" />
+                    <Select
+                        :id="key"
+                        :class="inputClasses[key]"
+                        v-model="combinedRecord[key]"
+                        :options="val.enum"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :disabled="isReadOnly(key)"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="combinedRecord[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
+                    <Select
+                        :id="key"
+                        :class="inputClasses[key]"
+                        v-model="combinedRecord[key]"
+                        :options="val.oneOf" optionLabel="title"
+                        optionValue="const"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :disabled="isReadOnly(key)"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -213,11 +237,28 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="combinedRecord[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" /> 
+                    <InputNumber
+                        :id="key"
+                        :class="inputClasses[key]"
+                        v-model="combinedRecord[key]"
+                        showButtons
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :disabled="isReadOnly(key)"
+                        :minFractionDigits="0"
+                        :maxFractionDigits="0"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="combinedRecord[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
+                    <InputNumber
+                        :id="key"
+                        :class="inputClasses[key]"
+                        v-model="combinedRecord[key]"
+                        showButtons :disabled="isReadOnly(key)"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
+                        :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
@@ -262,7 +303,13 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <!-- <InputText v-if="_.has(combinedRecord[key], '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key]['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
-                    <InputText :id="key" v-model="combinedRecord[key]" class="w-80" :disabled="isReadOnly(key)" :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''" />
+                    <InputText
+                        :id="key"
+                        v-model="combinedRecord[key]"
+                        :class="`w-80 ${inputClasses[key]}`"
+                        :disabled="isReadOnly(key)"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                    />
                 </div>
             </template>
         </div>
