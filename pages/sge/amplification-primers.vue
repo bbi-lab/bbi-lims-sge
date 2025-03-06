@@ -6,6 +6,8 @@ const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const amplificationPrimersTable = ref()
+const showMultipleEditForm = ref(false)
+const editingMultipleRecordsIds = ref([])
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -37,7 +39,22 @@ function didDeleteRecord(event) {
     amplificationPrimersTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 const displayWithClause = Object.freeze({
     target: {
         columns: {
@@ -109,11 +126,14 @@ const fieldDefs = {
                 title="Amplification Primers"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="amplification-primers"
@@ -131,6 +151,15 @@ const fieldDefs = {
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="amplification-primers"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>
