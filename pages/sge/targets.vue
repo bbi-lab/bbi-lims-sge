@@ -15,9 +15,9 @@ const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
-const toast = useToast()
-const confirmPopup = useConfirm()
 const addRecordValues = ref()
+const showMultipleEditForm = ref(false)
+const editingMultipleRecordsIds = ref([])
 
 const displayWithClause = Object.freeze({
     project:{
@@ -201,6 +201,22 @@ function didDeleteRecord(event) {
     targetsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) targetsTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
@@ -222,11 +238,14 @@ const defaultValues = queryParams
                 :withClause="displayWithClause"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :showColumnFilters="true"
+                :canEditMultiple="true"
+                :selection-disabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="targets"
@@ -247,6 +266,15 @@ const defaultValues = queryParams
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="targets"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>
