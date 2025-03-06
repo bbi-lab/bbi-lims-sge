@@ -15,6 +15,8 @@ const props = defineProps({
   hideClearButton: {type: Boolean},
   iftaLabel: {type: String},
   inputId: {type: String},
+  placeholder: {type: String},
+  inputClass: {type: String},
 })
 
 const modelValue = defineModel()
@@ -102,12 +104,14 @@ defineExpose({
         <AutoComplete 
             v-model="currentValue" 
             class="w-80"
+            :inputClass="inputClass"
             :id="inputId"
             :suggestions="suggestions" 
             optionLabel="label"
             @complete="autocompleteSearch"
             @option-select="setModelValue"
             @blur="lostFocus"
+            :placeholder="placeholder"
             :dropdown="dropdown"
             :disabled="disabled" />
         <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
