@@ -233,7 +233,15 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Checkbox :id="key" v-model="combinedRecord[key]" :binary="true" :disabled="isReadOnly(key)" />
+                    <Checkbox
+                        :id="key"
+                        :pt="_.has(conflictingValueCounts, key) && combinedRecord[key] == null ? { box: { class: 'bg-surface-200 dark:bg-gray-800' } } : {}"
+                        v-model="combinedRecord[key]"
+                        :binary="true"
+                        :disabled="isReadOnly(key)"
+                    />
+                    <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] != null" icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
+                    <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''}}</span>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
