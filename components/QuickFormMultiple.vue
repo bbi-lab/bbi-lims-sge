@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
+import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 
 // types here can be refined further based on JsonSchema, but this is a good starting point
 interface SchemaItems {
@@ -17,6 +18,7 @@ interface FormSchema {
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
+const toast = useToast()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -40,7 +42,9 @@ const dataChanged = ref(false)
 const formSchema = ref<FormSchema>()
 const records = ref<Array<Record<string, any>>>([])
 const combinedRecord = ref<Record<string, any>>({})
+const previousCombinedRecord = ref<Record<string, any>>({})
 const relatedRecords = ref<Record<string, any>>({})
+const conflictingValueCounts = ref<Record<string, number>>({})
 
 onMounted(() => refreshForm())
 
@@ -54,19 +58,52 @@ const refreshForm = async function() {
             if (acc[key] === undefined) {
                 acc[key] = value
             } else if (!_.isEqual(value, acc[key])) {
-                acc[key] = {__conflictingValues: _.get(acc, [key, '__conflictingValues'], 0) + 1 }
+                acc[key] = null
+                conflictingValueCounts.value[key] = _.get(conflictingValueCounts, key, 1) + 1
             } else {
                 acc[key] = value
             }
         })
-        console.log(acc)
         return acc
     }, {})
     dataChanged.value = false
 }
 
+watch(() => combinedRecord.value, (newValue, oldValue) => {
+    const actualOldValue = _.isEqual(newValue, oldValue) ? previousCombinedRecord.value : oldValue
+    previousCombinedRecord.value = JSON.parse(JSON.stringify(newValue))
+    
+    if (!_.isEqual(newValue, actualOldValue) && newValue?.id == actualOldValue?.id ) {
+        // make sure changes are not result of replacing foreign key string values with objects (e.x. using withClause)
+        const changes =_.differenceWith(_.toPairs(actualOldValue), _.toPairs(newValue), _.isEqual)
+        _.keys(_.fromPairs(changes)).forEach((k) => {
+            const oldVal = _.get(actualOldValue, [k, 'id'], actualOldValue?.[k])
+            const newVal = _.get(newValue, [k, 'id'], newValue?.[k])
+            if (oldVal != newVal) {
+                dataChanged.value = true
+            }
+        })
+    }
+}, { deep: true })
+
 async function saveRecords() {
     if (props.readOnly) return
+
+    const valuesToUpdate = _.pickBy(combinedRecord.value, (value, key) => {
+        return !_.isNull(value) || !_.has(conflictingValueCounts.value, key)
+    })
+    
+    RecordService.updateRecords(apiBaseUrl.value, props.recordIds, valuesToUpdate).then((result: any) => {
+        toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
+        emit('records-update', result)
+    }).catch(error => {
+        if (_.isArray(error.data?.data)) {
+            addErrorsToForm(error.data.data)
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        }
+    })
+
 }
 
 function cancelEdit(event: MouseEvent) {
@@ -104,23 +141,6 @@ function getLabel(key: string) {
         return _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key))
     }
 }
-function getFieldType(val: any, key: string) {
-    const fieldType = _.get(props.fieldDefs, [key, 'type'])
-    console.log(key)
-    if (fieldType) {
-        return fieldType
-    } else if (_.isArray(val.type) && _.includes(val.type, 'null') && val.type.length == 2) {
-        // getting field type for nullable fields
-        return _.find(val.type, (x) => x != 'null')
-    } else if (val.format=='date-time' || val.anyOf?.[0]?.format=='date-time') {
-        return 'date-time'
-    } else if (val.format=='date' || val.anyOf?.[0]?.format=='date') {
-        return 'date'
-    } else {
-        // no field type defined
-        return val.type
-    }
-}
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
@@ -128,8 +148,6 @@ function getFieldType(val: any, key: string) {
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
     </div>
     <div class="pl-8 pb-24 h-full overflow-y-scroll">
-        {{ combinedRecord }}
-        <hr />
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -151,7 +169,7 @@ function getFieldType(val: any, key: string) {
                         :disabled="isReadOnly(key)"
                     />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='date'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
                         class="w-80"
@@ -160,11 +178,12 @@ function getFieldType(val: any, key: string) {
                         showIcon
                         dateFormat="yy-mm-dd"
                         autofocus
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
-                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
+                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='date-time'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
                         class="w-80"
@@ -176,6 +195,7 @@ function getFieldType(val: any, key: string) {
                         hourFormat="24"
                         autofocus
                         :disabled="isReadOnly(key)"
+                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
                 </div>
@@ -187,19 +207,19 @@ function getFieldType(val: any, key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Select :id="key" v-model="combinedRecord[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='boolean'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox :id="key" v-model="combinedRecord[key]" :binary="true" :disabled="isReadOnly(key)" />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='integer'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="combinedRecord[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" /> 
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='number'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="combinedRecord[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='array' && val?.items">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
                     <!-- Iterate over array items -->
@@ -241,9 +261,11 @@ function getFieldType(val: any, key: string) {
                 </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputText :id="key" v-model="combinedRecord[key]" class="w-80" :disabled="isReadOnly(key)" />
+                    <!-- <InputText v-if="_.has(combinedRecord[key], '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key]['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
+                    <InputText :id="key" v-model="combinedRecord[key]" class="w-80" :disabled="isReadOnly(key)" :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''" />
                 </div>
             </template>
         </div>
     </div>
+    <ConfirmPopup></ConfirmPopup>
 </template>

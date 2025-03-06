@@ -4,7 +4,7 @@ import {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { type PgTableWithColumns } from 'drizzle-orm/pg-core'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import '../db/schema/sge/relations'
 
 interface RecordValues {[key: string]: string | number | boolean | null | undefined }
@@ -59,6 +59,16 @@ export async function updateRecord(table: PgTableWithColumns<any>, id: any, valu
         .returning()
 
     return updatedRecord
+}
+
+export async function updateRecords(table: PgTableWithColumns<any>, ids: any[], values: RecordValues) {
+    const updatedRecords = await db
+        .update(table)
+        .set(trimObjectValues([values])[0])
+        .where(inArray(table.id, ids))
+        .returning()
+
+    return updatedRecords
 }
 
 export async function deleteRecord(table: PgTableWithColumns<any>, id: string | number) {

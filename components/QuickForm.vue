@@ -2,8 +2,9 @@
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
+import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 
-// any types here can be refined further based on JsonSchema, but this is a good starting point
+// types here can be refined further based on JsonSchema, but this is a good starting point
 interface SchemaItems {
     properties?: Record<string, { default?: any }>;
     type?: string;
@@ -16,12 +17,9 @@ interface FormSchema {
     properties: Record<string, SchemaItems>;
 }
 
-interface RecordType {
-    [key: string]: any;
-}
-
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
+const toast = useToast()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -64,7 +62,6 @@ const emit = defineEmits([
     'cancel'
 ])
 
-const toast = useToast()
 const formSchema = ref<FormSchema>()
 const record = ref()
 const relatedRecords = ref<Record<string, any>>({})
@@ -101,43 +98,6 @@ watch(() => recordClone.value, (newValue, oldValue) => {
         })
     }
 }, { deep: true })
-
-function addErrorsToForm(formErrors: Array<{path: string[], message: string}>) {
-    // remove any previous validation errors
-    document.querySelectorAll('.lims-validation-error').forEach((x) => x.remove())
-    
-    // remove red outline from inputs
-    const existingErrorsInputs = document.querySelectorAll('.lims-validation-error-input')
-    existingErrorsInputs.forEach((x) => {
-        x.classList.remove('lims-validation-error-input', 'border-red-500')
-    })
-
-    // add error text and styling
-    for (const e of formErrors) {
-        const elementId = e.path?.[0]
-        const element = document.getElementById(elementId)
-
-        if (!element) {
-            console.error(`Element with id ${elementId} not found`)
-            continue
-        }
-        // get input element
-        let inputElement
-        if (element.tagName == 'INPUT') {
-            inputElement = element
-        } else {
-            inputElement = element.querySelector('input')
-        }
-
-        if (inputElement) {
-            inputElement.classList.add('lims-validation-error-input', '!border-red-500')
-            const errorMsg = document.createElement('div')
-            errorMsg.setAttribute('class', 'lims-validation-error text-red-500')
-            errorMsg.textContent = e.message
-            element.after(errorMsg)
-        }
-    }
-}
 
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
@@ -234,44 +194,8 @@ async function saveRecord() {
         }
     }
 }
-
-function addNewItemToArray(record: RecordType, key: string, schemaItems: SchemaItems) {
-    if (!_.isArray(record[key])) record[key] = [];
-
-    if (schemaItems.properties) {
-        const newItem: RecordType = {};
-        for (const [k, v] of Object.entries(schemaItems.properties)) {
-            // default value for foreign key should be set in JSON schema based on props.recordId 
-            if (v.default) {
-                _.set(newItem, k, v.default);
-            } else {
-                _.set(newItem, k, null);
-            }
-        }
-        record[key].push(newItem);
-    } else if (schemaItems.type == 'string') {
-        record[key].push('');
-    } else if (schemaItems.type == 'integer') {
-        record[key].push(null);
-    }
-}
 function isReadOnly(key: string) {
     return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
-}
-
-function getFieldType(val: any, key: string) {
-    const fieldType = _.get(props.fieldDefs, [key, 'type'])
-    if (fieldType) {
-        return fieldType
-    } else if (_.isArray(val.type) && _.includes(val.type, 'null') && val.type.length == 2) {
-        // getting field type for nullable fields
-        return _.find(val.type, (x) => x != 'null')
-    } else if (val.format=='date-time' || val.anyOf?.[0]?.format=='date-time') {
-        return 'date-time'
-    } else {
-        // no field type defined
-        return val.type
-    }
 }
 </script>
 <template>
@@ -302,7 +226,7 @@ function getFieldType(val: any, key: string) {
                         :disabled="isReadOnly(key)"
                     />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='date'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker
                         class="w-80"
@@ -315,7 +239,7 @@ function getFieldType(val: any, key: string) {
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='date-time'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker 
                         class="w-80"
@@ -338,19 +262,19 @@ function getFieldType(val: any, key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='boolean'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="isReadOnly(key)" />
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='integer'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" /> 
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='number'">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
                 </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key)=='array' && val?.items">
+                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->

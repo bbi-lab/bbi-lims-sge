@@ -5,6 +5,7 @@ import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
 import {v4 as uuidv4} from 'uuid'
+import {formatFieldLabel} from '@/utils/formUtils'
 
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)

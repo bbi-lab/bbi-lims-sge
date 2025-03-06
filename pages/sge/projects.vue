@@ -43,11 +43,11 @@ function didUpdateRecord(event) {
     projectsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didUpdateMultipleRecords(ids) {
-    ids.forEach(id => {
-        projectsTable.value.addOrRefreshRecordId(id)
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) projectsTable.value.addOrRefreshRecordId(e.id)
     })
-    showEditForm.value = false
+    showMultipleEditForm.value = false
 }
 function didDeleteRecord(event) {
     projectsTable.value.removeRecordId(event.id)

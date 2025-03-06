@@ -42,6 +42,11 @@ export const RecordService = {
         return updatedRecords
     },
 
+    async updateRecords(baseUrl: string, ids: string[], values: Object) {
+        const updatedRecords = await $fetch(`${baseUrl}`, {method: 'PUT', body: {ids, values}})
+        return updatedRecords
+    },
+
     async addRecord(baseUrl: string, record: any) {
         const {id, ...values} = record
         const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: [values]})
