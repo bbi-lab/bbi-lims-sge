@@ -93,6 +93,7 @@ const fieldDefs = {
                 :columnDefs="columnDefs"
                 :withClause="{targets: true}"
                 :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
