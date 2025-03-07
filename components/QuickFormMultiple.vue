@@ -164,7 +164,7 @@ function getLabel(key: string) {
                         v-model="combinedRecord[key]"
                         v-model:obj="relatedRecords[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :placeholderValue="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
                 </div>
@@ -174,6 +174,7 @@ function getLabel(key: string) {
                         :input-id="key"
                         v-model="combinedRecord[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :placeholderValue="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
                 </div>
@@ -272,8 +273,8 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <div class="flex items-start">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" tooltip="Add value" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
-                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" tooltip="Revert values" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
+                        <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" v-tooltip="{value: 'Revert values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
                             <template #icon>
                                 <GrommetIconsRevert />
                             </template>
@@ -283,7 +284,7 @@ function getLabel(key: string) {
                         <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} sets of values` : ''}}</span>
                         <span v-else-if="_.isEmpty(combinedRecord[key])" class="pl-3">No values</span>
 
-                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]==null" tooltip="Overwrite values" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
                     </div>
 
                     <!-- Iterate over array items -->
