@@ -20,6 +20,8 @@ const props = defineProps({
 
   hideClearButton: {type: Boolean},
   inputId: {type: String},
+  placeholderValue: {type: String},
+  inputClass: {type: String},
 })
 
 const modelValue = defineModel()
@@ -85,6 +87,8 @@ function clearValues(event) {
                 :dropdown="true"
                 :disabled="_.isEmpty(parentValue)"
                 :hideClearButton="true"
+                :placeholderValue="placeholderValue"
+                :inputClass="inputClass"
             />
             <Button v-if="!_.isEmpty(parentValue) && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
         </div>

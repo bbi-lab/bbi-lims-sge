@@ -172,6 +172,7 @@ function getLabel(key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <NestedSelect 
                         :input-id="key"
+                        :inputClass="inputClasses[key]"
                         v-model="combinedRecord[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :placeholderValue="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
