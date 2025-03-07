@@ -49,7 +49,7 @@ watch(parentValue, (newValue, oldValue) => {
 })
 
 function parentValueChanged(event) {
-    modelValue.value = null
+    autoCompleter.value.clearValue()
 }
 function clearValues(event) {
     autoCompleter.value.clearValue()
