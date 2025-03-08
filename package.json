@@ -32,6 +32,8 @@
     "dependencies": {
         "@primeuix/styles": "^1.0.0",
         "@primevue/core": "^4.3.1",
+        "@vueuse/core": "^12.8.2",
+        "@vueuse/nuxt": "^12.8.2",
         "argon2": "^0.41.1",
         "chart.js": "^4.4.6",
         "d3": "^7.9.0",
