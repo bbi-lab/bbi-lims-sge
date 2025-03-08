@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
+import { useActiveElement } from '@vueuse/core'
 
 // types here can be refined further based on JsonSchema, but this is a good starting point
 interface SchemaItems {
@@ -20,6 +21,7 @@ interface FormSchema {
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
+const activeElement = useActiveElement()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -47,11 +49,40 @@ const previousCombinedRecord = ref<Record<string, any>>({})
 const relatedRecords = ref<Record<string, any>>({})
 const conflictingValueCounts = ref<Record<string, number>>({})
 
+// keys of fields that have been set to null by the user, as opposed to those that are null due to conflicting values
+const updatedToNullKeys = ref<Set<string>>(new Set<string>())
+
+const clearValue = (key: string) => {
+    combinedRecord.value[key] = null
+    updatedToNullKeys.value.add(key)
+    dataChanged.value = true
+}
+
+const revertToConflictingValue = (key: string) => {
+    combinedRecord.value[key] = null
+    updatedToNullKeys.value.delete(key)
+}
+
 const inputClasses = computed(() => {
     return _.mapValues(combinedRecord.value, (value, key) => {
-        return _.has(conflictingValueCounts.value, key) && value == null ? 'bg-surface-200 dark:bg-gray-800' : ''
+        return _.has(conflictingValueCounts.value, key) && value == null && !updatedToNullKeys.value.has(key) ? 'bg-surface-200 dark:bg-gray-800' : ''
     })
 })
+
+const getPlaceholder = (key: string) => {
+    return _.has(conflictingValueCounts.value, key) && !updatedToNullKeys.value.has(key) ? `${conflictingValueCounts.value[key]} values` : ''
+}
+const showRevertButton = (key: string) => {
+    return _.has(conflictingValueCounts.value, key) && updatedToNullKeys.value.has(key)
+}
+const changedToNullCheck = (key: string) => {
+    if (_.isNull(combinedRecord.value[key])) {
+        updatedToNullKeys.value.add(key)
+        dataChanged.value = true
+    } else {
+        updatedToNullKeys.value.delete(key)
+    }
+}
 onMounted(() => refreshForm())
 
 const refreshForm = async function() {
@@ -158,15 +189,23 @@ function getLabel(key: string) {
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <AutoCompleter
-                        :input-id="key"
-                        :inputClass="inputClasses[key]"
-                        v-model="combinedRecord[key]"
-                        v-model:obj="relatedRecords[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
-                        :placeholderValue="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :disabled="isReadOnly(key)"
-                    />
+                    <div class="flex items-start">
+                        <AutoCompleter
+                            :input-id="key"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key]"
+                            v-model:obj="relatedRecords[key]"
+                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            :placeholderValue="getPlaceholder(key)"
+                            :disabled="isReadOnly(key)"
+                            @value-changed="changedToNullCheck(key)"
+                        />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
@@ -181,35 +220,49 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <DatePicker 
-                        :id="key"
-                        class="w-80"
-                        :inputClass="inputClasses[key]"
-                        v-model.trim="combinedRecord[key]"
-                        showIcon
-                        dateFormat="yy-mm-dd"
-                        autofocus
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :disabled="isReadOnly(key)"
-                    />
-                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
+                    <div class="flex items-start">
+                        <DatePicker
+                            :id="key"
+                            class="w-80"
+                            :inputClass="inputClasses[key]"
+                            v-model.trim="combinedRecord[key]"
+                            showIcon
+                            dateFormat="yy-mm-dd"
+                            autofocus
+                            :placeholder="getPlaceholder(key)"
+                            :disabled="isReadOnly(key)"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <DatePicker 
-                        :id="key"
-                        class="w-80"
-                        :inputClass="inputClasses[key]"
-                        v-model.trim="combinedRecord[key]" 
-                        showTime 
-                        showIcon
-                        dateFormat="yy-mm-dd"
-                        hourFormat="24"
-                        autofocus
-                        :disabled="isReadOnly(key)"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                    />
-                    <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
+                    <div class="flex items-start">
+                        <DatePicker
+                            :id="key"
+                            class="w-80"
+                            :inputClass="inputClasses[key]"
+                            v-model.trim="combinedRecord[key]"
+                            showTime
+                            showIcon
+                            dateFormat="yy-mm-dd"
+                            hourFormat="24"
+                            autofocus
+                            :disabled="isReadOnly(key)"
+                            :placeholder="getPlaceholder(key)"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="val?.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -243,7 +296,11 @@ function getLabel(key: string) {
                         :binary="true"
                         :disabled="isReadOnly(key)"
                     />
-                    <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] != null" icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="combinedRecord[key]=null" />
+                    <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] != null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                        <template #icon>
+                            <GrommetIconsRevert />
+                        </template>
+                    </Button>
                     <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''}}</span>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
@@ -275,7 +332,7 @@ function getLabel(key: string) {
                     <div class="flex items-start">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                         <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
-                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" v-tooltip="{value: 'Revert values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
+                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
                             <template #icon>
                                 <GrommetIconsRevert />
                             </template>
