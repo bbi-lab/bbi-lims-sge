@@ -65,13 +65,18 @@ const revertToConflictingValue = (key: string) => {
 
 const inputClasses = computed(() => {
     return _.mapValues(combinedRecord.value, (value, key) => {
-        return _.has(conflictingValueCounts.value, key) && value == null && !updatedToNullKeys.value.has(key) ? 'bg-surface-200 dark:bg-gray-800' : ''
+        const activeElementInputId = activeElement.value?.getAttribute('id')
+        return key != activeElementInputId && _.has(conflictingValueCounts.value, key) && value == null && !updatedToNullKeys.value.has(key) ? 'bg-surface-200 dark:bg-gray-800' : ''
     })
 })
 
-const getPlaceholder = (key: string) => {
-    return _.has(conflictingValueCounts.value, key) && !updatedToNullKeys.value.has(key) ? `${conflictingValueCounts.value[key]} values` : ''
-}
+const placeholders = computed(() => {
+    return _.mapValues(combinedRecord.value, (value, key) => {
+        const activeElementInputId = activeElement.value?.getAttribute('id')
+        return key != activeElementInputId && _.has(conflictingValueCounts.value, key) && !updatedToNullKeys.value.has(key) ? `${conflictingValueCounts.value[key]} values` : ''
+    })
+})
+
 const showRevertButton = (key: string) => {
     return _.has(conflictingValueCounts.value, key) && updatedToNullKeys.value.has(key)
 }
@@ -196,7 +201,7 @@ function getLabel(key: string) {
                             v-model="combinedRecord[key]"
                             v-model:obj="relatedRecords[key]"
                             v-bind="_.get(fieldDefs, [key, 'props'])"
-                            :placeholderValue="getPlaceholder(key)"
+                            :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
                             @value-changed="changedToNullCheck(key)"
                         />
@@ -229,7 +234,7 @@ function getLabel(key: string) {
                             showIcon
                             dateFormat="yy-mm-dd"
                             autofocus
-                            :placeholder="getPlaceholder(key)"
+                            :placeholder="placeholders[key]"
                             :disabled="isReadOnly(key)"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
@@ -254,7 +259,7 @@ function getLabel(key: string) {
                             hourFormat="24"
                             autofocus
                             :disabled="isReadOnly(key)"
-                            :placeholder="getPlaceholder(key)"
+                            :placeholder="placeholders[key]"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
@@ -277,15 +282,24 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select
-                        :id="key"
-                        :class="inputClasses[key]"
-                        v-model="combinedRecord[key]"
-                        :options="val.oneOf" optionLabel="title"
-                        optionValue="const"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :disabled="isReadOnly(key)"
-                    />
+                    <div class="flex items-start">
+                        <Select
+                            :id="key"
+                            class="w-80"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key]"
+                            :options="val.oneOf" optionLabel="title"
+                            optionValue="const"
+                            :placeholder="placeholders[key]"
+                            :disabled="isReadOnly(key)"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -305,28 +319,46 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber
-                        :id="key"
-                        :inputClass="inputClasses[key]"
-                        v-model="combinedRecord[key]"
-                        showButtons
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :disabled="isReadOnly(key)"
-                        :minFractionDigits="0"
-                        :maxFractionDigits="0"
-                    />
+                    <div class="flex items-start">
+                        <InputNumber
+                            :id="key"
+                            :inputId="key"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key]"
+                            showButtons
+                            :placeholder="placeholders[key]"
+                            :disabled="isReadOnly(key)"
+                            :minFractionDigits="0"
+                            :maxFractionDigits="0"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber
-                        :id="key"
-                        :inputClass="inputClasses[key]"
-                        v-model="combinedRecord[key]"
-                        showButtons :disabled="isReadOnly(key)"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
-                        :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
-                    />
+                    <div class="flex items-start">
+                        <InputNumber
+                            :id="key"
+                            :inputId="key"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key]"
+                            showButtons :disabled="isReadOnly(key)"
+                            :placeholder="placeholders[key]"
+                            :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
+                            :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <div class="flex items-start">
@@ -385,13 +417,21 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <!-- <InputText v-if="_.has(combinedRecord[key], '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key]['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
-                    <InputText
-                        :id="key"
-                        v-model="combinedRecord[key]"
-                        :class="`w-80 ${inputClasses[key]}`"
-                        :disabled="isReadOnly(key)"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                    />
+                    <div class="flex items-start">
+                        <InputText
+                            :id="key"
+                            v-model="combinedRecord[key]"
+                            :class="`w-80 ${inputClasses[key]}`"
+                            :disabled="isReadOnly(key)"
+                            :placeholder="placeholders[key]"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
             </template>
         </div>
