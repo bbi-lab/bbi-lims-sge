@@ -2,35 +2,42 @@ import IconsResolver from 'unplugin-icons/resolver'
 import ViteComponents from 'unplugin-vue-components/vite'
 
 export default defineNuxtConfig({
-    modules: [ "@primevue/nuxt-module", 'nuxt-auth-utils', 'unplugin-icons/nuxt'],
+    modules: ["@primevue/nuxt-module", 'nuxt-auth-utils', 'unplugin-icons/nuxt'],
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
+
     vite: {
         css: {
             preprocessorOptions: {
-            scss: {
-                api: 'modern-compiler'
-            },
+                scss: {
+                    api: 'modern-compiler'
+                },
             },
         },
         plugins: [
             ViteComponents({
-              resolvers: [
-                IconsResolver({
-                  prefix: '',
-                  strict: true,
-                }),
-              ],
-              dts: true,
+                resolvers: [
+                    IconsResolver({
+                        prefix: '',
+                        strict: true,
+                    }),
+                ],
+                dts: true,
             }),
-          ],
+        ],
     },
+
+    devtools: {
+        enabled: false
+    },
+
     primevue: {
         options: { theme: 'none' },
         autoImport: false,
         components: {
-            exclude: []
+            exclude: ['Form', 'FormField']
         }
     },
+
     postcss: {
         plugins: {
             //'postcss-import': {},
@@ -38,6 +45,7 @@ export default defineNuxtConfig({
             autoprefixer: {}
         }
     },
+
     // Environment variables to read. These are available on the server side only, except for those in public, which are
     // also available on the application (client) side. Each is read from a capitalized snake-case variable with the
     // prefix NUXT_, so, for instance, `authSecret` is read from `NUXT_AUTH_SECRET`. If the environment variable is not
@@ -57,13 +65,16 @@ export default defineNuxtConfig({
             apiBase: '/api',
         }
     },
+
     nitro: {
         imports: {
             dirs: ['server/utils', 'shared'],
         },
     },
+
     imports: {
         dirs: ['composables', 'utils', 'shared'],
     },
 
-});
+    compatibilityDate: '2025-03-10',
+})
