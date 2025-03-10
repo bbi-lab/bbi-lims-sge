@@ -1,7 +1,7 @@
-import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import pg from 'pg'
 
-import { type PgTableWithColumns, type AnyPgColumn } from 'drizzle-orm/pg-core'
+import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
@@ -26,7 +26,6 @@ import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers } from '../db/schema/sge/primer'
-
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -86,27 +85,38 @@ export const schema = {
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
 }
 
-const DB_URL = config ? `postgresql://${config.dbUsername}:${config.dbPassword}@${config.dbHost}:${config.dbPort}/${config.dbDatabaseName}` : `postgresql://${process.env.NUXT_DB_USER}:${process.env.NUXT_DB_PASSWORD}@${process.env.NUXT_DB_HOST}:${process.env.NUXT_DB_PORT}/${process.env.NUXT_DB_DATABASE_NAME}`
+const ssl = config?.ssl != null ? config.ssl
+    : (process.env.NUXT_DB_SSL != null ? process.env.NUXT_DB_SSL.toLowerCase() == 'true' : false)
+const pool = new pg.Pool({
+  host: config?.dbHost || process.env.NUXT_DB_HOST || 'localhost',
+  port: config?.dbPort || (process.env.NUXT_DB_PORT ? parseInt(process.env.NUXT_DB_PORT) : null) || 5432,
+  database: config?.dbDatabaseName || process.env.NUXT_DB_DATABASE_NAME || 'sge_prod',
+  user: config?.dbUsername || process.env.NUXT_DB_USERNAME || 'postgres',
+  password: config?.dbPassword || process.env.NUXT_DB_PASSWORD || 'postgres',
+  ssl: ssl ? {
+    rejectUnauthorized: false
+  } : false
+})
 
-export const db = drizzle(
-  postgres(DB_URL),
-  {
-    schema
-  }
-)
+// Add logger: true to options to get query logging.
+export const db = drizzle(pool, {schema: schema})
+
+export function useDrizzle() {
+  return db
+}
 
 export interface RelationsConfig {
     one: {
       [relationName: string]: {
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
-        referenceTable: PgTableWithColumns<any>,
+        referenceTable: PgTable<any>,
         references: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
         relationName?: string,
       }
     },
     many: {
       [relationName: string]: {
-        table: PgTableWithColumns<any>,
+        table: PgTable<any>,
         schema: ZodObject<any>,
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
         relationsConfig?: RelationsConfig,
@@ -114,8 +124,3 @@ export interface RelationsConfig {
       }
     }
   }
-
-export async function getRecordsFromTable (table: PgTableWithColumns<any>){
-  const records = await db.select().from(table)
-  return records
-}

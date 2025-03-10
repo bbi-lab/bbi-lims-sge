@@ -3,11 +3,14 @@ import _ from 'lodash'
 import {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { type PgTableWithColumns } from 'drizzle-orm/pg-core'
+import { type PgTable } from 'drizzle-orm/pg-core'
 import { eq, inArray } from 'drizzle-orm'
 import '../db/schema/sge/relations'
+import { useDrizzle } from '../utils/db'
 
 interface RecordValues {[key: string]: string | number | boolean | null | undefined }
+
+const db = useDrizzle()
 
 function trimObjectValues(records: RecordValues[]): RecordValues[] {
     return _.map(records, (x) => {
@@ -25,7 +28,7 @@ export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, an
     return applySelectParamsToRecords(selectParams, result)
 }
 
-export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTableWithColumns<any>, id: any, withClause?: any, columns?: any) {
+export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: any, withClause?: any, columns?: any) {
     const result = await queryBuilder.findFirst({
         where: () => eq(table.id, id),
         with: withClause,
@@ -34,7 +37,7 @@ export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any
     return result
 }
 
-export async function insertRecord(table: PgTableWithColumns<any>, values: RecordValues) {
+export async function insertRecord(table: PgTable<any>, values: RecordValues) {
     const [newRecord] = await db
       .insert(table)
       .values(trimObjectValues([values])[0])
@@ -43,7 +46,7 @@ export async function insertRecord(table: PgTableWithColumns<any>, values: Recor
     return newRecord
 }
 
-export async function insertRecords(table: PgTableWithColumns<any>, records: Array<RecordValues>) {
+export async function insertRecords(table: PgTable<any>, records: Array<RecordValues>) {
     const newRecords = await db
       .insert(table)
       .values(trimObjectValues(records))
@@ -51,7 +54,7 @@ export async function insertRecords(table: PgTableWithColumns<any>, records: Arr
   
     return newRecords
   }
-export async function updateRecord(table: PgTableWithColumns<any>, id: any, values: RecordValues) {
+export async function updateRecord(table: PgTable<any>, id: any, values: RecordValues) {
     const [updatedRecord] = await db
         .update(table)
         .set(trimObjectValues([values])[0])
@@ -61,7 +64,7 @@ export async function updateRecord(table: PgTableWithColumns<any>, id: any, valu
     return updatedRecord
 }
 
-export async function updateRecords(table: PgTableWithColumns<any>, ids: any[], values: RecordValues) {
+export async function updateRecords(table: PgTable<any>, ids: any[], values: RecordValues) {
     const updatedRecords = await db
         .update(table)
         .set(trimObjectValues([values])[0])
@@ -71,7 +74,7 @@ export async function updateRecords(table: PgTableWithColumns<any>, ids: any[], 
     return updatedRecords
 }
 
-export async function deleteRecord(table: PgTableWithColumns<any>, id: string | number) {
+export async function deleteRecord(table: PgTable<any>, id: string | number) {
     const [deletedRecord] = await db
         .delete(table)
         .where(eq(table.id, id))

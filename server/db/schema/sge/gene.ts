@@ -1,4 +1,4 @@
-import { pgTable, PgTableWithColumns, pgEnum, uuid, varchar, integer } from 'drizzle-orm/pg-core'
+import { pgTable, pgEnum, uuid, varchar, integer } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 
 export const geneOrientationEnum = pgEnum('gene_orientations', ['plus', 'minus'])

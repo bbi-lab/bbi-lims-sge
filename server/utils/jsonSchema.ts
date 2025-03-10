@@ -2,7 +2,7 @@ import zodToJsonSchema, { type JsonSchema7AnyType, type JsonSchema7ArrayType, ty
 import {getAllVerifiedUsersInfo, getUserGroups} from '@/server/services/user-services'
 import { users } from '@/server/db/schema/user'
 import _ from 'lodash'
-import { type RelationsConfig, getRecordsFromTable} from "./db"
+import { type RelationsConfig, db} from "./db"
 import { type UserGroup } from "@/server/db/schema/user"
 
 export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string) {
@@ -33,7 +33,7 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
 
     // iterate over many-to-many relations and add each to JSON schema as a new array property
     for (const [key, val] of Object.entries(relationsConfig.many)) {
-      const items = await getRecordsFromTable(val.table)
+      const items = await await db.select().from(val.table)
       // get full schema of many-to-many table
       const itemsZodSchema = val.schema
       const itemsJsonSchema = zodToJsonSchema(itemsZodSchema)
@@ -55,7 +55,7 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
           const itemsRelationsConfigField = itemsRelationConfig.fields[0]
 
           // get related records
-          const relatedRecords = await getRecordsFromTable(itemsRelationConfig.referenceTable)
+          const relatedRecords = await db.select().from(itemsRelationConfig.referenceTable)
           
           // convert to JsonSchema property
           // TODO - needs to handle string IDs and alternative fields for title, composite fields

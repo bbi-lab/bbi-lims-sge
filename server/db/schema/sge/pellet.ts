@@ -1,4 +1,4 @@
-import { pgTable, PgTableWithColumns, timestamp, uuid, boolean, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, boolean, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
 import { storageBoxes } from './storage-box'

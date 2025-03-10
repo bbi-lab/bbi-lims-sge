@@ -1,4 +1,4 @@
-import { pgTable, PgTableWithColumns, timestamp, uuid, numeric, integer, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
 import { lots } from './lots'

@@ -2,10 +2,11 @@ import _ from 'lodash'
 import { insertRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
+import { useDrizzle } from '../utils/db'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string} 
-
+    const db = useDrizzle()
     try {
         const body = await readBody(event)
         const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>

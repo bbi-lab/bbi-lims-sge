@@ -1,9 +1,11 @@
 import { selectRecords } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { QueryParams, SelectParams, queryToSelectParams } from '../utils/restApi'
+import { useDrizzle } from '../utils/db'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}    
+    const db = useDrizzle()
     
     try {
         const queryParams = getQuery(event) as QueryParams
