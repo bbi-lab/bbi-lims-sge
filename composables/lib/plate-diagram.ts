@@ -59,7 +59,7 @@ function numberToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export default function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDiagram {
+export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 

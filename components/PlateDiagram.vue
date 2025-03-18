@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import makePlateDiagram, { type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import _ from 'lodash'
 
 const config = useRuntimeConfig()
