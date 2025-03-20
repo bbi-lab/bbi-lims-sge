@@ -1,6 +1,7 @@
 import { setup } from '@nuxt/test-utils/e2e'
 import { $fetch } from '@nuxt/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
+import { type User } from '@/server/db/schema/user'
 
 describe('API route: users (GET)', async () => {
   await setup({
@@ -9,6 +10,6 @@ describe('API route: users (GET)', async () => {
 
   it('should return a users', async () => {
     const res = await $fetch('/api/users')
-    expect(res).toBeInstanceOf(Array)
+    expectTypeOf(res).toEqualTypeOf<User[]>()
   })
 })
