@@ -19,6 +19,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
+import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 
 const genesRelationsConfig: RelationsConfig = {
     one: {},
@@ -327,6 +328,42 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
+const amplificationPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [amplificationPrimers.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {}
+}
+export const amplificationPrimersRelations = relationsConfigToRelations(amplificationPrimers, amplificationPrimersRelationsConfig)
+
+const linearizationPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [linearizationPrimers.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {}
+}
+export const linearizationPrimersRelations = relationsConfigToRelations(linearizationPrimers, linearizationPrimersRelationsConfig)
+
+const homologyArmPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [homologyArmPrimers.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {}
+}
+export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
@@ -345,4 +382,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     pellets: pelletsRelationsConfig,
     storageBoxes: storageBoxesRelationsConfig,
     lots: lotsRelationsConfig,
+    amplificationPrimers: amplificationPrimersRelationsConfig,
+    linearizationPrimers: linearizationPrimersRelationsConfig,
+    homologyArmPrimers: homologyArmPrimersRelationsConfig,
 }

@@ -1,0 +1,2 @@
+ALTER TABLE "homology_arm_primers" DROP CONSTRAINT "sequence_check";--> statement-breakpoint
+ALTER TABLE "homology_arm_primers" ADD CONSTRAINT "sequence_check" CHECK ("homology_arm_primers"."sequence" ~* '^[actg]*$');

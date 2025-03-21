@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import makePlateDiagram, { type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
-
+import { makePlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import _ from 'lodash'
-import { RecordService } from '@/utils/service/RecordService'
-import type { ModelRef } from 'vue'
-import { plates } from '~/server/db/schema/sge/plate'
 
 const config = useRuntimeConfig()
 
@@ -20,7 +16,6 @@ const emit = defineEmits([
 ])
 
 function wellRangeSelected(wells: PlateDiagramWell[]) {
-    console.log("emit well-range-selected", wells)
     emit('well-range-selected', wells)
 }
 

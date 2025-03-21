@@ -10,6 +10,8 @@ const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
 const tableTitle = ref(null)
+const showMultipleEditForm = ref(false)
+const editingMultipleRecordsIds = ref([])
 
 onMounted(async() => {
     // if (queryParams.targetId) {
@@ -50,7 +52,22 @@ function didDeleteRecord(event) {
     pelletsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) pelletsTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 const displayWithClause = Object.freeze({
     harvestedBy: {
         columns: {
@@ -176,12 +193,15 @@ const defaultValues = queryParams
                 :where="whereClauses[0]"
                 :title="tableTitle"
                 :canAdd="false"
+                :canEditMultiple="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="pellets"
@@ -201,6 +221,15 @@ const defaultValues = queryParams
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="pellets"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

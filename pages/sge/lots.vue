@@ -1,13 +1,14 @@
 <script setup>
 import _ from 'lodash'
 
+const config = useRuntimeConfig()
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const lotsTable = ref()
-const config = useRuntimeConfig()
-
-const rowActions = {}
+const showMultipleEditForm = ref(false)
+const editingMultipleRecordsIds = ref([])
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -39,7 +40,22 @@ function didDeleteRecord(event) {
     lotsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) lotsTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 const columnDefs = {
     startedUseOn: {
         format: 'date-time'
@@ -75,6 +91,12 @@ const columnDefs = {
         type: 'string',
         index: 5,
     },
+    remainingVolume: {
+        format: ({remainingVolume, reagent}) => { return reagent.volumeUnit ? `${remainingVolume || '--'} ${reagent.volumeUnit}` : ''},
+        path: 'remainingVolume.displayValue',
+        type: 'string',
+        index: 5,
+    },
 }
 
 const fieldDefs = {
@@ -91,7 +113,7 @@ const fieldDefs = {
     concentration: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})` 
+                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})`
             } else {
                 return 'Concentration'
             }
@@ -100,9 +122,18 @@ const fieldDefs = {
     startingVolume: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Starting Volume (${relatedData.reagent?.volumeUnit})` 
+                return `Starting Volume (${relatedData.reagent?.volumeUnit})`
             } else {
                 return 'Starting Volume'
+            }
+        }
+    },
+    remainingVolume: {
+        label: (_data, relatedData) => {
+            if (_.isObject(relatedData?.reagent)) {
+                return `Remaining Volume (${relatedData.reagent?.volumeUnit})`
+            } else {
+                return 'Remaining Volume'
             }
         }
     }
@@ -117,14 +148,16 @@ const fieldDefs = {
                 tableName="lots"
                 schemaName="select"
                 title="Lots"
-                :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :withClause="{reagent: true}"
+                :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="lots"
@@ -144,6 +177,15 @@ const fieldDefs = {
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="lots"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

@@ -65,7 +65,12 @@ const columnDefs = {
         index: 0,
     },
     concentration: {
-        format: (x) => `${x.concentration} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
+        format: (x) => `${x.concentration || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
+        path: 'concentration.displayValue',
+        type: 'string',
+    },
+    volumeUsed: {
+        format: (x) => `${x.volumeUsed || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
         path: 'concentration.displayValue',
         type: 'string',
     }
@@ -75,10 +80,11 @@ const columnDefs = {
 const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => { 
     return {
         display: v.display ?? true, 
-        label: v.header || k,
+        label: v.header || _.startCase(k),
     }
 })
 _.set(editFormFieldDefs, 'concentration.label', (data) => data.lot?.reagent ? `Concentration (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Concentration')
+_.set(editFormFieldDefs, 'volumeUsed.label', (data) => data.lot?.reagent ? `Volume Used (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Volume Used')
 
 // Include an AutoCompleter widget for adding new targets
 editFormFieldDefs['lotId'] = {

@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { users, userGroups, userGroupMemberships } from './user'
-import { type PgTableWithColumns } from 'drizzle-orm/pg-core'
+import { type PgTable } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 // relations config
@@ -46,7 +46,7 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
     }
   }
   
-  export function relationsConfigToRelations(table: PgTableWithColumns<any>, relationsConfig: RelationsConfig) {
+  export function relationsConfigToRelations(table: PgTable<any>, relationsConfig: RelationsConfig) {
     return relations(table, ({ one, many }) => (
       {
           ..._.mapValues(relationsConfig.one, (x) => {

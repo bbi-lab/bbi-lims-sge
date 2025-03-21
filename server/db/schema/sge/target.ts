@@ -1,4 +1,4 @@
-import { pgTable, PgTableWithColumns, uuid, varchar, integer } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, integer } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import {projects} from './project'
 import {regions} from './region'

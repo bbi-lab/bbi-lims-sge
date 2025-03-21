@@ -1,4 +1,4 @@
-import { pgTable, PgTableWithColumns, uuid, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core'
 
 export const storageBoxes = pgTable('storage_boxes', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

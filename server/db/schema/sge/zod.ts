@@ -17,9 +17,10 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
+import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 
-const selectProjectSchema = createSelectSchema(projects)
-const insertProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema}).omit({id: true})
+const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
+const insertProjectSchema = selectProjectSchema.omit({id: true})
 const updateProjectSchema = insertProjectSchema
 
 const selectTargetSchema = createSelectSchema(targets)
@@ -48,12 +49,12 @@ const insertRegionSchema = createSelectSchema(regions, {
 }).omit({id: true}).partial()
 const updateRegionSchema = insertRegionSchema
 
-const selectCycleSchema = createSelectSchema(cycles)
-const insertCycleSchema = createSelectSchema(cycles, {startedOn: nullableDateSchema, endedOn: nullableDateSchema}).omit({id: true})
+const selectCycleSchema = createSelectSchema(cycles, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
+const insertCycleSchema = selectCycleSchema.omit({id: true})
 const updateCycleSchema = insertCycleSchema
 
-const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments)
-const insertTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: nullableDateSchema}).omit({id: true})
+const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: nullableDateSchema})
+const insertTransfectExperimentsSchema = selectTransfectExperimentsSchema.omit({id: true})
 const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
 const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
@@ -62,36 +63,36 @@ const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
 }).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
-const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage)
-const insertTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usageOn: nullableDateSchema}).omit({id: true}).partial()
+const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usageOn: nullableDateSchema})
+const insertTransfectLotUsageSchema = selectTransfectLotUsageSchema.omit({id: true}).partial()
 const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
-const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments)
-const insertPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema}).omit({id: true})
+const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema})
+const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: true})
 const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
 
-const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments)
-const insertPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema}).omit({id: true})
+const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
+const insertPcrExperimentsSchema = selectPcrExperimentsSchema.omit({id: true})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 
-const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments)
-const insertExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema}).omit({id: true})
+const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
+const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
 const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
 
 const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
 const updatePlatesSchema = insertPlatesSchema
 
-const selectPelletsSchema = createSelectSchema(pellets)
-const insertPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema}).omit({id: true}).partial()
+const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
+const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
 const updatePelletsSchema = insertPelletsSchema
 
 const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
 const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true})
 const updateStorageBoxesSchema = insertStorageBoxesSchema
 
-const selectLotsSchema = createSelectSchema(lots)
-const insertLotsSchema = createSelectSchema(lots, {preparedOn: nullableDateSchema, storedOn: nullableDateSchema, startedUseOn: nullableDateSchema, endedUseOn: nullableDateSchema, expiresOn: nullableDateSchema}).omit({id: true})
+const selectLotsSchema = createSelectSchema(lots, {preparedOn: nullableDateSchema, storedOn: nullableDateSchema, startedUseOn: nullableDateSchema, endedUseOn: nullableDateSchema, expiresOn: nullableDateSchema})
+const insertLotsSchema = selectLotsSchema.omit({id: true})
 const updateLotsSchema = insertLotsSchema
 
 const selectReagentsSchema = createSelectSchema(reagents)
@@ -105,6 +106,18 @@ const updatePlasmidsSchema = insertPlasmidsSchema
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true})
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
+
+const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
+const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers).omit({id: true})
+const updateAmplificationPrimerSchema = insertAmplificationPrimerSchema
+
+const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
+const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers).omit({id: true})
+const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
+
+const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
+const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers).omit({id: true})
+const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
 export const schemas = {
     projects: {
@@ -195,5 +208,20 @@ export const schemas = {
         select: selectReagentsSchema,
         insert: insertReagentsSchema,
         update: updateReagentsSchema,
-    }
+    },
+    amplificationPrimers: {
+        select: selectAmplificationPrimerSchema,
+        insert: insertAmplificationPrimerSchema,
+        update: updateAmplificationPrimerSchema,
+    },
+    homologyArmPrimers: {
+        select: selectHomologyArmPrimerSchema,
+        insert: insertHomologyArmPrimerSchema,
+        update: updateHomologyArmPrimerSchema,
+    },
+    linearizationPrimers: {
+        select: selectLinearizationPrimerSchema,
+        insert: insertLinearizationPrimerSchema,
+        update: updateLinearizationPrimerSchema,
+    },
 }

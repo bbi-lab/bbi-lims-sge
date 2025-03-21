@@ -1,6 +1,8 @@
 <script setup>
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import { targets } from '~/server/db/schema/sge/target'
+const router = useRouter()
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -51,7 +53,14 @@ function didDeleteRecord(event) {
     showEditForm.value = false
 }
 
-const displayWithClause = Object.freeze({gene:{columns: {symbol: true}}})
+const displayWithClause = Object.freeze({
+    gene:{
+        columns: {symbol: true}
+    },
+    targets: {
+        columns: {id: true}
+    },
+})
 const columnDefs = {
     gene: {
         path: 'gene.symbol',
@@ -65,9 +74,22 @@ const columnDefs = {
     },
     snvLibraryEnd: {
         header: 'SNV library end'
-    }
+    },
+    targets: {
+        display: false,
+    },
 }
-
+const rowActions = {
+    targets: {
+        label: (data) => { return `${data.targets?.length || 0}`}, 
+        action: (data) => {
+            router.push({path:`/sge/targets`, query: {'regionId': data.id}})
+        },
+        icon: 'pi pi-fw pi-bullseye',
+        iconPos: 'right',
+        tooltip: 'Targets',
+    },
+}
 const fieldDefs = {
     geneId: {
         label: 'Gene',
@@ -104,6 +126,7 @@ const defaultValues = queryParams
                 :where="whereClauses[0]"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

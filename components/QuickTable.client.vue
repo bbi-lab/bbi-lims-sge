@@ -5,6 +5,7 @@ import { RecordService } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
 import {v4 as uuidv4} from 'uuid'
+import {formatFieldLabel} from '@/utils/formUtils'
 
 const config = useRuntimeConfig()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
@@ -68,16 +69,18 @@ const props = defineProps({
   where: {type: Object},
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},
+  canEditMultiple: {type: Boolean, default: false},
   canDelete: {type: Boolean, default: true},
   rowsPerPageOptions: {type: Array as PropType<Array<number>> },
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
+  selectionDisabled: {type: Boolean, default: false},
 })
 const emit = defineEmits([
     'clicked-record-edit',
+    'clicked-multiple-record-edit',
     'clicked-record-add',
-    'clicked-multi-delete'
 ])
 
 const sortedColumnDefs = computed(() => {
@@ -164,6 +167,9 @@ function formatDate(value: string) {
 
 function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
+}
+function didClickEditMultipleRecords(event: MouseEvent) {
+    emit('clicked-multiple-record-edit', _.map(selectedRecords.value, (x) => x.id))
 }
 function didClickDeleteSelectedRecords(event: MouseEvent) {
     RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {
@@ -347,8 +353,9 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 <Toolbar class="border-0">
                     <template #start>
                         <span class="mr-5">{{ selectionCount }}</span>
-                        <Button v-if="props.canAdd" label="Add" icon="pi pi-plus" severity="secondary" class="mr-2" @click="didClickAddRecord" />
-                        <Button v-if="props.canDelete" label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedRecords || !selectedRecords.length" />
+                        <Button v-if="props.canAdd" label="Add" icon="pi pi-plus" severity="secondary" class="mr-2" @click="didClickAddRecord" :disabled="!_.isEmpty(selectedRecords)"/>
+                        <Button v-if="props.canEditMultiple" label="Edit" icon="pi pi-pencil" severity="secondary" class="mr-2" @click="didClickEditMultipleRecords" :disabled="_.isEmpty(selectedRecords)" />
+                        <Button v-if="props.canDelete" label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="_.isEmpty(selectedRecords)" />
                     </template>
                     <template #end>
                         <SplitButton label="Export" class="mr-2" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
@@ -374,14 +381,14 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false"></Column>
+        <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" />
         <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
             <template v-if="showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/> 
             </template>
             <template #body="slotProps">
                 <div class="group">
-                    <Button v-if="props.canEdit" icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" />
+                    <Button v-if="props.canEdit" icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" :disabled="!_.isEmpty(selectedRecords)" />
                     <Button :class="v.class" :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
                 </div>
             </template>

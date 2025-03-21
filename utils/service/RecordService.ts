@@ -11,8 +11,14 @@ export const RecordService = {
     async getRecordTyped<FetchType>(tableName: TableNames, id: string, withClause: DBQueryConfig["with"], columns: DBQueryConfig["columns"]) {
         const fetchOptions = {query: {with: withClause, columns }}
         const record = await useFetch<FetchType>(`/api/${tableName}/${id}`, fetchOptions)
-    
         return record.data as FetchType
+    },
+
+    async getRecordsByIds(baseUrl: string, ids: string[], withClause?: Object): Promise<any[]> {
+        const whereClause = {"in": [{"var": "id"}, ids]}
+        const fetchOptions = withClause ? {query: {with: withClause, where: whereClause}} : { query: {where: whereClause}}
+        const records = await $fetch(`${baseUrl}`, fetchOptions) as any[]
+        return records
     },
 
     async getRecords(baseUrl: string, withClause?: Object, where?: Object): Promise<any[]> {
@@ -33,6 +39,11 @@ export const RecordService = {
     async updateRecord(baseUrl: string, record: any) {
         const {id, ...values} = record
         const updatedRecords = await $fetch(`${baseUrl}/${id}`, {method: 'PUT', body: values})
+        return updatedRecords
+    },
+
+    async updateRecords(baseUrl: string, ids: string[], values: Object) {
+        const updatedRecords = await $fetch(`${baseUrl}`, {method: 'PUT', body: {ids, values}})
         return updatedRecords
     },
 
