@@ -91,6 +91,12 @@ const columnDefs = {
         type: 'string',
         index: 5,
     },
+    remainingVolume: {
+        format: ({remainingVolume, reagent}) => { return reagent.volumeUnit ? `${remainingVolume || '--'} ${reagent.volumeUnit}` : ''},
+        path: 'remainingVolume.displayValue',
+        type: 'string',
+        index: 5,
+    },
 }
 
 const fieldDefs = {
@@ -107,7 +113,7 @@ const fieldDefs = {
     concentration: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})` 
+                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})`
             } else {
                 return 'Concentration'
             }
@@ -116,9 +122,18 @@ const fieldDefs = {
     startingVolume: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Starting Volume (${relatedData.reagent?.volumeUnit})` 
+                return `Starting Volume (${relatedData.reagent?.volumeUnit})`
             } else {
                 return 'Starting Volume'
+            }
+        }
+    },
+    remainingVolume: {
+        label: (_data, relatedData) => {
+            if (_.isObject(relatedData?.reagent)) {
+                return `Remaining Volume (${relatedData.reagent?.volumeUnit})`
+            } else {
+                return 'Remaining Volume'
             }
         }
     }
