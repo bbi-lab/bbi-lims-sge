@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, uuid, varchar, text, check} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, check, smallint} from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { targets } from './target'
 
@@ -20,6 +20,7 @@ export const amplificationPrimers = pgTable('amplification_primers', {
     name: varchar('name', { length: 255 }).notNull(),
     sequence: varchar('sequence', { length: 255 }).notNull(),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    temperature: smallint('temperature'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),

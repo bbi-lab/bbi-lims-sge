@@ -37,5 +37,6 @@ export const transfectLotUsage = pgTable('transfect_lot_usage', {
   experimentId: uuid('experiment_id').references(() => transfectExperiments.id).notNull(),
   lotId: uuid('lot_id').references(() => lots.id).notNull(),
   concentration: doublePrecision('concentration'),
+  volumeUsed: doublePrecision('volume_used'),
   usageOn: timestamp('usage_on').defaultNow(),
 })

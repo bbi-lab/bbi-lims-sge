@@ -17,6 +17,7 @@ export const lots = pgTable('lots', {
   ),
   concentration: numeric('concentration'),
   startingVolume: numeric('starting_volume'),
+  remainingVolume: numeric('remaining_volume'),
   preparedOn: timestamp('prepared_on'),
   storedOn: timestamp('stored_on'),
   startedUseOn: timestamp('started_use_on'),
