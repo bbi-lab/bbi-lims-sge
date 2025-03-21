@@ -79,7 +79,9 @@ const changePasswordSchema = z.object({
 })
 
 export const schemas: Record<string, ZodObject<any>> = {
-  selectUserSchema: selectUserSchema.omit({password: true, code: true}),
+  selectUserSchema: selectUserSchema.extend({
+    createdAt: dateSchema,
+    updatedAt: dateSchema}).omit({password: true, code: true}),
   adminUpdateUserSchema,
   newUserSchema,
   updateUserSchema,
