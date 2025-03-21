@@ -127,6 +127,13 @@
       "when": 1741029094863,
       "tag": "0017_fluffy_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1742596813961,
+      "tag": "0018_ambitious_mandroid",
+      "breakpoints": true
     }
   ]
 }
