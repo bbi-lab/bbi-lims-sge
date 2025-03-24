@@ -335,6 +335,16 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        storageBox: {
+            fields: [amplificationPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
+        well: {
+            fields: [amplificationPrimers.wellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
     },
     many: {}
 }
@@ -347,6 +357,16 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        storageBox: {
+            fields: [linearizationPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
+        well: {
+            fields: [linearizationPrimers.wellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
     },
     many: {}
 }
@@ -358,6 +378,16 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
             fields: [homologyArmPrimers.targetId],
             referenceTable: targets,
             references: [targets.id],
+        },
+        storageBox: {
+            fields: [homologyArmPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
+        well: {
+            fields: [homologyArmPrimers.wellId],
+            referenceTable: wells,
+            references: [wells.id],
         },
     },
     many: {}
