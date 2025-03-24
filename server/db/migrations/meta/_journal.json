@@ -141,6 +141,13 @@
       "when": 1742599048429,
       "tag": "0019_thick_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1742853648275,
+      "tag": "0020_mean_boom_boom",
+      "breakpoints": true
     }
   ]
 }

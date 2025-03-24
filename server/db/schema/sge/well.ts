@@ -1,18 +1,18 @@
 import { type InferSelectModel } from 'drizzle-orm'
-import { pgTable, uuid, smallint, primaryKey} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, smallint, primaryKey, unique} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { plates } from './plate'
 
 export const wells = pgTable('wells', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
   plateId: uuid('plate_id').references(() => plates.id).notNull(),
   x: smallint().notNull(),
   y: smallint().notNull(),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.plateId, t.x, t.y] }),
-}))
-
+}, (t) => [
+  unique('unique_coord').on(t.x, t.y)
+]);
 
 const selectWellSchema = createSelectSchema(wells)
 const insertWellSchema = z.object({})
