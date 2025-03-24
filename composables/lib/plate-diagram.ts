@@ -55,7 +55,7 @@ export interface PlateDiagram {
     wellRangeSelected: Accessor<((wells: PlateDiagramWell[]) => void) | null, PlateDiagram>
 }
 
-function numberToChar(number: number) {
+export function numberToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
@@ -85,7 +85,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
             wells.push({
                 x,
                 y,
-                color: _.sample(VALIDCOLORS), 
+                color: _.sample(VALIDCOLORS),
                 tooltip: `well: ${numberToChar(y)}${x}`,
                 selected: false,
                 inSelectionRange: false,
@@ -125,8 +125,8 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
 
                 const cols = _.range(1, size.x + 1)
                 const rows = _.range(1, size.y + 1)
-                
-                const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => { 
+
+                const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => {
                     return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'none')
                 }
 
@@ -150,7 +150,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                         }
                     })
                     if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
-                    
+
                     updateWellOutlines()
                 }
 
@@ -164,7 +164,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                         }
                     })
                     if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
-                    
+
                     updateWellOutlines()
                 }
 
