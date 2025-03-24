@@ -189,7 +189,7 @@ async function saveRecord() {
                     addErrorsToForm(error.data.data)
                 } else {
                     toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-                }    
+                }
             })
         }
     }
@@ -209,7 +209,7 @@ function isReadOnly(key: string) {
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <AutoCompleter 
+                    <AutoCompleter
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
@@ -219,7 +219,7 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <NestedSelect 
+                    <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
@@ -241,11 +241,11 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <DatePicker 
+                    <DatePicker
                         class="w-80"
                         :id="key"
-                        v-model.trim="record[key]" 
-                        showTime 
+                        v-model.trim="record[key]"
+                        showTime
                         showIcon
                         dateFormat="yy-mm-dd"
                         hourFormat="24"
@@ -268,11 +268,11 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" /> 
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
@@ -317,6 +317,9 @@ function isReadOnly(key: string) {
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputText :id="key" v-model="record[key]" class="w-80" :disabled="isReadOnly(key)" />
+                    <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
+                        <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
+                    </a>
                 </div>
             </template>
         </div>

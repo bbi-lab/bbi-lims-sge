@@ -33,12 +33,12 @@ onMounted(async() => {
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
 
     refreshFormattedValues()
-    
+
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
     const tableColumnDefinitions =  _.mapValues(
         tableSchema.value?.properties, (v, k) => {
             // anyOf typically indicates a nullable field, but we're only concerned with the non-nullable one
-            if (v.anyOf) { 
+            if (v.anyOf) {
                 v = _.find(v.anyOf, (x) => x.type != 'null')
             }
             return {
@@ -52,9 +52,9 @@ onMounted(async() => {
     columnDefinitions.value = _.merge(tableColumnDefinitions, props.columnDefs)
 
     visibleColumnsOptions.value = _.compact(_.map(columnDefinitions.value, (v, k) => { if (k != 'id' && v.display !== false) return {name: k, code: k}}))
-    
+
     clientSettings.value = JSON.parse(localStorage.getItem(localStorageKey) || "{}")
-    
+
     visibleColumns.value = _.get(clientSettings.value, 'columnVisibility', visibleColumnsOptions.value)
     loading.value = false
 })
@@ -85,7 +85,7 @@ const emit = defineEmits([
 
 const sortedColumnDefs = computed(() => {
     const savedColumnOrder = _.get(clientSettings.value, 'columnOrder')
-    
+
     const columnDefsWithPaths = _.map(columnDefinitions.value, (v,k) => {
         const {path, ...rest} = v
         return {key: k, path: path ?? k, ...rest}}
@@ -135,7 +135,7 @@ const globalSearchTerm = ref(null)
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
 const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
-// TODO: add support for posititing buttons in any column. For now, 0 or negative index action buttons will be combined into the first column, 
+// TODO: add support for posititing buttons in any column. For now, 0 or negative index action buttons will be combined into the first column,
 // any positive or non-indexed action buttons will be combined into the last column
 const rowActionsStart = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => _.isNumber(value.index) && value.index < 1) : {})
 const rowActionsEnd = computed(() => props.rowActions ? _.pickBy(props.rowActions, (value, key) => !_.has(value, 'index') || value.index > 1) : {})
@@ -197,7 +197,7 @@ function getExportRecords() {
                 } else if (columnDef.format == 'date-time') {
                     _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
                 } else if (columnDef.type == 'array') {
-                    const joined = _.join(_.get(record, columnDef.path ?? columnDef.key), ', ') 
+                    const joined = _.join(_.get(record, columnDef.path ?? columnDef.key), ', ')
                     _.set(exportRecord, columnDef.key, joined)
                 } else {
                     _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
@@ -227,7 +227,7 @@ function exportCSV() {
 const exportXLSX = function() {
     const exportRecords = getExportRecords()
     const rows = []
-    
+
     // column headers row
     if (!_.isEmpty(exportRecords)) {
         rows.push(_.keys(exportRecords[0]))
@@ -239,7 +239,7 @@ const exportXLSX = function() {
     for (const record of exportRecords) {
         rows.push(_.values(record))
     }
-    
+
     const wb = XlsxUtils.book_new()
     const ws = XlsxUtils.aoa_to_sheet(rows)
 
@@ -326,12 +326,12 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 <template>
     <DataTable
         ref="dt"
-        :key="dtKey" 
+        :key="dtKey"
         v-model:selection="selectedRecords"
         :value="records"
         dataKey="id"
         :nullSortOrder="-1"
-        scrollable 
+        scrollable
         scrollHeight="flex"
         v-model:filters="filters"
         :paginator="paginator"
@@ -366,7 +366,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         </IftaLabel>
                         <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings', showDelay: 1000}" @click="clearSettings"/>
                         <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings', showDelay: 1000}" @click="saveSettings" />
-                        
+
                         <ProgressSpinner :class="`size-8 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
                 </Toolbar>
@@ -384,7 +384,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" />
         <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
             <template v-if="showColumnFilters" #header>
-                <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/> 
+                <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/>
             </template>
             <template #body="slotProps">
                 <div class="group">
@@ -409,6 +409,18 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </template>
                     <template #body="slotProps">
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
+                    </template>
+                </Column>
+                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
+                    <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
+                    <template #body="slotProps">
+                        <a class="text-blue-600 underline visited:text-purple-600 hover:text-blue-800"
+                            :href="slotProps.data[columnDef.key]"
+                            target="_blank">
+                            {{ slotProps.data[columnDef.key] }}
+                        </a>
                     </template>
                 </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>

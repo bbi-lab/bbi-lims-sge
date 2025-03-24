@@ -114,7 +114,7 @@ const refreshForm = async function() {
 watch(() => combinedRecord.value, (newValue, oldValue) => {
     const actualOldValue = _.isEqual(newValue, oldValue) ? previousCombinedRecord.value : oldValue
     previousCombinedRecord.value = JSON.parse(JSON.stringify(newValue))
-    
+
     if (!_.isEqual(newValue, actualOldValue) && newValue?.id == actualOldValue?.id ) {
         // make sure changes are not result of replacing foreign key string values with objects (e.x. using withClause)
         const changes =_.differenceWith(_.toPairs(actualOldValue), _.toPairs(newValue), _.isEqual)
@@ -134,7 +134,7 @@ async function saveRecords() {
     const valuesToUpdate = _.pickBy(combinedRecord.value, (value, key) => {
         return !_.isNull(value) || !_.has(conflictingValueCounts.value, key)
     })
-    
+
     RecordService.updateRecords(apiBaseUrl.value, props.recordIds, valuesToUpdate).then((result: any) => {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
@@ -214,7 +214,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <NestedSelect 
+                    <NestedSelect
                         :input-id="key"
                         :inputClass="inputClasses[key]"
                         v-model="combinedRecord[key]"
@@ -425,6 +425,11 @@ function getLabel(key: string) {
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
                         />
+                        <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(conflictingValueCounts, key) || !_.isEmpty(combinedRecord[key]))"
+                            :href="combinedRecord[key]"
+                            target="_blank">
+                            <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
+                        </a>
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>
