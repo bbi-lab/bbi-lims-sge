@@ -74,7 +74,7 @@ const displayWithClause = Object.freeze({
             y: true,
         },
         with: {
-            plateId: {
+            plate: {
                 columns: {
                     name: true
                 }
@@ -115,7 +115,7 @@ const columnDefs = {
     },
     wellId: {
         header: 'Plate: Well',
-        format: (x) => { return `${_.get(x, 'well.plateId.name')}: ${numberToChar(x.well.y)}${x.well.x}`},
+        format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${numberToChar(x.well?.y)}${x.well?.x}` : ''},
         path: 'wellId.displayValue',
         type: 'string',
         index: 5,

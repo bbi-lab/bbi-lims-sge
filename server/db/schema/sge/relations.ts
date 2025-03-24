@@ -53,7 +53,7 @@ export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
-        plateId: {
+        plate: {
             fields: [wells.plateId],
             referenceTable: plates,
             references: [plates.id],
