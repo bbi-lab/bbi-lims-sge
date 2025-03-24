@@ -13,7 +13,7 @@ const props = defineProps({
   searchBaseUrl: {type: String, required: true},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  displayFormat: {type: Object},
+  displayFormat: {type: Function},
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   parentKeyField: {type: String, required: true},
@@ -74,7 +74,7 @@ function clearValues(event) {
             />
         </div>
         <div>
-            <AutoCompleter 
+            <AutoCompleter
                 v-model="modelValue"
                 ref="autoCompleter"
                 :input-id="inputId"
