@@ -2,7 +2,9 @@
 <script setup>
 const showAddForm = ref(false)
 const showEditForm = ref(false)
+const showMultipleEditForm = ref(false)
 const editingRecordId = ref(null)
+const editingMultipleRecordsIds = ref([])
 const plasmidsTable = ref()
 const router = useRouter()
 const config = useRuntimeConfig()
@@ -24,7 +26,22 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) plasmidsTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 function didAddRecord(event) {
     plasmidsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
@@ -57,6 +74,10 @@ const columnDefs = {
     },
     storageBoxLoc: {
         index: 4,
+    },
+    externalLink: {
+        format: 'hyperlink',
+        index: 5,
     },
     plasmidExperimentId: {
         display: false
@@ -102,7 +123,28 @@ const fieldDefs = {
             displayFields: ['name', 'region.gene.symbol', 'region.name'],
         }
     },
+    externalLink: {
+        type: 'hyperlink',
+    },
 }
+const displayWithClause = {
+    target: {
+        columns: {name: true},
+        with: {
+            region: {
+                columns: {name: true},
+                with: {
+                    gene: {columns: {symbol: true}}
+                }
+            }
+        }
+    },
+    plasmidExperiment: {
+        columns: {name: true}},
+        storageBox: {columns: {name: true}
+    }
+}
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -113,12 +155,15 @@ const fieldDefs = {
                 schemaName="select"
                 title="Plasmids"
                 :columnDefs="columnDefs"
-                :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}, plasmidExperiment: {columns: {name: true}}, storageBox: {columns: {name: true}}}"
+                :withClause="displayWithClause"
+                :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="plasmids"
@@ -138,6 +183,15 @@ const fieldDefs = {
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="plasmids"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>
