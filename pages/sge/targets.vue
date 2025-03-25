@@ -24,10 +24,10 @@ const displayWithClause = Object.freeze({
         columns: {name: true}
     },
     region:{
-        columns: {name: true}, 
+        columns: {name: true},
         with: {
             gene: {
-                columns: {symbol: true, chromosome: true}
+                columns: {symbol: true, ncbiAccession: true, chromosome: true}
             }
         }
     },
@@ -63,7 +63,7 @@ const rowActions = {
             const target = new Target(data.id)
             await target.fetch()
             const result = await target.getDuplicate()
-            if (!_.isEmpty(result)) { 
+            if (!_.isEmpty(result)) {
                 addRecordValues.value = result
                 showAddForm.value = true
                 showEditForm.value = false
@@ -87,7 +87,8 @@ const columnDefs = {
     },
     gene: {
         header: 'Gene',
-        path: 'region.gene.symbol',
+        format: (x) => { return `${_.get(x, 'region.gene.symbol')} (${_.get(x, 'region.gene.ncbiAccession')})`},
+        path: 'gene.displayValue',
         index: 2,
     },
     region: {

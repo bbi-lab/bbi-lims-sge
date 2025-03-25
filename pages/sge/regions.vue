@@ -72,19 +72,18 @@ function didDeleteRecord(event) {
 
 const displayWithClause = Object.freeze({
     gene:{
-        columns: {symbol: true}
+        columns: {symbol: true, ncbiAccession: true}
     },
     targets: {
         columns: {id: true}
     },
 })
 const columnDefs = {
-    gene: {
-        path: 'gene.symbol',
-        index: 0,
-    },
     geneId: {
-        display: false
+        header: 'Gene',
+        format: (x) => { return `${_.get(x, 'gene.symbol')} (${_.get(x, 'gene.ncbiAccession')})`},
+        path: 'geneId.displayValue',
+        index: 0,
     },
     snvLibraryStart: {
         header: 'SNV library start'
@@ -113,9 +112,10 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/genes`,
-            searchFields: ['symbol'],
+            searchFields: ['symbol', 'ncbiAccession'],
             valueField: 'id',
-            displayFields: ['symbol'],
+            displayFields: ['symbol', 'ncbiAccession'],
+            displayFormat: (x) => `${x.symbol} (${x.ncbiAccession})`,
         }
     },
     snvLibraryStart: {
