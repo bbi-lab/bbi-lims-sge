@@ -123,7 +123,10 @@ const fieldDefs = {
     },
     snvLibraryEnd: {
         label: 'SNV library end'
-    }
+    },
+    targets: {
+        display: false,
+    },
 }
 
 // convert query params in to JSON Logic to pass as where clause
