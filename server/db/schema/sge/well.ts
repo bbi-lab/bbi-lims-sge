@@ -11,8 +11,8 @@ export const wells = pgTable('wells', {
   x: smallint().notNull(),
   y: smallint().notNull(),
 }, (t) => [
-  unique('unique_coord').on(t.x, t.y)
-]);
+  unique('unique_plate_coord').on(t.plateId, t.x, t.y),
+])
 
 const selectWellSchema = createSelectSchema(wells)
 const insertWellSchema = z.object({})

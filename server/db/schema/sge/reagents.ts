@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, timestamp, uuid, varchar, smallint, text } from 'drizzle-orm/pg-core'
+import { pgTable, pgEnum, timestamp, uuid, varchar, smallint, text, unique } from 'drizzle-orm/pg-core'
 
 export const reagents = pgTable('reagents', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
