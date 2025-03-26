@@ -3,6 +3,7 @@ import { insertRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
+import { parsePutPostError } from '../utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -18,15 +19,11 @@ export default defineEventHandler(async (event) => {
         const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
         return newRecords
     } catch (e: any) {
-        let data
-        try {
-            data = JSON.parse(e.message)
-        } catch (err) {
-            data = {}
-        }
+        const { error, data } = parsePutPostError(e, recordType)
+
         throw createError({
             statusCode: 400,
-            statusMessage: e.message,
+            statusMessage: error.message,
             data
         })
     }
