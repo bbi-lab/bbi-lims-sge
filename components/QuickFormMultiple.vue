@@ -43,6 +43,7 @@ const emit = defineEmits([
 ])
 const dataChanged = ref(false)
 const formSchema = ref<FormSchema>()
+const formElement = ref<HTMLElement | null>(null)
 const records = ref<Array<Record<string, any>>>([])
 const combinedRecord = ref<Record<string, any>>({})
 const previousCombinedRecord = ref<Record<string, any>>({})
@@ -139,8 +140,8 @@ async function saveRecords() {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
-        if (_.isArray(error.data?.data)) {
-            addErrorsToForm(error.data.data)
+        if (formElement.value && _.isArray(error.data?.data)) {
+            addErrorsToForm(formElement.value, error.data.data)
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         }
@@ -189,7 +190,7 @@ function getLabel(key: string) {
         <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`, showDelay: 1000}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
     </div>
-    <div class="pl-8 pb-24 h-full overflow-y-scroll">
+    <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -225,7 +226,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
                             class="w-80"
@@ -247,7 +248,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
                             class="w-80"
@@ -282,7 +283,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <Select
                             :id="key"
                             class="w-80"
@@ -319,7 +320,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
                             :inputId="key"
@@ -341,7 +342,7 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
                             :inputId="key"
@@ -361,7 +362,7 @@ function getLabel(key: string) {
                     </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                         <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
                         <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
@@ -417,7 +418,7 @@ function getLabel(key: string) {
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <!-- <InputText v-if="_.has(combinedRecord[key], '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key]['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputText
                             :id="key"
                             v-model="combinedRecord[key]"

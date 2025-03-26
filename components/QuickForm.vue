@@ -63,6 +63,7 @@ const emit = defineEmits([
 ])
 
 const formSchema = ref<FormSchema>()
+const formElement = ref<HTMLElement | null>(null)
 const record = ref()
 const relatedRecords = ref<Record<string, any>>({})
 const dataChanged = ref(false)
@@ -149,6 +150,7 @@ function getLabel(key: string) {
 }
 async function saveRecord() {
     if (props.readOnly) return
+
     if (_.has(record.value, 'id') && record.value.id && formSchema.value) {
         // updating single record - limit to properties in JSON schema
         const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value.properties))}
@@ -156,8 +158,8 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            if (_.isArray(error.data?.data)) {
-                addErrorsToForm(error.data.data)
+            if (formElement.value && _.isArray(error.data?.data)) {
+                addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             }
@@ -185,8 +187,8 @@ async function saveRecord() {
                 toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
                 emit('record-add', result)
             }).catch(error => {
-                if (_.isArray(error.data?.data)) {
-                    addErrorsToForm(error.data.data)
+                if (formElement.value && _.isArray(error.data?.data)) {
+                    addErrorsToForm(formElement.value, error.data.data)
                 } else {
                     toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
                 }
@@ -204,7 +206,7 @@ function isReadOnly(key: string) {
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecord" />
         <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete', showDelay: 1000}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
-    <div class="pl-8 pb-24 h-full overflow-y-scroll">
+    <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">

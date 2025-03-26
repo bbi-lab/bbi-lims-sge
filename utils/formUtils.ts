@@ -25,7 +25,7 @@ export const addNewItemToArray = (record: RecordType, key: string, schemaItems: 
     if (schemaItems.properties) {
         const newItem: RecordType = {};
         for (const [k, v] of Object.entries(schemaItems.properties)) {
-            // default value for foreign key should be set in JSON schema based on props.recordId 
+            // default value for foreign key should be set in JSON schema based on props.recordId
             if (v.default) {
                 _.set(newItem, k, v.default);
             } else {
@@ -55,20 +55,19 @@ export const getFieldType = (val: any, key: string, fieldDefs: Record<string, Sc
     }
 }
 
-export const addErrorsToForm = (formErrors: Array<{path: string[], message: string}>) => {
+export const addErrorsToForm = (formElement: HTMLElement, formErrors: Array<{path: string[], message: string}>) => {
     // remove any previous validation errors
-    document.querySelectorAll('.lims-validation-error').forEach((x) => x.remove())
-    
+    formElement.querySelectorAll('.lims-validation-error').forEach((x) => x.remove())
+
     // remove red outline from inputs
-    const existingErrorsInputs = document.querySelectorAll('.lims-validation-error-input')
-    existingErrorsInputs.forEach((x) => {
+    formElement.querySelectorAll('.lims-validation-error-input').forEach((x) => {
         x.classList.remove('lims-validation-error-input', 'border-red-500')
     })
 
     // add error text and styling
     for (const e of formErrors) {
         const elementId = e.path?.[0]
-        const element = document.getElementById(elementId)
+        const element = formElement.querySelector(`#${elementId}`)
 
         if (!element) {
             console.error(`Element with id ${elementId} not found`)
@@ -87,7 +86,12 @@ export const addErrorsToForm = (formErrors: Array<{path: string[], message: stri
             const errorMsg = document.createElement('div')
             errorMsg.setAttribute('class', 'lims-validation-error text-red-500')
             errorMsg.textContent = e.message
-            element.after(errorMsg)
+
+            if (element.parentElement?.classList.contains('quickform-input-wrapper')) {
+                element.parentElement?.after(errorMsg)
+            } else {
+                element.after(errorMsg)
+            }
         }
     }
 }
