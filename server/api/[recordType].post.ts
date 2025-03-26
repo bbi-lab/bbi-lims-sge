@@ -5,7 +5,7 @@ import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 
 export default defineEventHandler(async (event) => {
-    const { recordType } = event.context.params as {recordType: string} 
+    const { recordType } = event.context.params as {recordType: string}
     const db = useDrizzle()
     try {
         const body = await readBody(event)
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
         let data
         try {
             data = JSON.parse(e.message)
-        } catch (e) {
+        } catch (err) {
             data = {}
         }
         throw createError({

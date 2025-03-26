@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
         let data
         try {
             data = JSON.parse(e.message)
-        } catch (e) {
+        } catch (err) {
             data = {}
         }
         throw createError({
