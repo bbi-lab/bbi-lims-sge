@@ -108,15 +108,15 @@ const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
 
 const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
-const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers).omit({id: true})
+const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateAmplificationPrimerSchema = insertAmplificationPrimerSchema
 
 const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
-const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers).omit({id: true})
+const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
-const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers).omit({id: true})
+const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
 export const schemas = {
