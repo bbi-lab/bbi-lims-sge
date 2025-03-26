@@ -381,8 +381,8 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <template #empty> No data </template>
         <template #loading> Loading </template>
 
-        <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" />
-        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false">
+        <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" frozen />
+        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
             <template v-if="showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/>
             </template>
@@ -433,7 +433,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 </Column>
             </template>
         </template>
-        <Column class="whitespace-nowrap" v-if="rowActionsEnd" columnKey="rowActions" :reorderableColumn="false" >
+        <Column class="whitespace-nowrap" v-if="rowActionsEnd" columnKey="rowActions" :reorderableColumn="false" frozen alignFrozen="right">
             <template #body="{ data }">
                 <div class="flex items-start">
                     <template v-for="(v, k) in rowActionsEnd">
