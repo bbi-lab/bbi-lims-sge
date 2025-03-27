@@ -19,8 +19,17 @@ export const formatFieldLabel =  (val: String) => {
         .replace(/(^|\s)Pct($|\s)/g, (match) => '% ').trim()
 }
 
-export const addNewItemToArray = (record: RecordType, key: string, schemaItems: SchemaItems) => {
-    if (!_.isArray(record[key])) record[key] = [];
+function pushToPath(obj: Object, path: string | string[], item: any) {
+    if (_.has(obj, path)) {
+        let arr = _.get(obj, path)
+        arr.push(item);
+    } else {
+        _.set(obj, path, [item])
+    }
+    return obj
+}
+export const addNewItemToArray = (record: RecordType, key: string | string[], schemaItems: SchemaItems) => {
+    if (!_.isArray(_.get(record, key))) _.set(record, key, [])
 
     if (schemaItems.properties) {
         const newItem: RecordType = {};
@@ -32,11 +41,11 @@ export const addNewItemToArray = (record: RecordType, key: string, schemaItems: 
                 _.set(newItem, k, null);
             }
         }
-        record[key].push(newItem);
+        pushToPath(record, key, newItem)
     } else if (schemaItems.type == 'string') {
-        record[key].push('');
+        pushToPath(record, key, '')
     } else if (schemaItems.type == 'integer') {
-        record[key].push(null);
+        pushToPath(record, key, null)
     }
 }
 
@@ -66,7 +75,7 @@ export const addErrorsToForm = (formElement: HTMLElement, formErrors: Array<{pat
 
     // add error text and styling
     for (const e of formErrors) {
-        const elementId = e.path?.[0]
+        const elementId = e.path.join('_')
         const element = formElement.querySelector(`#${elementId}`)
 
         if (!element) {

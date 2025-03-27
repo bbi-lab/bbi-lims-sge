@@ -4,19 +4,6 @@ import { RecordService } from '@/utils/service/RecordService'
 import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 
-// types here can be refined further based on JsonSchema, but this is a good starting point
-interface SchemaItems {
-    properties?: Record<string, { default?: any }>;
-    type?: string;
-    enum?: string[];
-    oneOf?: Record<string, SchemaItems>[];
-    anyOf?: Record<string, SchemaItems>;
-    items?: SchemaItems;
-}
-interface FormSchema {
-    properties: Record<string, SchemaItems>;
-}
-
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
@@ -303,12 +290,16 @@ function isReadOnly(key: string) {
                             <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <InputText class="w-80" v-model="record[key][arrayIndex]" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='integer'">
-                            <InputNumber class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <!-- Array properties not covered by JSON schema -->
                         <template v-else=>
