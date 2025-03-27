@@ -89,7 +89,9 @@ const columnDefs = {
     },
     targetId: {
         header: 'Target',
-        format: (x) => { return _.get(x, 'target.name') || `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}`},
+        format: (x) => {
+            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+        },
         path: 'targetId.displayValue',
         type: 'string',
         index: 2,
