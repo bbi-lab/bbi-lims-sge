@@ -364,8 +364,8 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                             <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
                             <label for="visibileColumnsInput" v-if="showSettings">Columns</label>
                         </IftaLabel>
-                        <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings', showDelay: 1000}" @click="clearSettings"/>
-                        <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings', showDelay: 1000}" @click="saveSettings" />
+                        <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings'}" @click="clearSettings"/>
+                        <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings'}" @click="saveSettings" />
 
                         <ProgressSpinner :class="`size-8 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
