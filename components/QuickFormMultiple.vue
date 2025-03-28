@@ -190,7 +190,7 @@ function getLabel(key: string) {
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
-                            @update:modelValue="changedToNullCheck(key)"
+                            @clearedValue="changedToNullCheck(key)"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>
@@ -210,7 +210,7 @@ function getLabel(key: string) {
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                             :disabled="isReadOnly(key)"
-                            @update:modelValue="changedToNullCheck(key)"
+                            @clearedValue="changedToNullCheck(key)"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>

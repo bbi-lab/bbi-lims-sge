@@ -31,7 +31,7 @@ const autoCompleter = ref()
 const searchWhereClauseFinal = ref()
 
 const emit = defineEmits([
-    'update:modelValue'
+    'clearedValue'
 ])
 
 onMounted(async () => {
@@ -52,13 +52,17 @@ watch(parentValue, (newValue, oldValue) => {
 })
 
 const parentValueChanged = (event) => {
-    autoCompleter.value.clearValue()
-    emit('update:modelValue', null)
+    if (autoCompleter.value) {
+        autoCompleter.value.clearValue()
+        emit('clearedValue')
+    }
 }
 const clearValues = (event) => {
-    autoCompleter.value.clearValue()
-    parentAutoCompleter.value.clearValue()
-    emit('update:modelValue', null)
+    if (autoCompleter.value && parentAutoCompleter.value) {
+        autoCompleter.value.clearValue()
+        parentAutoCompleter.value.clearValue()
+        emit('clearedValue')
+    }
 }
 </script>
 <template>
@@ -75,7 +79,7 @@ const clearValues = (event) => {
                 :searchWithClause="parentSearchWithClause"
                 :dropdown="true"
                 :hideClearButton="true"
-                @update:modelValue="parentValueChanged"
+                @changedValue="parentValueChanged"
             />
         </div>
         <div>
@@ -94,6 +98,7 @@ const clearValues = (event) => {
                 :hideClearButton="true"
                 :placeholderValue="placeholderValue"
                 :inputClass="inputClass"
+                @update:modelValue="finalValueChanged"
             />
             <Button v-if="!_.isEmpty(parentValue) && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
         </div>

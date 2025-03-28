@@ -25,7 +25,9 @@ const currentValue = ref()
 const suggestions = ref([])
 
 const emit = defineEmits([
-    'update:modelValue'
+    'update:modelValue',
+    'clearedValue',
+    'changedValue',
 ])
 
 function getDisplayValue(record) {
@@ -42,7 +44,6 @@ function getDisplayValue(record) {
 }
 
 watch(modelValue, async (newValue, oldValue) => {
-
     if (newValue && !_.isEqual(newValue, oldValue)) {
         if (_.isObject(newValue)) {
             modelValueObj.value = newValue
@@ -56,6 +57,8 @@ watch(modelValue, async (newValue, oldValue) => {
             const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
             currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
         }
+    } else if (_.isEmpty(newValue)) {
+        clearValue()
     }},
     { immediate: true },
 )
@@ -77,30 +80,28 @@ function clearValue() {
     currentValue.value = null
     modelValue.value = null
     modelValueObj.value = null
-    // emit('value-changed', null)
-    // emit('update:modelValue', null)
+}
+function clickedClearValue() {
+    clearValue()
+    emit('clearedValue')
 }
 function setModelValue() {
     if (_.has(currentValue.value, 'code')) {
         modelValue.value = _.get(currentValue.value, 'code')
         modelValueObj.value = _.get(currentValue.value, 'record')
-        // emit('value-changed', modelValue.value)
-        // emit('update:modelValue', modelValue.value)
     } else {
         clearValue()
-        // emit('update:modelValue', null)
     }
+    emit('changedValue')
 }
 async function lostFocus() {
     if (!_.has(currentValue.value, 'code')) {
         clearValue()
-        // emit('update:modelValue', null)
     }
 }
 defineExpose({
     clearValue,
 })
-//const inputId = useId()
 
 </script>
 <template>
@@ -121,7 +122,7 @@ defineExpose({
         <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
     </component>
 
-    <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
+    <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clickedClearValue" />
 </template>
 
 <style>
