@@ -30,6 +30,9 @@ const parentAutoCompleter = ref()
 const autoCompleter = ref()
 const searchWhereClauseFinal = ref()
 
+const emit = defineEmits([
+    'update:modelValue'
+])
 
 onMounted(async () => {
     if (modelValue.value) {
@@ -39,7 +42,7 @@ onMounted(async () => {
 })
 
 watch(parentValue, (newValue, oldValue) => {
-    if (!_.isEmpty(newValue, oldValue)) {
+    if (!_.isEqual(newValue, oldValue)) {
         const filter = {"==":[{"var": props.parentKeyField}, newValue]}
         searchWhereClauseFinal.value = props.searchWhereClause ? {and: [
                 filter,
@@ -48,12 +51,14 @@ watch(parentValue, (newValue, oldValue) => {
     }
 })
 
-function parentValueChanged(event) {
+const parentValueChanged = (event) => {
     autoCompleter.value.clearValue()
+    emit('update:modelValue', null)
 }
-function clearValues(event) {
+const clearValues = (event) => {
     autoCompleter.value.clearValue()
     parentAutoCompleter.value.clearValue()
+    emit('update:modelValue', null)
 }
 </script>
 <template>
@@ -70,7 +75,7 @@ function clearValues(event) {
                 :searchWithClause="parentSearchWithClause"
                 :dropdown="true"
                 :hideClearButton="true"
-                @value-changed="parentValueChanged"
+                @update:modelValue="parentValueChanged"
             />
         </div>
         <div>
