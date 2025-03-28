@@ -35,6 +35,7 @@ const records = ref<Array<Record<string, any>>>([])
 const combinedRecord = ref<Record<string, {val: any, conflictingValueCount?: number, valClearedByUser?: boolean }>>({})
 const previousCombinedRecord = ref<Record<string, {val: any, conflictingValueCount?: number, valClearedByUser?: boolean }>>({})
 const relatedRecords = ref<Record<string, any>>({})
+const inputRefs = ref({})
 
 const clearValue = (key: string) => {
     _.set(combinedRecord.value, [key, 'val'], null)
@@ -44,6 +45,11 @@ const clearValue = (key: string) => {
 const revertToConflictingValue = (key: string) => {
     _.set(combinedRecord.value, [key, 'val'], null)
     _.unset(combinedRecord.value, [key, 'valClearedByUser'])
+}
+const revertNestedSelectToConflictingValue = (key: string) => {
+    const nestedSelectRef = inputRefs.value[key]
+    nestedSelectRef.parentValue = null
+    revertToConflictingValue(key)
 }
 
 const inputClasses = computed(() => {
@@ -206,13 +212,14 @@ function getLabel(key: string) {
                             :key="key"
                             :input-id="key"
                             :inputClass="inputClasses[key]"
+                            :ref="(el) => inputRefs[key] = el"
                             v-model="combinedRecord[key].val"
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
                         />
-                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertNestedSelectToConflictingValue(key)">
                             <template #icon>
                                 <GrommetIconsRevert />
                             </template>

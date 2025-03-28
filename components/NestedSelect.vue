@@ -29,6 +29,7 @@ const parentValue = ref()
 const parentAutoCompleter = ref()
 const autoCompleter = ref()
 const searchWhereClauseFinal = ref()
+const mainRef = ref()
 
 const emit = defineEmits([
     'clearedValue'
@@ -64,9 +65,13 @@ const clearValues = (event) => {
         emit('clearedValue')
     }
 }
+defineExpose({
+    mainRef,
+    parentValue,
+})
 </script>
 <template>
-    <div class="outline outline-gray-200 pt-5 pb-5 pl-2 w-96">
+    <div ref="mainRef" class="outline outline-gray-200 pt-5 pb-5 pl-2 w-96">
         <div class="mb-5">
             <AutoCompleter
                 v-model="parentValue"
