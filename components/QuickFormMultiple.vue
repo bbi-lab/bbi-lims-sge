@@ -68,8 +68,9 @@ const placeholders = computed(() => {
 })
 
 const showRevertButton = (key: string) => {
-    return _.has(combinedRecord.value, [key, 'conflictingValueCount']) && _.get(combinedRecord.value, [key, 'valClearedByUser'])
+    return _.has(combinedRecord.value, [key, 'conflictingValueCount']) && (!_.isNull(combinedRecord.value[key].val) || _.get(combinedRecord.value, [key, 'valClearedByUser']))
 }
+
 const changedToNullCheck = (key: string) => {
     if (_.isNull(combinedRecord.value[key].val)) {
         _.set(combinedRecord.value, [key, 'valClearedByUser'], true)
@@ -189,7 +190,7 @@ function getLabel(key: string) {
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
-                            @value-changed="changedToNullCheck(key)"
+                            @update:modelValue="changedToNullCheck(key)"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>
@@ -200,14 +201,23 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <NestedSelect
-                        :input-id="key"
-                        :inputClass="inputClasses[key]"
-                        v-model="combinedRecord[key].val"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
-                        :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
-                        :disabled="isReadOnly(key)"
-                    />
+                    <div class="flex items-start">
+                        <NestedSelect
+                            :key="key"
+                            :input-id="key"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key].val"
+                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
+                            :disabled="isReadOnly(key)"
+                            @update:modelValue="changedToNullCheck(key)"
+                        />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
