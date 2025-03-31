@@ -76,7 +76,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
     let wellSpacing: CoordinatePair = { x: 0, y: 0 }
 
     // set the dimensions and margins of the graph
-    let margin = {top: 80, right: 25, bottom: 30, left: 40}
+    let margin = {top: 10, right: 10, bottom: 20, left: 20}
     const plateWidth = () => wellSize.x * size.x + (wellSpacing.x * size.x)
     const plateHeight = () => wellSize.y * size.y + (wellSpacing.y * size.y)
 

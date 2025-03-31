@@ -8,7 +8,18 @@ const plateDiagram = ref()
 const plateDiagramDiv = ref()
 
 const props = defineProps({
-
+    showSidebar: {
+        type: Boolean,
+        default: true,
+    },
+    showSelectAllButton: {
+        type: Boolean,
+        default: true,
+    },
+    showClearSelectionButton: {
+        type: Boolean,
+        default: true,
+    },
 })
 
 const emit = defineEmits([
@@ -39,18 +50,20 @@ onMounted(async() => {
 
 <template>
     <div class="flex justify-center">
-        <div ref="plateDiagramDiv"></div>
-    </div>
-    <div class="flex justify-center">
-        <Button v-tooltip="{value: 'Clear selected wells', showDelay: 500}" @click="wellSelectionCleared" severity="secondary" class="content-center">
-            <template #icon>
-                <PhSelectionSlash />
-            </template>
-        </Button>
-        <Button v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary" class="content-center">
-            <template #icon>
-                <PhSelectionAllFill />
-            </template>
-        </Button>
+        <div class="w-fit">
+            <div ref="plateDiagramDiv"></div>
+        </div>
+        <div v-if="showSidebar" class="flex flex-col justify-center items-center">
+            <Button v-if="showSelectAllButton" v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary">
+                <template #icon>
+                    <PhSelectionAllFill />
+                </template>
+            </Button>
+            <Button v-if="showClearSelectionButton" v-tooltip="{value: 'Clear selected wells', showDelay: 500}" @click="wellSelectionCleared" severity="secondary">
+                <template #icon>
+                    <PhSelectionSlash />
+                </template>
+            </Button>
+        </div>
     </div>
 </template>
