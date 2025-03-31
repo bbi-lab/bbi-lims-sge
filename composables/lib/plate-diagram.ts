@@ -1,7 +1,6 @@
 import * as d3 from "d3"
 import {type ValueFn} from "d3"
 import _ from "lodash"
-import type { Plate } from "~/server/db/schema/sge/plate"
 
 type Accessor<T, Self> = (value?: T) => T | Self
 
@@ -53,6 +52,9 @@ export interface PlateDiagram {
     render: (container: HTMLElement) => PlateDiagram
 
     wellRangeSelected: Accessor<((wells: PlateDiagramWell[]) => void) | null, PlateDiagram>
+
+    clearSelection: Accessor<() => void, PlateDiagram>
+    selectAllWells: Accessor<() => void, PlateDiagram>
 }
 
 export function numberToChar(number: number) {
@@ -93,6 +95,20 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
         }
     }
 
+    const updateWellOutlines: (svg: d3.Selection<SVGGElement, any, any, any>) => void = (svg) => {
+        if (svg) {
+            svg.selectAll<SVGRectElement, PlateDiagramWell>('rect')
+                .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
+                    d3.select(this)
+                        .style('stroke', <ValueFn<any, any, string>>wellOutlineColor)
+                })
+        }
+    }
+
+    const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => {
+        return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'none')
+    }
+
     const plate: PlateDiagram = {
         wells: (value?: PlateDiagramWell[]) => {
             if (value === undefined) {
@@ -110,10 +126,23 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
             return plate
         },
 
+        clearSelection: () => {
+            wells.forEach(well => well.selected = false)
+            if (svg) updateWellOutlines(svg)
+            return plate
+        },
+
+        selectAllWells: (value?: (() => void) | null) => {
+            wells.forEach(well => well.selected = true)
+            if (svg) updateWellOutlines(svg)
+            return plate
+        },
+
         render: (container: HTMLElement) => {
             _container = container
 
             if (_container) {
+
                 svg = d3.select(_container)
                     .append("svg")
                     .attr("width", plateWidth() + margin.left + margin.right)
