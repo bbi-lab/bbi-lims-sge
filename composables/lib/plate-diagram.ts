@@ -101,12 +101,21 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                 .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
                     d3.select(this)
                         .style('stroke', <ValueFn<any, any, string>>wellOutlineColor)
+                    // raise the selected wells so their outlines aren't obscured by those of unselected wells
+                    if (d.inSelectionRange || d.selected) {
+                        d3.select(this)
+                            .style('opacity', 1.0)
+                            .raise()
+                    } else {
+                        d3.select(this)
+                            .style('opacity', 0.8)
+                    }
                 })
         }
     }
 
     const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => {
-        return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'none')
+        return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'var(--surface-ground)')
     }
 
     const plate: PlateDiagram = {
@@ -155,20 +164,6 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                 const cols = _.range(1, size.x + 1)
                 const rows = _.range(1, size.y + 1)
 
-                const wellOutlineColor: (w:PlateDiagramWell) => string = (w: PlateDiagramWell) => {
-                    return w.inSelectionRange ? 'var(--p-text-muted-color)' : (w.selected ? 'var(--p-text-color)' : 'none')
-                }
-
-                const updateWellOutlines: () => void = () => {
-                    if (svg) {
-                        svg.selectAll<SVGRectElement, PlateDiagramWell>('rect')
-                            .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
-                                d3.select(this)
-                                    .style('stroke', <ValueFn<any, any, string>>wellOutlineColor)
-                            })
-                    }
-                }
-
                 const selectRow: (event: MouseEvent) => void = (event: MouseEvent) => {
                     const rowNumber = d3.select(event.target as SVGRectElement).datum()
                     wells.forEach(well => {
@@ -180,7 +175,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     })
                     if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
 
-                    updateWellOutlines()
+                    if (svg) updateWellOutlines(svg)
                 }
 
                 const selectColumn: (event: MouseEvent) => void = (event: MouseEvent) => {
@@ -194,14 +189,13 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     })
                     if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
 
-                    updateWellOutlines()
+                    if (svg) updateWellOutlines(svg)
                 }
 
                 // Build X scales and axis:
                 const x = d3.scaleBand()
                     .range([ 0, plateWidth() ])
                     .domain(_.map(cols, _.toString))
-                    .padding(0.1);
                 svg.append("g")
                     .style("font-size", 15)
                     .style("user-select", "none")
@@ -216,7 +210,6 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                 const y = d3.scaleBand()
                     .range([ 0, plateHeight() ])
                     .domain(_.map(rows, _.toString))
-                    .padding(0.1);
                 svg.append("g")
                     .style("font-size", 15)
                     .style("user-select", "none")
@@ -268,13 +261,13 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                                     well.inSelectionRange = false
                                 }
                         })
-                        updateWellOutlines()
+                        if (svg) updateWellOutlines(svg)
                     }
                 }
 
                 const mouseleave = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
                     tooltip.style("opacity", 0)
-                    updateWellOutlines()
+                    if (svg) updateWellOutlines(svg)
                 }
 
                 const mouseclick = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
@@ -286,7 +279,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     wells.forEach(well => {
                         well.inSelectionRange = false
                     })
-                    updateWellOutlines()
+                    if (svg) updateWellOutlines(svg)
                 }
                 const mouseup = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
                     if (wellSelectionStart) {
@@ -310,7 +303,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     if (wellRangeSelected) wellRangeSelected(wells.filter(w => w.selected))
                     wellSelectionStart = null
                     wells.forEach(w => w.inSelectionRange = false)
-                    updateWellOutlines()
+                    if (svg) updateWellOutlines(svg)
                 }
 
                 const getX = (w:PlateDiagramWell) => { return x(_.toString(w.x))! + wellSpacing.x/2 }
@@ -333,7 +326,6 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                         .attr("height", y.bandwidth() - wellSpacing.y)
                         .style("fill", function(w:PlateDiagramWell) { return w.color || "#ddd"})
                         .style("stroke-width", 2)
-                        .style("stroke", function(w:PlateDiagramWell) { return w.selected ? 'var(--p-text-color)' : 'none'})
                         .style("opacity", 0.8)
                     .on("mouseover", mouseover)
                     .on("mousemove", mousemove)
@@ -342,6 +334,7 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     .on('mouseup', mouseup)
                     .on('click', mouseclick)
                 }
+                if (svg) updateWellOutlines(svg)
                 return plate
             }
     }
