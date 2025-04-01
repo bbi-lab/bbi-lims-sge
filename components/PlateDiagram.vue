@@ -54,8 +54,8 @@ onMounted(async() => {
             <slot name="header" />
         </div>
         <div class="flex">
-            <div ref="plateDiagramDiv"></div>
-            <div v-if="showSidebar" class="flex flex-col">
+            <div ref="plateDiagramDiv" class="z-10"></div>
+            <div v-if="showSidebar" class="flex flex-col z-0">
                 <Button v-if="showSelectAllButton" v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary">
                     <template #icon>
                         <PhSelectionAllFill />

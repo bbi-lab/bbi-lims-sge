@@ -229,10 +229,14 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                     .append("div")
                     .style("opacity", 0)
                     .attr("class", "tooltip")
-                    .style("background-color", "var(--surface-hover)")
+                    .style("position", "absolute")
+                    .style("user-select", "none")
+                    .style("color", "color-mix(in srgb, var(--p-surface-0) calc(100%* var(--tw-text-opacity, 1)), transparent)")
+                    .style("background-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
                     .style("border", "solid")
                     .style("border-width", "2px")
                     .style("border-radius", "5px")
+                    .style("border-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
                     .style("padding", "5px")
 
                 // Three function that change the tooltip when user hover / move / leave a cell
@@ -241,9 +245,14 @@ export function makePlateDiagram(size: CoordinatePair = {x: 12, y: 8}): PlateDia
                         tooltip
                             .html(w.tooltip)
                             .style("opacity", 1)
+                            .style("pointer-events", "none")
+                            .style("left", (event.pageX + 20) + "px")
+                            .style("top", (event.pageY - 20) + "px")
+                            .raise()
                     d3.select(this)
                         .style("stroke", "var(--p-text-color)")
                         .style("opacity", 1)
+                        .raise()
                 }
 
                 const mousemove = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
