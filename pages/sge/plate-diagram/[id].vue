@@ -58,23 +58,25 @@ const actionOnSelectedWells = function() {
 }
 </script>
 <template>
-    <PlateDiagram
-        v-if="plate"
-        v-model="plate"
-        @well-range-selected="wellRangeSelected"
-        @well-selection-cleared="wellSelectionCleared"
-        @all-wells-selected="selectedAllWells">
-        <template #header>
-            {{ plate.name }}
-        </template>
-        <template #button1>
-            <Button
-                v-if="plate"
-                variant="text"
-                icon="pi pi-star"
-                v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
-                :disabled="_.isEmpty(selectedWells)"
-                @click="actionOnSelectedWells" />
-        </template>
-    </PlateDiagram>
+    <div class="flex justify-center w-full mt-10">
+        <PlateDiagram
+            v-if="plate"
+            v-model="plate"
+            @well-range-selected="wellRangeSelected"
+            @well-selection-cleared="wellSelectionCleared"
+            @all-wells-selected="selectedAllWells">
+            <template #header>
+                {{ plate.name }}
+            </template>
+            <template #button1>
+                <Button
+                    v-if="plate"
+                    class="p-button-secondary"
+                    icon="pi pi-star"
+                    v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
+                    :disabled="_.isEmpty(selectedWells)"
+                    @click="actionOnSelectedWells" />
+            </template>
+        </PlateDiagram>
+    </div>
 </template>
