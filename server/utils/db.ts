@@ -122,5 +122,10 @@ export interface RelationsConfig {
         relationsConfig?: RelationsConfig,
         relationName?: string,
       }
-    }
+    },
+    oneToOne?: {
+      [relationName: string]: {
+        table: PgTable<any>,
+      }
+    },
   }
