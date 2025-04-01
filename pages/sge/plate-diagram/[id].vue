@@ -2,12 +2,13 @@
 import _ from 'lodash'
 import type { PlateDiagram, PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
+import type { Plate } from '~/server/db/schema/sge/plate'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
 
-const plate: Ref<PlateDiagram | undefined> = ref()
+const plate: Ref<Plate | undefined> = ref()
 
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
 
@@ -57,21 +58,23 @@ const actionOnSelectedWells = function() {
 }
 </script>
 <template>
-
     <PlateDiagram
         v-if="plate"
         v-model="plate"
         @well-range-selected="wellRangeSelected"
         @well-selection-cleared="wellSelectionCleared"
-        @all-wells-selected="selectedAllWells" />
-
-    <div class="flex justify-center">
-        <Button
-            v-if="plate"
-            :disabled="_.isEmpty(selectedWells)"
-            label="Action on selected wells"
-            class="p-button-raised content-center"
-            @click="actionOnSelectedWells" />
-    </div>
-
+        @all-wells-selected="selectedAllWells">
+        <template #header>
+            {{ plate.name }}
+        </template>
+        <template #button1>
+            <Button
+                v-if="plate"
+                variant="text"
+                icon="pi pi-star"
+                v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
+                :disabled="_.isEmpty(selectedWells)"
+                @click="actionOnSelectedWells" />
+        </template>
+    </PlateDiagram>
 </template>

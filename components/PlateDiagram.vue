@@ -49,21 +49,27 @@ onMounted(async() => {
 </script>
 
 <template>
-    <div class="flex justify-center">
-        <div class="w-fit">
-            <div ref="plateDiagramDiv"></div>
+    <div class="w-fit">
+        <div class="flex justify-center">
+            <slot name="header" />
         </div>
-        <div v-if="showSidebar" class="flex flex-col justify-center items-center">
-            <Button v-if="showSelectAllButton" v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary">
-                <template #icon>
-                    <PhSelectionAllFill />
-                </template>
-            </Button>
-            <Button v-if="showClearSelectionButton" v-tooltip="{value: 'Clear selected wells', showDelay: 500}" @click="wellSelectionCleared" severity="secondary">
-                <template #icon>
-                    <PhSelectionSlash />
-                </template>
-            </Button>
+        <div class="flex">
+            <div ref="plateDiagramDiv"></div>
+            <div v-if="showSidebar" class="flex flex-col">
+                <Button v-if="showSelectAllButton" v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary">
+                    <template #icon>
+                        <PhSelectionAllFill />
+                    </template>
+                </Button>
+                <Button v-if="showClearSelectionButton" v-tooltip="{value: 'Clear selected wells', showDelay: 500}" @click="wellSelectionCleared" severity="secondary">
+                    <template #icon>
+                        <PhSelectionSlash />
+                    </template>
+                </Button>
+                <slot name="button1" />
+                <slot name="button2" />
+                <slot name="button3" />
+            </div>
         </div>
     </div>
 </template>
