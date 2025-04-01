@@ -4,12 +4,16 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { plates } from './plate'
+import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   plateId: uuid('plate_id').references(() => plates.id).notNull(),
   x: smallint().notNull(),
   y: smallint().notNull(),
+  amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id),
+  linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id),
+  homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id),
 }, (t) => [
   unique('unique_plate_coord').on(t.plateId, t.x, t.y),
 ])

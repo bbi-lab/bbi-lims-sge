@@ -13,7 +13,6 @@ export const linearizationPrimers = pgTable('linearization_primers', {
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
     storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
     storageBoxLoc: varchar('storage_box_loc'),
-    wellId: uuid('well_id').references(() => wells.id),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),
@@ -28,7 +27,6 @@ export const amplificationPrimers = pgTable('amplification_primers', {
     temperature: smallint('temperature'),
     storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
     storageBoxLoc: varchar('storage_box_loc'),
-    wellId: uuid('well_id').references(() => wells.id),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),
@@ -43,7 +41,6 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
     cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}),
     storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
     storageBoxLoc: varchar('storage_box_loc'),
-    wellId: uuid('well_id').references(() => wells.id),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),

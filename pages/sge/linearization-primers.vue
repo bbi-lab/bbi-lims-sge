@@ -113,10 +113,10 @@ const columnDefs = {
     storageBoxLoc: {
         display: false
     },
-    wellId: {
+    well: {
         header: 'Plate: Well',
         format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${numberToChar(x.well?.y)}${x.well?.x}` : ''},
-        path: 'wellId.displayValue',
+        path: 'well.displayValue',
         type: 'string',
         index: 5,
     },
@@ -142,23 +142,6 @@ const fieldDefs = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
-        }
-    },
-    wellId: {
-        label: 'Plate/Well',
-        component: 'NestedSelect',
-        props: {
-            parentSearchBaseUrl: `${config.public.apiBase}/plates`,
-            parentSearchFields: ['name'],
-            parentValueField: 'id',
-            parentDisplayFields: ['name'],
-            parentIftaLabel: 'Plate',
-
-            searchBaseUrl: `${config.public.apiBase}/wells`,
-            searchFields: ['x', 'y'],
-            valueField: 'id',
-            displayFormat: (well) => { return `${numberToChar(well.y)}${well.x}`},
-            parentKeyField: 'plateId',
         }
     },
 }

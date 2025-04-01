@@ -58,6 +58,21 @@ const wellsRelationsConfig: RelationsConfig = {
             referenceTable: plates,
             references: [plates.id],
         },
+        amplificationPrimer: {
+            fields: [wells.amplificationPrimerId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        linearizationPrimer: {
+            fields: [wells.linearizationPrimerId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        homologyArmPrimer: {
+            fields: [wells.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
     },
     many: {}
 }
@@ -340,13 +355,13 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
         },
-        well: {
-            fields: [amplificationPrimers.wellId],
-            referenceTable: wells,
-            references: [wells.id],
-        },
     },
-    many: {}
+    many: {},
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const amplificationPrimersRelations = relationsConfigToRelations(amplificationPrimers, amplificationPrimersRelationsConfig)
 
@@ -362,13 +377,13 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
         },
-        well: {
-            fields: [linearizationPrimers.wellId],
-            referenceTable: wells,
-            references: [wells.id],
-        },
     },
-    many: {}
+    many: {},
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const linearizationPrimersRelations = relationsConfigToRelations(linearizationPrimers, linearizationPrimersRelationsConfig)
 
@@ -384,13 +399,13 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
         },
-        well: {
-            fields: [homologyArmPrimers.wellId],
-            referenceTable: wells,
-            references: [wells.id],
-        },
     },
-    many: {}
+    many: {},
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
