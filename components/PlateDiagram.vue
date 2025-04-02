@@ -68,7 +68,7 @@ onMounted(async() => {
                         <PhSelectionAllFill />
                     </template>
                 </Button>
-                <Button v-if="showClearSelectionButton" v-tooltip="{value: 'Clear selected wells', showDelay: 500}" @click="wellSelectionCleared" severity="secondary">
+                <Button v-if="showClearSelectionButton" v-tooltip="{value: 'Clear selection', showDelay: 500}" @click="wellSelectionCleared" severity="secondary">
                     <template #icon>
                         <PhSelectionSlash />
                     </template>
