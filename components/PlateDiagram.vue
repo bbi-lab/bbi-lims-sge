@@ -3,9 +3,11 @@ import { makePlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
+import type { Plate } from '~/server/db/schema/sge/plate'
 
 const plateDiagram = ref()
 const plateDiagramDiv = ref()
+const modelValue = defineModel<Plate>()
 
 const props = defineProps({
     showSidebar: {
@@ -42,9 +44,11 @@ function allWellsSelected() {
 }
 
 onMounted(async() => {
-    plateDiagram.value = await makePlateDiagram({x: 12, y: 8})
-        .render(plateDiagramDiv.value)
-        .wellRangeSelected(wellRangeSelected)
+    if (modelValue.value){
+        plateDiagram.value = await makePlateDiagram(modelValue.value)
+            .render(plateDiagramDiv.value)
+            .wellRangeSelected(wellRangeSelected)
+    }
 })
 </script>
 
