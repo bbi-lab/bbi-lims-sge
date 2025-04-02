@@ -71,6 +71,7 @@ const props = defineProps({
   canEdit: {type: Boolean, default: true},
   canEditMultiple: {type: Boolean, default: false},
   canDelete: {type: Boolean, default: true},
+  canExport: {type: Boolean, default: true},
   rowsPerPageOptions: {type: Array as PropType<Array<number>> },
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
@@ -358,7 +359,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         <Button v-if="props.canDelete" label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="_.isEmpty(selectedRecords)" />
                     </template>
                     <template #end>
-                        <SplitButton label="Export" class="mr-2" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
+                        <SplitButton v-if="props.canExport" label="Export" class="mr-2" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
                         <Button icon="pi pi-cog" :disabled="showSettings" class="mr-2" severity="secondary" @click="showSettings=!showSettings"/>
                         <IftaLabel :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`">
                             <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
