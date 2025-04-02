@@ -1,0 +1,1 @@
+ALTER TABLE "wells" ADD CONSTRAINT "one_item_per_well" CHECK (num_nonnulls("wells"."amplification_primer_id", "wells"."linearization_primer_id", "wells"."homology_arm_primer_id") <= 1);

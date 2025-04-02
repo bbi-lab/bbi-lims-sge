@@ -1,5 +1,5 @@
-import { type InferSelectModel } from 'drizzle-orm'
-import { pgTable, uuid, smallint, primaryKey, unique} from 'drizzle-orm/pg-core'
+import { sql, type InferSelectModel } from 'drizzle-orm'
+import { pgTable, uuid, smallint, primaryKey, unique, check} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -16,6 +16,7 @@ export const wells = pgTable('wells', {
   homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id),
 }, (t) => [
   unique('unique_plate_coord').on(t.plateId, t.x, t.y),
+  check('one_item_per_well', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}) <= 1`),
 ])
 
 const selectWellSchema = createSelectSchema(wells)
