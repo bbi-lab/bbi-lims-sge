@@ -49,23 +49,22 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
   export function relationsConfigToRelations(table: PgTable<any>, relationsConfig: RelationsConfig) {
     return relations(table, ({ one, many }) => (
       {
-          ..._.mapValues(relationsConfig.one, (x) => {
+          ..._.mapValues(relationsConfig.one || {}, (x) => {
               return one(x.referenceTable, {
                 fields: x.fields,
                 references: x.references,
               })
           }),
-          ..._.mapValues(relationsConfig.many, (x) => {
+          ..._.mapValues(relationsConfig.many || {}, (x) => {
               if (x.relationName) {
                   return many(x.table, {relationName: x.relationName})
               } else {
                   return many(x.table)
               }
           }),
-          ...(relationsConfig.oneToOne ? _.mapValues(relationsConfig.oneToOne, (x) => {
+          ..._.mapValues(relationsConfig.oneToOne || {}, (x) => {
                 return one(x.table)
-            })
-          : {}),
+          }),
       }
   ))
 }
