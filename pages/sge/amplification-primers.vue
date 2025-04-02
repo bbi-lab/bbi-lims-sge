@@ -1,6 +1,6 @@
 <script setup>
 import _ from 'lodash'
-import { numberToChar } from '~/composables/lib/plate-diagram'
+import { wellCoordinateToChar } from '~/composables/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 
@@ -134,7 +134,7 @@ const columnDefs = {
     },
     well: {
         header: 'Plate: Well',
-        format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${numberToChar(x.well?.y)}${x.well?.x}` : ''},
+        format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
         path: 'well.displayValue',
         type: 'string',
         index: 5,
