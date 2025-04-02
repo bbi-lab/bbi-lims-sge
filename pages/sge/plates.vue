@@ -4,16 +4,8 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
 const route = useRoute()
-const queryParams = route.query
-
 const router = useRouter()
-const rowActions = {
-    layout: {
-        action: (data) => {
-            router.push({path:`/sge/plate-diagram/${data.id}`})
-        }
-    }
-}
+const queryParams = route.query
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -95,13 +87,27 @@ const fieldDefs = {
         display: false,
     }
 }
+
+const rowActions = {
+    layout: {
+        action: (data) => {
+            router.push({path:`/sge/plate-diagram/${data.id}`})
+        }
+    },
+    layoutAmp: {
+        label: 'Layout (AMP)',
+        action: (data) => {
+            router.push({path:`/sge/amp-plate-diagram/${data.id}`})
+        }
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="platesTable"
-                tableName="plates" 
+                tableName="plates"
                 schemaName="select"
                 :title="tableTitle || 'Plates'"
                 :columnDefs="columnDefs"
