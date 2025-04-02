@@ -5,9 +5,12 @@ import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
 import type { Plate } from '~/server/db/schema/sge/plate'
 
+export type PlateWithPlateDiagramWells = Plate & {
+    wells: PlateDiagramWell[]
+}
 const plateDiagram = ref()
 const plateDiagramDiv = ref()
-const modelValue = defineModel<Plate>()
+const modelValue = defineModel<PlateWithPlateDiagramWells>()
 
 const props = defineProps({
     showSidebar: {

@@ -1,23 +1,55 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import type { PlateDiagram, PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
-import type { Plate } from '~/server/db/schema/sge/plate'
+import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
 
-const plate: Ref<Plate | undefined> = ref()
+const plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
 
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
 
 onMounted(async() => {
-    plate.value = await RecordService.getRecord(
+    const plateWithWells = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
         route.params.id as string,
-        {wells: {columns: {x: true, y: true}}}
+        {
+            wells: {
+                columns: {
+                    x: true,
+                    y: true
+                },
+                with: {
+                    amplificationPrimer: true,
+                    linearizationPrimer: true,
+                    homologyArmPrimer:true,
+                }
+            }
+        }
     )
+    const plateDiagramWells = _.map(plateWithWells.wells, (well) => {
+        const wellContent = well.amplificationPrimer || well.linearizationPrimer || well.homologyArmPrimer
+        const wellContentType = well.amplificationPrimer ? 'AMP' : (well.linearizationPrimer ? 'LIN' : (well.homologyArmPrimer ? 'HA' : null))
+        const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
+        const wellColor = wellContent ? _.sample(VALID_WELL_COLORS) : undefined
+
+        return {
+            x: well.x,
+            y: well.y,
+            color: wellColor,
+            tooltip: wellContentTooltip,
+            selected: false,
+            inSelectionRange: false,
+        }
+    })
+    // replace wells from data model with plateDiagramWells to include visualization properties
+    plateWithPlateDiagramWells.value = {
+        ...plateWithWells,
+        wells: plateDiagramWells,
+    }
 })
 
 const wellRangeSelected = function(wells: PlateDiagramWell[]) {
@@ -60,17 +92,16 @@ const actionOnSelectedWells = function() {
 <template>
     <div class="flex justify-center w-full mt-10">
         <PlateDiagram
-            v-if="plate"
-            v-model="plate"
+            v-if="plateWithPlateDiagramWells"
+            v-model="plateWithPlateDiagramWells"
             @well-range-selected="wellRangeSelected"
             @well-selection-cleared="wellSelectionCleared"
             @all-wells-selected="selectedAllWells">
             <template #header>
-                {{ plate.name }}
+                {{ plateWithPlateDiagramWells.name }}
             </template>
             <template #button1>
                 <Button
-                    v-if="plate"
                     class="p-button-secondary"
                     icon="pi pi-star"
                     v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
