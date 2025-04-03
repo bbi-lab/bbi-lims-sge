@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { makePlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
@@ -8,7 +8,7 @@ import type { Plate } from '~/server/db/schema/sge/plate'
 export type PlateWithPlateDiagramWells = Plate & {
     wells: PlateDiagramWell[]
 }
-const plateDiagram = ref()
+const plateDiagram = ref<PlateDiagram | ((wells: PlateDiagramWell[]) => void) | null>()
 const plateDiagramDiv = ref()
 const modelValue = defineModel<PlateWithPlateDiagramWells>()
 
@@ -31,11 +31,13 @@ const emit = defineEmits([
     'well-range-selected',
     'well-selection-cleared',
     'all-wells-selected',
+    'well-contents-updated',
 ])
 
 function wellRangeSelected(wells: PlateDiagramWell[]) {
     emit('well-range-selected', wells)
 }
+
 function wellSelectionCleared() {
     plateDiagram.value?.clearSelection()
     emit('well-selection-cleared')
@@ -43,15 +45,26 @@ function wellSelectionCleared() {
 
 function allWellsSelected() {
     plateDiagram.value?.selectAllWells()
-    emit('all-wells-selected', plateDiagram.value?.wells())
+    emit('all-wells-selected', modelValue.value?.wells)
 }
 
 onMounted(async() => {
     if (modelValue.value){
-        plateDiagram.value = await makePlateDiagram(modelValue.value)
-            .render(plateDiagramDiv.value)
-            .wellRangeSelected(wellRangeSelected)
+        if (plateDiagramDiv.value) {
+            plateDiagram.value = makePlateDiagram()
+                .wells(modelValue.value.wells)
+                .render(plateDiagramDiv.value)
+                .wellRangeSelected(wellRangeSelected)
+        }
     }
+})
+
+const updateWellContents = (wells: PlateDiagramWell[]) => {
+    plateDiagram.value?.updateWellContents(wells)
+    emit('well-contents-updated', wells)
+}
+defineExpose({
+    updateWellContents,
 })
 </script>
 
