@@ -35,6 +35,7 @@ export const VALID_WELL_COLORS = [
 ]
 
 export interface PlateDiagramWell {
+    id?: string,
     x: number,
     y: number,
     color?: string,
@@ -82,6 +83,7 @@ export function makePlateDiagram(plate: PlateWithPlateDiagramWells): PlateDiagra
     const plateHeight = () => wellSize.y * plate.sizeY + (wellSpacing.y * plate.sizeY)
 
     // if wells aren't being passed, generate based on plate size
+    // TODO: may need to rethink this because it doesn't include well ids which limits usefulness of the plate diagram
     if (_.isEmpty(plate.wells)) {
         plate.wells = []
         for (const x of _.range(1, plate.sizeX + 1)) {
@@ -143,7 +145,7 @@ export function makePlateDiagram(plate: PlateWithPlateDiagramWells): PlateDiagra
             return plateDiagram
         },
 
-        selectAllWells: (value?: (() => void) | null) => {
+        selectAllWells: () => {
             plate.wells.forEach(well => well.selected = true)
             if (svg) updateWellOutlines(svg)
             return plateDiagram
