@@ -18,6 +18,7 @@ import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
+import { wells } from './well'
 
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
 const insertProjectSchema = selectProjectSchema.omit({id: true})
@@ -82,6 +83,10 @@ const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
 const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
 const updatePlatesSchema = insertPlatesSchema
+
+const selectWellsSchema = createSelectSchema(wells)
+const insertWellsSchema = selectWellsSchema.omit({id: true}).partial()
+const updateWellsSchema = insertWellsSchema.omit({plateId: true, x: true, y: true})
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -173,6 +178,11 @@ export const schemas = {
         select: selectPlatesSchema,
         insert: insertPlatesSchema,
         update: updatePlatesSchema,
+    },
+    wells: {
+        select: selectWellsSchema,
+        insert: insertWellsSchema,
+        update: updateWellsSchema,
     },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
