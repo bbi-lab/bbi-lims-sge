@@ -8,12 +8,23 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
 
+const plateWithWells = ref()
 const plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
-
+const plateDiagram = ref()
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
 
+const amplificationPrimerColorMap = computed(() => {
+    const amplificationPrimersList = _.uniq(_.compact(_.map(plateWithWells.value?.wells, (well) => {
+        return well.amplificationPrimer?.id
+    })))
+    const colorMap = _.zipObject(amplificationPrimersList, _.map(amplificationPrimersList, (val, idx) => {
+        return VALID_WELL_COLORS[idx % VALID_WELL_COLORS.length]
+    }))
+    return colorMap
+})
+
 onMounted(async() => {
-    const plateWithWells = await RecordService.getRecord(
+    plateWithWells.value = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
         route.params.id as string,
         {
@@ -25,17 +36,15 @@ onMounted(async() => {
                 },
                 with: {
                     amplificationPrimer: true,
-                    linearizationPrimer: true,
-                    homologyArmPrimer:true,
                 }
             }
         }
     )
-    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.wells, (well) => {
-        const wellContent = well.amplificationPrimer || well.linearizationPrimer || well.homologyArmPrimer
-        const wellContentType = well.amplificationPrimer ? 'AMP' : (well.linearizationPrimer ? 'LIN' : (well.homologyArmPrimer ? 'HA' : null))
+    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.value.wells, (well) => {
+        const wellContent = well.amplificationPrimer
+        const wellContentType = well.amplificationPrimer ? 'AMP' : null
         const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
-        const wellColor = wellContent ? _.sample(VALID_WELL_COLORS) : undefined
+        const wellColor = _.get(amplificationPrimerColorMap.value, wellContent?.id)
 
         const plateDiagramWell: PlateDiagramWell = {
             id: well.id,
@@ -50,7 +59,7 @@ onMounted(async() => {
     })
     // replace wells from data model with plateDiagramWells to include visualization properties
     plateWithPlateDiagramWells.value = {
-        ...plateWithWells,
+        ...plateWithWells.value,
         wells: plateDiagramWells,
     }
 })
@@ -144,8 +153,8 @@ const wellRangeSelected = function(wells: PlateDiagramWell[]) {
     toast.add({
         severity: 'info',
         summary: 'Well Range Selected',
-        detail: `You selected ${wells.length} wells`,
-        life: 3000,
+        detail: `You selected ${wells.length} ${wells.length==1 ? 'well' : 'wells'}`,
+        life: 1000,
     })
 }
 
@@ -155,7 +164,7 @@ const selectedAllWells = function(wells: PlateDiagramWell[]) {
         severity: 'info',
         summary: 'All Wells Selected',
         detail: `You selected ${wells.length} wells`,
-        life: 3000,
+        life: 1000,
     })
 }
 const wellSelectionCleared = function() {
@@ -164,7 +173,7 @@ const wellSelectionCleared = function() {
         severity: 'info',
         summary: 'Selection Cleared',
         detail: `You selected 0 wells`,
-        life: 3000,
+        life: 1000,
     })
 }
 const actionOnSelectedWells = function() {
@@ -172,7 +181,7 @@ const actionOnSelectedWells = function() {
         severity: 'info',
         summary: 'Well action',
         detail: `You performed an action on ${selectedWells.value?.length || 0} wells`,
-        life: 3000,
+        life: 1000,
     })
 }
 const rowActions = {
@@ -184,7 +193,7 @@ const rowActions = {
                     severity: 'error',
                     summary: 'Error',
                     detail: 'Select a single well to add contents',
-                    life: 3000,
+                    life: 1000,
                 })
             } else {
                 const updatedRecord = await RecordService.updateRecord(
@@ -195,18 +204,25 @@ const rowActions = {
                     }
                 )
                 if (updatedRecord?.id) {
+                    plateDiagram.value.updateWellContents([{
+                        id: updatedRecord.id,
+                        x: updatedRecord.x,
+                        y: updatedRecord.y,
+                        color: _.get(amplificationPrimerColorMap.value, data.id),
+                        tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
+                    }])
                     toast.add({
                         severity: 'info',
                         summary: 'Updated well',
                         detail: 'Well contents updated',
-                        life: 3000,
+                        life: 1000,
                     })
                 } else {
                     toast.add({
                         severity: 'error',
                         summary: 'Error',
                         detail: 'Error updating well contents',
-                        life: 3000,
+                        life: 1000,
                     })
                 }
             }
@@ -235,6 +251,7 @@ const rowActions = {
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
             <PlateDiagram
+                ref="plateDiagram"
                 v-if="plateWithPlateDiagramWells"
                 v-model="plateWithPlateDiagramWells"
                 @well-range-selected="wellRangeSelected"
