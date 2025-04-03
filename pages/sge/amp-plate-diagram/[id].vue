@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
+import type { Well } from '~/server/db/schema/sge/well'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -24,6 +25,10 @@ const amplificationPrimerColorMap = computed(() => {
 })
 
 onMounted(async() => {
+    refreshPlate()
+})
+
+const refreshPlate = async () => {
     plateWithWells.value = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
         route.params.id as string,
@@ -62,7 +67,7 @@ onMounted(async() => {
         ...plateWithWells.value,
         wells: plateDiagramWells,
     }
-})
+}
 
 const displayWithClause = Object.freeze({
     target: {
@@ -184,6 +189,42 @@ const actionOnSelectedWells = function() {
         life: 1000,
     })
 }
+const emptySelectedWells = async () => {
+    const updatedRecords = await RecordService.updateRecords(
+        `${config.public.apiBase}/wells`,
+        _.map(selectedWells.value, (well) => well.id),
+        {
+            amplificationPrimerId: null,
+        }
+    ) as Well[]
+    if (!_.isEmpty(updatedRecords)) {
+        await refreshPlate()
+        plateDiagram.value.updateWellContents(
+            _.map(updatedRecords || [], (updatedRecord: Well) => {
+                return {
+                    id: updatedRecord.id,
+                    x: updatedRecord.x,
+                    y: updatedRecord.y,
+                    color: null,
+                    tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}`,
+                }
+            })
+        )
+        toast.add({
+            severity: 'info',
+            summary: 'Updated well',
+            detail: `Emptied ${_.size(updatedRecords)} wells`,
+            life: 1000,
+        })
+    } else {
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error emptying wells',
+            life: 1000,
+        })
+    }
+}
 const rowActions = {
     assign: {
         label: '',
@@ -204,6 +245,7 @@ const rowActions = {
                     }
                 )
                 if (updatedRecord?.id) {
+                    await refreshPlate()
                     plateDiagram.value.updateWellContents([{
                         id: updatedRecord.id,
                         x: updatedRecord.x,
@@ -267,6 +309,14 @@ const rowActions = {
                         v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
                         :disabled="_.isEmpty(selectedWells)"
                         @click="actionOnSelectedWells" />
+                </template>
+                <template #button2>
+                    <Button
+                        class="p-button-secondary"
+                        icon="pi pi-trash"
+                        v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
+                        :disabled="_.isEmpty(selectedWells)"
+                        @click="emptySelectedWells" />
                 </template>
             </PlateDiagram>
         </SplitterPanel>
