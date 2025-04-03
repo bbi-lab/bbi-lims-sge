@@ -19,6 +19,7 @@ onMounted(async() => {
         {
             wells: {
                 columns: {
+                    id: true,
                     x: true,
                     y: true
                 },
@@ -30,13 +31,14 @@ onMounted(async() => {
             }
         }
     )
-    const plateDiagramWells = _.map(plateWithWells.wells, (well) => {
+    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.wells, (well) => {
         const wellContent = well.amplificationPrimer || well.linearizationPrimer || well.homologyArmPrimer
         const wellContentType = well.amplificationPrimer ? 'AMP' : (well.linearizationPrimer ? 'LIN' : (well.homologyArmPrimer ? 'HA' : null))
         const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
         const wellColor = wellContent ? _.sample(VALID_WELL_COLORS) : undefined
 
-        return {
+        const plateDiagramWell: PlateDiagramWell = {
+            id: well.id,
             x: well.x,
             y: well.y,
             color: wellColor,
@@ -44,6 +46,7 @@ onMounted(async() => {
             selected: false,
             inSelectionRange: false,
         }
+        return plateDiagramWell
     })
     // replace wells from data model with plateDiagramWells to include visualization properties
     plateWithPlateDiagramWells.value = {
@@ -103,7 +106,7 @@ const columnDefs = {
     },
     targetId: {
         header: 'Target',
-        format: (x) => {
+        format: (x: any) => {
             return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
         },
         path: 'targetId.displayValue',
@@ -111,7 +114,7 @@ const columnDefs = {
         index: 2,
     },
     project: {
-        format: (x) => {
+        format: (x: any) => {
             return x.target?.project?.name || ''
         },
         path: 'project.displayValue',
@@ -119,7 +122,7 @@ const columnDefs = {
     },
     storageBoxId: {
         header: 'Storage',
-        format: (x) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+        format: (x: any) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
         path: 'storageBoxId.displayValue',
         type: 'string',
         index: 4,
@@ -129,7 +132,7 @@ const columnDefs = {
     },
     well: {
         header: 'Plate: Well',
-        format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
+        format: (x: any) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
         path: 'well.displayValue',
         type: 'string',
         index: 5,
@@ -172,6 +175,47 @@ const actionOnSelectedWells = function() {
         life: 3000,
     })
 }
+const rowActions = {
+    assign: {
+        label: '',
+        action: async (data: any) => {
+            if (_.size(selectedWells.value) != 1) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Select a single well to add contents',
+                    life: 3000,
+                })
+            } else {
+                const updatedRecord = await RecordService.updateRecord(
+                    `${config.public.apiBase}/wells`,
+                    {
+                        id: _.get(selectedWells.value, [0, 'id']),
+                        amplificationPrimerId: data.id,
+                    }
+                )
+                if (updatedRecord?.id) {
+                    toast.add({
+                        severity: 'info',
+                        summary: 'Updated well',
+                        detail: 'Well contents updated',
+                        life: 3000,
+                    })
+                } else {
+                    toast.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error updating well contents',
+                        life: 3000,
+                    })
+                }
+            }
+        },
+        icon: 'pi pi-fw pi-arrow-right',
+        iconPos: 'right',
+        tooltip: 'Assign to well',
+    },
+}
 </script>
 <template>
     <Splitter class="h-full mb-8">
@@ -186,6 +230,7 @@ const actionOnSelectedWells = function() {
                 :canExport="false"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :rowActions="rowActions"
             />
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
