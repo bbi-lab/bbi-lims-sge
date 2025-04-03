@@ -115,7 +115,7 @@ export function makePlateDiagram(): PlateDiagram {
             svg.selectAll<SVGRectElement, PlateDiagramWell>('rect')
                 .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
                     if (_.map(updatedWells, (x) => x.id).includes(d.id)){
-                        const updatedColor = _.find(updatedWells, (x) => x.id == d.id)?.color
+                        const updatedColor = _.find(updatedWells, (x) => x.id == d.id)?.color || '#ddd'
                         const updatedTooltip = _.find(updatedWells, (x) => x.id == d.id)?.tooltip
                         if (updatedColor) {
                             d3.select(this)
