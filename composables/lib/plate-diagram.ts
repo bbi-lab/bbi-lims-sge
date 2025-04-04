@@ -38,11 +38,12 @@ export interface PlateDiagramWell {
     id: string,
     x: number,
     y: number,
+    data?: any,
     color?: string,
     tooltip?: string,
     symbol?: string,
-    selected: boolean,
-    inSelectionRange: boolean,
+    selected?: boolean,
+    inSelectionRange?: boolean,
 }
 
 export interface PlateDiagram {
