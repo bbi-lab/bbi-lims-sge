@@ -259,15 +259,16 @@ const rowActions = {
                 )
                 if (updatedRecord?.id) {
                     await refreshPlate()
+                    selectedWells.value = [{
+                        id: updatedRecord.id,
+                        x: updatedRecord.x,
+                        y: updatedRecord.y,
+                        data: updatedRecord,
+                        color: _.get(amplificationPrimerColorMap.value, data.id),
+                        tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
+                    }]
                     plateDiagram.value.updateWellContents(
-                        [{
-                            id: updatedRecord.id,
-                            x: updatedRecord.x,
-                            y: updatedRecord.y,
-                            data: updatedRecord,
-                            color: _.get(amplificationPrimerColorMap.value, data.id),
-                            tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
-                        }],
+                        selectedWells.value,
                         oldValues
                     )
                     amplificationPrimersTable.value.addOrRefreshRecordId(data.id)
