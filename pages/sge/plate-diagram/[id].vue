@@ -94,6 +94,7 @@ const actionOnSelectedWells = function() {
         <PlateDiagram
             v-if="plateWithPlateDiagramWells"
             v-model="plateWithPlateDiagramWells"
+            :plateType="plateWithPlateDiagramWells.plateType"
             @well-range-selected="wellRangeSelected"
             @well-selection-cleared="wellSelectionCleared"
             @all-wells-selected="selectedAllWells">

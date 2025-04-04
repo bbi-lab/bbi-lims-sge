@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram, type PlateDiagram, type PlateType, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
@@ -24,6 +24,10 @@ const props = defineProps({
     showClearSelectionButton: {
         type: Boolean,
         default: true,
+    },
+    plateType: {
+        type: String as PropType<PlateType>,
+        required: true,
     },
 })
 
@@ -51,7 +55,7 @@ function allWellsSelected() {
 onMounted(async() => {
     if (modelValue.value){
         if (plateDiagramDiv.value) {
-            plateDiagram.value = makePlateDiagram()
+            plateDiagram.value = makePlateDiagram(props.plateType)
                 .wells(modelValue.value.wells)
                 .render(plateDiagramDiv.value)
                 .wellRangeSelected(wellRangeSelected) as PlateDiagram
