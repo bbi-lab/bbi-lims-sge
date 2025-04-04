@@ -13,7 +13,7 @@ const props = defineProps({
   searchBaseUrl: {type: String, required: true},
   valueField: {type: String, default: 'id'},
   displayFields: {type: Array, default: ['name']},
-  displayFormat: {type: Object},
+  displayFormat: {type: Function},
   searchWithClause: {type: Object},
   searchWhereClause: {type: Object},
   parentKeyField: {type: String, required: true},
@@ -29,7 +29,11 @@ const parentValue = ref()
 const parentAutoCompleter = ref()
 const autoCompleter = ref()
 const searchWhereClauseFinal = ref()
+const mainRef = ref()
 
+const emit = defineEmits([
+    'clearedValue'
+])
 
 onMounted(async () => {
     if (modelValue.value) {
@@ -39,7 +43,7 @@ onMounted(async () => {
 })
 
 watch(parentValue, (newValue, oldValue) => {
-    if (!_.isEmpty(newValue, oldValue)) {
+    if (!_.isEqual(newValue, oldValue)) {
         const filter = {"==":[{"var": props.parentKeyField}, newValue]}
         searchWhereClauseFinal.value = props.searchWhereClause ? {and: [
                 filter,
@@ -48,16 +52,26 @@ watch(parentValue, (newValue, oldValue) => {
     }
 })
 
-function parentValueChanged(event) {
-    autoCompleter.value.clearValue()
+const parentValueChanged = (event) => {
+    if (autoCompleter.value) {
+        autoCompleter.value.clearValue()
+        emit('clearedValue')
+    }
 }
-function clearValues(event) {
-    autoCompleter.value.clearValue()
-    parentAutoCompleter.value.clearValue()
+const clearValues = (event) => {
+    if (autoCompleter.value && parentAutoCompleter.value) {
+        autoCompleter.value.clearValue()
+        parentAutoCompleter.value.clearValue()
+        emit('clearedValue')
+    }
 }
+defineExpose({
+    mainRef,
+    parentValue,
+})
 </script>
 <template>
-    <div class="outline outline-gray-200 pt-5 pb-5 pl-2 w-96">
+    <div ref="mainRef" class="outline outline-gray-200 pt-5 pb-5 pl-2 w-96">
         <div class="mb-5">
             <AutoCompleter
                 v-model="parentValue"
@@ -70,11 +84,11 @@ function clearValues(event) {
                 :searchWithClause="parentSearchWithClause"
                 :dropdown="true"
                 :hideClearButton="true"
-                @value-changed="parentValueChanged"
+                @changedValue="parentValueChanged"
             />
         </div>
         <div>
-            <AutoCompleter 
+            <AutoCompleter
                 v-model="modelValue"
                 ref="autoCompleter"
                 :input-id="inputId"
@@ -89,6 +103,7 @@ function clearValues(event) {
                 :hideClearButton="true"
                 :placeholderValue="placeholderValue"
                 :inputClass="inputClass"
+                @update:modelValue="finalValueChanged"
             />
             <Button v-if="!_.isEmpty(parentValue) && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
         </div>

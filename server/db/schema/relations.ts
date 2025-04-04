@@ -21,7 +21,7 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
     },
     many:{}
   }
-  
+
   export const userGroupsRelationsConfig: RelationsConfig = {
     one:{},
     many:{
@@ -33,7 +33,7 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
       }
     }
   }
-  
+
   export const usersRelationsConfig: RelationsConfig = {
     one:{},
     many: {
@@ -45,29 +45,31 @@ export const userGroupMembershipsRelationsConfig: RelationsConfig = {
       }
     }
   }
-  
+
   export function relationsConfigToRelations(table: PgTable<any>, relationsConfig: RelationsConfig) {
     return relations(table, ({ one, many }) => (
       {
-          ..._.mapValues(relationsConfig.one, (x) => {
+          ..._.mapValues(relationsConfig.one || {}, (x) => {
               return one(x.referenceTable, {
                 fields: x.fields,
                 references: x.references,
               })
           }),
-          ..._.mapValues(relationsConfig.many, (x) => {
+          ..._.mapValues(relationsConfig.many || {}, (x) => {
               if (x.relationName) {
                   return many(x.table, {relationName: x.relationName})
               } else {
                   return many(x.table)
               }
-          })
+          }),
+          ..._.mapValues(relationsConfig.oneToOne || {}, (x) => {
+                return one(x.table)
+          }),
       }
   ))
 }
 
-  // relations
-  export const usersRelations = relationsConfigToRelations(users, usersRelationsConfig)
-  export const userGroupsRelations = relationsConfigToRelations(userGroups, userGroupsRelationsConfig)
-  export const userGroupMembershipsRelations = relationsConfigToRelations(userGroupMemberships, userGroupMembershipsRelationsConfig)
-  
+// relations
+export const usersRelations = relationsConfigToRelations(users, usersRelationsConfig)
+export const userGroupsRelations = relationsConfigToRelations(userGroups, userGroupsRelationsConfig)
+export const userGroupMembershipsRelations = relationsConfigToRelations(userGroupMemberships, userGroupMembershipsRelationsConfig)

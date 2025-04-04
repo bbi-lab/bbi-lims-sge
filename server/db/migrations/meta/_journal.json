@@ -141,6 +141,41 @@
       "when": 1742599048429,
       "tag": "0019_thick_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1742853648275,
+      "tag": "0020_mean_boom_boom",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1742915094473,
+      "tag": "0021_premium_victor_mancha",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1743562831806,
+      "tag": "0022_slow_spyke",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1743563079727,
+      "tag": "0023_pale_prima",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1743793561438,
+      "tag": "0024_light_cargill",
+      "breakpoints": true
     }
   ]
 }

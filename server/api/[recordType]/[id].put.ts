@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { updateTargets } from '~/server/services/transfect-experiment-services'
+import { parsePutPostError } from '~/server/utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -22,15 +23,11 @@ export default defineEventHandler(async (event) => {
 
         return updatedRecord
     } catch (e: any) {
-        let data
-        try {
-            data = JSON.parse(e.message)
-        } catch (e) {
-            data = {}
-        }
+        const { error, data } = parsePutPostError(e, recordType)
+
         throw createError({
             statusCode: 400,
-            statusMessage: e.message,
+            statusMessage: error.message,
             data
         })
     }

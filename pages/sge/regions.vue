@@ -6,7 +6,9 @@ const router = useRouter()
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
+const showMultipleEditForm = ref(false)
 const editingRecordId = ref(null)
+const editingMultipleRecordsIds = ref([])
 const regionsTable = ref()
 const route = useRoute()
 const queryParams = route.query
@@ -39,7 +41,22 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) regionsTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 function didAddRecord(event) {
     regionsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
@@ -55,19 +72,18 @@ function didDeleteRecord(event) {
 
 const displayWithClause = Object.freeze({
     gene:{
-        columns: {symbol: true}
+        columns: {symbol: true, ncbiAccession: true}
     },
     targets: {
         columns: {id: true}
     },
 })
 const columnDefs = {
-    gene: {
-        path: 'gene.symbol',
-        index: 0,
-    },
     geneId: {
-        display: false
+        header: 'Gene',
+        format: (x) => { return `${_.get(x, 'gene.symbol')} (${_.get(x, 'gene.ncbiAccession')})`},
+        path: 'geneId.displayValue',
+        index: 0,
     },
     snvLibraryStart: {
         header: 'SNV library start'
@@ -81,7 +97,7 @@ const columnDefs = {
 }
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.targets?.length || 0}`}, 
+        label: (data) => { return `${data.targets?.length || 0}`},
         action: (data) => {
             router.push({path:`/sge/targets`, query: {'regionId': data.id}})
         },
@@ -96,9 +112,10 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/genes`,
-            searchFields: ['symbol'],
+            searchFields: ['symbol', 'ncbiAccession'],
             valueField: 'id',
-            displayFields: ['symbol'],
+            displayFields: ['symbol', 'ncbiAccession'],
+            displayFormat: (x) => `${x.symbol} (${x.ncbiAccession})`,
         }
     },
     snvLibraryStart: {
@@ -106,7 +123,10 @@ const fieldDefs = {
     },
     snvLibraryEnd: {
         label: 'SNV library end'
-    }
+    },
+    targets: {
+        display: false,
+    },
 }
 
 // convert query params in to JSON Logic to pass as where clause
@@ -128,11 +148,14 @@ const defaultValues = queryParams
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="regions"
@@ -152,6 +175,15 @@ const defaultValues = queryParams
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="regions"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

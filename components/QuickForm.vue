@@ -4,19 +4,6 @@ import { RecordService } from '@/utils/service/RecordService'
 import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 
-// types here can be refined further based on JsonSchema, but this is a good starting point
-interface SchemaItems {
-    properties?: Record<string, { default?: any }>;
-    type?: string;
-    enum?: string[];
-    oneOf?: Record<string, SchemaItems>[];
-    anyOf?: Record<string, SchemaItems>;
-    items?: SchemaItems;
-}
-interface FormSchema {
-    properties: Record<string, SchemaItems>;
-}
-
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
@@ -63,6 +50,7 @@ const emit = defineEmits([
 ])
 
 const formSchema = ref<FormSchema>()
+const formElement = ref<HTMLElement | null>(null)
 const record = ref()
 const relatedRecords = ref<Record<string, any>>({})
 const dataChanged = ref(false)
@@ -149,6 +137,7 @@ function getLabel(key: string) {
 }
 async function saveRecord() {
     if (props.readOnly) return
+
     if (_.has(record.value, 'id') && record.value.id && formSchema.value) {
         // updating single record - limit to properties in JSON schema
         const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value.properties))}
@@ -156,8 +145,8 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            if (_.isArray(error.data?.data)) {
-                addErrorsToForm(error.data.data)
+            if (formElement.value && _.isArray(error.data?.data)) {
+                addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             }
@@ -185,11 +174,11 @@ async function saveRecord() {
                 toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
                 emit('record-add', result)
             }).catch(error => {
-                if (_.isArray(error.data?.data)) {
-                    addErrorsToForm(error.data.data)
+                if (formElement.value && _.isArray(error.data?.data)) {
+                    addErrorsToForm(formElement.value, error.data.data)
                 } else {
                     toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-                }    
+                }
             })
         }
     }
@@ -200,16 +189,16 @@ function isReadOnly(key: string) {
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
-        <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`, showDelay: 1000}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
-        <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecord" />
-        <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete', showDelay: 1000}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
+        <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
+        <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save'}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecord" />
+        <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete'}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
-    <div class="pl-8 pb-24 h-full overflow-y-scroll">
+    <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <AutoCompleter 
+                    <AutoCompleter
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
@@ -219,7 +208,7 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <NestedSelect 
+                    <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
@@ -241,11 +230,11 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <DatePicker 
+                    <DatePicker
                         class="w-80"
                         :id="key"
-                        v-model.trim="record[key]" 
-                        showTime 
+                        v-model.trim="record[key]"
+                        showTime
                         showIcon
                         dateFormat="yy-mm-dd"
                         hourFormat="24"
@@ -268,11 +257,11 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" /> 
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" /> 
+                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
@@ -301,12 +290,16 @@ function isReadOnly(key: string) {
                             <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <InputText class="w-80" v-model="record[key][arrayIndex]" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='integer'">
-                            <InputNumber class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <!-- Array properties not covered by JSON schema -->
                         <template v-else=>
@@ -317,6 +310,9 @@ function isReadOnly(key: string) {
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <InputText :id="key" v-model="record[key]" class="w-80" :disabled="isReadOnly(key)" />
+                    <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
+                        <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
+                    </a>
                 </div>
             </template>
         </div>

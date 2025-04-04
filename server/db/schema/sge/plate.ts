@@ -1,5 +1,5 @@
 import { type InferSelectModel, relations } from 'drizzle-orm'
-import { pgTable, smallint, uuid, varchar} from 'drizzle-orm/pg-core'
+import { pgTable, smallint, unique, uuid, varchar} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -8,11 +8,11 @@ import { pcrExperiments } from './pcr-experiment'
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
-  name: varchar('name', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
+  plateType: varchar('plate_type', {enum: ['storage', 'pcr']}).notNull(),
 })
-
 
 const selectPlateSchema = createSelectSchema(plates)
 const insertPlateSchema = selectPlateSchema.omit({id: true, sizeX: true, sizeY: true})

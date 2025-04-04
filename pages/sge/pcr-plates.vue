@@ -4,16 +4,8 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 
 const route = useRoute()
-const queryParams = route.query
-
 const router = useRouter()
-const rowActions = {
-    layout: {
-        action: (data) => {
-            router.push({path:`/sge/plate-diagram/${data.id}`})
-        }
-    }
-}
+const queryParams = route.query
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -64,7 +56,7 @@ function didDeleteRecord(event) {
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const defaultValues = queryParams
+const defaultValues = {plateType: 'pcr', sizeX: 12, sizeY: 8, ...queryParams}
 
 const columnDefs = {
     pcrExperimentId: {
@@ -78,7 +70,10 @@ const columnDefs = {
     },
     wells: {
         display: false,
-    }
+    },
+    plateType: {
+        display: false,
+    },
 }
 const fieldDefs = {
     pcrExperimentId: {
@@ -95,13 +90,22 @@ const fieldDefs = {
         display: false,
     }
 }
+
+const rowActions = {
+    layout: {
+        action: (data) => {
+            router.push({path:`/sge/plate-diagram/${data.id}`})
+        }
+    },
+}
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 ref="platesTable"
-                tableName="plates" 
+                tableName="plates"
                 schemaName="select"
                 :title="tableTitle || 'Plates'"
                 :columnDefs="columnDefs"

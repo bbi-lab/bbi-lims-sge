@@ -106,7 +106,7 @@ export function useDrizzle() {
 }
 
 export interface RelationsConfig {
-    one: {
+    one?: {
       [relationName: string]: {
         fields: [AnyPgColumn<any>, ...AnyPgColumn<any>[]],
         referenceTable: PgTable<any>,
@@ -114,7 +114,7 @@ export interface RelationsConfig {
         relationName?: string,
       }
     },
-    many: {
+    many?: {
       [relationName: string]: {
         table: PgTable<any>,
         schema: ZodObject<any>,
@@ -122,5 +122,10 @@ export interface RelationsConfig {
         relationsConfig?: RelationsConfig,
         relationName?: string,
       }
-    }
+    },
+    oneToOne?: {
+      [relationName: string]: {
+        table: PgTable<any>,
+      }
+    },
   }

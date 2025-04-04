@@ -45,3 +45,16 @@ export type InferQueryModel<
   TableName extends keyof TSchema,
   QBConfig extends Exact<QueryConfig<TableName>, QBConfig> = {} // <-- notice Exact here to prevent invalid keys
 > = BuildQueryResult<TSchema, TSchema[TableName], QBConfig>
+
+// types here can be refined further based on JsonSchema, but this is a good starting point
+interface SchemaItems {
+  properties?: Record<string, { default?: any }>
+  type?: string
+  enum?: string[]
+  oneOf?: Record<string, SchemaItems>[]
+  anyOf?: Record<string, SchemaItems>
+  items?: SchemaItems
+}
+export interface FormSchema {
+  properties: Record<string, SchemaItems>
+}

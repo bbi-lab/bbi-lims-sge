@@ -1,13 +1,13 @@
-
 <script setup>
+import _, { size } from 'lodash'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
 const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
-const nucleicAcidsTable = ref()
+const storagePlatesTable = ref()
 const router = useRouter()
-const config = useRuntimeConfig()
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -38,98 +38,70 @@ function didClickCancelMultipleEditForm() {
 }
 function didUpdateMultipleRecords(event) {
     event.forEach(e => {
-        if (e.id) nucleicAcidsTable.value.addOrRefreshRecordId(e.id)
+        if (e.id) storagePlatesTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
 function didAddRecord(event) {
-    nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
+    storagePlatesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
-    nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
+    storagePlatesTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
-    nucleicAcidsTable.value.removeRecordId(event.id)
+    storagePlatesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 const columnDefs = {
-    pellet: {
-        format: (x) => `${x.pellet?.transfectTargetId?.experiment?.name}: ${x.pellet?.transfectTargetId?.target?.name}`,
-        path: 'pellet.displayValue',
-        type: 'string',
-        index: 1,
-    },
-    extractionExperiment: {
-        path: 'extractionExperiment.name',
-        index: 2,
-    },
-    storageBox: {
-        path: 'storageBox.name',
-        index: 3,
-    },
-    storageBoxLoc: {
-        index: 4,
-    },
-    extractionExperimentId: {
+    plateType: {
         display: false
     },
-    storageBoxId: {
+    pcrExperimentId: {
         display: false
     },
-    pelletId: {
+    sizeX: {
         display: false
+    },
+    sizeY: {
+        display: false
+    },
+    wells: {
+        display: false
+    },
+}
+const rowActions = {
+    layout: {
+        action: (data) => {
+            router.push({path:`/sge/amp-plate-diagram/${data.id}`})
+        },
     }
 }
+const defaultValues = {plateType: 'storage', sizeX: 12, sizeY: 8}
+
 const fieldDefs = {
-    extractionExperimentId: {
-        label: 'Experiment',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/extraction-experiments`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
+    pcrExperimentId: {
+        display: false,
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
-    pelletId: {
-        label: 'Pellet',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/pellets`,
-            searchFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
-            searchWithClause: {
-                transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
-            },
-            valueField: 'id',
-            displayFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
-        }
-    },
+    wells: {
+        display: false,
+    }
 }
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="nucleicAcidsTable"
-                tableName="nucleicAcids"
+                ref="storagePlatesTable"
+                tableName="plates"
                 schemaName="select"
-                title="Nucleic Acids"
-                :columnDefs="columnDefs"
-                :withClause="{extractionExperiment: {columns: {name: true}}, storageBox: {columns: {name: true}}, pellet: {columns: {}, with: {transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}}}}}"
+                title="Storage plates"
                 :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
+                :columnDefs="columnDefs"
+                :where="{'==': [{var: 'plateType'}, 'storage'] }"
+                :rowActions="rowActions"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
@@ -138,28 +110,31 @@ const fieldDefs = {
          <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
-                tableName="nucleicAcids"
+                tableName="plates"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="showEditForm"
                 :recordId="editingRecordId"
-                tableName="nucleicAcids"
+                tableName="plates"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
             />
             <QuickFormMultiple
                 v-if="showMultipleEditForm"
-                tableName="nucleic-acids"
+                tableName="plates"
                 :recordIds="editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
             />

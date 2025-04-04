@@ -54,7 +54,7 @@ function getPelletCount(targets) {
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
     technician: {columns: {name: true}},
-    transfectLotUsage: {columns: {},  
+    transfectLotUsage: {columns: {},
         with: {
             lot:  {
                 columns: {
@@ -72,7 +72,7 @@ const displayWithClause = Object.freeze({
                 },
                 with: {
                     region:{
-                        columns: {name: true}, 
+                        columns: {name: true},
                         with: {
                             gene: {
                                 columns: {symbol: true}
@@ -115,7 +115,7 @@ const columnDefs = {
     },
     currentDay: {
         header: 'Current day #',
-        format: (x) => { 
+        format: (x) => {
             const days = moment().diff(moment(x.startedOn), 'days')
             return days ? `Day ${days > 17 ? '17+' : days}` : ''
         },
@@ -126,7 +126,7 @@ const columnDefs = {
 
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.transfectTargets?.length || 0}`}, 
+        label: (data) => { return `${data.transfectTargets?.length || 0}`},
         action: (data) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/targets`})
         },
@@ -135,7 +135,7 @@ const rowActions = {
         tooltip: 'Targets',
     },
     pellets: {
-        label: (data) => { return `${getPelletCount(data.transfectTargets)}`}, 
+        label: (data) => { return `${getPelletCount(data.transfectTargets)}`},
         action: (data) => {
             router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
         },
@@ -153,7 +153,7 @@ const rowActions = {
         tooltip: 'Reagents',
     },
     harvest: {
-        label: () => 'Harvest', 
+        label: () => 'Harvest',
         action: (data) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/harvest`})
         },
@@ -208,7 +208,7 @@ const fieldDefs = {
                 v-if="showAddForm"
                 tableName="transfect-experiments"
                 schemaName="insert"
-                :fieldDefs="{transfectTargets: {display: false}}"
+                :fieldDefs="{transfectTargets: {display: false}, transfectLotUsage: {display: false}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />

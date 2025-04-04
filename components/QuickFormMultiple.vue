@@ -5,19 +5,6 @@ import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } fr
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
 import { useActiveElement } from '@vueuse/core'
 
-// types here can be refined further based on JsonSchema, but this is a good starting point
-interface SchemaItems {
-    properties?: Record<string, { default?: any }>;
-    type?: string;
-    enum?: string[];
-    oneOf?: Record<string, SchemaItems>[];
-    anyOf?: Record<string, SchemaItems>;
-    items?: SchemaItems;
-}
-interface FormSchema {
-    properties: Record<string, SchemaItems>;
-}
-
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
@@ -43,49 +30,59 @@ const emit = defineEmits([
 ])
 const dataChanged = ref(false)
 const formSchema = ref<FormSchema>()
+const formElement = ref<HTMLElement | null>(null)
 const records = ref<Array<Record<string, any>>>([])
-const combinedRecord = ref<Record<string, any>>({})
-const previousCombinedRecord = ref<Record<string, any>>({})
+const combinedRecord = ref<Record<string, {val: any, conflictingValueCount?: number, valClearedByUser?: boolean }>>({})
+const previousCombinedRecord = ref<Record<string, {val: any, conflictingValueCount?: number, valClearedByUser?: boolean }>>({})
 const relatedRecords = ref<Record<string, any>>({})
-const conflictingValueCounts = ref<Record<string, number>>({})
-
-// keys of fields that have been set to null by the user, as opposed to those that are null due to conflicting values
-const updatedToNullKeys = ref<Set<string>>(new Set<string>())
+const inputRefs = ref({})
 
 const clearValue = (key: string) => {
-    combinedRecord.value[key] = null
-    updatedToNullKeys.value.add(key)
-    dataChanged.value = true
+    _.set(combinedRecord.value, [key, 'val'], null)
+    _.set(combinedRecord.value, [key, 'valClearedByUser'], true)
 }
 
 const revertToConflictingValue = (key: string) => {
-    combinedRecord.value[key] = null
-    updatedToNullKeys.value.delete(key)
+    _.set(combinedRecord.value, [key, 'val'], null)
+    _.unset(combinedRecord.value, [key, 'valClearedByUser'])
+}
+const revertNestedSelectToConflictingValue = (key: string) => {
+    const nestedSelectRef = inputRefs.value[key]
+    nestedSelectRef.parentValue = null
+    revertToConflictingValue(key)
 }
 
 const inputClasses = computed(() => {
     return _.mapValues(combinedRecord.value, (value, key) => {
         const activeElementInputId = activeElement.value?.getAttribute('id')
-        return key != activeElementInputId && _.has(conflictingValueCounts.value, key) && value == null && !updatedToNullKeys.value.has(key) ? 'bg-surface-200 dark:bg-gray-800' : ''
+        return key != activeElementInputId
+            && _.has(combinedRecord.value, [key, 'conflictingValueCount'])
+            && _.isNull(value.val)
+            && !_.get(combinedRecord.value, [key, 'valClearedByUser'], false)
+            ? 'bg-surface-200 dark:bg-gray-800' : ''
     })
 })
 
 const placeholders = computed(() => {
     return _.mapValues(combinedRecord.value, (value, key) => {
         const activeElementInputId = activeElement.value?.getAttribute('id')
-        return key != activeElementInputId && _.has(conflictingValueCounts.value, key) && !updatedToNullKeys.value.has(key) ? `${conflictingValueCounts.value[key]} values` : ''
+        return key != activeElementInputId
+            && _.has(combinedRecord.value, [key, 'conflictingValueCount'])
+            && !_.get(combinedRecord.value, [key, 'valClearedByUser'], false)
+            ? `${_.get(combinedRecord.value, [key, 'conflictingValueCount'])} values` : ''
     })
 })
 
 const showRevertButton = (key: string) => {
-    return _.has(conflictingValueCounts.value, key) && updatedToNullKeys.value.has(key)
+    return _.has(combinedRecord.value, [key, 'conflictingValueCount']) && (!_.isNull(combinedRecord.value[key].val) || _.get(combinedRecord.value, [key, 'valClearedByUser']))
 }
+
 const changedToNullCheck = (key: string) => {
-    if (_.isNull(combinedRecord.value[key])) {
-        updatedToNullKeys.value.add(key)
+    if (_.isNull(combinedRecord.value[key].val)) {
+        _.set(combinedRecord.value, [key, 'valClearedByUser'], true)
         dataChanged.value = true
     } else {
-        updatedToNullKeys.value.delete(key)
+        _.unset(combinedRecord.value, [key, 'valClearedByUser'])
     }
 }
 onMounted(() => refreshForm())
@@ -98,54 +95,47 @@ const refreshForm = async function() {
         _.forEach(record, (value, key) => {
             if (key == 'id') return  // ignore ids
             if (acc[key] === undefined) {
-                acc[key] = value
-            } else if (!_.isEqual(value, acc[key])) {
-                acc[key] = null
-                conflictingValueCounts.value[key] = _.get(conflictingValueCounts, key, 1) + 1
+                _.set(acc, [key, 'val'], value)
+            } else if (!_.isEqual(value, _.get(acc, [key, 'val']))) {
+                _.set(acc, [key, 'val'], null)
+                _.set(acc, [key, 'conflictingValueCount'], _.get(acc, [key, 'conflictingValueCount'], 1) + 1)
             } else {
-                acc[key] = value
+                _.set(acc, [key, 'val'], value)
             }
         })
         return acc
     }, {})
-    dataChanged.value = false
+
+    nextTick(() => dataChanged.value = false)
 }
 
 watch(() => combinedRecord.value, (newValue, oldValue) => {
     const actualOldValue = _.isEqual(newValue, oldValue) ? previousCombinedRecord.value : oldValue
     previousCombinedRecord.value = JSON.parse(JSON.stringify(newValue))
-    
-    if (!_.isEqual(newValue, actualOldValue) && newValue?.id == actualOldValue?.id ) {
-        // make sure changes are not result of replacing foreign key string values with objects (e.x. using withClause)
-        const changes =_.differenceWith(_.toPairs(actualOldValue), _.toPairs(newValue), _.isEqual)
-        _.keys(_.fromPairs(changes)).forEach((k) => {
-            const oldVal = _.get(actualOldValue, [k, 'id'], actualOldValue?.[k])
-            const newVal = _.get(newValue, [k, 'id'], newValue?.[k])
-            if (oldVal != newVal) {
-                dataChanged.value = true
-            }
-        })
+
+    if (!_.isEqual(newValue, actualOldValue)) {
+        dataChanged.value = true
     }
 }, { deep: true })
 
 async function saveRecords() {
     if (props.readOnly) return
 
-    const valuesToUpdate = _.pickBy(combinedRecord.value, (value, key) => {
-        return !_.isNull(value) || !_.has(conflictingValueCounts.value, key)
+    const valuesToUpdate = _.mapValues(_.pickBy(combinedRecord.value, (value, key) => {
+        return !_.isNull(value.val) || _.get(value, 'valClearedByUser') || !_.has(value, 'conflictingValueCount')
+    }), (value, key) => {
+        return value.val
     })
-    
     RecordService.updateRecords(apiBaseUrl.value, props.recordIds, valuesToUpdate).then((result: any) => {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
-        if (_.isArray(error.data?.data)) {
-            addErrorsToForm(error.data.data)
+        if (formElement.value && _.isArray(error.data?.data)) {
+            addErrorsToForm(formElement.value, error.data.data)
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         }
     })
-
 }
 
 function cancelEdit(event: MouseEvent) {
@@ -175,8 +165,11 @@ function isReadOnly(key: string) {
 }
 function getLabel(key: string) {
     const label = _.get(props.fieldDefs, [key, 'label'])
+    const combinedRecordForLabel = _.mapValues(combinedRecord.value, (value, key) => {
+        return _.get(value, 'val')
+    })
     if (_.isFunction(label)) {
-        return label(_.cloneDeep(combinedRecord.value), _.cloneDeep(relatedRecords.value))
+        return label(combinedRecordForLabel, _.cloneDeep(relatedRecords.value))
     } else if (label) {
         return label
     } else {
@@ -186,10 +179,10 @@ function getLabel(key: string) {
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
-        <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`, showDelay: 1000}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
-        <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save', showDelay: 1000}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
+        <Button class="ml-1" v-tooltip="{value: `${dataChanged ? 'Cancel' : 'Close'}`}" severity="info" :icon="`pi ${dataChanged ? 'pi-undo' : 'pi-times'}`" size="small" @click="cancelEdit" />
+        <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save'}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
     </div>
-    <div class="pl-8 pb-24 h-full overflow-y-scroll">
+    <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -198,12 +191,12 @@ function getLabel(key: string) {
                         <AutoCompleter
                             :input-id="key"
                             :inputClass="inputClasses[key]"
-                            v-model="combinedRecord[key]"
+                            v-model="combinedRecord[key].val"
                             v-model:obj="relatedRecords[key]"
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
-                            @value-changed="changedToNullCheck(key)"
+                            @clearedValue="changedToNullCheck(key)"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>
@@ -214,23 +207,33 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
-                    <NestedSelect 
-                        :input-id="key"
-                        :inputClass="inputClasses[key]"
-                        v-model="combinedRecord[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
-                        :placeholderValue="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
-                        :disabled="isReadOnly(key)"
-                    />
+                    <div class="flex items-start">
+                        <NestedSelect
+                            :key="key"
+                            :input-id="key"
+                            :inputClass="inputClasses[key]"
+                            :ref="(el) => inputRefs[key] = el"
+                            v-model="combinedRecord[key].val"
+                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
+                            :disabled="isReadOnly(key)"
+                            @clearedValue="changedToNullCheck(key)"
+                        />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertNestedSelectToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
                             class="w-80"
                             :inputClass="inputClasses[key]"
-                            v-model.trim="combinedRecord[key]"
+                            v-model.trim="combinedRecord[key].val"
                             showIcon
                             dateFormat="yy-mm-dd"
                             autofocus
@@ -247,12 +250,12 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
                             class="w-80"
                             :inputClass="inputClasses[key]"
-                            v-model.trim="combinedRecord[key]"
+                            v-model.trim="combinedRecord[key].val"
                             showTime
                             showIcon
                             dateFormat="yy-mm-dd"
@@ -274,20 +277,20 @@ function getLabel(key: string) {
                     <Select
                         :id="key"
                         :class="inputClasses[key]"
-                        v-model="combinedRecord[key]"
+                        v-model="combinedRecord[key].val"
                         :options="val.enum"
-                        :placeholder="_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''"
+                        :placeholder="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <Select
                             :id="key"
                             class="w-80"
                             :inputClass="inputClasses[key]"
-                            v-model="combinedRecord[key]"
+                            v-model="combinedRecord[key].val"
                             :options="val.oneOf" optionLabel="title"
                             optionValue="const"
                             :placeholder="placeholders[key]"
@@ -305,26 +308,26 @@ function getLabel(key: string) {
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <Checkbox
                         :id="key"
-                        :pt="_.has(conflictingValueCounts, key) && combinedRecord[key] == null ? { box: { class: 'bg-surface-200 dark:bg-gray-800' } } : {}"
-                        v-model="combinedRecord[key]"
+                        :pt="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null ? { box: { class: 'bg-surface-200 dark:bg-gray-800' } } : {}"
+                        v-model="combinedRecord[key].val"
                         :binary="true"
                         :disabled="isReadOnly(key)"
                     />
-                    <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] != null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                    <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val != null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                         <template #icon>
                             <GrommetIconsRevert />
                         </template>
                     </Button>
-                    <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} values` : ''}}</span>
+                    <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} values`}}</span>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
                             :inputId="key"
                             :inputClass="inputClasses[key]"
-                            v-model="combinedRecord[key]"
+                            v-model="combinedRecord[key].val"
                             showButtons
                             :placeholder="placeholders[key]"
                             :disabled="isReadOnly(key)"
@@ -341,12 +344,12 @@ function getLabel(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
                             :inputId="key"
                             :inputClass="inputClasses[key]"
-                            v-model="combinedRecord[key]"
+                            v-model="combinedRecord[key].val"
                             showButtons :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
                             :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
@@ -361,70 +364,79 @@ function getLabel(key: string) {
                     </div>
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
-                    <div class="flex items-start">
+                    <div class="flex items-start quickform-input-wrapper">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button v-if="(_.has(conflictingValueCounts, key) && combinedRecord[key]!=null) || !_.has(conflictingValueCounts, key)" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
-                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key]=null">
+                        <Button v-if="(_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount'])" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
+                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
                             <template #icon>
                                 <GrommetIconsRevert />
                             </template>
                         </Button>
                         </div>
                     <div class="group">
-                        <span v-if="_.has(conflictingValueCounts, key) && combinedRecord[key] == null" class="pl-3">{{_.has(conflictingValueCounts, key) ? `${conflictingValueCounts[key]} sets of values` : ''}}</span>
-                        <span v-else-if="_.isEmpty(combinedRecord[key])" class="pl-3">No values</span>
+                        <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} sets of values`}}</span>
+                        <span v-else-if="_.isEmpty(combinedRecord[key].val)" class="pl-3">No values</span>
 
-                        <Button v-if="_.has(conflictingValueCounts, key) && combinedRecord[key]==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, key, val.items)" />
+                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
                     </div>
 
                     <!-- Iterate over array items -->
-                    <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key]">
+                    <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
                         <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
                             <ManyToMany
-                                v-model="combinedRecord[key][arrayIndex]"
+                                v-model="combinedRecord[key].val[arrayIndex]"
                                 v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
+                                :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
                             />
-                            <Button v-if="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                            <Button v-if="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                         </div>
                         <!-- Check that all array item properties are covered by JSON schema -->
                         <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                             <template v-for="itemKey in Object.keys(arrayItem)" >
                                 <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                    <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key][arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                    <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                 </span>
                                 <!-- don't display UUID fields, values should not change -->
                                 <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                    <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key][arrayIndex][itemKey]" />
+                                    <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" />
                                 </span>
                             </template>
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].splice(arrayIndex, 1)" />
+                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <InputText class="w-80" v-model="combinedRecord[key][arrayIndex]" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <div class="mt-2" v-else-if="val.items.type=='integer'">
-                            <InputNumber class="w-80" v-model="combinedRecord[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].splice(arrayIndex, 1)" />
+                            <div class="flex items-start quickform-input-wrapper">
+                                <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
+                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                            </div>
                         </div>
                         <!-- Array properties not covered by JSON schema -->
                         <template v-else=>
-                            <InputText class="w-80" disabled v-model="combinedRecord[key][arrayIndex]" />
+                            <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
                         </template>
                     </div>
                 </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <!-- <InputText v-if="_.has(combinedRecord[key], '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key]['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
-                    <div class="flex items-start">
+                    <!-- <InputText v-if="_.has(combinedRecord[key].val, '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key].val['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
+                    <div class="flex items-start quickform-input-wrapper">
                         <InputText
                             :id="key"
-                            v-model="combinedRecord[key]"
+                            v-model="combinedRecord[key].val"
                             :class="`w-80 ${inputClasses[key]}`"
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
                         />
+                        <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(combinedRecord, [key, 'conflictingValueCount']) || !_.isEmpty(combinedRecord[key].val))"
+                            :href="combinedRecord[key].val"
+                            target="_blank">
+                            <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
+                        </a>
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>

@@ -43,9 +43,9 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
     // wrapping Json logic query with this so that it will be applied to every item in array
     // (e.g. query for filtering on property name=='test' would be {"==":[{"var":"name"},"test"]} )
     const queryFinal  = selectParams.where ? {filter:[{var:""}, selectParams.where]} : null
-    
+
     jsonLogic.add_operation("startsWith", (a, b) => _.startsWith(_.toLower(a), _.toLower(b)))
-    
+
     // TODO - apply filter logic as where clause on query above
     let result = queryFinal ? jsonLogic.apply(queryFinal as JsonLogicFilter, records) || [] : records
 
@@ -60,4 +60,36 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
     }
 
     return result
+}
+
+export function parsePutPostError(error: any, recordType: string) {
+    let data
+
+    // convert duplicate value error message to more useful data object
+    const regex = /^duplicate key value violates unique constraint "([^"]*)"/
+    const match = error.message?.match(regex)
+    if (match) {
+        const tableName = _.snakeCase(recordType)
+        let fieldName
+        // check that constraint name conforms to default `${tableName}_${fieldName}_unique` (snakecase)
+        if (match[1].startsWith(`${tableName}_`) && match[1].endsWith('_unique')) {
+            fieldName = _.camelCase(match[1].slice(tableName.length + 1, -7))
+        }
+        // TODO confirm that field name is valid for given recordType before setting data value
+        data = fieldName ? [{
+            code: 'duplicate_key_value',
+            path: [fieldName],
+            message: 'Must be unique',
+        }] : undefined
+    }
+
+    if (!data) {
+        try {
+            data = JSON.parse(error.message)
+        } catch (err) {
+            data = {}
+        }
+    }
+
+    return {error, data}
 }

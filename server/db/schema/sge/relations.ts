@@ -22,7 +22,6 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 
 const genesRelationsConfig: RelationsConfig = {
-    one: {},
     many: {
         regions: {
             table: regions,
@@ -53,13 +52,27 @@ export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
-        plateId: {
+        plate: {
             fields: [wells.plateId],
             referenceTable: plates,
             references: [plates.id],
         },
+        amplificationPrimer: {
+            fields: [wells.amplificationPrimerId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        linearizationPrimer: {
+            fields: [wells.linearizationPrimerId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        homologyArmPrimer: {
+            fields: [wells.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
     },
-    many: {}
 }
 export const wellsRelations = relationsConfigToRelations(wells, wellsRelationsConfig)
 
@@ -82,7 +95,6 @@ const platesRelationsConfig: RelationsConfig = {
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
 
 const projectsRelationsConfig: RelationsConfig = {
-    one:{},
     many: {
         targets: {
             table: targets,
@@ -140,7 +152,6 @@ const regionsRelationsConfig: RelationsConfig = {
 export const regionsRelations = relationsConfigToRelations(regions, regionsRelationsConfig)
 
 const cyclesRelationsConfig: RelationsConfig = {
-    one: {},
     many: {
         targets: {
             table: targets,
@@ -210,7 +221,6 @@ const transfectLotUsageRelationsConfig: RelationsConfig = {
             references: [lots.id],
         },
     },
-    many: {}
 }
 export const transfectLotUsageRelations = relationsConfigToRelations(transfectLotUsage, transfectLotUsageRelationsConfig)
 
@@ -222,7 +232,6 @@ const plasmidExperimentsRelationsConfig: RelationsConfig = {
             references: [users.id],
         },
     },
-    many: {}
 }
 export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
 
@@ -234,7 +243,6 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
             references: [users.id],
         },
     },
-    many: {}
 }
 export const extractionExperimentsRelations = relationsConfigToRelations(extractionExperiments, extractionExperimentsRelationsConfig)
 
@@ -256,12 +264,10 @@ const pelletsRelationsConfig: RelationsConfig = {
             references: [storageBoxes.id],
         },
     },
-    many: {}
 }
 export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
 
 const storageBoxesRelationsConfig: RelationsConfig = {
-    one: {},
     many: {
         pellets: {
             table: pellets,
@@ -280,7 +286,6 @@ const lotsRelationsConfig: RelationsConfig = {
             references: [reagents.id],
         },
     },
-    many: {}
 }
 export const lotsRelations = relationsConfigToRelations(lots, lotsRelationsConfig)
 
@@ -302,7 +307,6 @@ const plasmidsRelationsConfig: RelationsConfig = {
             references: [storageBoxes.id],
         },
     },
-    many: {}
 }
 export const plasmidsRelations = relationsConfigToRelations(plasmids, plasmidsRelationsConfig)
 
@@ -324,7 +328,6 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
-    many: {}
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
@@ -335,8 +338,17 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        storageBox: {
+            fields: [amplificationPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
     },
-    many: {}
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const amplificationPrimersRelations = relationsConfigToRelations(amplificationPrimers, amplificationPrimersRelationsConfig)
 
@@ -347,8 +359,17 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        storageBox: {
+            fields: [linearizationPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
     },
-    many: {}
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const linearizationPrimersRelations = relationsConfigToRelations(linearizationPrimers, linearizationPrimersRelationsConfig)
 
@@ -359,8 +380,17 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        storageBox: {
+            fields: [homologyArmPrimers.storageBoxId],
+            referenceTable: storageBoxes,
+            references: [storageBoxes.id],
+        },
     },
-    many: {}
+    oneToOne: {
+        well: {
+            table: wells
+        }
+    },
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 

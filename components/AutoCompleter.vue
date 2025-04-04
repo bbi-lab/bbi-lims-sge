@@ -25,7 +25,9 @@ const currentValue = ref()
 const suggestions = ref([])
 
 const emit = defineEmits([
-    'value-changed'
+    'update:modelValue',
+    'clearedValue',
+    'changedValue',
 ])
 
 function getDisplayValue(record) {
@@ -42,7 +44,6 @@ function getDisplayValue(record) {
 }
 
 watch(modelValue, async (newValue, oldValue) => {
-    
     if (newValue && !_.isEqual(newValue, oldValue)) {
         if (_.isObject(newValue)) {
             modelValueObj.value = newValue
@@ -51,11 +52,13 @@ watch(modelValue, async (newValue, oldValue) => {
         }
 
         modelValue.value = _.isString(newValue) ?  newValue : _.get(newValue, props.valueField)
-        
+
         if (_.isString(modelValue.value)) {
             const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
             currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
         }
+    } else if (_.isEmpty(newValue)) {
+        clearValue()
     }},
     { immediate: true },
 )
@@ -77,16 +80,19 @@ function clearValue() {
     currentValue.value = null
     modelValue.value = null
     modelValueObj.value = null
-    emit('value-changed', null)
+}
+function clickedClearValue() {
+    clearValue()
+    emit('clearedValue')
 }
 function setModelValue() {
     if (_.has(currentValue.value, 'code')) {
         modelValue.value = _.get(currentValue.value, 'code')
         modelValueObj.value = _.get(currentValue.value, 'record')
-        emit('value-changed', modelValue.value)
     } else {
         clearValue()
     }
+    emit('changedValue')
 }
 async function lostFocus() {
     if (!_.has(currentValue.value, 'code')) {
@@ -96,17 +102,16 @@ async function lostFocus() {
 defineExpose({
     clearValue,
 })
-//const inputId = useId()
 
 </script>
 <template>
     <component :is="_.isEmpty(iftaLabel) ? 'span' : 'IftaLabel'">
-        <AutoComplete 
-            v-model="currentValue" 
+        <AutoComplete
+            v-model="currentValue"
             class="w-80"
             :inputClass="inputClass"
             :id="inputId"
-            :suggestions="suggestions" 
+            :suggestions="suggestions"
             optionLabel="label"
             @complete="autocompleteSearch"
             @option-select="setModelValue"
@@ -116,8 +121,8 @@ defineExpose({
             :disabled="disabled" />
         <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
     </component>
-    
-    <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValue" />
+
+    <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clickedClearValue" />
 </template>
 
 <style>

@@ -3,14 +3,15 @@ import { updateRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
+import { parsePutPostError } from '../utils/restApi'
 
 export default defineEventHandler(async (event) => {
-    const { recordType } = event.context.params as {recordType: string} 
+    const { recordType } = event.context.params as {recordType: string}
     const db = useDrizzle()
-    
+
     try {
         const {ids, values} = await readBody(event)
-        
+
         const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
         const valuesWithEmptyAsNull = _.mapValues(values, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
 
@@ -22,12 +23,8 @@ export default defineEventHandler(async (event) => {
 
         return updatedRecords
     } catch (e: any) {
-        let data
-        try {
-            data = JSON.parse(e.message)
-        } catch (e) {
-            data = {}
-        }
+        const { error, data } = parsePutPostError(e, recordType)
+
         throw createError({
             statusCode: 400,
             statusMessage: e.message,
