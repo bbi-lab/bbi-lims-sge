@@ -189,21 +189,17 @@ const actionOnSelectedWells = function() {
         life: 1000,
     })
 }
-const updatedWellContents = function(wells: PlateDiagramWell[]) {
-    const amplifcationPrimerIdsToRefresh = _.compact(_.map(wells, (well) => {
-        return well.data?.amplificationPrimerId
-    }))
+const updatedWellContents = function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
+    const amplifcationPrimerIdsToRefresh = _.compact([
+        ..._.map(newValues || [], (well) => { return well.data?.amplificationPrimerId || well.data?.amplificationPrimer?.id}),
+        ..._.map(oldValues || [], (well) => { return well.data?.amplificationPrimerId || well.data?.amplificationPrimer?.id}),
+    ])
     amplifcationPrimerIdsToRefresh.forEach((id) => {
         amplificationPrimersTable.value.addOrRefreshRecordId(id)
     })
-
 }
 const emptySelectedWells = async () => {
-    // stash IDs of amplification primers in selected before emptying, to refresh relevent records in datatable after
-    const updatedAmplicationPrimerIds = _.compact(_.map(selectedWells.value, (well) => {
-        return well.data?.amplificationPrimer?.id
-    }))
-
+    const oldValues = _.cloneDeep(selectedWells.value)
     const updatedRecords = await RecordService.updateRecords(
         `${config.public.apiBase}/wells`,
         _.map(selectedWells.value, (well) => well.id),
@@ -223,11 +219,9 @@ const emptySelectedWells = async () => {
                     color: null,
                     tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}`,
                 }
-            })
+            }),
+            oldValues
         )
-        updatedAmplicationPrimerIds.forEach((id) => {
-            amplificationPrimersTable.value.addOrRefreshRecordId(id)
-        })
         toast.add({
             severity: 'info',
             summary: 'Updated well',
@@ -255,6 +249,7 @@ const rowActions = {
                     life: 1000,
                 })
             } else {
+                const oldValues = _.cloneDeep(selectedWells.value)
                 const updatedRecord = await RecordService.updateRecord(
                     `${config.public.apiBase}/wells`,
                     {
@@ -264,14 +259,17 @@ const rowActions = {
                 )
                 if (updatedRecord?.id) {
                     await refreshPlate()
-                    plateDiagram.value.updateWellContents([{
-                        id: updatedRecord.id,
-                        x: updatedRecord.x,
-                        y: updatedRecord.y,
-                        data: updatedRecord,
-                        color: _.get(amplificationPrimerColorMap.value, data.id),
-                        tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
-                    }])
+                    plateDiagram.value.updateWellContents(
+                        [{
+                            id: updatedRecord.id,
+                            x: updatedRecord.x,
+                            y: updatedRecord.y,
+                            data: updatedRecord,
+                            color: _.get(amplificationPrimerColorMap.value, data.id),
+                            tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
+                        }],
+                        oldValues
+                    )
                     amplificationPrimersTable.value.addOrRefreshRecordId(data.id)
                     toast.add({
                         severity: 'info',

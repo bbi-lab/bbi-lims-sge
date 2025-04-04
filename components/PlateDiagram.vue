@@ -59,9 +59,9 @@ onMounted(async() => {
     }
 })
 
-const updateWellContents = (wells: PlateDiagramWell[]) => {
-    plateDiagram.value?.updateWellContents(wells)
-    emit('well-contents-updated', wells)
+const updateWellContents = (newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) => {
+    plateDiagram.value?.updateWellContents(newValues)
+    emit('well-contents-updated', newValues, oldValues)
 }
 defineExpose({
     updateWellContents,
