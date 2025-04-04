@@ -1,0 +1,1 @@
+ALTER TABLE "plates" ADD COLUMN "plate_type" varchar NOT NULL;

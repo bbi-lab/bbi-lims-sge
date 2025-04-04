@@ -169,6 +169,13 @@
       "when": 1743563079727,
       "tag": "0023_pale_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1743793561438,
+      "tag": "0024_light_cargill",
+      "breakpoints": true
     }
   ]
 }

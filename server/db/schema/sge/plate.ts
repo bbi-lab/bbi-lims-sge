@@ -11,8 +11,8 @@ export const plates = pgTable('plates', {
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
+  plateType: varchar('plate_type', {enum: ['storage', 'pcr']}).notNull(),
 })
-
 
 const selectPlateSchema = createSelectSchema(plates)
 const insertPlateSchema = selectPlateSchema.omit({id: true, sizeX: true, sizeY: true})
