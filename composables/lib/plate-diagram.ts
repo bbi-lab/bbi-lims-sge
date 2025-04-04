@@ -6,6 +6,7 @@ import type { PlateWithPlateDiagramWells } from "~/components/PlateDiagram.vue"
 type Accessor<T, Self> = (value?: T) => T | Self
 
 interface CoordinatePair {x: number, y: number}
+export type PlateType = 'storage' | 'pcr'
 
 export const VALID_WELL_COLORS = [
     "#F0A3FF",
@@ -51,6 +52,7 @@ export interface PlateDiagram {
     id?: string,
 
     wells: (value: PlateDiagramWell[]) => PlateDiagram
+    getWells: () => PlateDiagramWell[]
 
     render: (container: HTMLElement) => PlateDiagram
 
@@ -65,7 +67,7 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export function makePlateDiagram(): PlateDiagram {
+export function makePlateDiagram(plateType: PlateType): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 
@@ -85,6 +87,7 @@ export function makePlateDiagram(): PlateDiagram {
         pcrExperimentId: null,
         sizeX: 12,
         sizeY: 8,
+        plateType,
         wells: [],  // wells to be set via wells() method
     }
     // set the dimensions and margins of the graph
@@ -139,6 +142,10 @@ export function makePlateDiagram(): PlateDiagram {
         wells: (value: PlateDiagramWell[]) => {
             plate.wells = value
             return plateDiagram
+        },
+
+        getWells: () => {
+            return plate.wells
         },
 
         wellRangeSelected: (value?: ((wells: PlateDiagramWell[]) => void) | null) => {
