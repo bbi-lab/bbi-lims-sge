@@ -1,26 +1,13 @@
-
 <script setup>
-import _ from 'lodash'
-import { RecordService } from '@/utils/service/RecordService'
-
-const route = useRoute()
-const router = useRouter()
-const queryParams = route.query
+import _, { size } from 'lodash'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
+const showMultipleEditForm = ref(false)
+const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
-const platesTable = ref()
-
-const config = useRuntimeConfig()
-const tableTitle = ref(null)
-
-onMounted(async() => {
-    if (queryParams.pcrExperimentId) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/pcr-experiments`, queryParams.pcrExperimentId)
-        tableTitle.value = `${experiment.name}: plates`
-    }
-})
+const storagePlatesTable = ref()
+const router = useRouter()
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -39,89 +26,88 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-
+function didClickMultipleRecordEdit(recordIds) {
+    editingMultipleRecordsIds.value = recordIds
+    showMultipleEditForm.value = true
+    showEditForm.value = false
+    showAddForm.value = false
+}
+function didClickCancelMultipleEditForm() {
+    editingMultipleRecordsIds.value = []
+    showMultipleEditForm.value = false
+}
+function didUpdateMultipleRecords(event) {
+    event.forEach(e => {
+        if (e.id) storagePlatesTable.value.addOrRefreshRecordId(e.id)
+    })
+    showMultipleEditForm.value = false
+}
 function didAddRecord(event) {
-    platesTable.value.addOrRefreshRecordId(event.id)
+    storagePlatesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
-    platesTable.value.addOrRefreshRecordId(event.id)
+    storagePlatesTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
-    platesTable.value.removeRecordId(event.id)
+    storagePlatesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-
-// convert query params in to JSON Logic to pass as where clause
-// TODO - pass more than just the first to QuickTable
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const defaultValues = queryParams
-
 const columnDefs = {
+    plateType: {
+        display: false
+    },
     pcrExperimentId: {
-        display: false,
+        display: false
     },
     sizeX: {
-        display: false,
+        display: false
     },
     sizeY: {
-        display: false,
+        display: false
     },
     wells: {
-        display: false,
-    }
-}
-const fieldDefs = {
-    pcrExperimentId: {
-        label: 'PCR experiment',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/pcr-experiments`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
+        display: false
     },
-    wells: {
-        display: false,
-    }
 }
-
 const rowActions = {
     layout: {
         action: (data) => {
-            router.push({path:`/sge/plate-diagram/${data.id}`})
-        }
-    },
-    layoutAmp: {
-        label: 'Layout (AMP)',
-        action: (data) => {
             router.push({path:`/sge/amp-plate-diagram/${data.id}`})
-        }
+        },
+    }
+}
+const defaultValues = {plateType: 'storage', sizeX: 12, sizeY: 8}
+
+const fieldDefs = {
+    pcrExperimentId: {
+        display: false,
     },
+    wells: {
+        display: false,
+    }
 }
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="platesTable"
+                ref="storagePlatesTable"
                 tableName="plates"
                 schemaName="select"
-                :title="tableTitle || 'Plates'"
+                title="Storage plates"
+                :canEditMultiple="true"
+                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
-                :where="whereClauses[0]"
-                :canAdd="true"
-                :canEdit="true"
-                :canDelete="true"
+                :where="{'==': [{var: 'plateType'}, 'storage'] }"
                 :rowActions="rowActions"
-                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
                 tableName="plates"
@@ -141,6 +127,16 @@ const rowActions = {
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="showMultipleEditForm"
+                tableName="plates"
+                :recordIds="editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
+                @cancel="didClickCancelMultipleEditForm"
+                @records-update="didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

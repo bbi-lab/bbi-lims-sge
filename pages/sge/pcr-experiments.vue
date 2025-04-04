@@ -1,7 +1,7 @@
 
 <script setup>
 import _ from 'lodash'
-import PhGridNineFill from '~icons/ph/grid-nine-fill';
+import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -55,7 +55,7 @@ const rowActions = {
     plates: {
         label: (data) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
         action: (data) => {
-            router.push({path:'/sge/plates', query: {'pcrExperimentId': data.id}})
+            router.push({path:'/sge/pcr-plates', query: {'pcrExperimentId': data.id}})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
