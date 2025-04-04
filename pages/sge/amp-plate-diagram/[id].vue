@@ -10,6 +10,7 @@ const config = useRuntimeConfig()
 const toast = useToast()
 
 const plateWithWells = ref()
+const amplificationPrimersTable = ref()
 const plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
 const plateDiagram = ref()
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
@@ -55,10 +56,9 @@ const refreshPlate = async () => {
             id: well.id,
             x: well.x,
             y: well.y,
+            data: well,
             color: wellColor,
             tooltip: wellContentTooltip,
-            selected: false,
-            inSelectionRange: false,
         }
         return plateDiagramWell
     })
@@ -189,7 +189,21 @@ const actionOnSelectedWells = function() {
         life: 1000,
     })
 }
+const updatedWellContents = function(wells: PlateDiagramWell[]) {
+    const amplifcationPrimerIdsToRefresh = _.compact(_.map(wells, (well) => {
+        return well.data?.amplificationPrimerId
+    }))
+    amplifcationPrimerIdsToRefresh.forEach((id) => {
+        amplificationPrimersTable.value.addOrRefreshRecordId(id)
+    })
+
+}
 const emptySelectedWells = async () => {
+    // stash IDs of amplification primers in selected before emptying, to refresh relevent records in datatable after
+    const updatedAmplicationPrimerIds = _.compact(_.map(selectedWells.value, (well) => {
+        return well.data?.amplificationPrimer?.id
+    }))
+
     const updatedRecords = await RecordService.updateRecords(
         `${config.public.apiBase}/wells`,
         _.map(selectedWells.value, (well) => well.id),
@@ -205,11 +219,15 @@ const emptySelectedWells = async () => {
                     id: updatedRecord.id,
                     x: updatedRecord.x,
                     y: updatedRecord.y,
+                    data: updatedRecord,
                     color: null,
                     tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}`,
                 }
             })
         )
+        updatedAmplicationPrimerIds.forEach((id) => {
+            amplificationPrimersTable.value.addOrRefreshRecordId(id)
+        })
         toast.add({
             severity: 'info',
             summary: 'Updated well',
@@ -250,9 +268,11 @@ const rowActions = {
                         id: updatedRecord.id,
                         x: updatedRecord.x,
                         y: updatedRecord.y,
+                        data: updatedRecord,
                         color: _.get(amplificationPrimerColorMap.value, data.id),
                         tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
                     }])
+                    amplificationPrimersTable.value.addOrRefreshRecordId(data.id)
                     toast.add({
                         severity: 'info',
                         summary: 'Updated well',
@@ -298,7 +318,8 @@ const rowActions = {
                 v-model="plateWithPlateDiagramWells"
                 @well-range-selected="wellRangeSelected"
                 @well-selection-cleared="wellSelectionCleared"
-                @all-wells-selected="selectedAllWells">
+                @all-wells-selected="selectedAllWells"
+                @well-contents-updated="updatedWellContents" >
                 <template #header>
                     {{ plateWithPlateDiagramWells.name }}
                 </template>
