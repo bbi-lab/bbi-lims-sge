@@ -58,6 +58,7 @@ const refreshPlate = async () => {
             y: well.y,
             data: well,
             color: wellColor,
+            symbol: well.amplificationPrimer?.sequenceType ? _.upperCase(well.amplificationPrimer.sequenceType[0]) : undefined,  // should be F or R
             tooltip: wellContentTooltip,
         }
         return plateDiagramWell

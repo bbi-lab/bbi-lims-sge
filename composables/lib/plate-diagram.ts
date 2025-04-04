@@ -370,10 +370,23 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                     .on('mousedown', mousedown)
                     .on('mouseup', mouseup)
                     .on('click', mouseclick)
-                }
-                if (svg) updateWellOutlines(svg)
-                return plateDiagram
+
+                // add the well decoration symbols
+                svg.selectAll()
+                    .data(plate.wells.filter(w => w.symbol))
+                    .enter()
+                    .append('text')
+                    .attr('class', 'well-decoration-text pointer-events-none')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', (w:PlateDiagramWell) => getX(w) + (x.bandwidth() - wellSpacing.x)/2)
+                    .attr('y', (w:PlateDiagramWell) => getY(w) + (y.bandwidth() - wellSpacing.y)/2 + 5)
+                    .text((w:PlateDiagramWell) => { return w.symbol || ""})
+                    .style('fill', 'var(--surface-ground)')
+
+                updateWellOutlines(svg)
             }
+            return plateDiagram
+        }
     }
     return plateDiagram
 }
