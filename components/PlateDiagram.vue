@@ -8,7 +8,7 @@ import type { Plate } from '~/server/db/schema/sge/plate'
 export type PlateWithPlateDiagramWells = Plate & {
     wells: PlateDiagramWell[]
 }
-const plateDiagram = ref<PlateDiagram | ((wells: PlateDiagramWell[]) => void) | null>()
+const plateDiagram = ref<PlateDiagram>()
 const plateDiagramDiv = ref()
 const modelValue = defineModel<PlateWithPlateDiagramWells>()
 
@@ -54,7 +54,7 @@ onMounted(async() => {
             plateDiagram.value = makePlateDiagram()
                 .wells(modelValue.value.wells)
                 .render(plateDiagramDiv.value)
-                .wellRangeSelected(wellRangeSelected)
+                .wellRangeSelected(wellRangeSelected) as PlateDiagram
         }
     }
 })
