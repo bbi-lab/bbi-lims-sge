@@ -218,6 +218,7 @@ const emptySelectedWells = async () => {
                     y: updatedRecord.y,
                     data: updatedRecord,
                     color: null,
+                    symbol: undefined,
                     tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}`,
                 }
             }),
@@ -258,6 +259,8 @@ const rowActions = {
                         amplificationPrimerId: data.id,
                     }
                 )
+                // TODO need to get related amplification primer so we can set the symbol below
+                // rework updateRecord to accept a withClause to include expanded related records in response
                 if (updatedRecord?.id) {
                     await refreshPlate()
                     selectedWells.value = [{
@@ -265,6 +268,7 @@ const rowActions = {
                         x: updatedRecord.x,
                         y: updatedRecord.y,
                         data: updatedRecord,
+                        symbol: _.upperCase(updatedRecord.amplificationPrimer?.sequenceType?.[0]),
                         color: _.get(amplificationPrimerColorMap.value, data.id),
                         tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
                     }]

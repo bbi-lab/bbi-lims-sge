@@ -111,6 +111,7 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                             .style('opacity', 0.8)
                     }
                 })
+            d3.selectAll('text.well-decoration-text').raise()
         }
     }
 
@@ -128,6 +129,16 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                         if (updatedTooltip) {
                             d3.select(this)
                                 .attr('tooltip', updatedTooltip)
+                        }
+                    }
+                })
+            svg.selectAll<SVGTextElement, PlateDiagramWell>('text.well-decoration-text')
+                .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGTextElement>) {
+                    if (_.map(updatedWells, (x) => x.id).includes(d.id)){
+                        const updatedSymbol = _.find(updatedWells, (x) => x.id == d.id)?.symbol
+                        if (updatedSymbol) {
+                            d3.select(this)
+                                .text(updatedSymbol)
                         }
                     }
                 })
@@ -280,6 +291,7 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                         .style("stroke", "var(--p-text-color)")
                         .style("opacity", 1)
                         .raise()
+                    d3.selectAll('text.well-decoration-text').raise()
                 }
 
                 const mousemove = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
@@ -373,15 +385,16 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
 
                 // add the well decoration symbols
                 svg.selectAll()
-                    .data(plate.wells.filter(w => w.symbol))
+                    .data(plate.wells)
                     .enter()
                     .append('text')
-                    .attr('class', 'well-decoration-text pointer-events-none')
+                    .attr('class', 'well-decoration-text')
                     .attr('text-anchor', 'middle')
                     .attr('x', (w:PlateDiagramWell) => getX(w) + (x.bandwidth() - wellSpacing.x)/2)
                     .attr('y', (w:PlateDiagramWell) => getY(w) + (y.bandwidth() - wellSpacing.y)/2 + 5)
                     .text((w:PlateDiagramWell) => { return w.symbol || ""})
                     .style('fill', 'var(--surface-ground)')
+                    .style('pointer-events', 'none')
 
                 updateWellOutlines(svg)
             }
