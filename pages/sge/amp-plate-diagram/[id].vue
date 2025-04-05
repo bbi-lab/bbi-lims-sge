@@ -257,10 +257,11 @@ const rowActions = {
                     {
                         id: _.get(selectedWells.value, [0, 'id']),
                         amplificationPrimerId: data.id,
+                    },
+                    {
+                        amplificationPrimer: true,
                     }
                 )
-                // TODO need to get related amplification primer so we can set the symbol below
-                // rework updateRecord to accept a withClause to include expanded related records in response
                 if (updatedRecord?.id) {
                     await refreshPlate()
                     selectedWells.value = [{

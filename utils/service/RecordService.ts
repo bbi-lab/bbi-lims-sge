@@ -36,15 +36,29 @@ export const RecordService = {
         return schema
     },
 
-    async updateRecord(baseUrl: string, record: any) {
+    async updateRecord(baseUrl: string, record: any, withClause?: Object) {
         const {id, ...values} = record
         const updatedRecords = await $fetch(`${baseUrl}/${id}`, {method: 'PUT', body: values})
-        return updatedRecords
+
+        if (!_.isEmpty(withClause)) {
+            const fetchOptions = {query: {with: withClause}}
+            const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
+            return record
+        } else {
+            return updatedRecords
+        }
     },
 
-    async updateRecords(baseUrl: string, ids: string[], values: Object) {
-        const updatedRecords = await $fetch(`${baseUrl}`, {method: 'PUT', body: {ids, values}})
-        return updatedRecords
+    async updateRecords(baseUrl: string, ids: string[], values: Object, withClause?: Object) {
+        const updatedRecords = await $fetch(baseUrl, {method: 'PUT', body: {ids, values}})
+        if (!_.isEmpty(withClause) && !_.isEmpty(updatedRecords)) {
+            const whereClause = {"in": [{"var": "id"}, ids]}
+            const fetchOptions = {query: {with: withClause, where: whereClause}}
+            const records = await $fetch(baseUrl, fetchOptions)
+            return records
+        } else {
+            return updatedRecords
+        }
     },
 
     async addRecord(baseUrl: string, record: any) {
