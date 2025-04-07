@@ -116,6 +116,19 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs = {
+    colorTile: {
+        index: 0,
+        header: '',
+        sortable: false,
+        type: 'element',
+        element: (x: any) => {
+            return _.has(amplificationPrimerColorMap.value, x.id) ? `<span
+                class="inline-block w-6 h-6 rounded-sm text-center"
+                style="color: var(--surface-ground); background-color:${_.get(amplificationPrimerColorMap.value, x.id)}">
+                ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
+            </span>` : ''
+        },
+    },
     name: {
         index: 1
     },
