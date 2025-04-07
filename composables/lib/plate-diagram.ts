@@ -111,35 +111,29 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                             .style('opacity', 0.8)
                     }
                 })
+            // raise text decorations to the top of display order
             d3.selectAll('text.well-decoration-text').raise()
         }
     }
 
     const updateWellDisplay: (svg: d3.Selection<SVGGElement, any, any, any>, updatedWells: PlateDiagramWell[]) => void = (svg, updatedWells) => {
         if (svg && updatedWells) {
+            const updatedWellIds = _.map(updatedWells, (x) => x.id)
             svg.selectAll<SVGRectElement, PlateDiagramWell>('rect')
                 .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
-                    if (_.map(updatedWells, (x) => x.id).includes(d.id)){
-                        const updatedColor = _.find(updatedWells, (x) => x.id == d.id)?.color || '#ddd'
-                        const updatedTooltip = _.find(updatedWells, (x) => x.id == d.id)?.tooltip
-                        if (updatedColor) {
-                            d3.select(this)
-                                .style('fill', updatedColor)
-                        }
-                        if (updatedTooltip) {
-                            d3.select(this)
-                                .attr('tooltip', updatedTooltip)
-                        }
+                    if (updatedWellIds.includes(d.id)){
+                        const updatedWell = _.find(updatedWells, (x) => x.id == d.id)
+                        d3.select(this)
+                            .style('fill', updatedWell?.color || '#ddd')
+                            .attr('tooltip', updatedWell?.tooltip || "")
                     }
                 })
             svg.selectAll<SVGTextElement, PlateDiagramWell>('text.well-decoration-text')
                 .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGTextElement>) {
-                    if (_.map(updatedWells, (x) => x.id).includes(d.id)){
-                        const updatedSymbol = _.find(updatedWells, (x) => x.id == d.id)?.symbol
-                        if (updatedSymbol) {
-                            d3.select(this)
-                                .text(updatedSymbol)
-                        }
+                    if (updatedWellIds.includes(d.id)){
+                        const updatedWell = _.find(updatedWells, (x) => x.id == d.id)
+                        d3.select(this)
+                            .text(updatedWell?.symbol || "")
                     }
                 })
         }
