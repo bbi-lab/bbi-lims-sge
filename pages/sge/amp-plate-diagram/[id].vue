@@ -16,12 +16,31 @@ const plateDiagram = ref()
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
 
 const amplificationPrimerColorMap = computed(() => {
-    const amplificationPrimersList = _.uniq(_.compact(_.map(plateWithWells.value?.wells, (well) => {
-        return well.amplificationPrimer?.id
-    })))
-    const colorMap = _.zipObject(amplificationPrimersList, _.map(amplificationPrimersList, (val, idx) => {
-        return VALID_WELL_COLORS[idx % VALID_WELL_COLORS.length]
-    }))
+    const amplificationPrimersInPlate = _.map(
+        _.uniqBy(
+            _.filter(plateWithWells.value?.wells, (well) => {
+                return well.amplificationPrimer?.id
+            }),
+            'amplificationPrimer.id'
+        ), (well) => {
+            return well.amplificationPrimer
+        }
+    )
+
+    // group amplification primers by name without the _f or _r suffix to apply the same color to forward and reverse primers
+    // TODO consider grouping by something other than user-assigned primer name (e.g. comparing forward and reverse sequences may be more reliable)
+    const amplificationPrimersInPlateGrouped = _.groupBy(amplificationPrimersInPlate, (primer) => {
+        return _.replace(primer.name, /_[frFR]$/, '')
+    })
+    const colorMap = {}
+    let colorMapIndex = 0
+    _.forEach(amplificationPrimersInPlateGrouped, (group) => {
+        _.forEach(group, (amplificationPrimer) => {
+            _.set(colorMap, amplificationPrimer.id, VALID_WELL_COLORS[colorMapIndex % VALID_WELL_COLORS.length])
+        })
+        colorMapIndex++
+    })
+
     return colorMap
 })
 
