@@ -444,7 +444,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         </a>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
