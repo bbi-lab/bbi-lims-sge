@@ -28,6 +28,7 @@ const plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = 
 const plateDiagram = ref()
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
 const amplificationPrimerColorMap = ref<AmplificationPrimerColorMap>({})
+const frozenRecordIds = ref<string[]>([])
 
 const updateColorMap = () => {
     // remove values from color map that are not in the plate
@@ -36,7 +37,6 @@ const updateColorMap = () => {
             delete amplificationPrimerColorMap.value[key]
         }
     })
-
 
     // add new values to color map
     let currentColorIndex = -1
@@ -205,6 +205,7 @@ const wellRangeSelected = function(wells: PlateDiagramWell[]) {
         detail: `You selected ${wells.length} ${wells.length==1 ? 'well' : 'wells'}`,
         life: 1000,
     })
+    frozenRecordIds.value = _.map(wells, (well) => well.data?.amplificationPrimer?.id)
 }
 
 const selectedAllWells = function(wells: PlateDiagramWell[]) {
@@ -357,6 +358,7 @@ const rowActions = {
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
+                v-model:frozenRecordIds="frozenRecordIds"
             />
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
