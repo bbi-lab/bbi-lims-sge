@@ -216,6 +216,7 @@ const selectedAllWells = function(wells: PlateDiagramWell[]) {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
+    frozenRecordIds.value = _.map(wells, (well) => well.data?.amplificationPrimer?.id)
 }
 const wellSelectionCleared = function() {
     selectedWells.value = []
@@ -225,6 +226,7 @@ const wellSelectionCleared = function() {
         detail: `You selected 0 wells`,
         life: 1000,
     })
+    frozenRecordIds.value = []
 }
 const actionOnSelectedWells = function() {
     toast.add({
