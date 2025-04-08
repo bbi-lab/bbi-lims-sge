@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { getWellTextColor, VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { Well } from '~/server/db/schema/sge/well'
@@ -154,7 +154,7 @@ const columnDefs = {
         element: (x: any) => {
             return _.has(amplificationPrimerColorMap.value, [x.id, 'color']) ? `<span
                 class="inline-block w-6 h-6 rounded-sm text-center"
-                style="color: var(--surface-ground); background-color:${_.get(amplificationPrimerColorMap.value, [x.id, 'color'])}">
+                style="color: ${getWellTextColor(_.get(amplificationPrimerColorMap.value, [x.id, 'color']))}; background-color:${_.get(amplificationPrimerColorMap.value, [x.id, 'color'])}">
                 ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
             </span>` : ''
         },
