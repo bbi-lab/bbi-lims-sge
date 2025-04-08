@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { InferSelectModel, sql } from 'drizzle-orm'
 import { pgTable, uuid, varchar, text, check, smallint} from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { targets } from './target'
@@ -45,3 +45,5 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
+
+export type AmplificationPrimer = InferSelectModel<typeof amplificationPrimers>
