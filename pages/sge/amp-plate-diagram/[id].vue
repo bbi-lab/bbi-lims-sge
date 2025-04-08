@@ -37,14 +37,17 @@ const updateColorMap = () => {
         }
     })
 
+
     // add new values to color map
+    let currentColorIndex = -1
     plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimer) => {
         const existingColorsInColorMap = Object.keys(amplificationPrimerColorMap.value).reduce((acc,key) => acc.add(amplificationPrimerColorMap.value[key].color), new Set())
 
         if (well.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.amplificationPrimer.id)) {
             const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.amplificationPrimer.name, /_[frFR]$/, ''))?.color
+            if (!sameGroupColor) currentColorIndex += 1
             _.set(amplificationPrimerColorMap.value, well.amplificationPrimer.id, {
-                color: sameGroupColor || _.first(_.difference(VALID_WELL_COLORS, _.toArray(existingColorsInColorMap))),
+                color: sameGroupColor || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
                 group: _.replace(well.amplificationPrimer.name, /_[frFR]$/, '')
             })
         }
