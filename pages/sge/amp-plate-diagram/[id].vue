@@ -4,6 +4,19 @@ import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { Well } from '~/server/db/schema/sge/well'
+import type { AmplificationPrimer } from '~/server/db/schema/sge/primer'
+
+type WellWithAmplificationPrimer = Well & {
+    amplificationPrimer: AmplificationPrimer
+}
+
+// keyed on amplification primer id, with color and group (to assign same colors to forward and reverse primers)
+type AmplificationPrimerColorMap = {
+    [key: string]: {
+        color: string
+        group: string
+    }
+}
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -14,35 +27,29 @@ const amplificationPrimersTable = ref()
 const plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
 const plateDiagram = ref()
 const selectedWells: Ref<PlateDiagramWell[] | undefined> = ref()
+const amplificationPrimerColorMap = ref<AmplificationPrimerColorMap>({})
 
-const amplificationPrimerColorMap = computed(() => {
-    const amplificationPrimersInPlate = _.map(
-        _.uniqBy(
-            _.filter(plateWithWells.value?.wells, (well) => {
-                return well.amplificationPrimer?.id
-            }),
-            'amplificationPrimer.id'
-        ), (well) => {
-            return well.amplificationPrimer
+const updateColorMap = () => {
+    // remove values from color map that are not in the plate
+    _.forEach(_.keys(amplificationPrimerColorMap.value), (key) => {
+        if (!_.some(plateWithWells.value.wells, (well: WellWithAmplificationPrimer) => well.amplificationPrimer?.id === key)) {
+            delete amplificationPrimerColorMap.value[key]
         }
-    )
-
-    // group amplification primers by name without the _f or _r suffix to apply the same color to forward and reverse primers
-    // TODO consider grouping by something other than user-assigned primer name (e.g. comparing forward and reverse sequences may be more reliable)
-    const amplificationPrimersInPlateGrouped = _.groupBy(amplificationPrimersInPlate, (primer) => {
-        return _.replace(primer.name, /_[frFR]$/, '')
-    })
-    const colorMap = {}
-    let colorMapIndex = 0
-    _.forEach(amplificationPrimersInPlateGrouped, (group) => {
-        _.forEach(group, (amplificationPrimer) => {
-            _.set(colorMap, amplificationPrimer.id, VALID_WELL_COLORS[colorMapIndex % VALID_WELL_COLORS.length])
-        })
-        colorMapIndex++
     })
 
-    return colorMap
-})
+    // add new values to color map
+    plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimer) => {
+        const existingColorsInColorMap = Object.keys(amplificationPrimerColorMap.value).reduce((acc,key) => acc.add(amplificationPrimerColorMap.value[key].color), new Set())
+
+        if (well.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.amplificationPrimer.id)) {
+            const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.amplificationPrimer.name, /_[frFR]$/, ''))?.color
+            _.set(amplificationPrimerColorMap.value, well.amplificationPrimer.id, {
+                color: sameGroupColor || _.first(_.difference(VALID_WELL_COLORS, _.toArray(existingColorsInColorMap))),
+                group: _.replace(well.amplificationPrimer.name, /_[frFR]$/, '')
+            })
+        }
+    })
+}
 
 onMounted(async() => {
     refreshPlate()
@@ -65,11 +72,12 @@ const refreshPlate = async () => {
             }
         }
     )
+    updateColorMap()
     const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.value.wells, (well) => {
         const wellContent = well.amplificationPrimer
         const wellContentType = well.amplificationPrimer ? 'AMP' : null
         const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
-        const wellColor = _.get(amplificationPrimerColorMap.value, wellContent?.id)
+        const wellColor = _.get(amplificationPrimerColorMap.value, [wellContent?.id, 'color'])
 
         const plateDiagramWell: PlateDiagramWell = {
             id: well.id,
@@ -141,9 +149,9 @@ const columnDefs = {
         sortable: false,
         type: 'element',
         element: (x: any) => {
-            return _.has(amplificationPrimerColorMap.value, x.id) ? `<span
+            return _.has(amplificationPrimerColorMap.value, [x.id, 'color']) ? `<span
                 class="inline-block w-6 h-6 rounded-sm text-center"
-                style="color: var(--surface-ground); background-color:${_.get(amplificationPrimerColorMap.value, x.id)}">
+                style="color: var(--surface-ground); background-color:${_.get(amplificationPrimerColorMap.value, [x.id, 'color'])}">
                 ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
             </span>` : ''
         },
@@ -302,7 +310,7 @@ const rowActions = {
                         y: updatedRecord.y,
                         data: updatedRecord,
                         symbol: _.upperCase(updatedRecord.amplificationPrimer?.sequenceType?.[0]),
-                        color: _.get(amplificationPrimerColorMap.value, data.id),
+                        color: _.get(amplificationPrimerColorMap.value, [data.id, 'color']),
                         tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
                     }]
                     plateDiagram.value.updateWellContents(
