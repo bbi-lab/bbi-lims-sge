@@ -15,6 +15,7 @@ const exportFilename = computed(() => `${props.tableName}_${new Date().toISOStri
 const route = useRoute()
 const localStorageKey = `settings::${route.path}`
 const dtKey = ref(uuidv4())
+const dtId = useId()
 
 const refreshFormattedValues = (ids?: string[]) => {
     const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
@@ -138,6 +139,7 @@ const showSettings = ref(false)
 const filteringInProgress = ref(false)
 const globalFilterFields: Ref<GlobalFilterField[]> = ref([])
 const globalSearchTerm = ref(null)
+const scrollHeight = ref<string>('flex')
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
 const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
@@ -165,6 +167,22 @@ const nonFrozenRecords = computed(() => {
     } else {
         return records.value
     }
+})
+
+watch(frozenRecords, (newValue) => {
+    nextTick(() => {
+        // if frozen records take up all of scrollable area, set scrollHeight to 100% to ensure unfrozen rows are still scrollable
+        const firstUnfrozenRowRect = document.querySelector(`#${dtId} .p-datatable-tbody:not(.p-datatable-frozen-tbody) tr`)?.getBoundingClientRect()
+        const unfrozenTbodyRect = document.querySelector(`#${dtId} .p-datatable-tbody:not(.p-datatable-frozen-tbody)`)?.getBoundingClientRect()
+
+        if (unfrozenTbodyRect && firstUnfrozenRowRect &&
+            ((unfrozenTbodyRect.top + firstUnfrozenRowRect.height) > window.innerHeight) &&
+            !_.isEmpty(nonFrozenRecords.value)) {
+            scrollHeight.value = '100%'
+        } else {
+            scrollHeight.value = 'flex'
+        }
+    })
 })
 
 watch(sortedColumnDefs, (newValue, oldValue) => {
@@ -347,7 +365,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 
 <template>
     <DataTable
-        ref="dt"
+        :id="dtId"
         :key="dtKey"
         v-model:selection="selectedRecords"
         :value="nonFrozenRecords"
@@ -355,7 +373,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         dataKey="id"
         :nullSortOrder="-1"
         scrollable
-        scrollHeight="flex"
+        :scrollHeight="scrollHeight"
         v-model:filters="filters"
         :paginator="paginator"
         :reorderableColumns="true"
