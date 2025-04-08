@@ -363,8 +363,6 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         :rows="rowsPerPage"
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
-        table-class="border-collapse"
-        filterHeaderClass="border-collapse"
         :filter-display="displayColumnFilters ? 'row' : undefined"
         :globalFilterFields="globalFilterFields"
         @update:filters="filteringInProgress = true"
@@ -504,10 +502,13 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 }
 .p-datatable-frozen-tbody > tr {
     box-shadow: inset 0 0 1px black;
-    background-color: var(--p-surface-200);
-    color: var(--p-surface-800);
+    background-color: var(--p-content-border-color);
+    color: var(--p-text-color);
 }
 .p-datatable-scrollable td.p-datatable-frozen-column {
     background-color: inherit;
+}
+.p-datatable-table tr {
+    box-shadow: 0 0 1px var(--p-text-color);
 }
 </style>
