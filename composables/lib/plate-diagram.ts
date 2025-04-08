@@ -8,6 +8,24 @@ type Accessor<T, Self> = (value?: T) => T | Self
 interface CoordinatePair {x: number, y: number}
 export type PlateType = 'storage' | 'pcr'
 
+function hexToRgb(hex: string): {r: number, g: number, b: number} | null {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+export function getWellTextColor(hex: string): string {
+    const rgb = hexToRgb(hex)
+    if (rgb) {
+        var sum = Math.round(((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000)
+        return (sum > 128) ? '#000' : '#fff'
+    } else {
+        return 'var(--p-text-color)'
+    }
+}
+
 export const VALID_WELL_COLORS = [
     "#F0A3FF",
     "#0075DC",
@@ -387,7 +405,7 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                     .attr('x', (w:PlateDiagramWell) => getX(w) + (x.bandwidth() - wellSpacing.x)/2)
                     .attr('y', (w:PlateDiagramWell) => getY(w) + (y.bandwidth() - wellSpacing.y)/2 + 5)
                     .text((w:PlateDiagramWell) => { return w.symbol || ""})
-                    .style('fill', 'var(--surface-ground)')
+                    .style('fill', (w:PlateDiagramWell) => getWellTextColor(w.color || "#ddd"))
                     .style('pointer-events', 'none')
 
                 updateWellOutlines(svg)
