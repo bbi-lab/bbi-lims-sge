@@ -78,6 +78,9 @@ const props = defineProps({
   showColumnFilters: {type: Boolean, default: false},
   selectionDisabled: {type: Boolean, default: false},
 })
+
+const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
+
 const emit = defineEmits([
     'clicked-record-edit',
     'clicked-multiple-record-edit',
@@ -147,6 +150,22 @@ const displayColumnFilters = ref(false)
 function toggleColumnFilters() {
     displayColumnFilters.value = !displayColumnFilters.value
 }
+
+const frozenRecords = computed(() => {
+    if (frozenRecordIds.value) {
+        return _.filter(records.value, (x) => (frozenRecordIds.value ?? []).includes(x.id))
+    } else {
+        return []
+    }
+})
+
+const nonFrozenRecords = computed(() => {
+    if (frozenRecordIds.value) {
+        return _.filter(records.value, (x) => !(frozenRecordIds.value ?? []).includes(x.id))
+    } else {
+        return records.value
+    }
+})
 
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
@@ -331,7 +350,8 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         ref="dt"
         :key="dtKey"
         v-model:selection="selectedRecords"
-        :value="records"
+        :value="nonFrozenRecords"
+        :frozenValue="frozenRecords"
         dataKey="id"
         :nullSortOrder="-1"
         scrollable
@@ -481,5 +501,13 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 }
 .p-datatable-thead > tr:last-child {
     border-bottom-width: 1px;
+}
+.p-datatable-frozen-tbody > tr {
+    box-shadow: inset 0 0 1px black;
+    background-color: var(--p-surface-200);
+    color: var(--p-surface-800);
+}
+.p-datatable-scrollable td.p-datatable-frozen-column {
+    background-color: inherit;
 }
 </style>
