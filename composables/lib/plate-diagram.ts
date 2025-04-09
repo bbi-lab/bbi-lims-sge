@@ -152,6 +152,7 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                         const updatedWell = _.find(updatedWells, (x) => x.id == d.id)
                         d3.select(this)
                             .text(updatedWell?.symbol || "")
+                            .style('fill', getWellTextColor(updatedWell?.color || "#ddd"))
                     }
                 })
         }
