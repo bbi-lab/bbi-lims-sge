@@ -41,8 +41,6 @@ const updateColorMap = () => {
     // add new values to color map
     let currentColorIndex = -1
     plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimer) => {
-        const existingColorsInColorMap = Object.keys(amplificationPrimerColorMap.value).reduce((acc,key) => acc.add(amplificationPrimerColorMap.value[key].color), new Set())
-
         if (well.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.amplificationPrimer.id)) {
             const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.amplificationPrimer.name, /_[frFR]$/, ''))?.color
             if (!sameGroupColor) currentColorIndex += 1
@@ -132,6 +130,7 @@ const displayWithClause = Object.freeze({
     },
     well: {
         columns: {
+            id: true,
             x: true,
             y: true,
         },
@@ -343,6 +342,9 @@ const rowActions = {
         icon: 'pi pi-fw pi-arrow-right',
         iconPos: 'right',
         tooltip: 'Assign to well',
+        disabled: (data: any) => {
+            return _.has(data, 'well.id')
+        },
     },
 }
 </script>
