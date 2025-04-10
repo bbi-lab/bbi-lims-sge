@@ -1,13 +1,15 @@
-import { pgTable, timestamp, uuid, boolean, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, boolean, varchar, text, integer, doublePrecision } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
 import { storageBoxes } from './storage-box'
+export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
 
 export const pellets = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
   replicates: varchar('replicates', { length: 3 }).array(),
-  harvestedOn: timestamp('harvested_on'),
+  harvestedOn: timestamp('harvested_on').notNull(),
+  harvestDay: integer('harvest_day').notNull(),
   harvestedBy: uuid('harvested_by').references(() => users.id),
   isCurrent: boolean('is_current'),
   isBackup: boolean('is_backup'),
@@ -23,5 +25,6 @@ export const pellets = pgTable('pellets', {
   rnaYield: doublePrecision('rna_yield'),
   pctPassaged: doublePrecision('pct_passaged'),
   pctHarvested: doublePrecision('pct_harvested'),
+  protocol: varchar('protocol', {enum: VALID_PROTOCOLS as [string, ...string[]]}),
   notes: text('notes'),
 })
