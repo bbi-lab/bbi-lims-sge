@@ -28,12 +28,12 @@ export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, an
     return applySelectParamsToRecords(selectParams, result)
 }
 
-export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: any, withClause?: any, columns?: any) {
+export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause?: any, columns?: any) {
     const result = await queryBuilder.findFirst({
         where: () => eq(table.id, id),
         with: withClause,
         columns
-    }) 
+    })
     return result
 }
 
@@ -42,7 +42,7 @@ export async function insertRecord(table: PgTable<any>, values: RecordValues) {
       .insert(table)
       .values(trimObjectValues([values])[0])
       .returning()
-  
+
     return newRecord
 }
 
@@ -51,10 +51,10 @@ export async function insertRecords(table: PgTable<any>, records: Array<RecordVa
       .insert(table)
       .values(trimObjectValues(records))
       .returning()
-  
+
     return newRecords
   }
-export async function updateRecord(table: PgTable<any>, id: any, values: RecordValues) {
+export async function updateRecord(table: PgTable<any>, id: string | number, values: RecordValues) {
     const [updatedRecord] = await db
         .update(table)
         .set(trimObjectValues([values])[0])
@@ -64,7 +64,7 @@ export async function updateRecord(table: PgTable<any>, id: any, values: RecordV
     return updatedRecord
 }
 
-export async function updateRecords(table: PgTable<any>, ids: any[], values: RecordValues) {
+export async function updateRecords(table: PgTable<any>, ids: string[] | number[], values: RecordValues) {
     const updatedRecords = await db
         .update(table)
         .set(trimObjectValues([values])[0])
