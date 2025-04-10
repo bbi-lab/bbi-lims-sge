@@ -15,7 +15,7 @@ interface RecordType {
 
 export const formatFieldLabel =  (val: String) => {
     return _.startCase(val.toString())
-        .replace(/(^|\s)(Dna|Rna)($|\s)/g, (match) => match.toUpperCase())
+        .replace(/(^|\s)(Dna|Rna|Pcr)($|\s)/g, (match) => match.toUpperCase())
         .replace(/(^|\s)Pct($|\s)/g, (match) => '% ').trim()
 }
 
