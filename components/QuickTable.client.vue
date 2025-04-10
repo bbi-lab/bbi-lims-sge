@@ -139,7 +139,6 @@ const showSettings = ref(false)
 const filteringInProgress = ref(false)
 const globalFilterFields: Ref<GlobalFilterField[]> = ref([])
 const globalSearchTerm = ref(null)
-const scrollHeight = ref<string>('flex')
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
 
 const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
@@ -171,16 +170,17 @@ const nonFrozenRecords = computed(() => {
 
 watch(frozenRecords, (newValue) => {
     nextTick(() => {
-        // if frozen records take up all of scrollable area, set scrollHeight to 100% to ensure unfrozen rows are still scrollable
-        const firstUnfrozenRowRect = document.querySelector(`#${dtId} .p-datatable-tbody:not(.p-datatable-frozen-tbody) tr`)?.getBoundingClientRect()
-        const unfrozenTbodyRect = document.querySelector(`#${dtId} .p-datatable-tbody:not(.p-datatable-frozen-tbody)`)?.getBoundingClientRect()
+        const frozenTbody = document.querySelector(`#${dtId} .p-datatable-scrollable-table > .p-datatable-frozen-tbody`) as HTMLElement
+        const datatableContainer = document.querySelector(`#${dtId} .p-datatable-table-container`) as HTMLElement
+        const datatableColHeaderRow = document.querySelector(`#${dtId} .p-datatable-scrollable-table > thead.p-datatable-thead`) as HTMLElement
 
-        if (unfrozenTbodyRect && firstUnfrozenRowRect &&
-            ((unfrozenTbodyRect.top + firstUnfrozenRowRect.height) > window.innerHeight) &&
-            !_.isEmpty(nonFrozenRecords.value)) {
-            scrollHeight.value = '100%'
-        } else {
-            scrollHeight.value = 'flex'
+        const frozenTbodyHeight = frozenTbody.getBoundingClientRect().height || 0
+        const datatableContainerHeight = datatableContainer.getBoundingClientRect().height || 0
+
+        // if frozen rows take up more than half of the scrollable area, add sticky positioning to keep non-frozen rows scrollable
+        if (frozenTbodyHeight && frozenTbodyHeight && frozenTbodyHeight > datatableContainerHeight/2) {
+            frozenTbody.setAttribute('style', 'position: sticky; z-index: 10;')
+            datatableColHeaderRow.setAttribute('style', 'position: sticky; z-index: 20;')
         }
     })
 })
@@ -204,7 +204,6 @@ function formatDate(value: string) {
     const isoDate = value ? new Date(value) : null
     return isoDate?.toLocaleDateString('fr-CA') || ''
 }
-
 function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
 }
@@ -373,7 +372,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         dataKey="id"
         :nullSortOrder="-1"
         scrollable
-        :scrollHeight="scrollHeight"
+        scrollHeight="flex"
         v-model:filters="filters"
         :paginator="paginator"
         :reorderableColumns="true"
