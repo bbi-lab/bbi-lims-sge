@@ -4,10 +4,9 @@ import moment from 'moment'
 import _ from 'lodash'
 import  {
     TransfectionExperiment,
-    type PelletInsert,
-    VALID_PROTOCOLS,
     VALID_REPLICATES,
 } from '~/shared/sge/transfection-experiment'
+import { VALID_PROTOCOLS } from '~/server/db/schema/sge/pellet'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -60,7 +59,6 @@ const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment
 const targetsSelected = computed (() => {return !_.isEmpty(selectedTargets.value)})
 const replicatesSelected = computed (() => {return !_.isEmpty(selectedReplicates.value)})
 
-
 onMounted(async() => {
     if (experimentId) {
         const withClause = {
@@ -88,7 +86,7 @@ onMounted(async() => {
 
         if (_.isArray(experiment.transfectTargets)) {
             allTargets = _.map(
-                experiment.transfectTargets, 
+                experiment.transfectTargets,
                 (x: any) => { return {label: formatTargetName(x.target), code: x.id}}
             )
         }
@@ -140,9 +138,16 @@ function addDraftPellets() {
 }
 
 async function submitPellets() {
-    const newPellets = _.map(pelletsToAdd.value, (x) => { 
+    const newPellets = _.map(pelletsToAdd.value, (x) => {
         const {target, ...vals} = x
-        return {...vals, transfectTargetId: target.code}
+        return {
+            ...vals,
+            transfectTargetId: target.code,
+            harvestedOn: harvestDateTime.value,
+            harvestDay: moment(harvestDateTime.value).diff(moment(experiment.data?.startedOn).set( {hour: 0, minute: 0}), 'days'),
+            harvestedBy: harvestBy.value,
+            protocol: _.get(harvestProtocol.value, 'code'),
+        }
     })
     const response = await experiment.addPellets(newPellets)
     if (response?.success) {
@@ -163,7 +168,7 @@ async function submitPellets() {
                 <div v-if="experiment.data?.startedOn">Time elapsed: {{ timeElapsed }}</div>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 mt-5">
-                <Button 
+                <Button
                     size="large"
                     icon="pi pi-chevron-right"
                     iconPos="right"
@@ -178,14 +183,14 @@ async function submitPellets() {
             <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
                 <label for="harvestTargetsInput" class="block font-bold">Targets</label>
                 <Listbox id="harvestTargetsInput" v-model="selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
-                
+
                 <label for="harvestReplicatesInput" class="block font-bold">Replicates</label>
                 <MultiSelect id="harvestReplicatesInput" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                 <div class="flex items-stretch w-60">
                     <label for="pctPassagedInput" class="mt-auto mb-auto font-bold">% passaged</label>
-                    <InputNumber id="pctPassagedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctPassaged" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/> 
+                    <InputNumber id="pctPassagedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctPassaged" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
                 </div>
                 <div class="flex items-stretch w-60">
                     <label for="pctHarvestedInput" class="mt-auto mb-auto font-bold">% harvested</label>
@@ -199,7 +204,7 @@ async function submitPellets() {
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                 <div class="flex items-stretch w-60">
                     <label for="dnaConcInput" class="mt-auto mb-auto font-bold">DNA conc (ng/μL)</label>
-                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.dnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/> 
+                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.dnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
                 </div>
                 <div class="flex items-stretch w-60">
                     <label for="dnaVolInput" class="mt-auto mb-auto font-bold">DNA vol (μL)</label>
@@ -211,7 +216,7 @@ async function submitPellets() {
                 </div>
                 <div class="flex items-stretch w-60">
                     <label for="rnaConcInput" class="mt-auto mb-auto font-bold">RNA conc (ng/μL)</label>
-                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.rnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/> 
+                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.rnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
                 </div>
                 <div class="flex items-stretch w-60">
                     <label for="rnaVolInput" class="mt-auto mb-auto font-bold">RNA vol (μL)</label>
@@ -266,8 +271,8 @@ async function submitPellets() {
                     <DatePicker
                         class="w-80"
                         id="harvestDateInput"
-                        v-model.trim="harvestDateTime" 
-                        showTime 
+                        v-model.trim="harvestDateTime"
+                        showTime
                         showIcon
                         :minDate="minDate"
                         :maxDate="maxDate"
@@ -290,7 +295,7 @@ async function submitPellets() {
                     <Select class="w-48" id="harvestProtocolInput" v-model="harvestProtocol" :options="valuesToCodedList(VALID_PROTOCOLS)" optionLabel="label" :disabled="!targetsSelected" />
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-1 xl:col-span-1 space-y-2">
-                    <Button 
+                    <Button
                         size="large"
                         icon="pi pi-bolt"
                         severity="warn"

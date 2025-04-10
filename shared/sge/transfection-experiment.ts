@@ -28,7 +28,6 @@ export type TransfectionTargetSelect = z.infer<typeof transfectionTargetSelect>
 
 type IdOnly = {id: string}
 
-export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
 export const VALID_REPLICATES = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
 
 export class TransfectionExperiment {
@@ -64,10 +63,10 @@ export class TransfectionExperiment {
                 statusCode: 404,
                 statusMessage: 'Not Found'
             })
-        } 
+        }
         if (transfectionExperimentSelect.safeParse(data).success) {
             this.data = transfectionExperimentSelect.parse(data)
-            
+
             if (_.has(data, 'transfectTargets')) {
                 this.transfectTargets = _.get(data, 'transfectTargets')
             }
@@ -108,7 +107,7 @@ export class TransfectionExperiment {
             }
         }
     }
-    
+
     // delete experiment from db
     async delete() {
         const data = await $fetch<IdOnly>(`${baseUrl}/${this.id}`, {method: 'DELETE'})
@@ -128,11 +127,11 @@ export class TransfectionExperiment {
             const existingTargets = await db.select({targetId: transfectTargets.targetId})
                 .from(transfectTargets)
                 .where(eq(transfectTargets.experimentId, this.id))
-        
+
             const existingTargetIds =  _.map(existingTargets, (x) => x.targetId)
             const targetsToRemove = _.difference(existingTargetIds, targetIds)
             const targetsToAdd = _.difference(targetIds, existingTargetIds)
-        
+
             if (targetsToAdd?.length > 0)
                 await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string}}))
             if (targetsToRemove?.length > 0)
