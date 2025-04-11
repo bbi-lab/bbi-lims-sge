@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
-import { extractionExperiments } from './extraction-experiment'
+import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
 import { wells } from './well'
 import { users } from '../user'
@@ -243,8 +243,36 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
             references: [users.id],
         },
     },
+    many: {
+        pellets: {
+            table: pellets,
+            schema: createSelectSchema(pellets),
+            fields: [pellets.extractionExperimentId],
+        },
+        extractionLotUsage: {
+            table: extractionLotUsage,
+            schema: createSelectSchema(extractionLotUsage),
+            fields: [extractionLotUsage.experimentId],
+        }
+    }
 }
 export const extractionExperimentsRelations = relationsConfigToRelations(extractionExperiments, extractionExperimentsRelationsConfig)
+
+const extractionLotUsageRelationsConfig: RelationsConfig = {
+    one:{
+        experiment: {
+            fields: [extractionLotUsage.experimentId],
+            referenceTable: extractionExperiments,
+            references: [extractionExperiments.id],
+        },
+        lot: {
+            fields: [extractionLotUsage.lotId],
+            referenceTable: lots,
+            references: [lots.id],
+        },
+    },
+}
+export const extractionLotUsageRelations = relationsConfigToRelations(extractionLotUsage, extractionLotUsageRelationsConfig)
 
 const pelletsRelationsConfig: RelationsConfig = {
     one:{
@@ -262,6 +290,11 @@ const pelletsRelationsConfig: RelationsConfig = {
             fields: [pellets.storageBoxId],
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
+        },
+        extractionExperimentId: {
+            fields: [pellets.extractionExperimentId],
+            referenceTable: extractionExperiments,
+            references: [extractionExperiments.id],
         },
     },
 }
@@ -409,6 +442,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
     transfectLotUsageRelations: transfectLotUsageRelationsConfig,
+    extractionLotUsageRelations: extractionLotUsageRelationsConfig,
     pellets: pelletsRelationsConfig,
     storageBoxes: storageBoxesRelationsConfig,
     lots: lotsRelationsConfig,
