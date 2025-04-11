@@ -111,11 +111,12 @@ const fieldDefs = {
         label: 'Gene',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/genes`,
+            searchBaseUrl: `${config.public.apiBase}/sge-valid-genes`,
             searchFields: ['symbol', 'ncbiAccession'],
             valueField: 'id',
             displayFields: ['symbol', 'ncbiAccession'],
             displayFormat: (x) => `${x.symbol} (${x.ncbiAccession})`,
+            searchMode: 'simple',
         }
     },
     snvLibraryStart: {
