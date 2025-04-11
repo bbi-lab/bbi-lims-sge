@@ -211,6 +211,13 @@
       "when": 1744377157904,
       "tag": "0029_panoramic_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1744412361193,
+      "tag": "0030_opposite_franklin_richards",
+      "breakpoints": true
     }
   ]
 }
