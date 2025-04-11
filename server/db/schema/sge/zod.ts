@@ -6,7 +6,7 @@ import { regions } from './region'
 import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
-import { extractionExperiments } from './extraction-experiment'
+import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { pellets } from './pellet'
@@ -79,6 +79,10 @@ const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
 const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
 const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
+
+const selectExtractionLotUsageSchema = createSelectSchema(extractionLotUsage, {usageOn: nullableDateSchema})
+const insertExtractionLotUsageSchema = selectExtractionLotUsageSchema.omit({id: true}).partial()
+const updateExtractionLotUsageSchema = insertExtractionLotUsageSchema
 
 const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
@@ -188,6 +192,11 @@ export const schemas = {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
         update: updateExtractionExperimentsSchema,
+    },
+    extractionLotUsage: {
+        select: selectExtractionLotUsageSchema,
+        insert: insertExtractionLotUsageSchema,
+        update: updateExtractionLotUsageSchema,
     },
     plasmids: {
         select: selectPlasmidsSchema,
