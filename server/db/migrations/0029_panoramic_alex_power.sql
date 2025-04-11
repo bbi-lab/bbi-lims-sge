@@ -1,0 +1,1 @@
+CREATE INDEX "gene_type_idx" ON "genes" USING btree ("gene_type");

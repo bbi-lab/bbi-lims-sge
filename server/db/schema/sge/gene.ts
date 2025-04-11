@@ -21,6 +21,7 @@ export const genes = pgTable('genes', {
   assembly: varchar('assembly', {length: 50}),
   annotation: varchar('annotation', {length: 50}),
 }, (table) => [
-  index("ncbi_accession_idx").on(table.ncbiAccession),
-  index("symbol_idx").on(table.symbol),
+  index('ncbi_accession_idx').on(table.ncbiAccession),
+  index('symbol_idx').on(table.symbol),
+  index('gene_type_idx').on(table.geneType),
 ])
