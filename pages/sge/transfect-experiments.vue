@@ -161,7 +161,6 @@ const rowActions = {
         icon: 'pi pi-bolt',
         iconPos: 'right',
     },
-
 }
 
 const fieldDefs = {

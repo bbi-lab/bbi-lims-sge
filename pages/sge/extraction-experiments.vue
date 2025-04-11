@@ -1,13 +1,13 @@
 <script setup>
 import _ from 'lodash'
+import DotsTriangle from '~icons/mdi/dots-triangle'
+import BeakerOutline from '~icons/mdi/beaker-outline'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const extractionExperimentsTable = ref()
 const router = useRouter()
-
-const rowActions = {}
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -40,13 +40,65 @@ function didDeleteRecord(event) {
     showEditForm.value = false
 }
 
+const displayWithClause = Object.freeze({
+    technician: {columns: {name: true}},
+    extractionLotUsage: {columns: {},
+        with: {
+            lot:  {
+                columns: {
+                    lotNumber: true
+                }
+            },
+        }
+    },
+    pellets: true,
+})
+
 const columnDefs = {
     extractedOn: {
         format: 'date-time'
     },
     technician: {
         path: 'technician.name'
-    }
+    },
+    extractionLotUsage: {
+        header: 'Reagents',
+        format: (x) => _.join(_.map(_.get(x, 'extractionLotUsage', []), (y) => {
+            return  y.lot.lotNumber
+        }), ', '),
+        path: 'extractionLotUsage.displayValue',
+        type: 'string',
+    },
+}
+
+const rowActions = {
+    pellets: {
+        label: (data) => { return `${_.size(data.pellets)}`},
+        action: (data) => {
+            router.push({path:'/sge/pellets', query: {'extractionExperimentId': data.id}})
+        },
+        iconComponent: DotsTriangle,
+        iconPos: 'right',
+        tooltip: 'Pellets',
+    },
+    reagents: {
+        label: (data) => { return `${data.extractionLotUsage?.length || 0}`},
+        action: (data) => {
+            router.push({path:`/sge/extraction-experiment/${data.id}/lot-usage`})
+        },
+        iconComponent: BeakerOutline,
+        iconPos: 'right',
+        tooltip: 'Reagents',
+    },
+    extraction: {
+        label: () => 'Extraction',
+        action: (data) => {
+            router.push({path:`/sge/extraction-experiment/${data.id}/extraction`})
+        },
+        severity: 'warn',
+        icon: 'pi pi-bolt',
+        iconPos: 'right',
+    },
 }
 </script>
 <template>
@@ -60,6 +112,7 @@ const columnDefs = {
                 :rowActions="rowActions"
                 :withClause="{technician: {columns: {name: true}}}"
                 :columnDefs="columnDefs"
+                :displayWithClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
