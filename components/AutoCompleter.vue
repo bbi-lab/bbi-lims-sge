@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 
@@ -17,12 +17,13 @@ const props = defineProps({
   inputId: {type: String},
   placeholderValue: {type: String},
   inputClass: {type: String},
+  searchMode: {type: String as PropType<'JsonLogic' | 'simple'>, default: 'JsonLogic'},
 })
 
 const modelValue = defineModel()
 const modelValueObj = defineModel('obj')
 const currentValue = ref()
-const suggestions = ref([])
+const suggestions = ref<{code: string | number, label: string, record: any }[]>([])
 
 const emit = defineEmits([
     'update:modelValue',
@@ -30,13 +31,13 @@ const emit = defineEmits([
     'changedValue',
 ])
 
-function getDisplayValue(record) {
+function getDisplayValue(record: any) {
     const result = []
 
     if (_.isFunction(props.displayFormat)) {
         return props.displayFormat(record)
     } else {
-        for (const field of props.displayFields) {
+        for (const field of props.displayFields as string[]) {
             result.push(_.get(record, field))
         }
         return _.join(_.compact(result), ': ')
@@ -63,14 +64,20 @@ watch(modelValue, async (newValue, oldValue) => {
     { immediate: true },
 )
 
-async function autocompleteSearch(event) {
-    let whereClause = props.searchFields.length > 1 ?
-        {"or": _.map(props.searchFields, (x) => { return {"startsWith": [{"var": x}, event.query] } })} :
-        {"startsWith": [{"var": props.searchFields[0]}, event.query] }
+async function autocompleteSearch(event: any) {
+    let whereClause
+    if (props.searchMode == 'simple') {
+        whereClause = {searchTerm: event.query}
+    } else {
+        whereClause = props.searchFields.length > 1 ?
+            {"or": _.map(props.searchFields, (x) => { return {"startsWith": [{"var": x}, event.query] } })} :
+            {"startsWith": [{"var": props.searchFields[0]}, event.query] }
 
-    if (props.searchWhereClause) {
-        whereClause = {"and": [whereClause, props.searchWhereClause]}
+        if (props.searchWhereClause) {
+            whereClause = {"and": [whereClause, props.searchWhereClause]}
+        }
     }
+
     const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
 
     suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x), record: x }})
