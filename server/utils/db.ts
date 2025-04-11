@@ -19,7 +19,7 @@ import {lots} from '../db/schema/sge/lots'
 import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
-import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
+import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -54,6 +54,7 @@ export const schema = {
   transfectLotUsage,
   plasmidExperiments,
   extractionExperiments,
+  extractionLotUsage,
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
@@ -80,6 +81,7 @@ export const schema = {
   transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
   plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
   extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
+  extractionLotUsageRelations: sgeRelations.extractionLotUsageRelations,
   amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
   linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
