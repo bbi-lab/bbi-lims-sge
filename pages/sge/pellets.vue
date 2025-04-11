@@ -172,6 +172,12 @@ const fieldDefs = {
     storageBoxLoc: {
         label: 'Storage box location'
     },
+    harvestedOn: {
+        readOnly: true,
+    },
+    harvestDay: {
+        readOnly: true,
+    },
 }
 
 // convert query params in to JSON Logic to pass as where clause
