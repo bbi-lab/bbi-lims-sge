@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, uuid, varchar, integer, unique } from 'drizzle-orm/pg-core'
+import { pgTable, pgEnum, uuid, varchar, integer, unique, index } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 
 export const geneOrientationEnum = pgEnum('gene_orientations', ['plus', 'minus'])
@@ -20,4 +20,7 @@ export const genes = pgTable('genes', {
   locusTag: varchar('locus_tag', { length: 50 }),
   assembly: varchar('assembly', {length: 50}),
   annotation: varchar('annotation', {length: 50}),
-})
+}, (table) => [
+  index("ncbi_accession_idx").on(table.ncbiAccession),
+  index("symbol_idx").on(table.symbol),
+])
