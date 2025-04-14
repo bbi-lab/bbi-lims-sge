@@ -51,7 +51,7 @@ const displayWithClause = Object.freeze({
             },
         }
     },
-    pellets: true,
+    pellets: {columns: {id: true}},
 })
 
 const columnDefs = {
@@ -60,6 +60,9 @@ const columnDefs = {
     },
     technician: {
         path: 'technician.name'
+    },
+    pellets: {
+        display: false,
     },
     extractionLotUsage: {
         header: 'Reagents',
@@ -110,9 +113,8 @@ const rowActions = {
                 schemaName="select"
                 title="Extraction experiments"
                 :rowActions="rowActions"
-                :withClause="{technician: {columns: {name: true}}}"
+                :withClause="displayWithClause"
                 :columnDefs="columnDefs"
-                :displayWithClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
             />
