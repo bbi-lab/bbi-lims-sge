@@ -374,6 +374,8 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         scrollable
         scrollHeight="flex"
         v-model:filters="filters"
+        :selectionMode="selectionMode"
+        :metaKeySelection="true"
         :paginator="paginator"
         :reorderableColumns="true"
         @column-reorder="updateColOrder"
