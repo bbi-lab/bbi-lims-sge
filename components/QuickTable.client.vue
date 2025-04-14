@@ -321,7 +321,7 @@ const exportOptions = ref([
         command: () => exportCSV()
     }
 ])
-defineExpose({ addOrRefreshRecordId, removeRecordId })
+defineExpose({ addOrRefreshRecordId, removeRecordId, selectedRecords })
 
 function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
