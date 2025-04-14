@@ -281,17 +281,17 @@ const pelletsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
-        transfectTargetId: {
+        transfectTarget: {
             fields: [pellets.transfectTargetId],
             referenceTable: transfectTargets,
             references: [transfectTargets.id],
         },
-        storageBoxId: {
+        storageBox: {
             fields: [pellets.storageBoxId],
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
         },
-        extractionExperimentId: {
+        extractionExperiment: {
             fields: [pellets.extractionExperimentId],
             referenceTable: extractionExperiments,
             references: [extractionExperiments.id],
