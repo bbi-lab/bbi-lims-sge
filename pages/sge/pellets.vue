@@ -1,28 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import type { VNodeRef } from 'vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | undefined>()
 const pelletsTable = ref()
 const route = useRoute()
-const queryParams = route.query
 const config = useRuntimeConfig()
-const tableTitle = ref(null)
+const tableTitle = ref<string>('Pellets')
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
+const editingMultipleRecordsIds = ref<string[]>([])
+
+const queryParams = route.query
 
 onMounted(async() => {
-    // if (queryParams.targetId) {
-    //     const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, queryParams.targetId)
-    //     tableTitle.value = `${target.name}: regions`
-    // } else {
-    //     tableTitle.value = `All Regions`
-    // }
+    if (_.has(queryParams, ['transfectTarget.experiment.id'])) {
+        const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, _.get(queryParams, ['transfectTarget.experiment.id']) as string)
+        tableTitle.value = `${tranfectExperiment.name}: pellets`
+    } else if (_.has(queryParams, ['extractionExperimentId'])) {
+        const extractionExperiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, _.get(queryParams, ['extractionExperimentId']) as string)
+        tableTitle.value = `${extractionExperiment.name}: pellets`
+    }
 })
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -36,23 +39,23 @@ function didClickCancelAddForm() {
     showAddForm.value = false
 }
 function didClickCancelEditForm() {
-    editingRecordId.value = null
+    editingRecordId.value = undefined
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     pelletsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     pelletsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     pelletsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -62,7 +65,7 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
+function didUpdateMultipleRecords(event: any[]) {
     event.forEach(e => {
         if (e.id) pelletsTable.value.addOrRefreshRecordId(e.id)
     })
@@ -74,7 +77,13 @@ const displayWithClause = Object.freeze({
             name: true
         },
     },
-    transfectTargetId: {
+    extractionExperiment: {
+        columns: {
+            id: true,
+            name: true
+        },
+    },
+    transfectTarget: {
         columns: {},
         with: {
             target: {
@@ -104,7 +113,7 @@ const displayWithClause = Object.freeze({
             }
         }
     },
-    storageBoxId: {
+    storageBox: {
         columns: {
             name: true,
         }
@@ -112,25 +121,39 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs = {
-    experiment: {
-        path: 'transfectTargetId.experiment.name',
+    transfectionExperiment: {
+        path: 'transfectTarget.experiment.name',
         index: 0,
     },
-    transfectTargetId: {
+    transfectTarget: {
         header: 'Target',
-        format: (x) => { return _.get(x, 'transfectTargetId.target.name') || `${_.get(x, 'transfectTargetId.target.region.gene.symbol')} : ${_.get(x, 'transfectTargetId.target.region.name')}`},
-        path: 'transfectTargetId.displayValue',
+        format: (x: any) => { return _.get(x, 'transfectTarget.target.name') || `${_.get(x, 'transfectTarget.target.region.gene.symbol')} : ${_.get(x, 'transfectTarget.target.region.name')}`},
+        path: 'transfectTarget.displayValue',
         type: 'string',
         index: 1,
+    },
+    transfectTargetId: {
+        display: false,
+    },
+    extractionExperiment: {
+        path: 'extractionExperiment.name',
+        header: 'Extraction experiment',
+        index: 2,
+    },
+    extractionExperimentId: {
+        display: false,
     },
     harvestedBy: {
         path: 'harvestedBy.name',
     },
-    storageBoxId: {
+    storageBox: {
         header: 'Storage',
-        format: (x) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+        format: (x: any) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
         path: 'storageBoxId.displayValue',
         type: 'string',
+    },
+    storageBoxId: {
+        display: false,
     },
     storageBoxLoc: {
         display: false
@@ -150,14 +173,24 @@ const fieldDefs = {
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
             valueField: 'id',
-            displayFormat: (x) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
+            displayFormat: (x:any) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
             parentKeyField: 'experimentId',
             searchWithClause: {
                 target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
             },
         }
     },
-
+    extractionExperimentId: {
+        label: 'Extraction experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/extraction-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
     storageBoxId: {
         label: 'Storage box',
         component: 'AutoCompleter',
@@ -192,12 +225,11 @@ const defaultValues = queryParams
             <QuickTable
                 ref="pelletsTable"
                 tableName="pellets"
-                title="Pellets"
+                :title="tableTitle"
                 schemaName="select"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :where="whereClauses[0]"
-                :title="tableTitle"
                 :canAdd="false"
                 :canEditMultiple="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
