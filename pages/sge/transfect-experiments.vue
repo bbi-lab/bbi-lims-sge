@@ -137,7 +137,7 @@ const rowActions = {
     pellets: {
         label: (data) => { return `${getPelletCount(data.transfectTargets)}`},
         action: (data) => {
-            router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': data.id}})
+            router.push({path:'/sge/pellets', query: {'transfectTarget.experiment.id': data.id}})
         },
         iconComponent: DotsTriangle,
         iconPos: 'right',

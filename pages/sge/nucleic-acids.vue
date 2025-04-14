@@ -54,9 +54,33 @@ function didDeleteRecord(event) {
     nucleicAcidsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
+const displayWithClause = Object.freeze({
+    extractionExperiment: {
+        columns: {name: true}
+    },
+    storageBox: {
+        columns: {name: true}
+    },
+    pellet: {
+        columns: {},
+        with: {
+            transfectTarget: {
+                columns: {},
+                with: {
+                    experiment: {
+                        columns: {name: true}
+                    },
+                    target: {
+                        columns: {name: true}
+                    }
+                }
+            }
+        }
+    },
+})
 const columnDefs = {
     pellet: {
-        format: (x) => `${x.pellet?.transfectTargetId?.experiment?.name}: ${x.pellet?.transfectTargetId?.target?.name}`,
+        format: (x) => `${x.pellet?.transfectTarget?.experiment?.name}: ${x.pellet?.transfectTarget?.target?.name}`,
         path: 'pellet.displayValue',
         type: 'string',
         index: 1,
@@ -108,12 +132,12 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/pellets`,
-            searchFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
+            searchFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
             searchWithClause: {
-                transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
+                transfectTarget: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
             },
             valueField: 'id',
-            displayFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
+            displayFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
         }
     },
 }
@@ -127,7 +151,7 @@ const fieldDefs = {
                 schemaName="select"
                 title="Nucleic Acids"
                 :columnDefs="columnDefs"
-                :withClause="{extractionExperiment: {columns: {name: true}}, storageBox: {columns: {name: true}}, pellet: {columns: {}, with: {transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}}}}}"
+                :withClause="displayWithClause"
                 :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"

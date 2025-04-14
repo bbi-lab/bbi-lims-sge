@@ -174,7 +174,7 @@ async function submitPellets() {
                     iconPos="right"
                     severity="info"
                     label="View pellets"
-                    @click="router.push({path:'/sge/pellets', query: {'transfectTargetId.experiment.id': experiment.id}})" />
+                    @click="router.push({path:'/sge/pellets', query: {'transfectTarget.experiment.id': experiment.id}})" />
             </div>
             <hr class="col-span-12">
             <div class="col-span-12">
