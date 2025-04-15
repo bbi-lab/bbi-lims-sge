@@ -6,7 +6,7 @@ const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
 const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
-const storagePlatesTable = ref()
+const platesTable = ref()
 const router = useRouter()
 
 function didClickRecordEdit(event) {
@@ -38,25 +38,26 @@ function didClickCancelMultipleEditForm() {
 }
 function didUpdateMultipleRecords(event) {
     event.forEach(e => {
-        if (e.id) storagePlatesTable.value.addOrRefreshRecordId(e.id)
+        if (e.id) platesTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
 function didAddRecord(event) {
-    storagePlatesTable.value.addOrRefreshRecordId(event.id)
+    platesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
 function didUpdateRecord(event) {
-    storagePlatesTable.value.addOrRefreshRecordId(event.id)
+    platesTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
 function didDeleteRecord(event) {
-    storagePlatesTable.value.removeRecordId(event.id)
+    platesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 const columnDefs = {
     plateType: {
-        display: false
+        format: ({plateType}) => {  return plateType == 'pcr' ? 'PCR' : plateType },
+        path: 'plateType.displayValue',
     },
     pcrExperimentId: {
         display: false
@@ -78,7 +79,7 @@ const rowActions = {
         },
     }
 }
-const defaultValues = {plateType: 'storage', sizeX: 12, sizeY: 8}
+const defaultValues = {sizeX: 12, sizeY: 8}
 
 const fieldDefs = {
     pcrExperimentId: {
@@ -93,14 +94,13 @@ const fieldDefs = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="storagePlatesTable"
+                ref="platesTable"
                 tableName="plates"
                 schemaName="select"
-                title="Storage plates"
+                title="Plates"
                 :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
-                :where="{'==': [{var: 'plateType'}, 'storage'] }"
                 :rowActions="rowActions"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
