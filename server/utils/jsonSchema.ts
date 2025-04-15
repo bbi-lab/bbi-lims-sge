@@ -4,8 +4,9 @@ import { users } from '@/server/db/schema/user'
 import _ from 'lodash'
 import { type RelationsConfig, db} from "./db"
 import { type UserGroup } from "@/server/db/schema/user"
+import { type EnumLookup } from "../db/schema/sge/enum-lookups"
 
-export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string) {
+export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConfig: RelationsConfig, defaultId?: string, enumLookup?: EnumLookup) {
 
     // define JSON schema property as coded list of users, to be applied to JSON schema
     const usersInfo = await getAllVerifiedUsersInfo()
@@ -28,6 +29,14 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
         if (_.get(relationsConfig.one, [property, 'referenceTable']) === users) {
           _.set(jsonSchema, ['properties', property], usersJsonSchemaProperty)
         }
+      }
+      if (enumLookup && Object.keys(enumLookup).includes(property)) {
+        const enumLookupProperty = enumLookup[property]
+        const enumLookupJsonSchemaProperty:JsonSchema7AnyType = {
+          type: 'string',
+          oneOf: _.map(enumLookupProperty, (val, key) => { return { const: key, title: val.label } }),
+        }
+        _.set(jsonSchema, ['properties', property], enumLookupJsonSchemaProperty)
       }
     }
 
