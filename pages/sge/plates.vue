@@ -75,7 +75,11 @@ const columnDefs = {
 const rowActions = {
     layout: {
         action: (data) => {
-            router.push({path:`/sge/amp-plate-diagram/${data.id}`})
+            if (data.plateType?.value == 'amp-storage') {
+                router.push({path:`/sge/amp-plate-diagram/${data.id}`})
+            } else {
+                router.push({path:`/sge/plate-diagram/${data.id}`})
+            }
         },
     }
 }
@@ -98,7 +102,6 @@ const fieldDefs = {
                 tableName="plates"
                 schemaName="select"
                 title="Plates"
-                :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
@@ -129,7 +132,7 @@ const fieldDefs = {
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
             />
-            <QuickFormMultiple
+            <!-- <QuickFormMultiple
                 v-if="showMultipleEditForm"
                 tableName="plates"
                 :recordIds="editingMultipleRecordsIds"
@@ -138,7 +141,7 @@ const fieldDefs = {
                 :defaultValues="defaultValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
-            />
+            /> -->
         </SplitterPanel>
     </Splitter>
 </template>
