@@ -17,7 +17,7 @@ onMounted(async() => {
     // Fetch the unpooled plate
     const unpooledPlateWithWells = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
-        route.params.unpooledid as string,
+        route.params.unpooledPlateId as string,
         {
             wells: {
                 columns: {
@@ -57,7 +57,7 @@ onMounted(async() => {
     // Fetch the unpooled plate
     const pooledPlateWithWells = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
-        route.params.pooledid as string,
+        route.params.pooledPlateId as string,
         {
             wells: {
                 columns: {
