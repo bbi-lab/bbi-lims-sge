@@ -71,6 +71,17 @@ const columnDefs = {
     wells: {
         display: false
     },
+    emptyWells: {
+        format: (data) => {
+            // TODO: move this to a SQL view to avoid inefficient calc and needing to load all wells
+            if (_.size(data.wells) == data.sizeX * data.sizeY) {
+                return _.sumBy(data.wells, (well) => _.isEmpty(_.compact([well.amplificationPrimerId, well.linearizationPrimerId, well.homologyArmPrimerId])) ? 1 : 0)
+            } else {
+                return '-'
+            }
+        },
+        path: 'emptyWells.displayValue',
+    }
 }
 const rowActions = {
     layout: {
@@ -85,6 +96,16 @@ const rowActions = {
 }
 const defaultValues = {sizeX: 12, sizeY: 8}
 
+const displayWithClause = {
+    wells: {
+        columns: {
+            amplificationPrimerId: true,
+            linearizationPrimerId: true,
+            homologyArmPrimerId: true,
+        },
+
+    }
+}
 const fieldDefs = {
     pcrExperimentId: {
         display: false,
@@ -106,6 +127,7 @@ const fieldDefs = {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :expandEnums="true"
+                :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
