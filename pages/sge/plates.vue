@@ -8,6 +8,8 @@ const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
 const platesTable = ref()
 const router = useRouter()
+const mode = ref<'pool' | null>(null)
+const poolingPlates = ref([])
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -32,16 +34,16 @@ function didClickMultipleRecordEdit(recordIds) {
     showEditForm.value = false
     showAddForm.value = false
 }
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
-        if (e.id) platesTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
+// function didClickCancelMultipleEditForm() {
+//     editingMultipleRecordsIds.value = []
+//     showMultipleEditForm.value = false
+// }
+// function didUpdateMultipleRecords(event) {
+//     event.forEach(e => {
+//         if (e.id) platesTable.value.addOrRefreshRecordId(e.id)
+//     })
+//     showMultipleEditForm.value = false
+// }
 function didAddRecord(event) {
     platesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
@@ -92,6 +94,16 @@ const rowActions = {
                 router.push({path:`/sge/plate-diagram/${data.id}`})
             }
         },
+    },
+    pool: {
+        action: ({id, name}) => {
+            if (_.size(poolingPlates.value)==0) {
+                poolingPlates.value = [{id, name}]
+            } else if (_.size(poolingPlates.value)==1 && poolingPlates.value[0].id !== id) {
+                poolingPlates.value.push({id, name})
+                router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
+            }
+        },
     }
 }
 const defaultValues = {sizeX: 12, sizeY: 8}
@@ -118,6 +130,9 @@ const fieldDefs = {
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
+            <div class="bg-red-100 p-5" v-if="_.size(poolingPlates) == 1">
+                Plate {{ poolingPlates[0].name}} is selected for pooling: now select a plate to pool into
+            </div>
             <QuickTable
                 ref="platesTable"
                 tableName="plates"
