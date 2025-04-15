@@ -4,13 +4,35 @@ import {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { type PgTable } from 'drizzle-orm/pg-core'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, getTableName } from 'drizzle-orm'
 import '../db/schema/sge/relations'
 import { useDrizzle } from '../utils/db'
+import { ENUM_LOOKUPS } from '../db/schema/sge/enum-lookups'
 
 interface RecordValues {[key: string]: string | number | boolean | null | undefined }
 
 const db = useDrizzle()
+
+function expandEnumValues(records: any, tableName: string): void {
+    if (!ENUM_LOOKUPS[tableName]) return
+
+    const enumLookup = ENUM_LOOKUPS[tableName]
+    if (_.isArray(records)) {
+        _.forEach(records, (record) => {
+            _.forEach(record, (value, key) => {
+                if (_.isString(value) && enumLookup[key] && enumLookup[key][value]) {
+                    record[key] = {value: record[key], ...enumLookup[key][value]}
+                }
+            })
+        })
+    } else {
+        _.forEach(records, (value, key) => {
+            if (_.isString(value) && enumLookup[key] && enumLookup[key][value]) {
+                records[key] = {value: records[key], ...enumLookup[key][value]}
+            }
+        })
+    }
+}
 
 function trimObjectValues(records: RecordValues[]): RecordValues[] {
     return _.map(records, (x) => {
@@ -20,20 +42,23 @@ function trimObjectValues(records: RecordValues[]): RecordValues[] {
     })
 }
 
-export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams) {
-    const result = await queryBuilder.findMany({
+export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false) {
+    const records = await queryBuilder.findMany({
         columns: selectParams.columns,
         with: selectParams.with
     })
-    return applySelectParamsToRecords(selectParams, result)
+    const result = applySelectParamsToRecords(selectParams, records)
+    if (expandEnums) expandEnumValues(result, _.get(queryBuilder, 'tableConfig.dbName', ''))
+    return result
 }
 
-export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause?: any, columns?: any) {
+export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false) {
     const result = await queryBuilder.findFirst({
         where: () => eq(table.id, id),
         with: withClause,
         columns
     })
+    if (expandEnums) expandEnumValues(result, getTableName(table))
     return result
 }
 

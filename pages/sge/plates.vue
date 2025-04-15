@@ -1,5 +1,5 @@
 <script setup>
-import _, { size } from 'lodash'
+import _ from 'lodash'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -56,7 +56,7 @@ function didDeleteRecord(event) {
 }
 const columnDefs = {
     plateType: {
-        format: ({plateType}) => {  return plateType == 'pcr' ? 'PCR' : plateType },
+        format: ({plateType}) => plateType?.label || plateType || '',
         path: 'plateType.displayValue',
     },
     pcrExperimentId: {
@@ -102,6 +102,7 @@ const fieldDefs = {
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
+                :expandEnums="true"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

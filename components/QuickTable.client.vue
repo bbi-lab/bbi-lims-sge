@@ -31,7 +31,7 @@ const refreshFormattedValues = (ids?: string[]) => {
 
 onMounted(async() => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
 
     refreshFormattedValues()
 
@@ -78,6 +78,7 @@ const props = defineProps({
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
   selectionDisabled: {type: Boolean, default: false},
+  expandEnums: {type: Boolean, default: false},
 })
 
 const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
@@ -287,7 +288,7 @@ const exportXLSX = function() {
 }
 
 const addOrRefreshRecordId = async (recordId: string) => {
-    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause)
+    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
