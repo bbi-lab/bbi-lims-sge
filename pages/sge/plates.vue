@@ -8,7 +8,6 @@ const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
 const platesTable = ref()
 const router = useRouter()
-const mode = ref<'pool' | null>(null)
 const poolingPlates = ref([])
 
 function didClickRecordEdit(event) {
@@ -94,6 +93,7 @@ const rowActions = {
                 router.push({path:`/sge/plate-diagram/${data.id}`})
             }
         },
+        disabled: () => !_.isEmpty(poolingPlates.value),
     },
     pool: {
         action: ({id, name}) => {
@@ -104,6 +104,7 @@ const rowActions = {
                 router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
             }
         },
+        disabled: ({id}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1,
     }
 }
 const defaultValues = {sizeX: 12, sizeY: 8}
@@ -131,7 +132,8 @@ const fieldDefs = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <div class="bg-red-100 p-5" v-if="_.size(poolingPlates) == 1">
-                Plate {{ poolingPlates[0].name}} is selected for pooling: now select a plate to pool into
+                <span class="mr-5">Plate {{ poolingPlates[0].name}} is selected for pooling. Now select a plate to pool into.</span>
+                <Button label="Cancel" severity="warn" @click="poolingPlates = []"/>
             </div>
             <QuickTable
                 ref="platesTable"

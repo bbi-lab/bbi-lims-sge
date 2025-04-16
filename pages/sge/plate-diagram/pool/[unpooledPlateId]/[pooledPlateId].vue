@@ -8,10 +8,22 @@ const unpooledPlateDiagram = ref()
 const pooledPlateDiagram = ref()
 const unpooledPlateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
 const pooledPlateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined> = ref()
+const wellsToPool = ref<PlateDiagramWell[]>([])
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const toast = useToast()
+
+const wellsToPoolContent = computed(() => {
+    return wellsToPool.value.map(({data}) => {
+        const wellContent = data.amplificationPrimer || data.linearizationPrimer || data.homologyArmPrimer
+        const wellContentType = data.amplificationPrimer ? 'AMP' : (data.linearizationPrimer ? 'LIN' : (data.homologyArmPrimer ? 'HA' : null))
+        return {
+            content: wellContent,
+            contentType: wellContentType,
+        }
+    })
+})
 
 onMounted(async() => {
     // Fetch the unpooled plate
@@ -45,6 +57,7 @@ onMounted(async() => {
             tooltip: wellContentTooltip,
             selected: false,
             inSelectionRange: false,
+            data: well,
         }
     })
     // replace wells from data model with plateDiagramWells to include visualization properties
@@ -85,6 +98,7 @@ onMounted(async() => {
             tooltip: wellContentTooltip,
             selected: false,
             inSelectionRange: false,
+            data: well,
         }
     })
     // replace wells from data model with plateDiagramWells to include visualization properties
@@ -94,8 +108,14 @@ onMounted(async() => {
     }
 })
 
-const unpooledPlateWellRangeSelected = (event: any) => {
-    console.log(event)
+const unpooledPlateWellRangeSelected = (wells: PlateDiagramWell[]) => {
+    toast.add({
+        severity: 'info',
+        summary: 'Selection Cleared',
+        detail: `You selected ${wells.length} wells`,
+        life: 1000,
+    })
+    wellsToPool.value = wells
 }
 const unpooledPlateWellSelectionCleared = () => {
     toast.add({
@@ -104,6 +124,7 @@ const unpooledPlateWellSelectionCleared = () => {
         detail: `You selected 0 wells`,
         life: 1000,
     })
+    wellsToPool.value = []
 }
 const unpooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
     toast.add({
@@ -112,6 +133,7 @@ const unpooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
+    wellsToPool.value = wells
 }
 const unpooledPlateUpdatedWellContents = (event: any) => {
     console.log(event)
@@ -140,6 +162,7 @@ const pooledPlateUpdatedWellContents = (event: any) => {
 }
 </script>
 <template>
+    <div class="flex justify-center"><h3>Pooling</h3></div>
     <div class="flex flex-row justify-evenly">
         <PlateDiagram
             ref="unpooledPlateDiagram"
@@ -150,8 +173,17 @@ const pooledPlateUpdatedWellContents = (event: any) => {
             @well-selection-cleared="unpooledPlateWellSelectionCleared"
             @all-wells-selected="unpooledPlateSelectAllWells"
             @well-contents-updated="unpooledPlateUpdatedWellContents" >
+            <template #header>
+                {{ unpooledPlateWithPlateDiagramWells?.name || '' }}
+            </template>
         </PlateDiagram>
-        <div></div>
+        <div class="flex flex-col justify-center">
+            <Button
+                icon="pi pi-arrow-right"
+                severity="info"
+                :class="wellsToPool.length > 0 ? 'visible' : 'invisible'"
+            />
+        </div>
         <PlateDiagram
             ref="pooledPlateDiagram"
             v-if="pooledPlateWithPlateDiagramWells"
@@ -161,6 +193,26 @@ const pooledPlateUpdatedWellContents = (event: any) => {
             @well-selection-cleared="pooledPlateWellSelectionCleared"
             @all-wells-selected="pooledPlateSelectAllWells"
             @well-contents-updated="pooledPlateUpdatedWellContents" >
+            <template #header>
+                {{ pooledPlateWithPlateDiagramWells?.name || '' }}
+            </template>
         </PlateDiagram>
+    </div>
+    <div class="flex flex-col">
+        <div class="flex justify-center" v-if="!_.isEmpty(wellsToPool)">
+            <h5>Well contents</h5>
+        </div>
+        <div v-for="(item, i) in wellsToPoolContent">
+            <div :key="i" class="flex flex-row">
+                <div class="w-1/4 flex justify-center">
+                    {{ item.contentType }}
+                </div>
+                <div class="w-3/4">
+                    <div v-for="(value) in _.entries(item.content)">
+                        {{ value[0] }} : {{ value[1] }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>

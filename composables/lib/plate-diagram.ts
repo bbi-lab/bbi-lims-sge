@@ -6,7 +6,6 @@ import type { PlateWithPlateDiagramWells } from "~/components/PlateDiagram.vue"
 type Accessor<T, Self> = (value?: T) => T | Self
 
 interface CoordinatePair {x: number, y: number}
-export type PlateType = 'storage' | 'pcr'
 
 function hexToRgb(hex: string): {r: number, g: number, b: number} | null {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -85,7 +84,7 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export function makePlateDiagram(plateType: PlateType): PlateDiagram {
+export function makePlateDiagram(plateType: string): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 

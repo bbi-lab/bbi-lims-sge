@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { makePlateDiagram, type PlateDiagram, type PlateType, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
@@ -26,7 +26,7 @@ const props = defineProps({
         default: true,
     },
     plateType: {
-        type: String as PropType<PlateType>,
+        type: String,
         required: true,
     },
 })
