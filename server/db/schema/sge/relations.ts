@@ -5,7 +5,7 @@ import { transfectExperiments, transfectTargets, transfectLotUsage } from './tra
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
-import { wells } from './well'
+import { wellContents, wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
@@ -49,6 +49,37 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
     }
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
+
+const wellContentsRelationsConfig: RelationsConfig = {
+    one:{
+        well: {
+            fields: [wellContents.wellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
+        amplificationPrimer: {
+            fields: [wellContents.amplificationPrimerId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        linearizationPrimer: {
+            fields: [wellContents.linearizationPrimerId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        homologyArmPrimer: {
+            fields: [wellContents.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        nucleicAcid: {
+            fields: [wellContents.nucleicAcidId],
+            referenceTable: nucleicAcids,
+            references: [nucleicAcids.id],
+        },
+    },
+}
+export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
@@ -428,6 +459,7 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
+    wellContents: wellContentsRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
     projects: projectsRelationsConfig,
