@@ -41,3 +41,5 @@ export const schemas: Record<string, ZodObject<any>> = {
 
 export type Well = InferSelectModel<typeof wells>
 export type NewWell = z.infer<typeof insertWellSchema>
+
+export type WellContent = InferSelectModel<typeof wellContents>
