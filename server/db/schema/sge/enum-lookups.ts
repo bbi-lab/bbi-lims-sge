@@ -14,19 +14,31 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
         'plateType': {
             'lin-storage': {
                 desc: 'Linearization primer storage',
-                label: 'LIN storage',
+                label: 'LIN primer storage',
             },
             'amp-storage': {
                 desc: 'Amplification primer storage',
-                label: 'AMP storage',
+                label: 'AMP primer storage',
             },
             'ha-storage': {
                 desc: 'Homology arm primer storage',
-                label: 'HA storage',
+                label: 'HA primer storage',
             },
-            'guide-storage': {
+            'guide-rna-storage': {
                 desc: 'Guide RNA storage',
-                label: 'Guide storage',
+                label: 'Guide RNA storage',
+            },
+            'lin-pcr': {
+                desc: 'Linearization primer PCR',
+                label: 'LIN PCR',
+            },
+            'amp-pcr': {
+                desc: 'Amplification primer PCR',
+                label: 'AMP PCR',
+            },
+            'ha-pcr': {
+                desc: 'Homology arm primer PCR',
+                label: 'HA PCR',
             },
             'pcr-1': {
                 desc: 'PCR 1',
