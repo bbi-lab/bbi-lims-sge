@@ -104,6 +104,13 @@ const wellsRelationsConfig: RelationsConfig = {
             references: [homologyArmPrimers.id],
         },
     },
+    many: {
+        wellContents: {
+            fields: [wellContents.wellId],
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+        }
+    }
 }
 export const wellsRelations = relationsConfigToRelations(wells, wellsRelationsConfig)
 
