@@ -74,12 +74,12 @@ const columnDefs = {
     },
     emptyWells: {
         format: (data) => {
-            // TODO: move this to a SQL view to avoid inefficient calc and needing to load all wells
-            if (_.size(data.wells) == data.sizeX * data.sizeY) {
-                return _.sumBy(data.wells, (well) => _.isEmpty(_.compact([well.amplificationPrimerId, well.linearizationPrimerId, well.homologyArmPrimerId])) ? 1 : 0)
+            if (data.wellsCount - data.wellsWithContentCount) {
+                return data.wellsCount - data.wellsWithContentCount
             } else {
                 return '-'
             }
+            return data.wellsCount - data.wellsWithContentCount
         },
         path: 'emptyWells.displayValue',
     }
@@ -138,6 +138,7 @@ const fieldDefs = {
             <QuickTable
                 ref="platesTable"
                 tableName="plates"
+                viewName="view-plates-with-well-counts"
                 schemaName="select"
                 title="Plates"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"

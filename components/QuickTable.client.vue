@@ -31,7 +31,8 @@ const refreshFormattedValues = (ids?: string[]) => {
 
 onMounted(async() => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums, props.viewName)
+
 
     refreshFormattedValues()
 
@@ -63,6 +64,7 @@ onMounted(async() => {
 const toast = useToast()
 const props = defineProps({
   tableName: String,
+  viewName: String,
   schemaName: String,
   title: String,
   columnDefs: {type: Object}, // if set, only included columns will be shown

@@ -21,10 +21,11 @@ export const RecordService = {
         return records
     },
 
-    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false): Promise<any[]> {
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false, viewName?: string): Promise<any[]> {
         const fetchOptions = {query: {expandEnums}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
         if (where) _.set(fetchOptions, ['query', 'where'], where)
+        if (viewName) _.set(fetchOptions, ['query', 'view'], viewName)
         const records =  await $fetch(`${baseUrl}`, fetchOptions) as any[]
         return records
     },
