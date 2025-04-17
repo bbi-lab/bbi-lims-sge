@@ -3,8 +3,8 @@ import _ from 'lodash'
 import {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { type PgTable } from 'drizzle-orm/pg-core'
-import { eq, inArray, getTableName } from 'drizzle-orm'
+import { PgViewWithSelection, type PgTable } from 'drizzle-orm/pg-core'
+import { eq, inArray, getTableName, sql } from 'drizzle-orm'
 import '../db/schema/sge/relations'
 import { useDrizzle } from '../utils/db'
 import { ENUM_LOOKUPS } from '../db/schema/sge/enum-lookups'
@@ -42,11 +42,19 @@ function trimObjectValues(records: RecordValues[]): RecordValues[] {
     })
 }
 
-export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false) {
-    const records = await queryBuilder.findMany({
-        columns: selectParams.columns,
-        with: selectParams.with
-    })
+export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false, viewName?: string) {
+    let records
+    if (viewName) {
+        // if viewName is provided, ignore selectParams and query the view directly
+        const result = await db.execute(sql.raw(`select * from ${viewName}`))
+        // convert keys in records from raw sql query back to camelCase, to match format of records from queryBuilder
+        records = _.map(result.rows, (x) => _.mapKeys(x, (value, key) => _.camelCase(key)))
+    } else {
+        records = await queryBuilder.findMany({
+            columns: selectParams.columns,
+            with: selectParams.with
+        })
+    }
     const result = applySelectParamsToRecords(selectParams, records)
     if (expandEnums) expandEnumValues(result, _.get(queryBuilder, 'tableConfig.dbName', ''))
     return result

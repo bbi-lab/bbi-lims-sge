@@ -2,6 +2,7 @@ import { selectRecords } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { type QueryParams, type SelectParams, queryToSelectParams } from '../utils/restApi'
 import { useDrizzle } from '../utils/db'
+import { PgViewWithSelection } from 'drizzle-orm/pg-core'
 
 export default defineEventHandler(async (event) => {
     const db = useDrizzle()
@@ -9,10 +10,11 @@ export default defineEventHandler(async (event) => {
     try {
         const queryParams = getQuery(event) as QueryParams
         const selectParams = queryToSelectParams(queryParams) as SelectParams
+        const viewName = _.snakeCase(queryParams.view)
 
         // requires relevant schema to have been passed on drizzle db init
         const queryBuilder = _.get(db.query, 'plates')
-        return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false)
+        return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false, viewName)
     } catch (e: any) {
         throw createError({
             statusCode: 400,
