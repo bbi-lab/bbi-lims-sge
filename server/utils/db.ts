@@ -5,7 +5,7 @@ import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
-import {plates} from '../db/schema/sge/plate'
+import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
 import {wellContents, wells} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
@@ -59,6 +59,9 @@ export const schema = {
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
+
+  //views
+  viewPlatesWithWellCounts,
 
   // relations
   usersRelations,
