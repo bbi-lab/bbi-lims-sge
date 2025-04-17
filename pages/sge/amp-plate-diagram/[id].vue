@@ -3,11 +3,13 @@ import _ from 'lodash'
 import { getWellTextColor, VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
-import type { Well } from '~/server/db/schema/sge/well'
+import type { Well, WellContent } from '~/server/db/schema/sge/well'
 import type { AmplificationPrimer } from '~/server/db/schema/sge/primer'
 
-type WellWithAmplificationPrimer = Well & {
-    amplificationPrimer: AmplificationPrimer
+type WellWithAmplificationPrimerContents = Well & {
+    wellContents: WellContent & {
+        amplificationPrimer: AmplificationPrimer
+    }[]
 }
 
 // keyed on amplification primer id, with color and group (to assign same colors to forward and reverse primers)
@@ -33,20 +35,20 @@ const frozenRecordIds = ref<string[]>([])
 const updateColorMap = () => {
     // remove values from color map that are not in the plate
     _.forEach(_.keys(amplificationPrimerColorMap.value), (key) => {
-        if (!_.some(plateWithWells.value.wells, (well: WellWithAmplificationPrimer) => well.amplificationPrimer?.id === key)) {
+        if (!_.some(plateWithWells.value.wells, (well: WellWithAmplificationPrimerContents) => well.wellContents[0]?.amplificationPrimer?.id === key)) {
             delete amplificationPrimerColorMap.value[key]
         }
     })
 
     // add new values to color map
     let currentColorIndex = -1
-    plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimer) => {
-        if (well.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.amplificationPrimer.id)) {
-            const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.amplificationPrimer.name, /_[frFR]$/, ''))?.color
+    plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimerContents) => {
+        if (well.wellContents[0]?.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.wellContents[0]?.amplificationPrimer.id)) {
+            const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.wellContents[0]?.amplificationPrimer.name, /_[frFR]$/, ''))?.color
             if (!sameGroupColor) currentColorIndex += 1
-            _.set(amplificationPrimerColorMap.value, well.amplificationPrimer.id, {
+            _.set(amplificationPrimerColorMap.value, well.wellContents[0]?.amplificationPrimer.id, {
                 color: sameGroupColor || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
-                group: _.replace(well.amplificationPrimer.name, /_[frFR]$/, '')
+                group: _.replace(well.wellContents[0]?.amplificationPrimer.name, /_[frFR]$/, '')
             })
         }
     })
@@ -68,15 +70,19 @@ const refreshPlate = async () => {
                     y: true
                 },
                 with: {
-                    amplificationPrimer: true,
+                    wellContents: {
+                        with: {
+                            amplificationPrimer: true,
+                        }
+                    },
                 }
             }
         }
     )
     updateColorMap()
-    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.value.wells, (well) => {
-        const wellContent = well.amplificationPrimer
-        const wellContentType = well.amplificationPrimer ? 'AMP' : null
+    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWells.value.wells, (well: WellWithAmplificationPrimerContents) => {
+        const wellContent = _.get(well.wellContents, '0.amplificationPrimer')
+        const wellContentType = wellContent ? 'AMP' : null
         const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
         const wellColor = _.get(amplificationPrimerColorMap.value, [wellContent?.id, 'color'])
 
@@ -86,7 +92,7 @@ const refreshPlate = async () => {
             y: well.y,
             data: well,
             color: wellColor,
-            symbol: well.amplificationPrimer?.sequenceType ? _.upperCase(well.amplificationPrimer.sequenceType[0]) : undefined,  // should be F or R
+            symbol: well.wellContents[0]?.amplificationPrimer?.sequenceType ? _.upperCase(well.wellContents[0]?.amplificationPrimer.sequenceType[0]) : undefined,  // should be F or R
             tooltip: wellContentTooltip,
         }
         return plateDiagramWell
@@ -128,19 +134,24 @@ const displayWithClause = Object.freeze({
             name: true
         }
     },
-    well: {
-        columns: {
-            id: true,
-            x: true,
-            y: true,
-        },
+    wellContents: {
         with: {
-            plate: {
+            well: {
                 columns: {
-                    name: true
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            name: true,
+                            plateType: true,
+                        }
+                    }
                 }
-            }
-        }
+            },
+        },
     },
 })
 
@@ -187,10 +198,10 @@ const columnDefs = {
     storageBoxLoc: {
         display: false
     },
-    well: {
+    wellContents: {
         header: 'Plate: Well',
-        format: (x: any) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
-        path: 'well.displayValue',
+        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        path: 'wellContents.displayValue',
         type: 'string',
         index: 5,
     },
@@ -204,7 +215,7 @@ const wellRangeSelected = function(wells: PlateDiagramWell[]) {
         detail: `You selected ${wells.length} ${wells.length==1 ? 'well' : 'wells'}`,
         life: 1000,
     })
-    frozenRecordIds.value = _.map(wells, (well) => well.data?.amplificationPrimer?.id)
+    frozenRecordIds.value = _.map(wells, (well) => well.data.wellContents?.amplificationPrimer?.id)
 }
 
 const selectedAllWells = function(wells: PlateDiagramWell[]) {
@@ -237,8 +248,8 @@ const actionOnSelectedWells = function() {
 }
 const updatedWellContents = function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
     const amplifcationPrimerIdsToRefresh = _.compact([
-        ..._.map(newValues || [], (well) => { return well.data?.amplificationPrimerId || well.data?.amplificationPrimer?.id}),
-        ..._.map(oldValues || [], (well) => { return well.data?.amplificationPrimerId || well.data?.amplificationPrimer?.id}),
+        ..._.map(newValues || [], (well) => { return well.data?.wellContents[0]?.amplificationPrimerId || well.data?.wellContents[0]?.amplificationPrimer?.id}),
+        ..._.map(oldValues || [], (well) => { return well.data?.wellContents[0]?.amplificationPrimerId || well.data?.wellContents[0]?.amplificationPrimer?.id}),
     ])
     amplifcationPrimerIdsToRefresh.forEach((id) => {
         amplificationPrimersTable.value.addOrRefreshRecordId(id)
@@ -246,25 +257,27 @@ const updatedWellContents = function(newValues: PlateDiagramWell[], oldValues: P
 }
 const emptySelectedWells = async () => {
     const oldValues = _.cloneDeep(selectedWells.value)
-    const updatedRecords = await RecordService.updateRecords(
-        `${config.public.apiBase}/wells`,
-        _.map(selectedWells.value, (well) => well.id),
-        {
-            amplificationPrimerId: null,
-        }
-    ) as Well[]
-    if (!_.isEmpty(updatedRecords)) {
+    const wellContentsToDelete = _.get(selectedWells.value, '0.data.wellContents')
+    const deletedRecords = await RecordService.deleteRecords(
+        `${config.public.apiBase}/wellContents`,
+        wellContentsToDelete
+    ) as WellContent[]
+    if (!_.isEmpty(deletedRecords)) {
         await refreshPlate()
+        const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
+        const updatedWells = _.filter(plateWithPlateDiagramWells.value?.wells, (well) => {
+            return _.includes(deletedWellIds, well.id)
+        })
         plateDiagram.value.updateWellContents(
-            _.map(updatedRecords || [], (updatedRecord: Well) => {
+            _.map(updatedWells || [], (updatedWell) => {
                 return {
-                    id: updatedRecord.id,
-                    x: updatedRecord.x,
-                    y: updatedRecord.y,
-                    data: updatedRecord,
+                    id: updatedWell.id,
+                    x: updatedWell.x,
+                    y: updatedWell.y,
+                    data: updatedWell.data,
                     color: null,
                     symbol: undefined,
-                    tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}`,
+                    tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}`,
                 }
             }),
             oldValues
@@ -272,7 +285,7 @@ const emptySelectedWells = async () => {
         toast.add({
             severity: 'info',
             summary: 'Updated well',
-            detail: `Emptied ${_.size(updatedRecords)} wells`,
+            detail: `Emptied ${_.size(updatedWells)} wells`,
             life: 1000,
         })
     } else {
@@ -297,31 +310,31 @@ const rowActions = {
                 })
             } else {
                 const oldValues = _.cloneDeep(selectedWells.value)
-                const updatedRecord = await RecordService.updateRecord(
-                    `${config.public.apiBase}/wells`,
+                const newRecord = await RecordService.addRecord(
+                    `${config.public.apiBase}/wellContents`,
                     {
-                        id: _.get(selectedWells.value, [0, 'id']),
+                        wellId: _.get(selectedWells.value, [0, 'id']),
                         amplificationPrimerId: data.id,
-                    },
-                    {
-                        amplificationPrimer: true,
                     }
                 )
-                if (updatedRecord?.id) {
+                if (newRecord?.wellId) {
                     await refreshPlate()
-                    selectedWells.value = [{
-                        id: updatedRecord.id,
-                        x: updatedRecord.x,
-                        y: updatedRecord.y,
-                        data: updatedRecord,
-                        symbol: _.upperCase(updatedRecord.amplificationPrimer?.sequenceType?.[0]),
-                        color: _.get(amplificationPrimerColorMap.value, [data.id, 'color']),
-                        tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
-                    }]
-                    plateDiagram.value.updateWellContents(
-                        selectedWells.value,
-                        oldValues
-                    )
+                    const updatedRecord = _.find(plateWithPlateDiagramWells.value?.wells, (well) => well.id === newRecord.wellId)
+                    if (updatedRecord) {
+                        selectedWells.value = [{
+                            id: updatedRecord.id,
+                            x: updatedRecord.x,
+                            y: updatedRecord.y,
+                            data: updatedRecord.data,
+                            symbol: _.upperCase(updatedRecord.data?.wellContents[0]?.amplificationPrimer?.sequenceType?.[0]),
+                            color: _.get(amplificationPrimerColorMap.value, [data.id, 'color']),
+                            tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
+                        }]
+                        plateDiagram.value.updateWellContents(
+                            selectedWells.value,
+                            oldValues
+                        )
+                    }
                     amplificationPrimersTable.value.addOrRefreshRecordId(data.id)
                     toast.add({
                         severity: 'info',
