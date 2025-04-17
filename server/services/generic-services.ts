@@ -103,7 +103,7 @@ export async function deleteRecord(table: PgTable<any>, id: string | number) {
     const [deletedRecord] = await db
         .delete(table)
         .where(eq(table.id, id))
-        .returning({ id: table.id })
+        .returning()
 
     return deletedRecord
 }
