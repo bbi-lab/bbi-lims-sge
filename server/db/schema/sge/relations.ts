@@ -418,6 +418,9 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
     oneToOne: {
         well: {
             table: wells
+        },
+        wellContents: {
+            table: wellContents
         }
     },
 }
