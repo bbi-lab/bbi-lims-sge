@@ -8,7 +8,7 @@ import { transfectExperiments, transfectLotUsage, transfectTargets } from './tra
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
-import { plates } from './plate'
+import { plates, viewPlatesWithWellCounts } from './plate'
 import { pellets } from './pellet'
 import { storageBoxes } from './storage-box'
 import { createSelectSchema } from 'drizzle-zod'
@@ -20,6 +20,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
 import { wellContents, wells } from './well'
 
+// tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
 const insertProjectSchema = selectProjectSchema.omit({id: true})
 const updateProjectSchema = insertProjectSchema
@@ -132,7 +133,11 @@ const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
+// views
+const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
+
 export const schemas = {
+    // tables
     projects: {
         select: selectProjectSchema,
         insert: insertProjectSchema,
@@ -251,5 +256,10 @@ export const schemas = {
         select: selectLinearizationPrimerSchema,
         insert: insertLinearizationPrimerSchema,
         update: updateLinearizationPrimerSchema,
+    },
+
+    // views
+    viewPlatesWithWellCounts: {
+        select: selectViewPlatesWithWellCountsSchema,
     },
 }

@@ -56,22 +56,12 @@ function didDeleteRecord(event) {
     showEditForm.value = false
 }
 const columnDefs = {
-    plateType: {
-        format: ({plateType}) => plateType?.label || plateType || '',
-        path: 'plateType.displayValue',
-    },
-    pcrExperimentId: {
-        display: false
-    },
-    sizeX: {
-        display: false
-    },
-    sizeY: {
-        display: false
-    },
-    wells: {
-        display: false
-    },
+    plateType: { display: false },
+    pcrExperimentId: { display: false},
+    sizeX: { display: false },
+    sizeY: { display: false },
+    wellsCount: { display: false },
+    wellsWithContentCount: { display: false },
     emptyWells: {
         format: (data) => {
             if (data.wellsCount - data.wellsWithContentCount) {
@@ -87,7 +77,7 @@ const columnDefs = {
 const rowActions = {
     layout: {
         action: (data) => {
-            if (data.plateType?.value == 'amp-storage') {
+            if (data.plateType == 'amp-storage') {
                 router.push({path:`/sge/amp-plate-diagram/${data.id}`})
             } else {
                 router.push({path:`/sge/plate-diagram/${data.id}`})
@@ -109,23 +99,9 @@ const rowActions = {
 }
 const defaultValues = {sizeX: 12, sizeY: 8}
 
-const displayWithClause = {
-    wells: {
-        columns: {
-            amplificationPrimerId: true,
-            linearizationPrimerId: true,
-            homologyArmPrimerId: true,
-        },
-
-    }
-}
 const fieldDefs = {
-    pcrExperimentId: {
-        display: false,
-    },
-    wells: {
-        display: false,
-    }
+    pcrExperimentId: { display: false },
+    wells: { display: false }
 }
 </script>
 <template>
@@ -137,15 +113,12 @@ const fieldDefs = {
             </div>
             <QuickTable
                 ref="platesTable"
-                tableName="plates"
-                viewName="view-plates-with-well-counts"
+                tableName="view-plates-with-well-counts"
                 schemaName="select"
                 title="Plates"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
-                :expandEnums="true"
-                :withClause="displayWithClause"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
