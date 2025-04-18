@@ -10,11 +10,10 @@ export default defineEventHandler(async (event) => {
     try {
         const queryParams = getQuery(event) as QueryParams
         const selectParams = queryToSelectParams(queryParams) as SelectParams
-        const viewName = _.snakeCase(queryParams.view)
 
         // requires relevant schema to have been passed on drizzle db init
         const queryBuilder = _.get(db.query, 'plates')
-        return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false, viewName)
+        return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false)
     } catch (e: any) {
         throw createError({
             statusCode: 400,

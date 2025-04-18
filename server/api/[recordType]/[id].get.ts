@@ -6,7 +6,6 @@ export default defineEventHandler(async (event) => {
 
     const queryParams = getQuery(event) as QueryParams
     const selectParams = queryToSelectParams(queryParams) as SelectParams
-    const viewName = _.snakeCase(queryParams.view)
 
     try {
          // requires relevant schema to have been passed on drizzle db init
@@ -16,7 +15,7 @@ export default defineEventHandler(async (event) => {
         if (queryBuilder) {
             const table = _.get(queryBuilder, 'table')
             // ignoring any order, limit, or offset params
-            selectedRecord = await selectRecord(queryBuilder, table, id, selectParams.with, selectParams.columns, queryParams.expandEnums == 'true' ? true : false, viewName)
+            selectedRecord = await selectRecord(queryBuilder, table, id, selectParams.with, selectParams.columns, queryParams.expandEnums == 'true' ? true : false)
         } else {
             // if the recordType is not found in the queryBuilder, then assume it's a view
             const view = _.get(schema, _.camelCase(recordType))

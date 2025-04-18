@@ -2,10 +2,9 @@ import type { DBQueryConfig } from 'drizzle-orm'
 import _ from 'lodash'
 
 export const RecordService = {
-    async getRecord(baseUrl: string, id: string, withClause: Object | undefined, expandEnums: boolean = false, viewName?: string) {
+    async getRecord(baseUrl: string, id: string, withClause: Object | undefined, expandEnums: boolean = false) {
         const fetchOptions = {query: {expandEnums}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
-        if (viewName) _.set(fetchOptions, ['query', 'view'], viewName)
         const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
         return record
     },
@@ -23,11 +22,10 @@ export const RecordService = {
         return records
     },
 
-    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false, viewName?: string): Promise<any[]> {
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false): Promise<any[]> {
         const fetchOptions = {query: {expandEnums}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
         if (where) _.set(fetchOptions, ['query', 'where'], where)
-        if (viewName) _.set(fetchOptions, ['query', 'view'], viewName)
         const records =  await $fetch(`${baseUrl}`, fetchOptions) as any[]
         return records
     },

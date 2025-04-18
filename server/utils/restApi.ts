@@ -10,7 +10,6 @@ export interface QueryParams {
     offset: number,
     with: string,
     expandEnums: string,
-    view: string,
 }
 
 export interface SelectParams {

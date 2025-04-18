@@ -42,19 +42,11 @@ function trimObjectValues(records: RecordValues[]): RecordValues[] {
     })
 }
 
-export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false, viewName?: string) {
-    let records
-    if (viewName) {
-        // if viewName is provided, ignore selectParams and query the view directly
-        const result = await db.execute(sql.raw(`select * from ${viewName}`))
-        // convert keys in records from raw sql query back to camelCase, to match format of records from queryBuilder
-        records = _.map(result.rows, (x) => _.mapKeys(x, (value, key) => _.camelCase(key)))
-    } else {
-        records = await queryBuilder.findMany({
-            columns: selectParams.columns,
-            with: selectParams.with
-        })
-    }
+export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false) {
+    const records = await queryBuilder.findMany({
+        columns: selectParams.columns,
+        with: selectParams.with
+    })
     const result = applySelectParamsToRecords(selectParams, records)
     if (expandEnums) expandEnumValues(result, _.get(queryBuilder, 'tableConfig.dbName', ''))
     return result
@@ -77,20 +69,12 @@ export async function selectRecordFromView(view: PgViewWithSelection, id: string
     return _.first(record)
 }
 
-export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false, viewName?: string) {
-    let record
-    if (viewName) {
-        // if viewName is provided, ignore selectParams and query the view directly
-        const result = await db.execute(sql.raw(`select * from ${viewName} where id = '${id}' limit 1`))
-        // convert keys in records from raw sql query back to camelCase, to match format of records from queryBuilder
-        record = _.mapKeys(result.rows[0], (value, key) => _.camelCase(key))
-    } else {
-        record = await queryBuilder.findFirst({
-            where: () => eq(table.id, id),
-            with: withClause,
-            columns
-        })
-    }
+export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false) {
+    const record = await queryBuilder.findFirst({
+        where: () => eq(table.id, id),
+        with: withClause,
+        columns
+    })
     if (expandEnums) expandEnumValues(record, getTableName(table))
     return record
 }
