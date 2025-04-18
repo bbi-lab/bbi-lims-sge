@@ -290,7 +290,7 @@ const exportXLSX = function() {
 }
 
 const addOrRefreshRecordId = async (recordId: string) => {
-    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
+    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums, props.viewName)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord

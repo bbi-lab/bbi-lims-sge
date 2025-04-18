@@ -1,4 +1,4 @@
-import { insertPlates } from '~/server/services/plate-services'
+import { insertPlate } from '~/server/services/plate-services'
 import { schemas, type NewPlate } from '~/server/db/schema/sge/plate'
 import _ from 'lodash'
 
@@ -10,8 +10,8 @@ export default defineEventHandler<{ body: NewPlate }>(async (event) => {
             return schemas.insertPlateSchema.parse(record) as NewPlate
         })
 
-        const newRecord = await insertPlates(records)
-        return newRecord
+        const newRecord = await insertPlate(records[0])
+        return [newRecord]
     } catch (e: any) {
         throw createError({
             statusCode: 400,

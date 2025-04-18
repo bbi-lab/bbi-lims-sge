@@ -60,14 +60,22 @@ export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, an
     return result
 }
 
-export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false) {
-    const result = await queryBuilder.findFirst({
-        where: () => eq(table.id, id),
-        with: withClause,
-        columns
-    })
-    if (expandEnums) expandEnumValues(result, getTableName(table))
-    return result
+export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false, viewName?: string) {
+    let record
+    if (viewName) {
+        // if viewName is provided, ignore selectParams and query the view directly
+        const result = await db.execute(sql.raw(`select * from ${viewName} where id = '${id}' limit 1`))
+        // convert keys in records from raw sql query back to camelCase, to match format of records from queryBuilder
+        record = _.mapKeys(result.rows[0], (value, key) => _.camelCase(key))
+    } else {
+        record = await queryBuilder.findFirst({
+            where: () => eq(table.id, id),
+            with: withClause,
+            columns
+        })
+    }
+    if (expandEnums) expandEnumValues(record, getTableName(table))
+    return record
 }
 
 export async function insertRecord(table: PgTable<any>, values: RecordValues) {
