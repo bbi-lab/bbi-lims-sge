@@ -1,7 +1,7 @@
-import { selectRecords } from '~/server/services/generic-services'
+import { selectRecords, selectRecordsFromView } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { type QueryParams, type SelectParams, queryToSelectParams } from '../utils/restApi'
-import { useDrizzle } from '../utils/db'
+import { useDrizzle, schema } from '../utils/db'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -14,7 +14,16 @@ export default defineEventHandler(async (event) => {
 
         // requires relevant schema to have been passed on drizzle db init
         const queryBuilder = _.get(db.query, _.camelCase(recordType))
-        return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false, viewName)
+        if (queryBuilder) {
+            return await selectRecords(queryBuilder, selectParams, queryParams.expandEnums == 'true' ? true : false, viewName)
+        } else {
+            // if the recordType is not found in the queryBuilder, then assume it's a view
+            const view = _.get(schema, _.camelCase(recordType))
+            if (!view) {
+                throw new Error(`Record type ${recordType} not found in queryBuilder or schema`)
+            }
+            return await selectRecordsFromView(view, selectParams)
+        }
     } catch (e: any) {
         throw createError({
             statusCode: 400,

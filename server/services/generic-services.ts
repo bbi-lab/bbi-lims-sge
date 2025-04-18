@@ -60,6 +60,23 @@ export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, an
     return result
 }
 
+export async function selectRecordsFromView(view: PgViewWithSelection, selectParams: SelectParams) {
+    const records = await db.select().from(view)
+    const result = applySelectParamsToRecords(selectParams, records)
+    return result
+}
+
+export async function selectRecordFromView(view: PgViewWithSelection, id: string | number) {
+    if (!view.id) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: `View does not have an id column`
+        })
+    }
+    const record = await db.select().from(view).where(eq(view.id, id))
+    return _.first(record)
+}
+
 export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false, viewName?: string) {
     let record
     if (viewName) {
