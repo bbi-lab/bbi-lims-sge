@@ -145,6 +145,7 @@ const displayWithClause = Object.freeze({
                 with: {
                     plate: {
                         columns: {
+                            id: true,
                             name: true,
                             plateType: true,
                         }
@@ -155,6 +156,13 @@ const displayWithClause = Object.freeze({
     },
 })
 
+const displayWhereClause = Object.freeze({
+    'or':[
+        {'==':[{'var': 'wellContents'}, null]},
+        {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
+    ]
+
+})
 const columnDefs = {
     colorTile: {
         index: 0,
@@ -373,6 +381,7 @@ const rowActions = {
                 :canEdit="false"
                 :canExport="false"
                 :withClause="displayWithClause"
+                :where="displayWhereClause"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 v-model:frozenRecordIds="frozenRecordIds"
