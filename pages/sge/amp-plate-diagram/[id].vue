@@ -41,7 +41,11 @@ const updateColorMap = () => {
     })
 
     // add new values to color map
-    let currentColorIndex = -1
+    const usedColorIndexes = _.map(_.values(amplificationPrimerColorMap.value), ({color}) => {
+        return _.indexOf(VALID_WELL_COLORS, color)
+    })
+    let currentColorIndex = _.max(usedColorIndexes) ?? -1
+
     plateWithWells.value?.wells.forEach((well: WellWithAmplificationPrimerContents) => {
         if (well.wellContents[0]?.amplificationPrimer && !_.has(amplificationPrimerColorMap.value, well.wellContents[0]?.amplificationPrimer.id)) {
             const sameGroupColor = _.find(_.values(amplificationPrimerColorMap.value), (value) => value.group === _.replace(well.wellContents[0]?.amplificationPrimer.name, /_[frFR]$/, ''))?.color
@@ -216,7 +220,9 @@ const columnDefs = {
 }
 
 const wellRangeSelected = function(wells: PlateDiagramWell[]) {
-    selectedWells.value = wells
+    selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+        return _.includes(_.map(wells, 'id'), x.id)
+    })
     toast.add({
         severity: 'info',
         summary: 'Well Range Selected',
@@ -265,7 +271,9 @@ const updatedWellContents = function(newValues: PlateDiagramWell[], oldValues: P
 }
 const emptySelectedWells = async () => {
     const oldValues = _.cloneDeep(selectedWells.value)
-    const wellContentsToDelete = _.get(selectedWells.value, '0.data.wellContents')
+    const wellContentsToDelete = _.compact(_.map(selectedWells.value, (x) => {
+        return _.get(x, 'data.wellContents.0')
+    }))
     const deletedRecords = await RecordService.deleteRecords(
         `${config.public.apiBase}/wellContents`,
         wellContentsToDelete
@@ -327,16 +335,16 @@ const rowActions = {
                 )
                 if (newRecord?.wellId) {
                     await refreshPlate()
-                    const updatedRecord = _.find(plateWithPlateDiagramWells.value?.wells, (well) => well.id === newRecord.wellId)
-                    if (updatedRecord) {
+                    const updatedWell = _.find(plateWithWells.value?.wells, (well) => well.id === newRecord.wellId)
+                    if (updatedWell) {
                         selectedWells.value = [{
-                            id: updatedRecord.id,
-                            x: updatedRecord.x,
-                            y: updatedRecord.y,
-                            data: updatedRecord.data,
-                            symbol: _.upperCase(updatedRecord.data?.wellContents[0]?.amplificationPrimer?.sequenceType?.[0]),
+                            id: updatedWell.id,
+                            x: updatedWell.x,
+                            y: updatedWell.y,
+                            data: updatedWell,
+                            symbol: _.upperCase(updatedWell.wellContents[0]?.amplificationPrimer?.sequenceType?.[0]),
                             color: _.get(amplificationPrimerColorMap.value, [data.id, 'color']),
-                            tooltip: `${wellCoordinateToChar(updatedRecord.y)}${updatedRecord.x}<br>${data.name} (AMP)`,
+                            tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${data.name} (AMP)`,
                         }]
                         plateDiagram.value.updateWellContents(
                             selectedWells.value,
