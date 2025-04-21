@@ -121,16 +121,19 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs = {
+    name: {
+        index: 0,
+    },
     transfectionExperiment: {
         path: 'transfectTarget.experiment.name',
-        index: 0,
+        index: 1,
     },
     transfectTarget: {
         header: 'Target',
         format: (x: any) => { return _.get(x, 'transfectTarget.target.name') || `${_.get(x, 'transfectTarget.target.region.gene.symbol')} : ${_.get(x, 'transfectTarget.target.region.name')}`},
         path: 'transfectTarget.displayValue',
         type: 'string',
-        index: 1,
+        index: 2,
     },
     transfectTargetId: {
         display: false,
@@ -138,7 +141,7 @@ const columnDefs = {
     extractionExperiment: {
         path: 'extractionExperiment.name',
         header: 'Extraction experiment',
-        index: 2,
+        index: 3,
     },
     extractionExperimentId: {
         display: false,
