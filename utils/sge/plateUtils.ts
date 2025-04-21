@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { VALID_WELL_COLORS } from "~/composables/lib/plate-diagram"
 import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
+import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { Plate } from "~/server/db/schema/sge/plate"
 import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer } from "~/server/db/schema/sge/primer"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
@@ -17,7 +18,9 @@ export type WellWithContents = Well & {
         amplificationPrimer: AmplificationPrimer
         linearizationPrimer: LinearizationPrimer
         homologyArmPrimer: HomologyArmPrimer
-        nucleicAcid: NucleicAcid
+        nucleicAcid: NucleicAcid & {
+            pellet: Pellet
+        }
     }[]
 }
 
