@@ -6,7 +6,6 @@ import  {
     TransfectionExperiment,
     VALID_REPLICATES,
 } from '~/shared/sge/transfection-experiment'
-import { VALID_PROTOCOLS } from '~/server/db/schema/sge/pellet'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -200,36 +199,12 @@ async function submitPellets() {
                     <label for="d3ConfluencyInput" class="mt-auto mb-auto font-bold">% D3 confluency</label>
                     <InputNumber id="d3ConfluencyInput" inputClass="w-20" class="ml-auto" v-model="formData.d3Confluency" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
                 </div>
-            </div>
-            <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                 <div class="flex items-stretch w-60">
-                    <label for="dnaConcInput" class="mt-auto mb-auto font-bold">DNA conc (ng/μL)</label>
-                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.dnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
-                </div>
-                <div class="flex items-stretch w-60">
-                    <label for="dnaVolInput" class="mt-auto mb-auto font-bold">DNA vol (μL)</label>
-                    <InputNumber id="dnaVolInput" inputClass="w-24" class="ml-auto" v-model="formData.dnaVolume" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
-                </div>
-                <div class="flex items-stretch w-60">
-                    <label for="dnaYieldInput" class="mt-auto mb-auto font-bold">DNA yield (μg)</label>
-                    <InputNumber id="dnaYieldInput" inputClass="w-24" class="ml-auto" v-model="formData.dnaYield" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
-                </div>
-                <div class="flex items-stretch w-60">
-                    <label for="rnaConcInput" class="mt-auto mb-auto font-bold">RNA conc (ng/μL)</label>
-                    <InputNumber id="dnaConcInput" inputClass="w-24" class="ml-auto" v-model="formData.rnaConcentration" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
-                </div>
-                <div class="flex items-stretch w-60">
-                    <label for="rnaVolInput" class="mt-auto mb-auto font-bold">RNA vol (μL)</label>
-                    <InputNumber id="rnaVolInput" inputClass="w-24" class="ml-auto" v-model="formData.rnaVolume" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
-                </div>
-                <div class="flex items-stretch w-60">
-                    <label for="rnaYieldInput" class="mt-auto mb-auto font-bold">RNA yield (μg)</label>
-                    <InputNumber id="rnaYieldInput" inputClass="w-24" class="ml-auto" v-model="formData.rnaYield" :min="0" :minFractionDigits="0" :maxFractionDigits="5" :disabled="!targetsSelected"/>
+                    <label for="harvestIsBackup"class="mt-auto mb-auto font-bold">Is backup?</label>
+                    <Checkbox id="harvestIsBackup" class="ml-auto mr-7" v-model="formData.isBackup" binary :disabled="!targetsSelected" />
                 </div>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
-                <label for="harvestIsBackup" class="block font-bold">Is backup?</label>
-                <Checkbox id="harvestIsBackup" v-model="formData.isBackup" binary :disabled="!targetsSelected" />
                 <label for="notesInput" class="block font-bold">Notes</label>
                 <Textarea id="notesInput" v-model="formData.harvestNotes" rows="5" cols="30" :disabled="!targetsSelected" />
                 <div>
@@ -250,13 +225,7 @@ async function submitPellets() {
                     </Column>
                     <Column field="pctPassaged" header="% passaged"></Column>
                     <Column field="pctHarvested" header="% harvested"></Column>
-                    <Column field="d3Confluency" header="% D3 confl"></Column>
-                    <Column field="dnaConcentration" header="DNA conc"></Column>
-                    <Column field="dnaVolume" header="DNA vol"></Column>
-                    <Column field="dnaYield" header="DNA yield"></Column>
-                    <Column field="rnaConcentration" header="RNA conc"></Column>
-                    <Column field="rnaVolume" header="RNA vol"></Column>
-                    <Column field="rnaYield" header="RNA yield"></Column>
+                    <Column field="d3Confluency" header="% D3 confluency"></Column>
                     <Column field="isBackup" header="Backup">
                         <template #body="slotProps">
                             {{ slotProps.data.isBackup ? '✓' : '' }}
@@ -290,11 +259,7 @@ async function submitPellets() {
                         <AutoCompleter v-model="harvestBy" :searchBaseUrl="`${config.public.apiBase}/users`" dropdown hideClearButton  :disabled="!targetsSelected"/>
                     </div>
                 </div>
-                <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-2 space-y-2">
-                    <label for="harvestProtocolInput" class="block font-bold">Protocol</label>
-                    <Select class="w-48" id="harvestProtocolInput" v-model="harvestProtocol" :options="valuesToCodedList(VALID_PROTOCOLS)" optionLabel="label" :disabled="!targetsSelected" />
-                </div>
-                <div class="col-span-12 md:col-span-6 lg:col-span-1 xl:col-span-1 space-y-2">
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-1 space-y-2">
                     <Button
                         size="large"
                         icon="pi pi-bolt"
