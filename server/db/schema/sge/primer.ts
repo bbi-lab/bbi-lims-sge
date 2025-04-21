@@ -47,3 +47,5 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
 ])
 
 export type AmplificationPrimer = InferSelectModel<typeof amplificationPrimers>
+export type LinearizationPrimer = InferSelectModel<typeof linearizationPrimers>
+export type HomologyArmPrimer = InferSelectModel<typeof homologyArmPrimers>

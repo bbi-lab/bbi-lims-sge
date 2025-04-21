@@ -2,6 +2,7 @@ import { pgTable, uuid, varchar, text, doublePrecision } from 'drizzle-orm/pg-co
 import { storageBoxes } from './storage-box'
 import { extractionExperiments } from './extraction-experiment'
 import { pellets } from './pellet'
+import { InferSelectModel } from 'drizzle-orm'
 
 export const nucleicAcids = pgTable('nucleic_acids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -12,3 +13,5 @@ export const nucleicAcids = pgTable('nucleic_acids', {
   pelletId: uuid('pellet_id').references(() => pellets.id),
   notes: text('notes'),
 })
+
+export type NucleicAcid = InferSelectModel<typeof nucleicAcids>
