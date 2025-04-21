@@ -182,11 +182,12 @@ async function submitPellets() {
             <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
                 <label for="harvestTargetsInput" class="block font-bold">Targets</label>
                 <Listbox id="harvestTargetsInput" v-model="selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
-
-                <label for="harvestReplicatesInput" class="block font-bold">Replicates</label>
-                <MultiSelect id="harvestReplicatesInput" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" class="w-full md:w-80" :disabled="!targetsSelected"/>
             </div>
             <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
+                <div class="flex items-stretch w-60">
+                    <label for="harvestReplicatesInput" class="mt-auto mb-auto font-bold">Replicates</label>
+                    <MultiSelect id="harvestReplicatesInput" v inputClass="w-20" class="ml-auto" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" :disabled="!targetsSelected"/>
+                </div>
                 <div class="flex items-stretch w-60">
                     <label for="pctPassagedInput" class="mt-auto mb-auto font-bold">% passaged</label>
                     <InputNumber id="pctPassagedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctPassaged" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
