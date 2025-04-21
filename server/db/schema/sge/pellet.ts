@@ -3,10 +3,11 @@ import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
 import { extractionExperiments } from './extraction-experiment'
 import { storageBoxes } from './storage-box'
-export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
+import { InferSelectModel } from 'drizzle-orm'
 
 export const pellets = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).unique(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
   extractionExperimentId: uuid('extraction_experiment_id').references(() => extractionExperiments.id),
   replicates: varchar('replicates', { length: 3 }).array(),
@@ -19,14 +20,9 @@ export const pellets = pgTable('pellets', {
   storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
   storageBoxLoc: varchar('storage_box_loc'),
   d3Confluency: doublePrecision('d3_confluency'),
-  dnaConcentration: doublePrecision('dna_concentration'),
-  dnaVolume: doublePrecision('dna_volume'),
-  dnaYield: doublePrecision('dna_yield'),
-  rnaConcentration: doublePrecision('rna_concentration'),
-  rnaVolume: doublePrecision('rna_volume'),
-  rnaYield: doublePrecision('rna_yield'),
   pctPassaged: doublePrecision('pct_passaged'),
   pctHarvested: doublePrecision('pct_harvested'),
-  protocol: varchar('protocol', {enum: VALID_PROTOCOLS as [string, ...string[]]}),
   notes: text('notes'),
 })
+
+export type Pellet = InferSelectModel<typeof pellets>
