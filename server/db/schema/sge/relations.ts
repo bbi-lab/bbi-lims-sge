@@ -282,10 +282,10 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
         },
     },
     many: {
-        pellets: {
-            table: pellets,
-            schema: createSelectSchema(pellets),
-            fields: [pellets.extractionExperimentId],
+        nucleicAcids: {
+            table: nucleicAcids,
+            schema: createSelectSchema(nucleicAcids),
+            fields: [nucleicAcids.extractionExperimentId],
         },
         extractionLotUsage: {
             table: extractionLotUsage,

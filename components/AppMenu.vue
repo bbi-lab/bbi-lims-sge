@@ -2,9 +2,9 @@
 import _ from 'lodash'
 const { user } = useUserSession()
 
+import Molecule from '~icons/mdi/molecule'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
-import Hexagon from '~icons/mdi/hexagon-outline'
 import DnaIcon from '~icons/mdi/dna'
 import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
@@ -20,8 +20,8 @@ const model = ref([
             { label: 'Genes', iconComponent: DnaIcon, to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
-            { label: 'Nucleic Acids', iconComponent: Hexagon, to: '/sge/nucleic-acids' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
+            { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
             { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
             { label: 'Plates', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,

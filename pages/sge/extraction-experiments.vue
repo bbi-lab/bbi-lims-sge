@@ -1,7 +1,7 @@
 <script setup>
 import _ from 'lodash'
-import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
+import Molecule from '~icons/mdi/molecule'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -51,7 +51,7 @@ const displayWithClause = Object.freeze({
             },
         }
     },
-    pellets: {columns: {id: true}},
+    nucleicAcids: {columns: {id: true}},
 })
 
 const columnDefs = {
@@ -61,7 +61,7 @@ const columnDefs = {
     technician: {
         path: 'technician.name'
     },
-    pellets: {
+    nucleicAcids: {
         display: false,
     },
     extractionLotUsage: {
@@ -75,14 +75,14 @@ const columnDefs = {
 }
 
 const rowActions = {
-    pellets: {
-        label: (data) => { return `${_.size(data.pellets)}`},
+    nucleicAcids: {
+        label: (data) => { return `${_.size(data.nucleicAcids)}`},
         action: (data) => {
-            router.push({path:'/sge/pellets', query: {'extractionExperimentId': data.id}})
+            router.push({path:'/sge/nucleic-acids', query: {'extractionExperimentId': data.id}})
         },
-        iconComponent: DotsTriangle,
+        iconComponent: Molecule,
         iconPos: 'right',
-        tooltip: 'Pellets',
+        tooltip: 'Nucleic acids',
     },
     reagents: {
         label: (data) => { return `${data.extractionLotUsage?.length || 0}`},

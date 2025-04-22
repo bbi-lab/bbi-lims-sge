@@ -229,7 +229,7 @@ async function submitPellets() {
                 </DataTable>
             </div>
             <template v-if="pelletsToAdd.length">
-                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-4 space-y-2">
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
                     <label for="harvestDateInput" class="block font-bold">Harvested on</label>
                     <DatePicker
                         class="w-80"
@@ -253,7 +253,7 @@ async function submitPellets() {
                         <AutoCompleter v-model="harvestBy" :searchBaseUrl="`${config.public.apiBase}/users`" dropdown hideClearButton  :disabled="!targetsSelected"/>
                     </div>
                 </div>
-                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-1 space-y-2">
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
                     <Button
                         size="large"
                         icon="pi pi-bolt"
