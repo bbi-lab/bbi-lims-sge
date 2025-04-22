@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { getWellTextColor, wellCoordinateToChar, type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
@@ -14,9 +14,9 @@ const toast = useToast()
 const plateWithWellContents = ref<PlateWithWellContents>()
 const amplificationPrimersTable = ref()
 const plateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
-const plateDiagram = ref<PlateDiagram>()
+const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
-const amplificationPrimerColorMap = ref<PlateDiagramColorMap>({})
+const plateDiagramColorMap = ref<PlateDiagramColorMap>({})
 const frozenRecordIds = ref<string[]>([])
 
 onMounted(async() => {
@@ -46,12 +46,12 @@ const refreshPlate = async () => {
     )
     if (_.isEmpty(plateWithWellContents.value)) return
 
-    updateColorMap(amplificationPrimerColorMap.value, plateWithWellContents.value)
+    updateColorMap(plateDiagramColorMap.value, plateWithWellContents.value)
     const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWellContents.value.wells, (well) => {
         const wellContent: AmplificationPrimer | undefined = _.get(well, 'wellContents.0.amplificationPrimer')
         const wellContentType = wellContent ? 'AMP' : null
         const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
-        const wellColor = _.get(amplificationPrimerColorMap.value, [wellContent?.id, 'color'])
+        const wellColor = _.get(plateDiagramColorMap.value, [wellContent?.id, 'color'])
 
         const plateDiagramWell: PlateDiagramWell = {
             id: well.id,
@@ -137,9 +137,9 @@ const columnDefs = {
         sortable: false,
         type: 'element',
         element: (x: any) => {
-            return _.has(amplificationPrimerColorMap.value, [x.id, 'color']) ? `<span
+            return _.has(plateDiagramColorMap.value, [x.id, 'color']) ? `<span
                 class="inline-block w-6 h-6 rounded-sm text-center"
-                style="color: ${getWellTextColor(_.get(amplificationPrimerColorMap.value, [x.id, 'color']))}; background-color:${_.get(amplificationPrimerColorMap.value, [x.id, 'color'])}">
+                style="color: ${getWellTextColor(_.get(plateDiagramColorMap.value, [x.id, 'color']))}; background-color:${_.get(plateDiagramColorMap.value, [x.id, 'color'])}">
                 ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
             </span>` : ''
         },
@@ -298,7 +298,7 @@ const rowActions = {
                 )
                 if (newRecord?.wellId) {
                     await refreshPlate()
-                    const updatedWell = _.find(plateWithWells.value?.wells, (well) => well.id === newRecord.wellId)
+                    const updatedWell = _.find(plateWithWellContents.value?.wells, (well) => well.id === newRecord.wellId)
                     if (updatedWell) {
                         selectedWells.value = [{
                             id: updatedWell.id,
@@ -306,7 +306,7 @@ const rowActions = {
                             y: updatedWell.y,
                             data: updatedWell,
                             symbol: _.upperCase(updatedWell.wellContents[0]?.amplificationPrimer?.sequenceType?.[0]),
-                            color: _.get(amplificationPrimerColorMap.value, [data.id, 'color']),
+                            color: _.get(plateDiagramColorMap.value, [data.id, 'color']),
                             tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${data.name} (AMP)`,
                         }]
                         plateDiagram.value.updateWellContents(
