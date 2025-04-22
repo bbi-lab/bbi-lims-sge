@@ -329,11 +329,6 @@ const pelletsRelationsConfig: RelationsConfig = {
             referenceTable: storageBoxes,
             references: [storageBoxes.id],
         },
-        extractionExperiment: {
-            fields: [pellets.extractionExperimentId],
-            referenceTable: extractionExperiments,
-            references: [extractionExperiments.id],
-        },
     },
     oneToOne: {
         nucleicAcid: {

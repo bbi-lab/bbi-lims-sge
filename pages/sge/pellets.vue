@@ -76,12 +76,6 @@ const displayWithClause = Object.freeze({
             name: true
         },
     },
-    extractionExperiment: {
-        columns: {
-            id: true,
-            name: true
-        },
-    },
     transfectTarget: {
         columns: {},
         with: {
@@ -135,14 +129,6 @@ const columnDefs = {
         index: 2,
     },
     transfectTargetId: {
-        display: false,
-    },
-    extractionExperiment: {
-        path: 'extractionExperiment.name',
-        header: 'Extraction experiment',
-        index: 3,
-    },
-    extractionExperimentId: {
         display: false,
     },
     harvestedBy: {
