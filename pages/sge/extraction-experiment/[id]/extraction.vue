@@ -187,6 +187,24 @@ const nucleicAcidsColumnDefs = {
     storageBoxLoc: {
         display: false,
     },
+    dnaConcentration: {
+        header: 'DNA conc (ng/μL)',
+    },
+    dnaVolume: {
+        header: 'DNA vol (μL)',
+    },
+    dnaYield: {
+        header: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        header: 'RNA conc (ng/μL)',
+    },
+    rnaVolume: {
+        header: 'RNA vol (μL)',
+    },
+    rnaYield: {
+        header: 'RNA yield (μg)',
+    },
 }
 const nucleicAcidFieldDefs = {
     extractionExperimentId: {
@@ -214,6 +232,24 @@ const nucleicAcidFieldDefs = {
             valueField: 'id',
             displayFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
         }
+    },
+    dnaConcentration: {
+        label: 'DNA concentration (ng/μL)',
+    },
+    dnaVolume: {
+        label: 'DNA volume (μL)',
+    },
+    dnaYield: {
+        label: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        label: 'RNA concentration (ng/μL)',
+    },
+    rnaVolume: {
+        label: 'RNA volume (μL)',
+    },
+    rnaYield: {
+        label: 'RNA yield (μg)',
     },
 }
 </script>

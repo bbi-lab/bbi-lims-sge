@@ -1,13 +1,16 @@
 
 <script setup>
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
 const editingMultipleRecordsIds = ref([])
 const editingRecordId = ref(null)
 const nucleicAcidsTable = ref()
-const router = useRouter()
+
+const route = useRoute()
 const config = useRuntimeConfig()
+const queryParams = route.query
 
 function didClickRecordEdit(event) {
     editingRecordId.value = event.id
@@ -96,6 +99,9 @@ const columnDefs = {
     storageBoxLoc: {
         index: 4,
     },
+    protocol: {
+        index: 5,
+    },
     extractionExperimentId: {
         display: false
     },
@@ -104,7 +110,25 @@ const columnDefs = {
     },
     pelletId: {
         display: false
-    }
+    },
+    dnaConcentration: {
+        header: 'DNA conc (ng/μL)',
+    },
+    dnaVolume: {
+        header: 'DNA vol (μL)',
+    },
+    dnaYield: {
+        header: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        header: 'RNA conc (ng/μL)',
+    },
+    rnaVolume: {
+        header: 'RNA vol (μL)',
+    },
+    rnaYield: {
+        header: 'RNA yield (μg)',
+    },
 }
 const fieldDefs = {
     extractionExperimentId: {
@@ -140,7 +164,26 @@ const fieldDefs = {
             displayFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
         }
     },
+    dnaConcentration: {
+        label: 'DNA concentration (ng/μL)',
+    },
+    dnaVolume: {
+        label: 'DNA volume (μL)',
+    },
+    dnaYield: {
+        label: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        label: 'RNA concentration (ng/μL)',
+    },
+    rnaVolume: {
+        label: 'RNA volume (μL)',
+    },
+    rnaYield: {
+        label: 'RNA yield (μg)',
+    },
 }
+const defaultValues = queryParams
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -165,6 +208,7 @@ const fieldDefs = {
                 tableName="nucleicAcids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -174,6 +218,7 @@ const fieldDefs = {
                 tableName="nucleicAcids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
@@ -184,6 +229,7 @@ const fieldDefs = {
                 :recordIds="editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :defaultValues="defaultValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
             />
