@@ -118,7 +118,7 @@ const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
 const updatePlasmidsSchema = insertPlasmidsSchema
 
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
-const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true})
+const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
 
 const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
