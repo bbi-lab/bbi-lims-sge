@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { RecordService } from '@/utils/service/RecordService'
 import moment from 'moment'
 import _ from 'lodash'
 import  {
@@ -23,12 +22,6 @@ interface FormFields {
     pctPassaged?: number
     pctHarvested?: number
     d3Confluency?: number
-    dnaConcentration?: number
-    dnaVolume?: number
-    dnaYield?: number
-    rnaConcentration?: number
-    rnaVolume?: number
-    rnaYield?: number
     isBackup?: boolean
     harvestNotes?: string
 }
