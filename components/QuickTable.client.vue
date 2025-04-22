@@ -74,6 +74,7 @@ const props = defineProps({
   canEditMultiple: {type: Boolean, default: false},
   canDelete: {type: Boolean, default: true},
   canExport: {type: Boolean, default: true},
+  hideSettings: {type: Boolean, default: false},
   rowsPerPageOptions: {type: Array as PropType<Array<number>> },
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
@@ -88,6 +89,7 @@ const emit = defineEmits([
     'clicked-record-edit',
     'clicked-multiple-record-edit',
     'clicked-record-add',
+    'did-delete-multiple-records',
 ])
 
 const sortedColumnDefs = computed(() => {
@@ -218,6 +220,9 @@ function didClickDeleteSelectedRecords(event: MouseEvent) {
         const deletedRecordIds = _.map(result, (x) => x.id)
         records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
         selectedRecords.value = _.reject(selectedRecords.value, (x) => deletedRecordIds.includes(x.id))
+        if (!_.isEmpty(result)) {
+            emit('did-delete-multiple-records', result)
+        }
     }).catch(error => {
         toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
     })
@@ -401,14 +406,15 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </template>
                     <template #end>
                         <SplitButton v-if="props.canExport" label="Export" class="mr-2" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
-                        <Button icon="pi pi-cog" :disabled="showSettings" class="mr-2" severity="secondary" @click="showSettings=!showSettings"/>
-                        <IftaLabel :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`">
-                            <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
-                            <label for="visibileColumnsInput" v-if="showSettings">Columns</label>
-                        </IftaLabel>
-                        <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings'}" @click="clearSettings"/>
-                        <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings'}" @click="saveSettings" />
-
+                        <template v-if="!props.hideSettings">
+                            <Button icon="pi pi-cog" :disabled="showSettings" class="mr-2" severity="secondary" @click="showSettings=!showSettings"/>
+                            <IftaLabel :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`">
+                                <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
+                                <label for="visibileColumnsInput" v-if="showSettings">Columns</label>
+                            </IftaLabel>
+                            <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings'}" @click="clearSettings"/>
+                            <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings'}" @click="saveSettings" />
+                        </template>
                         <ProgressSpinner :class="`size-8 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
                 </Toolbar>
@@ -418,6 +424,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </InputIcon>
                     <InputText v-model="globalSearchTerm" placeholder="Search..." @input="debounceSearch(setGlobalSearchTerm)()"/>
                 </IconField>
+                <slot name="header-buttons" />
             </div>
         </template>
         <template #empty> No data </template>
