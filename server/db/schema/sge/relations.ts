@@ -335,6 +335,11 @@ const pelletsRelationsConfig: RelationsConfig = {
             references: [extractionExperiments.id],
         },
     },
+    oneToOne: {
+        nucleicAcid: {
+            table: nucleicAcids
+        },
+    }
 }
 export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
 
