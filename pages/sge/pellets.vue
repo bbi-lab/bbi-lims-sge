@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
-import type { VNodeRef } from 'vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -17,10 +16,10 @@ const queryParams = route.query
 
 onMounted(async() => {
     if (_.has(queryParams, ['transfectTarget.experiment.id'])) {
-        const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, _.get(queryParams, ['transfectTarget.experiment.id']) as string)
+        const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, _.get(queryParams, ['transfectTarget.experiment.id']) as string, {})
         tableTitle.value = `${tranfectExperiment.name}: pellets`
     } else if (_.has(queryParams, ['extractionExperimentId'])) {
-        const extractionExperiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, _.get(queryParams, ['extractionExperimentId']) as string)
+        const extractionExperiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, _.get(queryParams, ['extractionExperimentId']) as string, {})
         tableTitle.value = `${extractionExperiment.name}: pellets`
     }
 })
