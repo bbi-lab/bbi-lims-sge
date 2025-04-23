@@ -79,7 +79,7 @@ const rowActions = {
         action: (data) => {
             router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
         },
-        disabled: () => !_.isEmpty(poolingPlates.value),
+        disabled: ({plateType}) => !_.isEmpty(poolingPlates.value) || _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },
     pool: {
         action: ({id, name}) => {
@@ -90,7 +90,8 @@ const rowActions = {
                 router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
             }
         },
-        disabled: ({id}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1,
+        visible: ({plateType}) => _.includes(['pcr-1', 'pcr-2', 'pcr-3'], plateType),
+        disabled: ({id, plateType}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
     }
 }
 const defaultValues = {sizeX: 12, sizeY: 8}

@@ -438,7 +438,14 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
             <template #body="slotProps">
                 <div class="group">
                     <Button v-if="props.canEdit" icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" :disabled="!_.isEmpty(selectedRecords)" />
-                    <Button :class="v.class" :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" :disabled="_.isFunction(v.disabled) ? v.disabled(slotProps.data) : false" @click="v.action(slotProps.data)" />
+                    <Button
+                        :class="v.class"
+                        :key="`${slotProps.data.id}-${k}`"
+                        :icon="v.icon" text rounded
+                        v-for="(v, k) in rowActionsStart"
+                        :severity="v.severity || 'info'"
+                        :disabled="_.isFunction(v.disabled) ? v.disabled(slotProps.data) : false"
+                        @click="v.action(slotProps.data)" />
                 </div>
             </template>
         </Column>
@@ -496,8 +503,25 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
             <template #body="{ data }">
                 <div class="flex items-start">
                     <template v-for="(v, k) in rowActionsEnd">
-                        <Button v-tooltip.top="v.tooltip" v-if="!v.iconComponent" class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" :severity="v.severity || 'info'" :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))" :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false" @click="v.action(data)" />
-                        <Button v-tooltip.top="v.tooltip" v-if="v.iconComponent" class="mr-1 mb-1" :severity="v.severity || 'info'" :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))" :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false" @click="v.action(data)">
+                        <Button
+                            v-if="!v.iconComponent"
+                            v-tooltip.top="v.tooltip"
+                            :class="`mr-1 mb-1 ${_.isFunction(v.visible) && !v.visible(data) ? 'invisible' : ''}`"
+                            :icon="v.icon"
+                            :iconPos="v.iconPos"
+                            :severity="v.severity || 'info'"
+                            :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))"
+                            :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false"
+                            @click="v.action(data)" />
+                        <Button
+                            v-if="v.iconComponent"
+                            v-tooltip.top="v.tooltip"
+                            :class="`mr-1 mb-1 ${_.isFunction(v.visible) && !v.visible(data) ? 'invisible' : ''}`"
+                            :severity="v.severity || 'info'"
+                            :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))"
+                            :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false"
+                            @click="v.action(data)"
+                        >
                             <template #icon>
                                 <span :class="`pi pi-fw p-button-icon ${v.iconPos=='right' ? 'p-button-icon-right' : ''} inline-block`">
                                     <component :is="v.iconComponent" />
