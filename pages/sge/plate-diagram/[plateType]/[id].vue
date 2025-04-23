@@ -8,6 +8,7 @@ import { type PlateWithWellContents, type PlateDiagramColorMap, updateColorMap }
 import { type AmplificationPrimer, type HomologyArmPrimer, type LinearizationPrimer } from '~/server/db/schema/sge/primer'
 import type { NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -50,7 +51,7 @@ const refreshPlate = async () => {
                             amplificationPrimer: route.params.plateType == 'amp-storage',
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
-                            nucleicAcid: route.params.plateType == 'pcr-1',
+                            nucleicAcid: route.params.plateType == 'pcr-1' ? {with: {pellet: true}} : false,
                         }
                     },
                 }
@@ -62,26 +63,23 @@ const refreshPlate = async () => {
     tableName.value = _.get(PLATE_TYPE_SPECS, [plateType, 'selectionTableName'])
     updateColorMap(plateDiagramColorMap.value, plateWithWellContents.value)
     const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWellContents.value.wells, (well) => {
-        let wellContent: AmplificationPrimer | LinearizationPrimer | HomologyArmPrimer | NucleicAcid | undefined
-        let wellContentType
+        let wellContent: AmplificationPrimer | LinearizationPrimer | HomologyArmPrimer | NucleicAcid & {pellet: Pellet} | undefined
         let wellSymbol
+        const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentTypeShortName'])
 
         // TODO - handle wells with multiple contents
         wellContent = _.get(well, ['wellContents', 0, _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])])
+        const wellContentName = tableName.value == 'nucleic-acids' ? wellContent?.pellet?.name : wellContent?.name
+
         if (route.params.plateType == 'amp-storage') {
-            wellContentType = 'AMP'
             wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
         } else if (route.params.plateType == 'lin-storage') {
-            wellContentType = 'LIN'
             wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
         } else if (route.params.plateType == 'ha-storage') {
-            wellContentType = 'HA'
             wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
-        } else if (_.includes(['pcr-1', 'pcr-2', 'pcr-3'], route.params.plateType)) {
-            wellContentType = 'DNA'
         }
 
-        const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContent.name} (${wellContentType})` : `${wellCoordinateToChar(well.y)}${well.x}`
+        const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContentName} (${wellContentTypeShortName})` : `${wellCoordinateToChar(well.y)}${well.x}`
         const wellColor = wellContent ? _.get(plateDiagramColorMap.value, [wellContent?.id, 'color']) : undefined
 
         const plateDiagramWell: PlateDiagramWell = {
@@ -384,10 +382,13 @@ const rowActions = {
                     await refreshPlate()
                     const updatedWell = _.find(plateWithWellContents.value?.wells, (well) => well.id === newRecord.wellId)
                     if (updatedWell) {
+                        const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentTypeShortName'])
                         let wellSymbol
-                        if (route.params.plateType == 'amp-storage') {
-                            wellSymbol = _.upperCase(_.get(updatedWell, ['wellContents', 0, 'amplificationPrimer', 'sequenceType', 0]))
+                        if (_.includes(['amp-storage', 'lin-storage', 'ha-storage'], plateType)) {
+                            const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
+                            wellSymbol = _.upperCase(_.get(updatedWell, ['wellContents', 0, wellContentsKey, 'sequenceType', 0]))
                         }
+                        const wellContentName = tableName.value == 'nucleic-acids' ? data.pellet?.name : data.name
                         selectedWells.value = [{
                             id: updatedWell.id,
                             x: updatedWell.x,
@@ -395,7 +396,7 @@ const rowActions = {
                             data: updatedWell,
                             symbol: wellSymbol,
                             color: _.get(plateDiagramColorMap.value, [data.id, 'color']),
-                            tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${data.name} (AMP)`,
+                            tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${wellContentName} (${wellContentTypeShortName})`,
                         }]
                         plateDiagram.value.updateWellContents(
                             selectedWells.value,

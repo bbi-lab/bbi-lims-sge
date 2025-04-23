@@ -33,31 +33,37 @@ export const PLATE_TYPE_SPECS = {
         selectionTableName: 'amplification-primers',
         wellContentsKey: 'amplificationPrimer',
         wellContentsFK: 'amplificationPrimerId',
+        wellContentTypeShortName: 'AMP',
     },
     'lin-storage':{
         selectionTableName: 'linearization-primers',
         wellContentsKey: 'linearizationPrimer',
         wellContentsFK: 'linearizationPrimerId',
+        wellContentTypeShortName: 'LIN',
     },
     'ha-storage':{
         selectionTableName: 'homology-arm-primers',
         wellContentsKey: 'homologyArmPrimer',
         wellContentsFK: 'homologyArmPrimerId',
+        wellContentTypeShortName: 'HA',
     },
     'pcr-1':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
+        wellContentTypeShortName: 'DNA',
     },
     'pcr-2':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
+        wellContentTypeShortName: 'DNA',
     },
     'pcr-3':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
+        wellContentTypeShortName: 'DNA',
     },
 }
 
