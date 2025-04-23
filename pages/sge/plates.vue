@@ -77,11 +77,7 @@ const columnDefs = {
 const rowActions = {
     layout: {
         action: (data) => {
-            if (data.plateType == 'amp-storage') {
-                router.push({path:`/sge/amp-plate-diagram/${data.id}`})
-            } else {
-                router.push({path:`/sge/plate-diagram/${data.id}`})
-            }
+            router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
         },
         disabled: () => !_.isEmpty(poolingPlates.value),
     },

@@ -54,5 +54,26 @@ export const updateColorMap = (colorMap: PlateDiagramColorMap, plate: PlateWithW
                 })
             }
         })
+    } else if (plate.plateType.startsWith('pcr-')) {
+        // remove values from color map that are not in the plate
+        _.forEach(_.keys(colorMap), (key) => {
+            if (!_.some(plate.wells, (well: WellWithContents) => well.wellContents[0]?.nucleicAcid?.id === key)) {
+                delete colorMap[key]
+            }
+        })
+        // add new values to color map
+        const usedColorIndexes = _.map(_.values(colorMap), ({color}) => {
+            return _.indexOf(VALID_WELL_COLORS, color)
+        })
+        let currentColorIndex = _.max(usedColorIndexes) ?? -1
+
+        plate.wells.forEach((well: WellWithContents) => {
+            if (well.wellContents[0]?.nucleicAcid && !_.has(colorMap, well.wellContents[0]?.nucleicAcid.id)) {
+                currentColorIndex += 1
+                _.set(colorMap, well.wellContents[0]?.nucleicAcid.id, {
+                    color: VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
+                })
+            }
+        })
     }
 }
