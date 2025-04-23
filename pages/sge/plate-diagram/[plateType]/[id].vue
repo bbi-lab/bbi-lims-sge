@@ -7,7 +7,7 @@ import type { WellContent } from '~/server/db/schema/sge/well'
 import { type PlateWithWellContents, type PlateDiagramColorMap, updateColorMap } from '~/utils/sge/plateUtils'
 import { type AmplificationPrimer, type HomologyArmPrimer, type LinearizationPrimer } from '~/server/db/schema/sge/primer'
 import type { NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
-import { path } from 'd3'
+import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -28,38 +28,6 @@ const frozenRecordIds = computed(() => {
     }))
 })
 const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'pcr-1' | 'pcr-2' | 'pcr-3'
-const PLATE_TYPE_SPECS = {
-    'amp-storage':{
-        tableName: 'amplification-primers',
-        wellContentsKey: 'amplificationPrimer',
-        wellContentsFK: 'amplificationPrimerId',
-    },
-    'lin-storage':{
-        tableName: 'linearization-primers',
-        wellContentsKey: 'linearizationPrimer',
-        wellContentsFK: 'linearizationPrimerId',
-    },
-    'ha-storage':{
-        tableName: 'homology-arm-primers',
-        wellContentsKey: 'homologyArmPrimer',
-        wellContentsFK: 'homologyArmPrimerId',
-    },
-    'pcr-1':{
-        tableName: 'nucleic-acids',
-        wellContentsKey: 'nucleicAcid',
-        wellContentsFK: 'nucleicAcidId',
-    },
-    'pcr-2':{
-        tableName: 'nucleic-acids',
-        wellContentsKey: 'nucleicAcid',
-        wellContentsFK: 'nucleicAcidId',
-    },
-    'pcr-3':{
-        tableName: 'nucleic-acids',
-        wellContentsKey: 'nucleicAcid',
-        wellContentsFK: 'nucleicAcidId',
-    },
-}
 
 onMounted(async() => {
     refreshPlate()
@@ -91,7 +59,7 @@ const refreshPlate = async () => {
     )
     if (_.isEmpty(plateWithWellContents.value)) return
 
-    tableName.value = _.get(PLATE_TYPE_SPECS, [plateType, 'tableName'])
+    tableName.value = _.get(PLATE_TYPE_SPECS, [plateType, 'selectionTableName'])
     updateColorMap(plateDiagramColorMap.value, plateWithWellContents.value)
     const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWellContents.value.wells, (well) => {
         let wellContent: AmplificationPrimer | LinearizationPrimer | HomologyArmPrimer | NucleicAcid | undefined
@@ -105,9 +73,11 @@ const refreshPlate = async () => {
             wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
         } else if (route.params.plateType == 'lin-storage') {
             wellContentType = 'LIN'
+            wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
         } else if (route.params.plateType == 'ha-storage') {
             wellContentType = 'HA'
-        } else if (route.params.plateType == 'pcr-1') {
+            wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
+        } else if (_.includes(['pcr-1', 'pcr-2', 'pcr-3'], route.params.plateType)) {
             wellContentType = 'DNA'
         }
 
@@ -132,8 +102,36 @@ const refreshPlate = async () => {
     }
 }
 
+const sharedWithClause = {
+    storageBox: {
+        columns: {
+            name: true
+        }
+    },
+    wellContents: {
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
+    },
+}
 const displayWithClause = Object.freeze({
     'amplification-primers': {
+        ...sharedWithClause,
         target: {
             columns: {
                 name: true
@@ -158,58 +156,15 @@ const displayWithClause = Object.freeze({
                 },
             },
         },
-        storageBox: {
-            columns: {
-                name: true
-            }
-        },
-        wellContents: {
-            with: {
-                well: {
-                    columns: {
-                        id: true,
-                        x: true,
-                        y: true,
-                    },
-                    with: {
-                        plate: {
-                            columns: {
-                                id: true,
-                                name: true,
-                                plateType: true,
-                            }
-                        }
-                    }
-                },
-            },
-        },
+    },
+    'homology-arm-primers': {
+        ...sharedWithClause,
+    },
+    'linearization-primers': {
+        ...sharedWithClause,
     },
     'nucleic-acids': {
-        storageBox: {
-            columns: {
-                name: true
-            }
-        },
-        wellContents: {
-            with: {
-                well: {
-                    columns: {
-                        id: true,
-                        x: true,
-                        y: true,
-                    },
-                    with: {
-                        plate: {
-                            columns: {
-                                id: true,
-                                name: true,
-                                plateType: true,
-                            }
-                        }
-                    }
-                },
-            },
-        },
+        ...sharedWithClause,
         pellet: {
             columns: {
                 id: true,
@@ -355,6 +310,10 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
     ])
     contentSelectionTableIdsToRefresh.forEach((id) => {
         contentSelectionTable.value.addOrRefreshRecordId(id)
+    })
+    // forces frozen records to be re-evaluated when the well contents are being cleared
+    selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+        return _.includes(_.map(newValues, 'id'), x.id)
     })
 }
 const emptySelectedWells = async () => {

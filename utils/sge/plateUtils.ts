@@ -28,52 +28,65 @@ export type PlateWithWellContents = Plate & {
     wells: WellWithContents[]
 }
 
+export const PLATE_TYPE_SPECS = {
+    'amp-storage':{
+        selectionTableName: 'amplification-primers',
+        wellContentsKey: 'amplificationPrimer',
+        wellContentsFK: 'amplificationPrimerId',
+    },
+    'lin-storage':{
+        selectionTableName: 'linearization-primers',
+        wellContentsKey: 'linearizationPrimer',
+        wellContentsFK: 'linearizationPrimerId',
+    },
+    'ha-storage':{
+        selectionTableName: 'homology-arm-primers',
+        wellContentsKey: 'homologyArmPrimer',
+        wellContentsFK: 'homologyArmPrimerId',
+    },
+    'pcr-1':{
+        selectionTableName: 'nucleic-acids',
+        wellContentsKey: 'nucleicAcid',
+        wellContentsFK: 'nucleicAcidId',
+    },
+    'pcr-2':{
+        selectionTableName: 'nucleic-acids',
+        wellContentsKey: 'nucleicAcid',
+        wellContentsFK: 'nucleicAcidId',
+    },
+    'pcr-3':{
+        selectionTableName: 'nucleic-acids',
+        wellContentsKey: 'nucleicAcid',
+        wellContentsFK: 'nucleicAcidId',
+    },
+}
+
 export const updateColorMap = (colorMap: PlateDiagramColorMap, plate: PlateWithWellContents) => {
-    // Amplification Primer storage plate
-    if (plate.plateType == 'amp-storage') {
-        // remove values from color map that are not in the plate
-        _.forEach(_.keys(colorMap), (key) => {
-            if (!_.some(plate.wells, (well: WellWithContents) => well.wellContents[0]?.amplificationPrimer?.id === key)) {
-                delete colorMap[key]
-            }
-        })
+    const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsKey'])
+    const wellContentsFK = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsFK'])
 
-        // add new values to color map
-        const usedColorIndexes = _.map(_.values(colorMap), ({color}) => {
-            return _.indexOf(VALID_WELL_COLORS, color)
-        })
-        let currentColorIndex = _.max(usedColorIndexes) ?? -1
+    // remove values from color map that are not in the plate
+    _.forEach(_.keys(colorMap), (key) => {
+        if (!_.some(plate.wells, (well: WellWithContents) => _.get(well, ['wellContents', 0, wellContentsKey, 'id']) === key)) {
+            delete colorMap[key]
+        }
+    })
 
-        plate.wells.forEach((well: WellWithContents) => {
-            if (well.wellContents[0]?.amplificationPrimer && !_.has(colorMap, well.wellContents[0]?.amplificationPrimer.id)) {
-                const sameGroupColor = _.find(_.values(colorMap), (value) => value.group === _.replace(well.wellContents[0]?.amplificationPrimer.name, /_[frFR]$/, ''))?.color
-                if (!sameGroupColor) currentColorIndex += 1
-                _.set(colorMap, well.wellContents[0]?.amplificationPrimer.id, {
-                    color: sameGroupColor || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
-                    group: _.replace(well.wellContents[0]?.amplificationPrimer.name, /_[frFR]$/, '')
-                })
-            }
-        })
-    } else if (plate.plateType.startsWith('pcr-')) {
-        // remove values from color map that are not in the plate
-        _.forEach(_.keys(colorMap), (key) => {
-            if (!_.some(plate.wells, (well: WellWithContents) => well.wellContents[0]?.nucleicAcid?.id === key)) {
-                delete colorMap[key]
-            }
-        })
-        // add new values to color map
-        const usedColorIndexes = _.map(_.values(colorMap), ({color}) => {
-            return _.indexOf(VALID_WELL_COLORS, color)
-        })
-        let currentColorIndex = _.max(usedColorIndexes) ?? -1
+    // add new values to color map
+    const usedColorIndexes = _.map(_.values(colorMap), ({color}) => {
+        return _.indexOf(VALID_WELL_COLORS, color)
+    })
+    let currentColorIndex = _.max(usedColorIndexes) ?? -1
 
-        plate.wells.forEach((well: WellWithContents) => {
-            if (well.wellContents[0]?.nucleicAcid && !_.has(colorMap, well.wellContents[0]?.nucleicAcid.id)) {
-                currentColorIndex += 1
-                _.set(colorMap, well.wellContents[0]?.nucleicAcid.id, {
-                    color: VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
-                })
-            }
-        })
-    }
+    plate.wells.forEach((well: WellWithContents) => {
+        const wellContents = _.get(well, ['wellContents', 0, wellContentsKey])
+        if (_.get(well, ['wellContents', 0, wellContentsFK]) && !_.has(colorMap, wellContents.id)) {
+            const sameGroupColor = wellContents.name ? _.find(_.values(colorMap), (value) => value.group === _.replace(wellContents.name, /_[frFR]$/, ''))?.color : undefined
+            if (!sameGroupColor) currentColorIndex += 1
+            _.set(colorMap, wellContents.id, {
+                color: sameGroupColor || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
+                group: wellContents.name ? _.replace(wellContents.name, /_[frFR]$/, '') : undefined
+            })
+        }
+    })
 }
