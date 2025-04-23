@@ -23,10 +23,10 @@ export const wells = pgTable('wells', {
 export const wellContents = pgTable('well_contents', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   wellId: uuid('well_id').references(() => wells.id).notNull(),
-  amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id),
-  linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id),
-  homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id),
-  nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
+  amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id).unique(),
+  linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id).unique(),
+  homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id).unique(),
+  nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id).unique(),
 }, (t) => [
   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.nucleicAcidId}) = 1`),
 ])
