@@ -19,9 +19,14 @@ const plateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
 const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
 const plateDiagramColorMap = ref<PlateDiagramColorMap>({})
-const frozenRecordIds = ref<string[]>([])
 const tableName = ref<string | null>(null)
 
+const frozenRecordIds = computed(() => {
+    return _.compact(_.map(selectedWells.value, (well) => {
+        const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
+        return _.get(well.data, ['wellContents', 0, wellContentsKey, 'id'])
+    }))
+})
 const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'pcr-1' | 'pcr-2' | 'pcr-3'
 const PLATE_TYPE_SPECS = {
     'amp-storage':{
@@ -310,10 +315,6 @@ const wellRangeSelected = function(wells: PlateDiagramWell[]) {
         detail: `You selected ${wells.length} ${wells.length==1 ? 'well' : 'wells'}`,
         life: 1000,
     })
-    frozenRecordIds.value = _.compact(_.map(wells, (well) => {
-        const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
-        return _.get(well.data, ['wellContents', 0, wellContentsKey, 'id'])
-    }))
 }
 
 const selectedAllWells = function(wells: PlateDiagramWell[]) {
@@ -324,17 +325,12 @@ const selectedAllWells = function(wells: PlateDiagramWell[]) {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
-    frozenRecordIds.value = _.compact(_.map(wells, (well) => {
-        const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
-        return _.get(well.data, ['wellContents', 0, wellContentsKey, 'id'])
-    }))
 }
 const wellSelectionCleared = function(wells: PlateDiagramWell[]) {
     selectedWells.value = []
     wells.forEach((well) => {
         well.data = null
     })
-    frozenRecordIds.value = []
     toast.add({
         severity: 'info',
         summary: 'Selection Cleared',
