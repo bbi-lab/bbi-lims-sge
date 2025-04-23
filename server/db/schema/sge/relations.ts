@@ -399,6 +399,11 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
+    oneToOne: {
+        wellContents: {
+            table: wellContents
+        }
+    },
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
@@ -416,9 +421,6 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
         },
     },
     oneToOne: {
-        well: {
-            table: wells
-        },
         wellContents: {
             table: wellContents
         }
@@ -440,8 +442,8 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
         },
     },
     oneToOne: {
-        well: {
-            table: wells
+        wellContents: {
+            table: wellContents
         }
     },
 }
@@ -461,8 +463,8 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
         },
     },
     oneToOne: {
-        well: {
-            table: wells
+        wellContents: {
+            table: wellContents
         }
     },
 }

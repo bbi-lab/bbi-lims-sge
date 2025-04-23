@@ -28,7 +28,7 @@ export const wellContents = pgTable('well_contents', {
   homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id),
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.nucelicAcidId}) <= 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.nucleicAcidId}) = 1`),
 ])
 
 const selectWellSchema = createSelectSchema(wells)
