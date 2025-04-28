@@ -51,7 +51,7 @@ const refreshPlate = async () => {
                             amplificationPrimer: route.params.plateType == 'amp-storage',
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
-                            nucleicAcid: route.params.plateType == 'pcr-1' ? {with: {pellet: true}} : false,
+                            nucleicAcid: _.includes(['pcr-1', 'pcr-2', 'pcr-3'], route.params.plateType) ? {with: {pellet: true}} : false,
                         }
                     },
                 }
