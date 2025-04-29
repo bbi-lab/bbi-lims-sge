@@ -293,9 +293,9 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
 }
 const emptySelectedWells = async () => {
     const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
-    const wellContentsToDelete = _.compact(_.map(selectedWells.value, (x) => {
-        return _.get(x, 'data.wellContents.0')
-    }))
+    const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
+        return _.get(x, 'data.wellContents')
+    })))
     const deletedRecords = await RecordService.deleteRecords(
         `${config.public.apiBase}/wellContents`,
         wellContentsToDelete
@@ -343,7 +343,7 @@ const rowActions = {
                 )
                 if (newRecord?.wellId) {
                     await refreshPlate()
-                    const updatedWell = _.get(wellSpecs.value, newRecord.wellId) //_.find(plateWithWellContents.value?.wells, (well) => well.id === newRecord.wellId)
+                    const updatedWell = _.get(wellSpecs.value, newRecord.wellId)
                     if (updatedWell) {
                         plateDiagram.value.updateWells(
                             [updatedWell],
