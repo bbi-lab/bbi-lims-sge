@@ -60,6 +60,7 @@ export interface PlateDiagramWell {
     color?: string,
     tooltip?: string,
     symbol?: string,
+    contentFKs?: string[],
     selected?: boolean,
     inSelectionRange?: boolean,
 }

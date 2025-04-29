@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { VALID_WELL_COLORS } from "~/composables/lib/plate-diagram"
+import { VALID_WELL_COLORS, wellCoordinateToChar } from "~/composables/lib/plate-diagram"
 import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { Plate } from "~/server/db/schema/sge/plate"
@@ -10,6 +10,23 @@ export type PlateDiagramColorMap = {
     [key: string]: {
         color: string
         group: string
+        wellIds: string[]
+    }
+}
+
+export type WellSpecs = {
+    [key: string]: {
+        id: string
+        x: number
+        y: number
+        contentFKs: string[]
+        contentGroupId: string
+        color: string
+        tooltip: string
+        symbol: string
+        data: Well & {
+            wellContents: WellContent[]
+        }
     }
 }
 
@@ -67,32 +84,82 @@ export const PLATE_TYPE_SPECS = {
     },
 }
 
-export const updateColorMap = (colorMap: PlateDiagramColorMap, plate: PlateWithWellContents) => {
+export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellContents) => {
     const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsKey'])
     const wellContentsFK = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsFK'])
+    const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentTypeShortName'])
+    const wellContentNamePath = _.includes(['pcr-1', 'pcr-2', 'pcr-3'], plate.plateType) ? 'pellet.name' : 'name'
 
-    // remove values from color map that are not in the plate
-    _.forEach(_.keys(colorMap), (key) => {
-        if (!_.some(plate.wells, (well: WellWithContents) => _.get(well, ['wellContents', 0, wellContentsKey, 'id']) === key)) {
-            delete colorMap[key]
+    const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ? [wellContentsKey, 'targetId'] : undefined
+
+    // remove empty wells from color map
+    _.forEach(plate.wells, (well: WellWithContents) => {
+        if (_.isEmpty(well.wellContents)) {
+            delete wellSpecs[well.id]
         }
     })
 
-    // add new values to color map
-    const usedColorIndexes = _.map(_.values(colorMap), ({color}) => {
+    // get max index of used colors
+    const usedColorIndexes = _.map(_.values(wellSpecs), ({color}) => {
         return _.indexOf(VALID_WELL_COLORS, color)
     })
     let currentColorIndex = _.max(usedColorIndexes) ?? -1
 
+    // update well specs
     plate.wells.forEach((well: WellWithContents) => {
-        const wellContents = _.get(well, ['wellContents', 0, wellContentsKey])
-        if (_.get(well, ['wellContents', 0, wellContentsFK]) && !_.has(colorMap, wellContents.id)) {
-            const sameGroupColor = wellContents.name ? _.find(_.values(colorMap), (value) => value.group === _.replace(wellContents.name, /_[frFR]$/, ''))?.color : undefined
-            if (!sameGroupColor) currentColorIndex += 1
-            _.set(colorMap, wellContents.id, {
-                color: sameGroupColor || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length],
-                group: wellContents.name ? _.replace(wellContents.name, /_[frFR]$/, '') : undefined
-            })
+        const wellContentFKs = _.compact(_.map(well.wellContents, (wellContent) => {
+            return _.get(wellContent, wellContentsFK)
+        })).sort()
+
+        // if well contents foreign keys have not changed, skip
+        const existingWellSpec = _.get(wellSpecs, well.id)
+        if (existingWellSpec && _.isEqual(wellContentFKs, existingWellSpec.contentFKs)) return
+
+        // set data
+        _.set(wellSpecs, well.id, {
+            id: well.id,
+            x: well.x,
+            y: well.y,
+            data: well,
+        })
+        if (_.isEmpty(well.wellContents)) return
+
+
+        _.set(wellSpecs, [well.id, 'contentFKs'], wellContentFKs)
+        const existingColorMapEntry = _.get(wellSpecs, well.id)
+
+        // set content group id if applicable
+        // for ha-storage, amp-storage, lin-storage, the content group id is the targetId of the wellContent
+        const wellContentGroupId = wellContentGroupIdPath ? _.get(well.wellContents, [0, ...wellContentGroupIdPath]) : undefined
+        _.set(wellSpecs, [well.id, 'contentGroupId'], wellContentGroupId)
+
+        // set color
+        if (wellContentGroupId) {
+            const groupColor = _.find(_.values(wellSpecs), (value) => value.contentGroupId === wellContentGroupId)?.color
+            if (groupColor) {
+                _.set(wellSpecs, [well.id, 'color'], groupColor)
+            } else {
+                currentColorIndex += 1
+                _.set(wellSpecs, [well.id, 'color'], VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length])
+            }
+        } else if (wellContentFKs && wellContentFKs !== existingColorMapEntry?.contentFKs) {
+            // update entry
+            const existingEntryWithSameContentIds = _.find(_.values(wellSpecs), (value) => value.contentFKs === wellContentFKs)
+            if (!existingEntryWithSameContentIds) currentColorIndex += 1
+            _.set(wellSpecs, [well.id, 'color'], existingEntryWithSameContentIds?.color || VALID_WELL_COLORS[currentColorIndex % VALID_WELL_COLORS.length])
+        }
+
+        // set tooltip
+        const wellTooltips = _.compact(_.map(well.wellContents, (x) => {
+            const wellContent = _.get(x, wellContentsKey)
+            return wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${_.get(wellContent, wellContentNamePath)} (${wellContentTypeShortName})` : null
+        }))
+        _.set(wellSpecs, [well.id, 'tooltip'], wellTooltips.join('<hr>'))
+
+        // set symbol
+        if (_.includes(['amp-storage', 'lin-storage', 'ha-storage'], plate.plateType)) {
+            const wellContent = _.get(well, ['wellContents', 0, wellContentsKey])
+            _.set(wellSpecs, [well.id, 'symbol'], _.upperCase(_.get(wellContent, 'sequenceType.0')))
         }
     })
 }

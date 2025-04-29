@@ -4,11 +4,8 @@ import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
-import { type PlateWithWellContents, type PlateDiagramColorMap, updateColorMap } from '~/utils/sge/plateUtils'
-import { type AmplificationPrimer, type HomologyArmPrimer, type LinearizationPrimer } from '~/server/db/schema/sge/primer'
-import type { NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import { type PlateWithWellContents, type WellSpecs, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
-import type { Pellet } from '~/server/db/schema/sge/pellet'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -19,16 +16,27 @@ const contentSelectionTable = ref()
 const plateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
 const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
-const plateDiagramColorMap = ref<PlateDiagramColorMap>({})
-const tableName = ref<string | null>(null)
+const wellSpecs = ref<WellSpecs>({})
+
+const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'pcr-1' | 'pcr-2' | 'pcr-3'
+const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
+const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
+
+const colorMapBySelectionTableId = computed(() => {
+    const colorMap = {}
+    _.forEach(_.values(wellSpecs.value), (wellSpec) => {
+        _.forEach(wellSpec.contentFKs, (wellContentFK) => {
+            _.set(colorMap, wellContentFK, wellSpec.color)
+        })
+    })
+    return colorMap
+})
 
 const frozenRecordIds = computed(() => {
     return _.compact(_.map(selectedWells.value, (well) => {
-        const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
         return _.get(well.data, ['wellContents', 0, wellContentsKey, 'id'])
     }))
 })
-const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'pcr-1' | 'pcr-2' | 'pcr-3'
 
 onMounted(async() => {
     refreshPlate()
@@ -60,43 +68,12 @@ const refreshPlate = async () => {
     )
     if (_.isEmpty(plateWithWellContents.value)) return
 
-    tableName.value = _.get(PLATE_TYPE_SPECS, [plateType, 'selectionTableName'])
-    updateColorMap(plateDiagramColorMap.value, plateWithWellContents.value)
-    const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWellContents.value.wells, (well) => {
-        let wellContent: AmplificationPrimer | LinearizationPrimer | HomologyArmPrimer | NucleicAcid & {pellet: Pellet} | undefined
-        let wellSymbol
-        const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentTypeShortName'])
+    updateWellSpecs(wellSpecs.value, plateWithWellContents.value)
 
-        // TODO - handle wells with multiple contents
-        wellContent = _.get(well, ['wellContents', 0, _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])])
-        const wellContentName = tableName.value == 'nucleic-acids' ? wellContent?.pellet?.name : wellContent?.name
-
-        if (route.params.plateType == 'amp-storage') {
-            wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
-        } else if (route.params.plateType == 'lin-storage') {
-            wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
-        } else if (route.params.plateType == 'ha-storage') {
-            wellSymbol = _.upperCase(_.get(wellContent, 'sequenceType.0'))
-        }
-
-        const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContentName} (${wellContentTypeShortName})` : `${wellCoordinateToChar(well.y)}${well.x}`
-        const wellColor = wellContent ? _.get(plateDiagramColorMap.value, [wellContent?.id, 'color']) : undefined
-
-        const plateDiagramWell: PlateDiagramWell = {
-            id: well.id,
-            x: well.x,
-            y: well.y,
-            data: well,
-            color: wellColor,
-            symbol: wellSymbol,  // should be F or R for amplification primers
-            tooltip: wellContentTooltip,
-        }
-        return plateDiagramWell as PlateDiagramWell
-    })
     // replace wells from data model with plateDiagramWells to include visualization properties
     plateWithPlateDiagramWells.value = {
         ...plateWithWellContents.value,
-        wells: plateDiagramWells,
+        wells: _.values(wellSpecs.value),
     }
 }
 
@@ -186,9 +163,10 @@ const sharedColumnDefs = {
         sortable: false,
         type: 'element',
         element: (x: any) => {
-            return _.has(plateDiagramColorMap.value, [x.id, 'color']) ? `<span
+            const tileColor = _.get(colorMapBySelectionTableId.value, x.id)
+            return tileColor ? `<span
                 class="inline-block w-6 h-6 rounded-sm text-center"
-                style="color: ${getWellTextColor(_.get(plateDiagramColorMap.value, [x.id, 'color']))}; background-color:${_.get(plateDiagramColorMap.value, [x.id, 'color'])}">
+                style="color: ${getWellTextColor(tileColor)}; background-color:${tileColor}">
                 ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
             </span>` : ''
         },
@@ -301,7 +279,6 @@ const actionOnSelectedWells = function() {
 }
 const updatedWellContents = async function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
     await refreshPlate()
-    const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
     const contentSelectionTableIdsToRefresh = _.compact([
         ..._.map(newValues || [], (well) => { return well.data?.wellContents[0]?.[wellContentsKey]?.id }),
         ..._.map(oldValues || [], (well) => { return well.data?.wellContents[0]?.[wellContentsKey]?.id }),
@@ -315,7 +292,7 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
     })
 }
 const emptySelectedWells = async () => {
-    const oldValues = _.cloneDeep(selectedWells.value)
+    const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
     const wellContentsToDelete = _.compact(_.map(selectedWells.value, (x) => {
         return _.get(x, 'data.wellContents.0')
     }))
@@ -326,23 +303,8 @@ const emptySelectedWells = async () => {
     if (!_.isEmpty(deletedRecords)) {
         await refreshPlate()
         const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
-        const updatedWells = _.filter(plateWithPlateDiagramWells.value?.wells, (well) => {
-            return _.includes(deletedWellIds, well.id)
-        })
-        plateDiagram.value.updateWellContents(
-            _.map(updatedWells || [], (updatedWell) => {
-                return {
-                    id: updatedWell.id,
-                    x: updatedWell.x,
-                    y: updatedWell.y,
-                    data: updatedWell.data,
-                    color: null,
-                    symbol: undefined,
-                    tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}`,
-                }
-            }),
-            oldValues
-        )
+        const updatedWells = _.values(_.pick(wellSpecs.value, deletedWellIds))
+        plateDiagram.value.updateWells(updatedWells, oldValues)
         toast.add({
             severity: 'info',
             summary: 'Updated well',
@@ -370,7 +332,8 @@ const rowActions = {
                     life: 1000,
                 })
             } else {
-                const oldValues = _.cloneDeep(selectedWells.value)
+                const oldValues = selectedWells.value ? _.get(wellSpecs.value, selectedWells.value[0].id) : {}
+
                 const newRecord = await RecordService.addRecord(
                     `${config.public.apiBase}/wellContents`,
                     {
@@ -380,27 +343,11 @@ const rowActions = {
                 )
                 if (newRecord?.wellId) {
                     await refreshPlate()
-                    const updatedWell = _.find(plateWithWellContents.value?.wells, (well) => well.id === newRecord.wellId)
+                    const updatedWell = _.get(wellSpecs.value, newRecord.wellId) //_.find(plateWithWellContents.value?.wells, (well) => well.id === newRecord.wellId)
                     if (updatedWell) {
-                        const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentTypeShortName'])
-                        let wellSymbol
-                        if (_.includes(['amp-storage', 'lin-storage', 'ha-storage'], plateType)) {
-                            const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
-                            wellSymbol = _.upperCase(_.get(updatedWell, ['wellContents', 0, wellContentsKey, 'sequenceType', 0]))
-                        }
-                        const wellContentName = tableName.value == 'nucleic-acids' ? data.pellet?.name : data.name
-                        selectedWells.value = [{
-                            id: updatedWell.id,
-                            x: updatedWell.x,
-                            y: updatedWell.y,
-                            data: updatedWell,
-                            symbol: wellSymbol,
-                            color: _.get(plateDiagramColorMap.value, [data.id, 'color']),
-                            tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${wellContentName} (${wellContentTypeShortName})`,
-                        }]
-                        plateDiagram.value.updateWellContents(
-                            selectedWells.value,
-                            oldValues
+                        plateDiagram.value.updateWells(
+                            [updatedWell],
+                            [oldValues]
                         )
                     }
                     contentSelectionTable.value.addOrRefreshRecordId(data.id)
@@ -454,6 +401,7 @@ const rowActions = {
                 v-if="plateWithPlateDiagramWells"
                 v-model="plateWithPlateDiagramWells"
                 :plateType="plateWithPlateDiagramWells.plateType"
+
                 @well-range-selected="wellRangeSelected"
                 @well-selection-cleared="wellSelectionCleared"
                 @all-wells-selected="selectedAllWells"

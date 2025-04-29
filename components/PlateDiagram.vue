@@ -29,6 +29,9 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    wellSpecs: {
+        type: Object,
+    },
 })
 
 const emit = defineEmits([
@@ -63,12 +66,13 @@ onMounted(async() => {
     }
 })
 
-const updateWellContents = (newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) => {
+const updateWells = (newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) => {
     plateDiagram.value?.updateWellContents(newValues)
     emit('well-contents-updated', newValues, oldValues)
 }
+
 defineExpose({
-    updateWellContents,
+    updateWells,
 })
 </script>
 
