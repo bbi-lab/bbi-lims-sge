@@ -292,14 +292,13 @@ export function makePlateDiagram(plateType: string): PlateDiagram {
                 // Three function that change the tooltip when user hover / move / leave a cell
                 const mouseover = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
                     const tooltipText = d3.select(this).attr("tooltip")
-                    if (w.tooltip)
-                        tooltip
-                            .html(tooltipText)
-                            .style("opacity", 1)
-                            .style("pointer-events", "none")
-                            .style("left", (event.pageX + 20) + "px")
-                            .style("top", (event.pageY - 20) + "px")
-                            .raise()
+                    tooltip
+                        .html(tooltipText)
+                        .style("opacity", 1)
+                        .style("pointer-events", "none")
+                        .style("left", (event.pageX + 20) + "px")
+                        .style("top", (event.pageY - 20) + "px")
+                        .raise()
                     d3.select(this)
                         .style("stroke", "var(--p-text-color)")
                         .style("opacity", 1)

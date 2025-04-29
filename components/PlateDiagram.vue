@@ -101,3 +101,9 @@ defineExpose({
         </div>
     </div>
 </template>
+
+<style>
+.tooltip:empty {
+    display: none;
+}
+</style>
