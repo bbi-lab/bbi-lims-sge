@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
-import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagram, type PlateDiagramWell } from '~/composables/lib/plate-diagram'
-import type { NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
-import type { Pellet } from '~/server/db/schema/sge/pellet'
-import type { homologyArmPrimers, linearizationPrimers } from '~/server/db/schema/sge/primer'
+import { type PlateDiagramWell } from '~/composables/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
-import { updateColorMap, type PlateDiagramColorMap, type PlateWithWellContents } from '~/utils/sge/plateUtils'
+import { updateWellSpecs, type PlateWithWellContents, type WellSpecs } from '~/utils/sge/plateUtils'
 
 const unpooledPlateWithWellContents = ref<PlateWithWellContents>()
 const pooledPlateWithWellContents = ref<PlateWithWellContents>()
@@ -14,15 +11,20 @@ const unpooledPlateDiagram = ref()
 const pooledPlateDiagram = ref()
 const unpooledPlateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
 const pooledPlateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
-const wellsToPoolFrom = ref<PlateDiagramWell[]>([])
-const wellsToPoolTo = ref<PlateDiagramWell[]>([])
 
-const unpooledPlateColorMap = ref<PlateDiagramColorMap>({})
-const pooledPlateColorMap = ref<PlateDiagramColorMap>({})
+const wellIdsToPoolFrom = ref<string[]>([])
+const wellIdsToPoolTo = ref<string[]>([])
+
+const unpooledPlateWellSpecs = ref<WellSpecs>({})
+const pooledPlateWellSpecs = ref<WellSpecs>({})
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const toast = useToast()
+
+const wellsToPoolFrom = computed(() => {
+    return _.values(_.pick(unpooledPlateWellSpecs.value, wellIdsToPoolFrom.value))
+})
 
 const wellsToPoolFromContent = computed(() => {
     return wellsToPoolFrom.value.map(({data}) => {
@@ -40,15 +42,15 @@ onMounted(async() => {
 })
 
 const refreshPlates = async () => {
-    await refreshPlate(route.params.unpooledPlateId as string, unpooledPlateWithWellContents, unpooledPlateWithPlateDiagramWells, unpooledPlateColorMap)
-    await refreshPlate(route.params.pooledPlateId as string, pooledPlateWithWellContents, pooledPlateWithPlateDiagramWells, pooledPlateColorMap)
+    await refreshPlate(route.params.unpooledPlateId as string, unpooledPlateWithWellContents, unpooledPlateWithPlateDiagramWells, unpooledPlateWellSpecs)
+    await refreshPlate(route.params.pooledPlateId as string, pooledPlateWithWellContents, pooledPlateWithPlateDiagramWells, pooledPlateWellSpecs)
 }
 
 const refreshPlate = async (
     plateId: string,
     plateWithWellContents: Ref<PlateWithWellContents | undefined>,
     plateWithPlateDiagramWells: Ref<PlateWithPlateDiagramWells | undefined>,
-    plateDiagramColorMap: Ref<PlateDiagramColorMap>) =>
+    plateWellSpecs: Ref<WellSpecs>) =>
 {
     plateWithWellContents.value = await RecordService.getRecord(
         `${config.public.apiBase}/plates`,
@@ -75,34 +77,10 @@ const refreshPlate = async (
         }
     )
     if (plateWithWellContents.value) {
-        updateColorMap(plateDiagramColorMap.value, plateWithWellContents.value)
-        const plateDiagramWells: PlateDiagramWell[] = _.map(plateWithWellContents.value.wells, (well) => {
-            let wellContent: NucleicAcid & {pellet: Pellet} | undefined
-            let wellSymbol
-            const wellContentTypeShortName = 'DNA'
-
-            // TODO - handle wells with multiple contents
-            wellContent = _.get(well, ['wellContents', 0, 'nucleicAcid'])
-            const wellContentName = wellContent?.pellet?.name
-
-
-            const wellContentTooltip = wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${wellContentName} (${wellContentTypeShortName})` : `${wellCoordinateToChar(well.y)}${well.x}`
-            const wellColor = wellContent ? _.get(plateDiagramColorMap.value, [wellContent?.id, 'color']) : undefined
-
-            const plateDiagramWell: PlateDiagramWell = {
-                id: well.id,
-                x: well.x,
-                y: well.y,
-                data: well,
-                color: wellColor,
-                symbol: wellSymbol,  // should be F or R for amplification primers
-                tooltip: wellContentTooltip,
-            }
-            return plateDiagramWell as PlateDiagramWell
-        })
+        updateWellSpecs(plateWellSpecs.value, plateWithWellContents.value)
         plateWithPlateDiagramWells.value = {
             ...plateWithWellContents.value,
-            wells: plateDiagramWells,
+            wells: _.values(plateWellSpecs.value),
         }
     }
 }
@@ -114,7 +92,7 @@ const unpooledPlateWellRangeSelected = (wells: PlateDiagramWell[]) => {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
-    wellsToPoolFrom.value = wells
+    wellIdsToPoolFrom.value = _.map(wells, 'id')
 }
 const unpooledPlateWellSelectionCleared = () => {
     toast.add({
@@ -123,7 +101,7 @@ const unpooledPlateWellSelectionCleared = () => {
         detail: `You selected 0 wells`,
         life: 1000,
     })
-    wellsToPoolFrom.value = []
+    wellIdsToPoolFrom.value = []
 }
 const unpooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
     toast.add({
@@ -132,7 +110,7 @@ const unpooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
-    wellsToPoolFrom.value = wells
+    wellIdsToPoolFrom.value = _.map(wells, 'id')
 }
 const unpooledPlateUpdatedWellContents = (event: any) => {
     console.log(event)
@@ -144,7 +122,7 @@ const pooledPlateWellRangeSelected = (wells: PlateDiagramWell[]) => {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
-    wellsToPoolTo.value = wells
+    wellIdsToPoolTo.value = _.map(wells, 'id')
 }
 const pooledPlateWellSelectionCleared = () => {
     toast.add({
@@ -153,7 +131,7 @@ const pooledPlateWellSelectionCleared = () => {
         detail: `You selected 0 wells`,
         life: 1000,
     })
-    wellsToPoolTo.value = []
+    wellIdsToPoolTo.value = []
 }
 const pooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
     toast.add({
@@ -162,46 +140,44 @@ const pooledPlateSelectAllWells = (wells: PlateDiagramWell[]) => {
         detail: `You selected ${wells.length} wells`,
         life: 1000,
     })
-    wellsToPoolTo.value = wells
+    wellIdsToPoolTo.value = _.map(wells, 'id')
 }
 const pooledPlateUpdatedWellContents = (event: any) => {
     console.log(event)
 }
 
 const poolSelectedWells = async () => {
-    const destinationWell = wellsToPoolTo.value[0]
-    const oldValues = _.cloneDeep(wellsToPoolTo.value)
+    const sourceWellsIds = wellIdsToPoolFrom.value
+    const destinationWellId = wellIdsToPoolTo.value[0]
+
+    const oldUnpooledValues = _.values(_.pick(unpooledPlateWellSpecs.value, sourceWellsIds))
+    const oldPooledValues = _.get(pooledPlateWellSpecs.value, destinationWellId)
 
     for (const sourceWell of wellsToPoolFrom.value) {
+        // TODO: support (or prevent?) pooling of wells with mutliple contents
         const wellContentId = sourceWell.data.wellContents?.[0]?.id
-        const nucleicAcid = sourceWell.data.wellContents?.[0]?.nucleicAcid
 
         const updatedRecord = await RecordService.updateRecord(
             `${config.public.apiBase}/wellContents`,
             {
                 id: wellContentId,
-                wellId: destinationWell.id,
+                wellId: destinationWellId,
             }
         )
+    }
+    await refreshPlates()
+    const updatedPooledWell = _.get(pooledPlateWellSpecs.value, destinationWellId)
+    const updatedUnpooledWells = _.values(_.pick(unpooledPlateWellSpecs.value, sourceWellsIds))
 
-        await refreshPlates()
-        const updatedWell = _.find(pooledPlateWithWellContents.value?.wells, (well) => well.id === destinationWell.id)
-        if (updatedWell) {
-            const wellContentTypeShortName = 'DNA'
-            const wellContentName = nucleicAcid.pellet?.name
-            wellsToPoolTo.value = [{
-                id: updatedWell.id,
-                x: updatedWell.x,
-                y: updatedWell.y,
-                data: updatedWell,
-                color: _.get(pooledPlateColorMap.value, [nucleicAcid.id, 'color']),
-                tooltip: `${wellCoordinateToChar(updatedWell.y)}${updatedWell.x}<br>${wellContentName} (${wellContentTypeShortName})`,
-            }]
-            pooledPlateDiagram.value.updateWellContents(
-                wellsToPoolTo.value,
-                oldValues
-            )
-        }
+    if (updatedPooledWell) {
+        pooledPlateDiagram.value.updateWells(
+            [updatedPooledWell],
+            [oldPooledValues]
+        )
+        unpooledPlateDiagram.value.updateWells(
+            updatedUnpooledWells,
+            oldUnpooledValues
+        )
     }
 }
 </script>
@@ -225,8 +201,8 @@ const poolSelectedWells = async () => {
             <Button
                 icon="pi pi-arrow-right"
                 severity="info"
-                :class="wellsToPoolFrom.length > 0 ? 'visible' : 'invisible'"
-                :disabled="wellsToPoolTo.length != 1"
+                :class="wellIdsToPoolFrom && wellIdsToPoolFrom.length > 0 ? 'visible' : 'invisible'"
+                :disabled="wellIdsToPoolTo && wellIdsToPoolTo.length != 1"
                 @click="poolSelectedWells"
             />
         </div>
