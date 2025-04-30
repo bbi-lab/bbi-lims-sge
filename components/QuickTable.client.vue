@@ -81,6 +81,7 @@ const props = defineProps({
   showColumnFilters: {type: Boolean, default: false},
   selectionDisabled: {type: Boolean, default: false},
   expandEnums: {type: Boolean, default: false},
+  emptyMessage: {type: String, default: 'No data'},
 })
 
 const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
@@ -427,7 +428,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 <slot name="header-buttons" />
             </div>
         </template>
-        <template #empty> No data </template>
+        <template #empty> {{ props.emptyMessage }} </template>
         <template #loading> Loading </template>
 
         <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" frozen />

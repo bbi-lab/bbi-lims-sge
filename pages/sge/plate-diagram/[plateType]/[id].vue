@@ -396,6 +396,7 @@ const rowActions = {
                 :where="displayWhereClause"
                 :columnDefs="_.get(columnDefs, tableName)"
                 :rowActions="rowActions"
+                emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds"
             />
         </SplitterPanel>
