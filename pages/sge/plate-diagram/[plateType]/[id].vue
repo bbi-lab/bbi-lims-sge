@@ -6,10 +6,13 @@ import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
 import { type PlateWithWellContents, type WellSpecs, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const smallerThanLg = breakpoints.smaller('lg')
 
 const plateWithWellContents = ref<PlateWithWellContents>()
 const contentSelectionTable = ref()
@@ -377,7 +380,7 @@ const rowActions = {
 }
 </script>
 <template>
-    <Splitter class="h-full mb-8">
+    <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 v-if="tableName"
