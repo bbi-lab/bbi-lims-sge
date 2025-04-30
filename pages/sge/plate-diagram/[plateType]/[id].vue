@@ -36,9 +36,9 @@ const colorMapBySelectionTableId = computed(() => {
 })
 
 const frozenRecordIds = computed(() => {
-    return _.compact(_.map(selectedWells.value, (well) => {
-        return _.get(well.data, ['wellContents', 0, wellContentsKey, 'id'])
-    }))
+    return _.compact(_.flatten(_.map(selectedWells.value, (well) => {
+        return _.map(well.data.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })
+    })))
 })
 
 onMounted(async() => {
@@ -282,9 +282,10 @@ const actionOnSelectedWells = function() {
 }
 const updatedWellContents = async function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
     await refreshPlate()
+
     const contentSelectionTableIdsToRefresh = _.compact([
-        ..._.map(newValues || [], (well) => { return well.data?.wellContents[0]?.[wellContentsKey]?.id }),
-        ..._.map(oldValues || [], (well) => { return well.data?.wellContents[0]?.[wellContentsKey]?.id }),
+        ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
+        ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
     ])
     contentSelectionTableIdsToRefresh.forEach((id) => {
         contentSelectionTable.value.addOrRefreshRecordId(id)
