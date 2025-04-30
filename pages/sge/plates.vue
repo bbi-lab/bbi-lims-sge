@@ -90,7 +90,7 @@ const rowActions = {
                 router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
             }
         },
-        visible: ({plateType}) => _.includes(['pcr-1', 'pcr-2', 'pcr-3'], plateType),
+        visible: ({plateType}) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
         disabled: ({id, plateType}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
     }
 }

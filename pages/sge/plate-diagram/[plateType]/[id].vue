@@ -21,7 +21,7 @@ const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
 const wellSpecs = ref<WellSpecs>({})
 
-const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'pcr-1' | 'pcr-2' | 'pcr-3'
+const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'preseq-1' | 'preseq-2' | 'preseq-3'
 const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
 const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
 
@@ -62,7 +62,7 @@ const refreshPlate = async () => {
                             amplificationPrimer: route.params.plateType == 'amp-storage',
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
-                            nucleicAcid: _.includes(['pcr-1', 'pcr-2', 'pcr-3'], route.params.plateType) ? {with: {pellet: true}} : false,
+                            nucleicAcid: _.includes(['preseq-1', 'preseq-2', 'preseq-3'], route.params.plateType) ? {with: {pellet: true}} : false,
                         }
                     },
                 }

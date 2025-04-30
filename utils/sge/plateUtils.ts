@@ -64,19 +64,19 @@ export const PLATE_TYPE_SPECS = {
         wellContentsFK: 'homologyArmPrimerId',
         wellContentTypeShortName: 'HA',
     },
-    'pcr-1':{
+    'preseq-1':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
         wellContentTypeShortName: 'DNA',
     },
-    'pcr-2':{
+    'preseq-2':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
         wellContentTypeShortName: 'DNA',
     },
-    'pcr-3':{
+    'preseq-3':{
         selectionTableName: 'nucleic-acids',
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
@@ -88,7 +88,7 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
     const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsKey'])
     const wellContentsFK = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsFK'])
     const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentTypeShortName'])
-    const wellContentNamePath = _.includes(['pcr-1', 'pcr-2', 'pcr-3'], plate.plateType) ? 'pellet.name' : 'name'
+    const wellContentNamePath = _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plate.plateType) ? 'pellet.name' : 'name'
 
     const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ? [wellContentsKey, 'targetId'] : undefined
 
