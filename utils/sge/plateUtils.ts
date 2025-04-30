@@ -152,9 +152,9 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
         // set tooltip
         const wellTooltips = _.compact(_.map(well.wellContents, (x) => {
             const wellContent = _.get(x, wellContentsKey)
-            return wellContent ? `${wellCoordinateToChar(well.y)}${well.x}<br>${_.get(wellContent, wellContentNamePath)} (${wellContentTypeShortName})` : null
+            return wellContent ? `${_.get(wellContent, wellContentNamePath)} (${wellContentTypeShortName})` : null
         }))
-        _.set(wellSpecs, [well.id, 'tooltip'], wellTooltips.join('<hr>'))
+        _.set(wellSpecs, [well.id, 'tooltip'], `${wellCoordinateToChar(well.y)}${well.x}:<br>${wellTooltips.join('<br>')}`)
 
         // set symbol
         if (_.includes(['amp-storage', 'lin-storage', 'ha-storage'], plate.plateType)) {
