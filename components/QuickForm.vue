@@ -184,7 +184,7 @@ async function saveRecord() {
     }
 }
 function isReadOnly(key: string) {
-    return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
+    return props.readOnly ? true : (props.recordId && _.has(props.defaultValues, key)) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 </script>
 <template>
