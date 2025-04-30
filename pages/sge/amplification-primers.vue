@@ -87,19 +87,19 @@ const displayWithClause = Object.freeze({
             name: true
         }
     },
-    well: {
-        columns: {
-            x: true,
-            y: true,
-        },
-        with: {
-            plate: {
-                columns: {
-                    name: true
-                }
-            }
-        }
-    },
+    // well: {
+    //     columns: {
+    //         x: true,
+    //         y: true,
+    //     },
+    //     with: {
+    //         plate: {
+    //             columns: {
+    //                 name: true
+    //             }
+    //         }
+    //     }
+    // },
 })
 
 const columnDefs = {
