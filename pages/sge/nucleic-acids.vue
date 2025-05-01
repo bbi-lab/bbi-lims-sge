@@ -1,5 +1,7 @@
 
 <script setup lang="ts">
+import _ from 'lodash'
+
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -177,7 +179,9 @@ const fieldDefs = {
         label: 'RNA yield (μg)',
     },
 }
+const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
 const readonlyValues = queryParams
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -188,6 +192,7 @@ const readonlyValues = queryParams
                 schemaName="select"
                 title="Nucleic Acids"
                 :columnDefs="columnDefs"
+                :where="whereClauses"
                 :withClause="displayWithClause"
                 :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
