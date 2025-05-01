@@ -281,6 +281,13 @@
       "when": 1746122534006,
       "tag": "0039_boring_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1746122654320,
+      "tag": "0040_windy_firebird",
+      "breakpoints": true
     }
   ]
 }
