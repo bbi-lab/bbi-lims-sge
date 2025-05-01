@@ -126,7 +126,7 @@ const fieldDefs = {
                 tableName="plates"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -136,7 +136,7 @@ const fieldDefs = {
                 tableName="plates"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
@@ -147,7 +147,7 @@ const fieldDefs = {
                 :recordIds="editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
             /> -->

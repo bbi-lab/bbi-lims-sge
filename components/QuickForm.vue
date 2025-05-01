@@ -20,7 +20,7 @@ const props = defineProps({
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
   fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
+  readonlyValues: {type: Object},             // to set values for and lock fields on form
   values: {type: Object},
 })
 
@@ -32,8 +32,8 @@ const refreshForm = async function() {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
     }
-    if (props.defaultValues) {
-        _.assign(record.value, props.defaultValues)
+    if (props.readonlyValues) {
+        _.assign(record.value, props.readonlyValues)
     }
     dataChanged.value = false
     if (props.values) {
@@ -184,7 +184,7 @@ async function saveRecord() {
     }
 }
 function isReadOnly(key: string) {
-    return props.readOnly ? true : (props.recordId && _.has(props.defaultValues, key)) || _.get(props.fieldDefs, [key, 'readOnly'], false)
+    return props.readOnly ? true : _.has(props.readonlyValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 </script>
 <template>

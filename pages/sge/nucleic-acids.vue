@@ -177,7 +177,7 @@ const fieldDefs = {
         label: 'RNA yield (μg)',
     },
 }
-const defaultValues = queryParams
+const readonlyValues = queryParams
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -202,7 +202,7 @@ const defaultValues = queryParams
                 tableName="nucleicAcids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -212,7 +212,7 @@ const defaultValues = queryParams
                 tableName="nucleicAcids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
@@ -223,7 +223,7 @@ const defaultValues = queryParams
                 :recordIds="editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
             />

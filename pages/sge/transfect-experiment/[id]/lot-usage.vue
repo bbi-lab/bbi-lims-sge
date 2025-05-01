@@ -77,9 +77,9 @@ const columnDefs = {
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => { 
+const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
     return {
-        display: v.display ?? true, 
+        display: v.display ?? true,
         label: v.header || _.startCase(k),
     }
 })
@@ -102,7 +102,7 @@ editFormFieldDefs['lotId'] = {
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const defaultValues = {experimentId: route.params.id}  // queryParams
+const readonlyValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
@@ -127,7 +127,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 tableName="transfectLotUsage"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"

@@ -99,7 +99,7 @@ fieldDefs['lotId'] = {
     },
 }
 
-const defaultValues = {experimentId: route.params.id}  // queryParams
+const readonlyValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
@@ -124,7 +124,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 tableName="extractionLotUsage"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"

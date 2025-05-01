@@ -22,7 +22,7 @@ const props = defineProps({
   readOnly: {type: Boolean, default: false},
   withClause: {type: Object},
   fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  defaultValues: {type: Object},             // to hide fields on form
+  readonlyValues: {type: Object},             // to hide fields on form
 })
 const emit = defineEmits([
     'records-update',
@@ -161,7 +161,7 @@ function cancelEdit(event: MouseEvent) {
     }
 }
 function isReadOnly(key: string) {
-    return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
+    return props.readOnly ? true : _.has(props.readonlyValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 function getLabel(key: string) {
     const label = _.get(props.fieldDefs, [key, 'label'])

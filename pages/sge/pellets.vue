@@ -204,7 +204,7 @@ const fieldDefs = {
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const defaultValues = queryParams
+const readonlyValues = queryParams
 
 </script>
 <template>
@@ -232,7 +232,7 @@ const defaultValues = queryParams
                 v-if="showAddForm"
                 tableName="pellets"
                 schemaName="insert"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
@@ -242,7 +242,7 @@ const defaultValues = queryParams
                 :recordId="editingRecordId"
                 tableName="pellets"
                 schemaName="update"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"

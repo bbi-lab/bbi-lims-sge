@@ -108,9 +108,9 @@ const columnDefs = {
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => { 
+const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
     return {
-        display: v.display ?? true, 
+        display: v.display ?? true,
         label: v.header || k,
     }
 })
@@ -132,7 +132,7 @@ editFormFieldDefs['targetId'] = {
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const defaultValues = {experimentId: route.params.id}  // queryParams
+const readonlyValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
@@ -157,7 +157,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 tableName="transfectTargets"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />

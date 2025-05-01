@@ -56,7 +56,7 @@ function didDeleteRecord(event) {
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const defaultValues = {plateType: 'pcr', sizeX: 12, sizeY: 8, ...queryParams}
+const readonlyValues = {plateType: 'pcr', sizeX: 12, sizeY: 8, ...queryParams}
 
 const columnDefs = {
     pcrExperimentId: {
@@ -125,7 +125,7 @@ const rowActions = {
                 tableName="plates"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -135,7 +135,7 @@ const rowActions = {
                 tableName="plates"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
