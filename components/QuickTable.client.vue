@@ -123,6 +123,7 @@ interface ColumnDefinition {
     display?: boolean,
     sortable?: boolean,
     element?: string | ((data: any) => string),
+    elementSearchText?: (data: any) => string,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -192,7 +193,15 @@ watch(frozenRecords, (newValue) => {
 
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
-    globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : (x.path ?? x.key))
+    globalFilterFields.value = _.map(newValue, (x) => {
+        if (_.isFunction(x.format)) {
+            return x.format
+        } else if (x.element && _.isFunction(x.elementSearchText)) {
+            return x.elementSearchText
+        } else {
+            return x.path ?? x.key
+        }
+  })
 
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
