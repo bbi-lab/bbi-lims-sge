@@ -106,6 +106,11 @@ const displayWithClause = Object.freeze({
             }
         }
     },
+    nucleicAcid: {
+        columns: {
+            id: true
+        },
+    },
     // storageBox: {
     //     columns: {
     //         name: true,
@@ -117,16 +122,31 @@ const columnDefs = {
     name: {
         index: 0,
     },
+    isBackup: {
+        index: 1,
+    },
+    isCurrent: {
+        index: 2,
+    },
+    nucleicAcid: {
+        header: 'Nucleic Acid',
+        index: 3,
+        type: 'element',
+        element: (x: any) => {
+            const href = _.has(x, 'nucleicAcid.id') ? `/sge/nucleic-acids?pelletId=${x.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
+        },
+    },
     transfectionExperiment: {
         path: 'transfectTarget.experiment.name',
-        index: 1,
+        index: 4,
     },
     transfectTarget: {
         header: 'Target',
         format: (x: any) => { return _.get(x, 'transfectTarget.target.name') || `${_.get(x, 'transfectTarget.target.region.gene.symbol')} : ${_.get(x, 'transfectTarget.target.region.name')}`},
         path: 'transfectTarget.displayValue',
         type: 'string',
-        index: 2,
+        index: 5,
     },
     transfectTargetId: {
         display: false,
