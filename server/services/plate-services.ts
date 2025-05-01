@@ -5,11 +5,11 @@ import { db } from '~/server/utils/db'
 import _ from 'lodash'
 
 export async function insertPlate(values: NewPlate) {
-    // wrapping in a transaction to rollback if any inserts fail
     const newPlate = _.first(await db
         .insert(plates)
         .values(values)
-        .returning())
+        .returning()
+    )
 
     if (newPlate) {
         for (let x = 1; x <= newPlate.sizeX; x++) {
