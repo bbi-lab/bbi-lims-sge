@@ -1,10 +1,10 @@
 
-<script setup>
+<script setup lang="ts">
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
+const editingMultipleRecordsIds = ref<string[]>([])
 const editingRecordId = ref(null)
 const nucleicAcidsTable = ref()
 
@@ -12,7 +12,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const queryParams = route.query
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -29,7 +29,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -39,21 +39,21 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) nucleicAcidsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     nucleicAcidsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
@@ -65,32 +65,28 @@ const displayWithClause = Object.freeze({
     //     columns: {name: true}
     // },
     pellet: {
-        columns: {},
-        with: {
-            transfectTarget: {
-                columns: {},
-                with: {
-                    experiment: {
-                        columns: {name: true}
-                    },
-                    target: {
-                        columns: {name: true}
-                    }
-                }
-            }
-        }
+        columns: {name: true, isBackup: true},
     },
 })
 const columnDefs = {
     pellet: {
-        format: (x) => `${x.pellet?.transfectTarget?.experiment?.name}: ${x.pellet?.transfectTarget?.target?.name}`,
-        path: 'pellet.displayValue',
+        path: 'pellet.name',
         type: 'string',
         index: 1,
     },
+    pelletIsBackup: {
+        path: 'pelletIsBackup.displayValue',
+        header: 'Backup pellet',
+        type: 'bool',
+        format: (data: any) => {
+            return data.pellet?.isBackup ? '✓' : ''
+        },
+
+        index: 2,
+    },
     extractionExperiment: {
         path: 'extractionExperiment.name',
-        index: 2,
+        index: 3,
     },
     // storageBox: {
     //     path: 'storageBox.name',
@@ -100,7 +96,7 @@ const columnDefs = {
     //     index: 4,
     // },
     protocol: {
-        index: 3,
+        index: 4,
     },
     extractionExperimentId: {
         display: false
@@ -156,12 +152,10 @@ const fieldDefs = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/pellets`,
-            searchFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
-            searchWithClause: {
-                transfectTarget: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
-            },
+            searchFields: ['name'],
             valueField: 'id',
-            displayFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
+            displayFields: ['name', 'isBackup'],
+            displayFormat: (x: any) => x.isBackup ? `${x.name} (backup)` : x.name,
         }
     },
     dnaConcentration: {
