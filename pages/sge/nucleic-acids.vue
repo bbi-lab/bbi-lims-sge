@@ -67,14 +67,20 @@ const displayWithClause = Object.freeze({
     //     columns: {name: true}
     // },
     pellet: {
-        columns: {name: true, isBackup: true},
+        columns: {id: true, name: true, isBackup: true},
     },
 })
 const columnDefs = {
     pellet: {
-        path: 'pellet.name',
-        type: 'string',
         index: 1,
+        type: 'element',
+        element: (x: any) => {
+            const href = `/sge/pellets?id=${x.pellet.id}`
+            return `<a href="${href}" class="text-blue-500 hover:underline">${x.pellet.name}</a>`
+        },
+        elementSearchText: (x: any) => {
+            return x.pellet.name
+        },
     },
     pelletIsBackup: {
         path: 'pelletIsBackup.displayValue',
