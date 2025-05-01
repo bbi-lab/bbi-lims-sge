@@ -62,16 +62,15 @@ const columnDefs = {
     sizeY: { display: false },
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
-    emptyWells: {
+    filled: {
         format: (data) => {
             if (data.wellsCount - data.wellsWithContentCount) {
-                return data.wellsCount - data.wellsWithContentCount
+                return `${data.wellsWithContentCount} / ${data.wellsCount}`
             } else {
                 return '-'
             }
-            return data.wellsCount - data.wellsWithContentCount
         },
-        path: 'emptyWells.displayValue',
+        path: 'filled.displayValue',
     }
 }
 const rowActions = {
@@ -94,7 +93,6 @@ const rowActions = {
         disabled: ({id, plateType}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
     }
 }
-const defaultValues = {sizeX: 12, sizeY: 8}
 
 const fieldDefs = {
     pcrExperimentId: { display: false },
@@ -116,6 +114,7 @@ const fieldDefs = {
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
+                :canDelete="false"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"

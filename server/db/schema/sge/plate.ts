@@ -42,8 +42,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     ${plates.sizeY},
     ${plates.plateType},
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
-    count(${wells.id}) as wells_count,
-    count(${wellContents.wellId}) as wells_with_content_count
+    count(distinct(${wells.id})) as wells_count,
+    count(distinct(${wellContents.wellId})) as wells_with_content_count
     from ${plates}
     join ${wells} on ${eq(plates.id, wells.plateId)}
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
@@ -51,7 +51,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
 )
 
 const selectPlateSchema = createSelectSchema(plates)
-const insertPlateSchema = selectPlateSchema.omit({id: true, sizeX: true, sizeY: true})
+const insertPlateSchema = selectPlateSchema.omit({id: true})
 const updatePlateSchema = selectPlateSchema.omit({id: true})
 
 export const schemas: Record<string, ZodObject<any>> = {
