@@ -106,11 +106,11 @@ const displayWithClause = Object.freeze({
             }
         }
     },
-    storageBox: {
-        columns: {
-            name: true,
-        }
-    }
+    // storageBox: {
+    //     columns: {
+    //         name: true,
+    //     }
+    // }
 })
 
 const columnDefs = {
@@ -134,18 +134,18 @@ const columnDefs = {
     harvestedBy: {
         path: 'harvestedBy.name',
     },
-    storageBox: {
-        header: 'Storage',
-        format: (x: any) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
-        path: 'storageBoxId.displayValue',
-        type: 'string',
-    },
-    storageBoxId: {
-        display: false,
-    },
-    storageBoxLoc: {
-        display: false
-    },
+    // storageBox: {
+    //     header: 'Storage',
+    //     format: (x: any) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+    //     path: 'storageBoxId.displayValue',
+    //     type: 'string',
+    // },
+    // storageBoxId: {
+    //     display: false,
+    // },
+    // storageBoxLoc: {
+    //     display: false
+    // },
 }
 const fieldDefs = {
     transfectTargetId: {
@@ -179,20 +179,20 @@ const fieldDefs = {
             dropdown: true,
         }
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        }
-    },
-    storageBoxLoc: {
-        label: 'Storage box location'
-    },
+    // storageBoxId: {
+    //     label: 'Storage box',
+    //     component: 'AutoCompleter',
+    //     props: {
+    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
+    //         searchFields: ['name'],
+    //         valueField: 'id',
+    //         displayFields: ['name'],
+    //         dropdown: true,
+    //     }
+    // },
+    // storageBoxLoc: {
+    //     label: 'Storage box location'
+    // },
     harvestedOn: {
         readOnly: true,
     },

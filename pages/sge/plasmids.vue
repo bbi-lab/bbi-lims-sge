@@ -68,23 +68,23 @@ const columnDefs = {
         path: 'plasmidExperiment.name',
         index: 2,
     },
-    storageBox: {
-        path: 'storageBox.name',
-        index: 3,
-    },
-    storageBoxLoc: {
-        index: 4,
-    },
+    // storageBox: {
+    //     path: 'storageBox.name',
+    //     index: 3,
+    // },
+    // storageBoxLoc: {
+    //     index: 4,
+    // },
     externalLink: {
         format: 'hyperlink',
-        index: 5,
+        index: 3,
     },
     plasmidExperimentId: {
         display: false
     },
-    storageBoxId: {
-        display: false
-    },
+    // storageBoxId: {
+    //     display: false
+    // },
     targetId: {
         display: false
     }
@@ -100,16 +100,16 @@ const fieldDefs = {
             displayFields: ['name'],
         }
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
+    // storageBoxId: {
+    //     label: 'Storage box',
+    //     component: 'AutoCompleter',
+    //     props: {
+    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
+    //         searchFields: ['name'],
+    //         valueField: 'id',
+    //         displayFields: ['name'],
+    //     }
+    // },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -140,8 +140,8 @@ const displayWithClause = {
         }
     },
     plasmidExperiment: {
-        columns: {name: true}},
-        storageBox: {columns: {name: true}
+        columns: {name: true},
+        // storageBox: {columns: {name: true}
     }
 }
 
@@ -169,7 +169,7 @@ const displayWithClause = {
                 tableName="plasmids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true, storageBox: true}"
+                :withClause="{plasmidExperiment: true}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -179,7 +179,7 @@ const displayWithClause = {
                 tableName="plasmids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true, storageBox: true}"
+                :withClause="{plasmidExperiment: true}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

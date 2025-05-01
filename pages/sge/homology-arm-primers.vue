@@ -63,11 +63,11 @@ const displayWithClause = Object.freeze({
             }
         }
     },
-    storageBox: {
-        columns: {
-            name: true
-        }
-    },
+    // storageBox: {
+    //     columns: {
+    //         name: true
+    //     }
+    // },
     // well: {
     //     columns: {
     //         x: true,
@@ -103,22 +103,22 @@ const columnDefs = {
         path: 'project.displayValue',
         index: 3,
     },
-    storageBoxId: {
-        header: 'Storage',
-        format: (x) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
-        path: 'storageBoxId.displayValue',
-        type: 'string',
-        index: 4,
-    },
-    storageBoxLoc: {
-        display: false
-    },
+    // storageBoxId: {
+    //     header: 'Storage',
+    //     format: (x) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
+    //     path: 'storageBoxId.displayValue',
+    //     type: 'string',
+    //     index: 4,
+    // },
+    // storageBoxLoc: {
+    //     display: false
+    // },
     well: {
         header: 'Plate: Well',
         format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
         path: 'well.displayValue',
         type: 'string',
-        index: 5,
+        index: 4,
     },
 }
 

@@ -155,8 +155,8 @@ const pelletsColumnDefs = {
     extractionExperimentId: {display: false},
     harvestedOn: {display: false},
     harvestedBy: {display: false},
-    storageBoxId: {display: false},
-    storageBoxLoc: {display: false},
+    // storageBoxId: {display: false},
+    // storageBoxLoc: {display: false},
     d3Confluency: {display: false},
 }
 
@@ -181,12 +181,12 @@ const nucleicAcidsColumnDefs = {
     pelletId: {
         display: false,
     },
-    storageBoxId: {
-        display: false,
-    },
-    storageBoxLoc: {
-        display: false,
-    },
+    // storageBoxId: {
+    //     display: false,
+    // },
+    // storageBoxLoc: {
+    //     display: false,
+    // },
     dnaConcentration: {
         header: 'DNA conc (ng/μL)',
     },
@@ -210,16 +210,16 @@ const nucleicAcidFieldDefs = {
     extractionExperimentId: {
         display: false,
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
+    // storageBoxId: {
+    //     label: 'Storage box',
+    //     component: 'AutoCompleter',
+    //     props: {
+    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
+    //         searchFields: ['name'],
+    //         valueField: 'id',
+    //         displayFields: ['name'],
+    //     }
+    // },
     pelletId: {
         label: 'Pellet',
         component: 'AutoCompleter',

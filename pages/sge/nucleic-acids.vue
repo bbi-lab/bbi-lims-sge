@@ -61,9 +61,9 @@ const displayWithClause = Object.freeze({
     extractionExperiment: {
         columns: {name: true}
     },
-    storageBox: {
-        columns: {name: true}
-    },
+    // storageBox: {
+    //     columns: {name: true}
+    // },
     pellet: {
         columns: {},
         with: {
@@ -92,22 +92,22 @@ const columnDefs = {
         path: 'extractionExperiment.name',
         index: 2,
     },
-    storageBox: {
-        path: 'storageBox.name',
-        index: 3,
-    },
-    storageBoxLoc: {
-        index: 4,
-    },
+    // storageBox: {
+    //     path: 'storageBox.name',
+    //     index: 3,
+    // },
+    // storageBoxLoc: {
+    //     index: 4,
+    // },
     protocol: {
-        index: 5,
+        index: 3,
     },
     extractionExperimentId: {
         display: false
     },
-    storageBoxId: {
-        display: false
-    },
+    // storageBoxId: {
+    //     display: false
+    // },
     pelletId: {
         display: false
     },
@@ -141,16 +141,16 @@ const fieldDefs = {
             displayFields: ['name'],
         }
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
+    // storageBoxId: {
+    //     label: 'Storage box',
+    //     component: 'AutoCompleter',
+    //     props: {
+    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
+    //         searchFields: ['name'],
+    //         valueField: 'id',
+    //         displayFields: ['name'],
+    //     }
+    // },
     pelletId: {
         label: 'Pellet',
         component: 'AutoCompleter',

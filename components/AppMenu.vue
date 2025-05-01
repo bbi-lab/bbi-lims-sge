@@ -22,8 +22,8 @@ const model = ref([
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
-            { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
-            { label: 'Plates', iconComponent: PhGridNineFill, to: '/sge/plates' },
+            // { label: 'Storage boxes', icon: 'pi pi-fw pi-box', to: '/sge/storage-boxes' },
+            { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
                     { label: 'PCR', to: '/sge/pcr-experiments' },
