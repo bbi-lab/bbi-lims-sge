@@ -68,11 +68,10 @@ export class TransfectionExperiment {
             this.data = transfectionExperimentSelect.parse(data)
 
             if (_.has(data, 'transfectTargets')) {
-                this.transfectTargets = _.get(data, 'transfectTargets')
+                this.transfectTargets = _.get(data, 'transfectTargets') as TransfectionTargetSelect[]
+                this.pellets = _.compact(_.flatten(_.map(this.transfectTargets, (x:any) => x.pellets as PelletSelect[])))
             }
-            if (_.has(data, 'pellets')) {
-                this.pellets = _.get(data, 'pellets')
-            }
+
             return {success: true}
         }
     }
