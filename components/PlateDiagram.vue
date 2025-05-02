@@ -32,6 +32,14 @@ const props = defineProps({
     wellSpecs: {
         type: Object,
     },
+    sizeX: {
+        type: Number,
+        default: 12,
+    },
+    sizeY: {
+        type: Number,
+        default: 8,
+    },
 })
 
 const emit = defineEmits([
@@ -58,7 +66,7 @@ function allWellsSelected() {
 onMounted(async() => {
     if (modelValue.value){
         if (plateDiagramDiv.value) {
-            plateDiagram.value = makePlateDiagram(props.plateType)
+            plateDiagram.value = makePlateDiagram(props.plateType, props.sizeX, props.sizeY)
                 .wells(modelValue.value.wells)
                 .render(plateDiagramDiv.value)
                 .wellRangeSelected(wellRangeSelected) as PlateDiagram

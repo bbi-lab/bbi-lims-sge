@@ -406,7 +406,8 @@ const rowActions = {
                 v-if="plateWithPlateDiagramWells"
                 v-model="plateWithPlateDiagramWells"
                 :plateType="plateWithPlateDiagramWells.plateType"
-
+                :sizeX="plateWithPlateDiagramWells.sizeX"
+                :sizeY="plateWithPlateDiagramWells.sizeY"
                 @well-range-selected="wellRangeSelected"
                 @well-selection-cleared="wellSelectionCleared"
                 @all-wells-selected="selectedAllWells"

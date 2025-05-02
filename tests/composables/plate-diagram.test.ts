@@ -12,7 +12,7 @@ describe('PlateDiagram composable tests', () => {
             linearizationPrimerId: null,
             homologyArmPrimerId: null,
         }))
-        const plateDiagram = makePlateDiagram('storage').wells(wells)
+        const plateDiagram = makePlateDiagram('storage', 5, 5).wells(wells)
         expect(plateDiagram.getWells()).toHaveLength(25)
     })
 

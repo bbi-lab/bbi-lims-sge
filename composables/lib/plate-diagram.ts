@@ -85,7 +85,7 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export function makePlateDiagram(plateType: string): PlateDiagram {
+export function makePlateDiagram(plateType: string, sizeX: number = 12, sizeY: number = 8): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 
@@ -103,8 +103,8 @@ export function makePlateDiagram(plateType: string): PlateDiagram {
         id: '',
         name: '',
         pcrExperimentId: null,
-        sizeX: 12,
-        sizeY: 8,
+        sizeX: sizeX,
+        sizeY: sizeY,
         plateType,
         wells: [],  // wells to be set via wells() method
     }
