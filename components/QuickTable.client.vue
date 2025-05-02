@@ -116,7 +116,7 @@ const visibleColumns = ref()
 
 interface ColumnDefinition {
     header?: string,
-    index?: string,
+    index?: number,
     format?: string | ((data: any) => string),
     path?: string,
     type?: string,

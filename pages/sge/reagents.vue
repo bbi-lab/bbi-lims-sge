@@ -1,14 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const reagentsTable = ref()
 
 const rowActions = {}
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -26,25 +27,25 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     reagentsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     reagentsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     reagentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     name: {
         index: 0,
     },
     concentrationUnit: {
-        format: ({soluteUnit, volumeUnit}) => { return soluteUnit && volumeUnit ? `${soluteUnit}/${volumeUnit}` : ''},
+        format: ({soluteUnit, volumeUnit}: {soluteUnit: string, volumeUnit: string}) => { return soluteUnit && volumeUnit ? `${soluteUnit}/${volumeUnit}` : ''},
         path: 'concentrationUnit.displayValue',
         type: 'string',
         index: 1,
@@ -81,7 +82,7 @@ const columnDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="reagents"
                 schemaName="update"

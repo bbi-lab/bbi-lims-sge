@@ -1,17 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/composables/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const amplificationPrimersTable = ref()
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
+const editingMultipleRecordsIds = ref<string[]>([])
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -29,19 +30,19 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     amplificationPrimersTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -51,8 +52,8 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
@@ -108,7 +109,7 @@ const columnDefs = {
     },
     targetId: {
         header: 'Target',
-        format: (x) => {
+        format: (x: any) => {
             return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
         },
         path: 'targetId.displayValue',
@@ -134,14 +135,14 @@ const columnDefs = {
     // },
     well: {
         header: 'Plate: Well',
-        format: (x) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
+        format: (x: any) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
         path: 'well.displayValue',
         type: 'string',
         index: 4,
     },
 }
 
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -192,7 +193,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="amplification-primers"
                 schemaName="update"

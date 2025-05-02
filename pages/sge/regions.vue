@@ -1,30 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
-import { targets } from '~/server/db/schema/sge/target'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 const router = useRouter()
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingRecordId = ref(null)
-const editingMultipleRecordsIds = ref([])
+const editingRecordId = ref<string | null>(null)
+const editingMultipleRecordsIds = ref<string[]>([])
 const regionsTable = ref()
 const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
-const tableTitle = ref(null)
+const tableTitle = ref<string>()
 
 onMounted(async() => {
     if (queryParams.targetId) {
-        const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, queryParams.targetId)
+        const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, queryParams.targetId as string, {})
         tableTitle.value = `${target.name}: regions`
     } else {
         tableTitle.value = `All Regions`
     }
 })
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -41,7 +42,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -51,21 +52,21 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
+function didUpdateMultipleRecords(event: any) {
     event.forEach(e => {
         if (e.id) regionsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     regionsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     regionsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     regionsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
@@ -78,7 +79,7 @@ const displayWithClause = Object.freeze({
         columns: {id: true}
     },
 })
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     geneId: {
         header: 'Gene',
         format: (x) => { return `${_.get(x, 'gene.symbol')} (${_.get(x, 'gene.ncbiAccession')})`},
@@ -97,8 +98,8 @@ const columnDefs = {
 }
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.targets?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.targets?.length || 0}`},
+        action: (data: any) => {
             router.push({path:`/sge/targets`, query: {'regionId': data.id}})
         },
         icon: 'pi pi-fw pi-bullseye',
@@ -106,7 +107,7 @@ const rowActions = {
         tooltip: 'Targets',
     },
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     geneId: {
         label: 'Gene',
         component: 'AutoCompleter',
@@ -115,7 +116,7 @@ const fieldDefs = {
             searchFields: ['symbol', 'ncbiAccession'],
             valueField: 'id',
             displayFields: ['symbol', 'ncbiAccession'],
-            displayFormat: (x) => `${x.symbol} (${x.ncbiAccession})`,
+            displayFormat: (x: any) => `${x.symbol} (${x.ncbiAccession})`,
             searchMode: 'simple',
         }
     },
@@ -167,7 +168,7 @@ const readonlyValues = queryParams
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="regions"
                 schemaName="update"

@@ -1,13 +1,16 @@
-<script setup>
+<script setup lang="ts">
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingRecordId = ref(null)
-const editingMultipleRecordsIds = ref([])
+const editingRecordId = ref<string | null>(null)
+const editingMultipleRecordsIds = ref<string[]>([])
 const cyclesTable = ref()
 const router = useRouter()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -24,7 +27,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -34,25 +37,25 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) cyclesTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     cyclesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     cyclesTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     cyclesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time'
     },
@@ -65,8 +68,8 @@ const columnDefs = {
 }
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.targets?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.targets?.length || 0}`},
+        action: (data: any) => {
             router.push({path:'/sge/targets', query: {'cycleId': data.id}})
         },
         icon: 'pi pi-fw pi-bullseye',
@@ -74,7 +77,7 @@ const rowActions = {
         tooltip: 'Targets',
     }
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     targets: {
         display: false,
     }
@@ -108,7 +111,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="cycles"
                 schemaName="update"

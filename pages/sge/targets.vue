@@ -1,23 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import  {
     Target,
 } from '~/shared/sge/target'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const targetsTable = ref()
 const router = useRouter()
 const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
-const tableTitle = ref(null)
+const tableTitle = ref<string>()
 const addRecordValues = ref()
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
+const editingMultipleRecordsIds = ref<string[]>([])
 
 const displayWithClause = Object.freeze({
     project:{
@@ -38,8 +40,8 @@ const displayWithClause = Object.freeze({
 
 const rowActions = {
     plasmids: {
-        label: (data) => { return `${data.plasmids?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.plasmids?.length || 0}`},
+        action: (data: any) => {
             router.push({path:'/sge/plasmids', query: {'targetId': data.id}})
         },
         icon: 'pi pi-fw pi-spinner',
@@ -47,8 +49,8 @@ const rowActions = {
         tooltip: 'Plasmids',
     },
     pellets: {
-        label: (data) => { return `${data.pellets?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.pellets?.length || 0}`},
+        action: (data: any) => {
             router.push({path:'/sge/pellets', query: {'targetId': data.id}})
         },
         iconComponent: DotsTriangle,
@@ -59,7 +61,7 @@ const rowActions = {
         index: -1,  // places this button at the beginning of the row next to edit button
         icon: 'pi pi-copy',
         class: 'invisible group-hover:visible',  // display on hover only
-        action: async (data) => {
+        action: async (data: any) => {
             const target = new Target(data.id)
             await target.fetch()
             const result = await target.getDuplicate()
@@ -71,7 +73,7 @@ const rowActions = {
         }
     }
 }
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     name: {
         index: 0,
     },
@@ -121,7 +123,7 @@ const columnDefs = {
     },
 }
 
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     regionId: {
         label: 'Region',
         component: 'AutoCompleter',
@@ -162,17 +164,17 @@ const fieldDefs = {
 
 onMounted(async() => {
     if (queryParams.projectId) {
-        const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId)
+        const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId as string, {})
         tableTitle.value = `${project.name}: targets`
     } else if (queryParams.cycleId) {
-        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, queryParams.cycleId)
+        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, queryParams.cycleId as string, {})
         tableTitle.value = `${cycle.name}: targets`
     } else {
         tableTitle.value = `All Targets`
     }
 })
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -190,19 +192,19 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     targetsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     targetsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     targetsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -212,8 +214,8 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) targetsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
@@ -258,7 +260,7 @@ const readonlyValues = queryParams
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="targets"
                 schemaName="update"

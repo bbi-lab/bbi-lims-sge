@@ -7,13 +7,15 @@ import { pcrExperiments } from './pcr-experiment'
 import { ENUM_LOOKUPS } from './enum-lookups'
 import { wellContents, wells } from './well'
 
+export type PlateType = 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3'
+
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
-  plateType: varchar('plate_type', { enum: Object.keys(ENUM_LOOKUPS.plates.plateType) as [string, ...string[]] }).notNull(),
+  plateType: varchar('plate_type', { enum: Object.keys(ENUM_LOOKUPS.plates.plateType) as [PlateType, ...PlateType[]] }).notNull(),
 })
 
 const qb = new QueryBuilder()

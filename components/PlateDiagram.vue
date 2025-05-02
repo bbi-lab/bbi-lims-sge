@@ -3,7 +3,7 @@ import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '@/co
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
-import type { Plate } from '~/server/db/schema/sge/plate'
+import type { Plate, PlateType } from '~/server/db/schema/sge/plate'
 
 export type PlateWithPlateDiagramWells = Plate & {
     wells: PlateDiagramWell[]
@@ -26,7 +26,7 @@ const props = defineProps({
         default: true,
     },
     plateType: {
-        type: String,
+        type: String as PropType<PlateType>,
         required: true,
     },
     wellSpecs: {

@@ -1,14 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/composables/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const homologyArmPrimersTable = ref()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -26,15 +28,15 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     homologyArmPrimersTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     homologyArmPrimersTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     homologyArmPrimersTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
@@ -83,7 +85,7 @@ const displayWithClause = Object.freeze({
     // },
 })
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     name: {
         index: 1
     },
@@ -122,7 +124,7 @@ const columnDefs = {
     },
 }
 
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -170,7 +172,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="homology-arm-primers"
                 schemaName="update"

@@ -1,12 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const editingRecordId = ref(null)
 const extractionLotUsageTable = ref()
-const tableTitle = ref(null)
+const tableTitle = ref<string | null>(null)
 const router = useRouter()
 const config = useRuntimeConfig()
 
@@ -14,11 +16,11 @@ const rowActions = {}
 const route = useRoute()
 
 onMounted(async() => {
-    const experiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, route.params.id)
+    const experiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, route.params.id as string, {})
     tableTitle.value = `${experiment.name}: Reagents`
 })
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -36,19 +38,19 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     extractionLotUsageTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     extractionLotUsageTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     extractionLotUsageTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     experimentId: {
         display: false,
     },
@@ -77,7 +79,7 @@ const columnDefs = {
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const fieldDefs = _.mapValues(columnDefs, (v, k) => {
+const fieldDefs: FieldDefinitions = _.mapValues(columnDefs, (v, k) => {
     return {
         display: v.display ?? true,
         label: v.header || _.startCase(k),

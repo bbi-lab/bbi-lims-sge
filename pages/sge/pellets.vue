@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -118,7 +120,7 @@ const displayWithClause = Object.freeze({
     // }
 })
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     name: {
         index: 0,
     },
@@ -167,7 +169,7 @@ const columnDefs = {
     //     display: false
     // },
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     transfectTargetId: {
         label: 'Target',
         component: 'NestedSelect',

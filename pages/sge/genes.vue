@@ -1,15 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
 import Papa from 'papaparse'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const projectsTable = ref()
 const config = useRuntimeConfig()
 const toast = useToast()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -31,7 +32,7 @@ function didClickCancelEditForm() {
 //     projectsTable.value.addOrRefreshRecordId(event.id)
 //     showAddForm.value = false
 // }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     projectsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
@@ -41,8 +42,8 @@ function didUpdateRecord(event) {
 // }
 const rowActions = {
     targets: {
-        action: async (data) => {
-            const result = await $fetch(`${config.public.apiBase}/custom/genes/${data.id}/export-targets`)
+        action: async (data: any) => {
+            const result: any[] = await $fetch(`${config.public.apiBase}/custom/genes/${data.id}/export-targets`)
             if (!_.isEmpty(result)) {
                 const csv = Papa.unparse(result, {delimiter: '\t'})
                 const blob = new Blob([csv], { type: 'text/tab-separated-values;charset=utf-8;' })
@@ -62,7 +63,7 @@ const rowActions = {
         tooltip: 'Targets',
     },
 }
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     ncbiAccession: {
         header: 'NCBI accession'
     },
@@ -96,8 +97,8 @@ const columnDefs = {
             />
         </SplitterPanel>
         <SplitterPanel v-if="showAddForm || showEditForm">
-            <QuickForm 
-                v-if="showEditForm"
+            <QuickForm
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="genes"
                 :canDelete="false"

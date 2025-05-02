@@ -7,6 +7,7 @@ import type { WellContent } from '~/server/db/schema/sge/well'
 import { type PlateWithWellContents, type WellSpecs, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import type { PlateType } from '~/server/db/schema/sge/plate'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -21,7 +22,7 @@ const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
 const wellSpecs = ref<WellSpecs>({})
 
-const plateType = route.params.plateType as 'amp-storage' | 'lin-storage' | 'ha-storage' | 'preseq-1' | 'preseq-2' | 'preseq-3'
+const plateType = route.params.plateType as PlateType
 const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
 const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
 

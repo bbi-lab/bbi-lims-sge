@@ -1,16 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { PlateType } from '~/server/db/schema/sge/plate'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
-const editingRecordId = ref(null)
+const editingMultipleRecordsIds = ref<string[]>([])
+const editingRecordId = ref<string | null>(null)
 const platesTable = ref()
 const router = useRouter()
-const poolingPlates = ref([])
+const poolingPlates = ref<{id: string, name: string}[]>([])
+const route = useRoute()
 
-function didClickRecordEdit(event) {
+const queryParams = route.query
+
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -27,7 +31,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -43,15 +47,15 @@ function didClickMultipleRecordEdit(recordIds) {
 //     })
 //     showMultipleEditForm.value = false
 // }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     platesTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     platesTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     platesTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
@@ -63,7 +67,7 @@ const columnDefs = {
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
     filled: {
-        format: (data) => {
+        format: (data: any) => {
             if (data.wellsCount - data.wellsWithContentCount) {
                 return `${data.wellsWithContentCount} / ${data.wellsCount}`
             } else {
@@ -75,13 +79,13 @@ const columnDefs = {
 }
 const rowActions = {
     layout: {
-        action: (data) => {
+        action: (data: any) => {
             router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
         },
-        disabled: ({plateType}) => !_.isEmpty(poolingPlates.value) || _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
+        disabled: ({plateType}: { plateType: PlateType }) => !_.isEmpty(poolingPlates.value) || _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },
     pool: {
-        action: ({id, name}) => {
+        action: ({id, name}: {id: string, name: string}) => {
             if (_.size(poolingPlates.value)==0) {
                 poolingPlates.value = [{id, name}]
             } else if (_.size(poolingPlates.value)==1 && poolingPlates.value[0].id !== id) {
@@ -89,8 +93,8 @@ const rowActions = {
                 router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
             }
         },
-        visible: ({plateType}) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
-        disabled: ({id, plateType}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
+        visible: ({plateType}: { plateType: PlateType }) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
+        disabled: ({id}: {id: string}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
     }
 }
 
@@ -98,6 +102,10 @@ const fieldDefs = {
     pcrExperimentId: { display: false },
     wells: { display: false }
 }
+
+const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+const readonlyValues = queryParams
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -114,6 +122,7 @@ const fieldDefs = {
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
+                :where="whereClauses"
                 :canDelete="false"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
@@ -131,7 +140,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="plates"
                 schemaName="update"

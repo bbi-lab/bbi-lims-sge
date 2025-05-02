@@ -1,17 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
 import moment from 'moment'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const transfectionExperimentsTable = ref()
 const config = useRuntimeConfig()
 const router = useRouter()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -29,19 +31,19 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     transfectionExperimentsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     transfectionExperimentsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     transfectionExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function getPelletCount(targets) {
+function getPelletCount(targets: any) {
     if (_.isArray(targets)) {
         return _.reduce(targets, (sum, {pellets}) => {
             return sum + (pellets?.length || 0)
@@ -90,7 +92,7 @@ const displayWithClause = Object.freeze({
     },
 })
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time'
     },
@@ -126,8 +128,8 @@ const columnDefs = {
 
 const rowActions = {
     targets: {
-        label: (data) => { return `${data.transfectTargets?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.transfectTargets?.length || 0}`},
+        action: (data: any) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/targets`})
         },
         icon: 'pi pi-fw pi-bullseye',
@@ -135,8 +137,8 @@ const rowActions = {
         tooltip: 'Targets',
     },
     pellets: {
-        label: (data) => { return `${getPelletCount(data.transfectTargets)}`},
-        action: (data) => {
+        label: (data: any) => { return `${getPelletCount(data.transfectTargets)}`},
+        action: (data: any) => {
             router.push({path:'/sge/pellets', query: {'transfectTarget.experiment.id': data.id}})
         },
         iconComponent: DotsTriangle,
@@ -144,8 +146,8 @@ const rowActions = {
         tooltip: 'Pellets',
     },
     reagents: {
-        label: (data) => { return `${data.transfectLotUsage?.length || 0}`},
-        action: (data) => {
+        label: (data: any) => { return `${data.transfectLotUsage?.length || 0}`},
+        action: (data: any) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/lot-usage`})
         },
         iconComponent: BeakerOutline,
@@ -154,7 +156,7 @@ const rowActions = {
     },
     harvest: {
         label: () => 'Harvest',
-        action: (data) => {
+        action: (data: any) => {
             router.push({path:`/sge/transfect-experiment/${data.id}/harvest`})
         },
         severity: 'warn',
@@ -163,7 +165,7 @@ const rowActions = {
     },
 }
 
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     'transfectTargets.*': {
         label: 'Targets',
         component: 'ManyToMany',
@@ -212,7 +214,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="transfect-experiments"
                 schemaName="update"

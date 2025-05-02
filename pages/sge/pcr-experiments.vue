@@ -1,15 +1,16 @@
 
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const pcrExperimentsTable = ref()
 const router = useRouter()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -27,20 +28,20 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     pcrExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time'
     },
@@ -53,9 +54,9 @@ const columnDefs = {
 }
 const rowActions = {
     plates: {
-        label: (data) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
-        action: (data) => {
-            router.push({path:'/sge/pcr-plates', query: {'pcrExperimentId': data.id}})
+        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+        action: (data: any) => {
+            router.push({path:'/sge/plates', query: {'pcrExperimentId': data.id}})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
@@ -87,7 +88,7 @@ const rowActions = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="pcr-experiments"
                 schemaName="update"

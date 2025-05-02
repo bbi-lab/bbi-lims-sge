@@ -2,6 +2,7 @@
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
 import { VALID_PROTOCOLS, type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
 
 const extractionExperiment = ref()
@@ -206,7 +207,7 @@ const nucleicAcidsColumnDefs = {
         header: 'RNA yield (μg)',
     },
 }
-const nucleicAcidFieldDefs = {
+const nucleicAcidFieldDefinitions: FieldDefinitions = {
     extractionExperimentId: {
         display: false,
     },

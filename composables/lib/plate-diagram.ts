@@ -2,6 +2,7 @@ import * as d3 from "d3"
 import {type ValueFn} from "d3"
 import _ from "lodash"
 import type { PlateWithPlateDiagramWells } from "~/components/PlateDiagram.vue"
+import type { PlateType } from "~/server/db/schema/sge/plate"
 
 type Accessor<T, Self> = (value?: T) => T | Self
 
@@ -85,7 +86,7 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export function makePlateDiagram(plateType: string, sizeX: number = 12, sizeY: number = 8): PlateDiagram {
+export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY: number = 8): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 

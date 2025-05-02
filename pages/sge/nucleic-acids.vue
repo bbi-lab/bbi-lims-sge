@@ -1,13 +1,15 @@
 
 <script setup lang="ts">
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
 const editingMultipleRecordsIds = ref<string[]>([])
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const nucleicAcidsTable = ref()
 
 const route = useRoute()
@@ -70,7 +72,7 @@ const displayWithClause = Object.freeze({
         columns: {id: true, name: true, isBackup: true},
     },
 })
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     pellet: {
         index: 1,
         type: 'element',
@@ -134,7 +136,7 @@ const columnDefs = {
         header: 'RNA yield (μg)',
     },
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     extractionExperimentId: {
         label: 'Experiment',
         component: 'AutoCompleter',
@@ -218,7 +220,7 @@ const readonlyValues = queryParams
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="nucleicAcids"
                 schemaName="update"

@@ -12,6 +12,18 @@ const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const formSchemPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
 
+interface FieldDefinition {
+    label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
+    component?: string,
+    props?: Record<string, any>,
+    display?: boolean,
+    readOnly?: boolean,
+    canUpdate?: boolean,
+    canDelete?: boolean,
+    type?: string,
+}
+export interface FieldDefinitions {[key: string]: FieldDefinition}
+
 const props = defineProps({
   recordId: String,
   tableName: String,
@@ -19,8 +31,8 @@ const props = defineProps({
   readOnly: {type: Boolean, default: false},
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
-  fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  readonlyValues: {type: Object},             // to set values for and lock fields on form
+  fieldDefs: {type: Object as PropType<FieldDefinitions> },    // to override widgets/labels for individual fields
+  readonlyValues: {type: Object},                       // to set values for and lock fields on form
   values: {type: Object},
 })
 
