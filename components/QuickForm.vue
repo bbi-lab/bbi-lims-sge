@@ -167,32 +167,16 @@ async function saveRecord() {
         // new record
         const values = _.pick(record.value, Object.keys(formSchema.value.properties))
 
-        // TODO - Two methods are available, either using a custom class or generic service. The use of custom classes with this component
-        // can likely be made dynamic in the future if underlying classes are defined consistently with 2 properties: id (primary key) and data (everything else).
-        if (props.tableName=='transfect-experiments') {
-            const newExperiment = new TransfectionExperiment({
-                name: values.name || null,
-                technician: values.technician || null,
-                startedOn: values.startedOn || new Date(),
-                transfectionCount: values.transfectionCount || null,
-                replicateCount: values.replicateCount || null
-            })
-            const result = await newExperiment.create()
-            if (result && result.success) {
-                emit('record-add', {id: newExperiment.id, ...newExperiment.data})
+        RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
+            emit('record-add', result)
+        }).catch(error => {
+            if (formElement.value && _.isArray(error.data?.data)) {
+                addErrorsToForm(formElement.value, error.data.data)
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             }
-        } else {
-            RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
-                toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
-                emit('record-add', result)
-            }).catch(error => {
-                if (formElement.value && _.isArray(error.data?.data)) {
-                    addErrorsToForm(formElement.value, error.data.data)
-                } else {
-                    toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-                }
-            })
-        }
+        })
     }
 }
 function isReadOnly(key: string) {

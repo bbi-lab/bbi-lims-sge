@@ -5,7 +5,6 @@ import  {
     TransfectionExperiment,
     VALID_REPLICATES,
 } from '~/shared/sge/transfection-experiment'
-import { RecordService } from '~/utils/service/RecordService'
 
 const { user } = useUserSession()
 const config = useRuntimeConfig()
@@ -16,7 +15,18 @@ const experimentId = route.params.id as string
 const loaded = ref(false)
 
 const experiment =  ref<TransfectionExperiment>()
-let allTargets: {label: string, code: string}[] = []
+
+const allTargets = computed(() => {
+    return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: x.target.name, code: x.id}})
+})
+const existingTargetReplicates = computed(() => {
+    return currentHarvestDay.value == 5 ? [] : _.map(_.filter(experiment.value?.pellets, (x) => x.harvestDay == 5), (day5Pellet) => {
+        return day5Pellet.name ? {
+            label: _.replace(day5Pellet.name, '_D05_', '_'),
+            code: day5Pellet
+        } : null
+    })
+})
 
 const experimentStartedOn = computed(() => {
     return experiment.value?.data?.startedOn ? `${experiment.value?.data?.startedOn.toLocaleDateString('fr-CA')} @ ${experiment.value?.data?.startedOn.toLocaleTimeString('en-GB')}` : ''
@@ -40,11 +50,13 @@ interface DraftPellet extends Partial<FormFields> {
     name: string
     target: {label: string, code: string}
     replicates: string[]
+    harvestDay: number
 }
 
 const pelletsToAdd = ref<DraftPellet[]>([])
 
 const selectedTargets = ref<{label: string, code: string}[]>([])
+const selectedTargetReplicates = ref<{label: string, code: Object}[]>([])
 const selectedReplicates = ref<{label: string, code: string}[]>([])
 
 const harvestBy = ref()
@@ -58,7 +70,9 @@ const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59
 
 // disable all dates in min/max range except Day 5, 9, 13, and 17
 const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
-const targetsSelected = computed (() => {return !_.isEmpty(selectedTargets.value)})
+
+const targetsOrPelletsSelected = computed (() => {return !_.isEmpty(selectedTargets.value) || !_.isEmpty(selectedTargetReplicates.value)})
+
 const replicatesSelected = computed (() => {return !_.isEmpty(selectedReplicates.value)})
 
 onMounted(async() => {
@@ -78,43 +92,9 @@ onMounted(async() => {
 
 async function refreshExperiment() {
     if (experimentId) {
-        const withClause = {
-            transfectTargets: {
-                columns: {id: true},
-                with: {
-                    pellets: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            harvestDay: true,
-                            replicates: true,
-                        },
-                    },
-                    target: {
-                        columns: {name: true},
-                        with: {
-                            region: {
-                                columns: {name: true},
-                                with: {
-                                    gene: {
-                                        columns: {symbol: true}
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-        }
-        experiment.value = new TransfectionExperiment(experimentId, withClause)
+        experiment.value = new TransfectionExperiment(experimentId)
         await experiment.value.fetch()
 
-        if (_.isArray(experiment.value.transfectTargets)) {
-            allTargets = _.map(
-                experiment.value.transfectTargets,
-                (x: any) => { return {label: x.target.name, code: x.id}}
-            )
-        }
         loaded.value = true
     }
 }
@@ -137,50 +117,82 @@ function valuesToCodedList(array: any[]) {
 }
 
 async function addDraftPellets() {
+    if (!currentHarvestDay.value) {
+        return
+    }
     const pellets:DraftPellet[] = []
-    for (const target of selectedTargets.value) {
-        const transfectTarget: any = _.find(experiment.value?.transfectTargets, (x:any) => x.id === target.code)
 
-        let newPelletName = ''
-        if (currentHarvestDay.value === 5) {
+    if (currentHarvestDay.value == 5) {
+        for (const selectedTarget of selectedTargets.value) {
+            let newPelletName = ''
             // check to make sure no pellets exist with any of same replicates
-            const pelletWithSameReplicates = _.find(transfectTarget.pellets, (x:any) => {
-                return _.some(x.replicates, (replicate) => {
+            const pelletWithSameReplicates = _.find(experiment.value?.pellets, (x) => {
+                return selectedTarget.code == x.transfectTargetId && _.some(x.replicates, (replicate) => {
                     return _.includes(_.map(selectedReplicates.value, 'code'), replicate)
                 })
             })
-            const draftPelletWithSameReplicates = _.find(pelletsToAdd.value, (x:any) => {
-                return _.some(x.replicates, (replicate) => {
+
+            const draftPelletWithSameReplicates = _.find(pelletsToAdd.value, (x) => {
+                return x.target.code == selectedTarget.code && _.some(x.replicates, (replicate) => {
                     return _.includes(_.map(selectedReplicates.value, 'code'), replicate)
                 })
             })
             if (pelletWithSameReplicates) {
-                toast.add({ severity: 'error', summary: 'Warning', detail: `Pellet with same replicates already exists: ${pelletWithSameReplicates.name} (${_.join(pelletWithSameReplicates.replicates, ',')})`, life: 10000 })
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 pellet with same replicates already exists: ${pelletWithSameReplicates.name} (${_.join(pelletWithSameReplicates.replicates, ',')})`, life: 10000 })
                 throw new Error('Pellet with same replicates already exists')
             } else if (draftPelletWithSameReplicates) {
-                toast.add({ severity: 'error', summary: 'Warning', detail: `Draft pellet with same replicates already exists: ${draftPelletWithSameReplicates.name} (${_.join(draftPelletWithSameReplicates.replicates, ',')})`, life: 10000 })
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 draft pellet with same replicates already exists: ${draftPelletWithSameReplicates.name} (${_.join(draftPelletWithSameReplicates.replicates, ',')})`, life: 10000 })
                 throw new Error('Draft pellet with same replicates already exists')
             } else {
-                if (_.isEmpty(transfectTarget.pellets)) {
-                    newPelletName = `${transfectTarget.target.name}_R1`
+                const maxPelletByName = _.last(_.sortBy(_.filter(experiment.value?.pellets, (x) => x.transfectTargetId == selectedTarget.code), (x:any) => x.name))
+                const regex = /_R[0-9]+$/
+                const match = maxPelletByName?.name.match(regex)
+                if (match) {
+                    const lastReplicate = maxPelletByName.name.slice(match.index + 2, maxPelletByName.name.length)
+                    const nextReplicate = parseInt(lastReplicate) + 1
+                    newPelletName = `${selectedTarget.label}_D05_R${nextReplicate}`
                 } else {
-                    const maxPelletByName = _.last(_.sortBy(transfectTarget.pellets, (x:any) => x.name))
-                    const regex = /_R[0-9]+$/
-                    const match = maxPelletByName?.name.match(regex)
-                    if (match) {
-                        const lastReplicate = maxPelletByName.name.slice(match.index + 2, maxPelletByName.name.length)
-                        const nextReplicate = parseInt(lastReplicate) + 1
-                        newPelletName = `${transfectTarget.target.name}_R${nextReplicate}`
-                    }
+                    newPelletName = `${selectedTarget.label}_D05_R1`
                 }
+                pellets.push({
+                    name: newPelletName,
+                    target: selectedTarget,
+                    harvestDay: currentHarvestDay.value,
+                    replicates: _.map(selectedReplicates.value, (x) => x.code).sort(),
+                    ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
+                })
             }
         }
-        pellets.push({
-            name: newPelletName,
-            target,
-            replicates: _.map(selectedReplicates.value, (x) => x.code),
-            ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
-        })
+    } else {
+        for (const selectedPellet of _.map(selectedTargetReplicates.value, 'code')) {
+            const zeroPaddedDay = _.padStart(_.toString(currentHarvestDay.value), 2, '0')
+            const target = _.find(experiment.value?.transfectTargets, (x) => x.id == selectedPellet.transfectTargetId)
+            const newPelletName = _.replace(selectedPellet.name, '_D05_', `_D${zeroPaddedDay}_`)
+
+            // check to make sure no pellets exist with the same name
+            const pelletWithSameName = _.find(experiment.value?.pellets, (x) => {
+                return x.name == newPelletName
+            })
+            if (pelletWithSameName) {
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Pellet already exists: ${newPelletName}`, life: 10000 })
+                throw new Error('Pellet with same name already exists')
+            }
+            const draftPelletWithSameName = _.find(pelletsToAdd.value, (x) => {
+                return newPelletName == x.name
+            })
+            if (draftPelletWithSameName) {
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Draft pellet already exists: ${newPelletName}`, life: 10000 })
+                throw new Error('Draft pellet with same name already exists')
+            }
+
+            pellets.push({
+                name: newPelletName,
+                target: {label: target?.target.name, code: target?.id},
+                harvestDay: currentHarvestDay.value,
+                replicates: selectedPellet.replicates,
+                ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
+            })
+        }
     }
     pelletsToAdd.value.push(...pellets)
 }
@@ -192,7 +204,6 @@ async function submitPellets() {
             ...vals,
             transfectTargetId: target.code,
             harvestedOn: harvestDateTime.value,
-            harvestDay: moment(harvestDateTime.value).diff(moment(experiment.value?.data?.startedOn).set( {hour: 0, minute: 0}), 'days'),
             harvestedBy: harvestBy.value,
             protocol: _.get(harvestProtocol.value, 'code'),
         }
@@ -212,17 +223,6 @@ async function submitPellets() {
     <div v-if="loaded">
         <div class="grid grid-cols-12 p-5">
             <div class="col-span-12 md:col-span-12 lg:col-span-12 xl:col-span-12">
-                <div class="mb-5">
-                    <span class="text-xl font-bold mr-10">Experiment: {{experiment?.data?.name}}</span>
-                    <Button
-                        icon="pi pi-chevron-right"
-                        iconPos="right"
-                        severity="info"
-                        label="View pellets"
-                        @click="router.push({path:'/sge/pellets', query: {'transfectTarget.experiment.id': experiment?.id}})"
-                    />
-                </div>
-
                 <div>Started on: {{ experimentStartedOn }}</div>
                 <div v-if="experimentStartedOn">Time elapsed: {{ timeElapsed }}</div>
             </div>
@@ -254,40 +254,48 @@ async function submitPellets() {
             </div>
             <hr class="col-span-12">
             <template v-if="harvestDateTime && harvestBy">
-                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
+                <div v-if="currentHarvestDay==5" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
                     <label for="harvestTargetsInput" class="block font-bold">Targets</label>
                     <Listbox id="harvestTargetsInput" v-model="selectedTargets" :options="allTargets" multiple checkmark optionLabel="label" class="w-full md:w-80" />
                 </div>
+                <div v-if="currentHarvestDay && currentHarvestDay>5" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-5 mb-5">
+                    <label for="harvestTargetsInput" class="block font-bold">Target Replicates</label>
+                    <Listbox id="harvestTargetsInput" v-model="selectedTargetReplicates" :options="existingTargetReplicates" multiple checkmark optionLabel="label" class="w-full md:w-80" />
+                </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
-                    <div class="flex items-stretch w-60">
+                    <div v-if="currentHarvestDay==5" class="flex items-stretch w-60">
                         <label for="harvestReplicatesInput" class="mt-auto mb-auto font-bold">Replicates</label>
-                        <MultiSelect id="harvestReplicatesInput" v inputClass="w-20" class="ml-auto" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" :disabled="!targetsSelected"/>
+                        <MultiSelect id="harvestReplicatesInput" v inputClass="w-20" class="ml-auto" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" :disabled="!targetsOrPelletsSelected"/>
                     </div>
                     <div class="flex items-stretch w-60">
                         <label for="pctPassagedInput" class="mt-auto mb-auto font-bold">% passaged</label>
-                        <InputNumber id="pctPassagedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctPassaged" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
+                        <InputNumber id="pctPassagedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctPassaged" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsOrPelletsSelected"/>
                     </div>
                     <div class="flex items-stretch w-60">
                         <label for="pctHarvestedInput" class="mt-auto mb-auto font-bold">% harvested</label>
-                        <InputNumber id="pctHarvestedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctHarvested" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
+                        <InputNumber id="pctHarvestedInput" inputClass="w-20" class="ml-auto" v-model="formData.pctHarvested" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsOrPelletsSelected"/>
                     </div>
                     <div class="flex items-stretch w-60">
                         <label for="d3ConfluencyInput" class="mt-auto mb-auto font-bold">% D3 confluency</label>
-                        <InputNumber id="d3ConfluencyInput" inputClass="w-20" class="ml-auto" v-model="formData.d3Confluency" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsSelected"/>
+                        <InputNumber id="d3ConfluencyInput" inputClass="w-20" class="ml-auto" v-model="formData.d3Confluency" showButtons :min="0" :max="100" :minFractionDigits="0" :maxFractionDigits="0" :disabled="!targetsOrPelletsSelected"/>
                     </div>
                     <div class="flex items-stretch w-60">
                         <label for="harvestIsBackup"class="mt-auto mb-auto font-bold">Is backup?</label>
-                        <Checkbox id="harvestIsBackup" class="ml-auto mr-7" v-model="formData.isBackup" binary :disabled="!targetsSelected" />
+                        <Checkbox id="harvestIsBackup" class="ml-auto mr-7" v-model="formData.isBackup" binary :disabled="!targetsOrPelletsSelected" />
                     </div>
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                     <label for="notesInput" class="block font-bold">Notes</label>
-                    <Textarea id="notesInput" v-model="formData.harvestNotes" rows="5" cols="30" :disabled="!targetsSelected" />
+                    <Textarea id="notesInput" v-model="formData.harvestNotes" rows="5" cols="30" :disabled="!targetsOrPelletsSelected" />
                     <div>
-                        <Button @click="addDraftPellets" :disabled="!targetsSelected || !replicatesSelected">Add</Button>
+                        <Button
+                            @click="addDraftPellets"
+                            :disabled="(currentHarvestDay==5 && _.isEmpty(selectedTargets)) || (_.toInteger(currentHarvestDay) > 5 && _.isEmpty(selectedTargetReplicates))">
+                            Add
+                        </Button>
                     </div>
                 </div>
-                <div class="col-span-12 space-y-5 mb-10">
+                <div class="col-span-12 space-y-5 mb-5">
                     <DataTable :value="pelletsToAdd" tableStyle="min-width: 50rem">
                         <template #header>
                             <span class="text-xl font-bold">Draft pellets</span>
@@ -321,17 +329,41 @@ async function submitPellets() {
                         <Column field="harvestNotes" header="Notes"></Column>
                     </DataTable>
                 </div>
-                <div v-if="pelletsToAdd.length" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
+                <div v-if="pelletsToAdd.length" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2 mb-5">
                     <Button
                         size="large"
                         icon="pi pi-bolt"
                         severity="warn"
-                        class="mt-5 mr-5"
-                        :label="`Submit ${pelletsToAdd.length} pellets`"
+                        :label="`Save ${pelletsToAdd.length} pellets`"
                         :disabled="!pelletsToAdd.length"
                         @click="submitPellets" />
                 </div>
             </template>
+                <div class="col-span-12 space-y-5 mb-5">
+                    <DataTable :value="experiment?.pellets" tableStyle="min-width: 50rem">
+                        <template #header>
+                            <span class="text-xl font-bold">Existing pellets</span>
+                        </template>
+                        <template #empty> No data </template>
+                        <Column field="name" header="Name"></Column>
+                        <Column field="replicates" header="Replicates">
+                            <template #body="slotProps">
+                                {{ _.join(slotProps.data.replicates, ', ') }}
+                            </template>
+                        </Column>
+
+                        <Column field="harvestDay" header="Day"></Column>
+                        <Column field="pctPassaged" header="% passaged"></Column>
+                        <Column field="pctHarvested" header="% harvested"></Column>
+                        <Column field="d3Confluency" header="% D3 confluency"></Column>
+                        <Column field="isBackup" header="Backup">
+                            <template #body="slotProps">
+                                {{ slotProps.data.isBackup ? '✓' : '' }}
+                            </template>
+                        </Column>
+                        <Column field="harvestNotes" header="Notes"></Column>
+                    </DataTable>
+                </div>
         </div>
     </div>
 </template>
