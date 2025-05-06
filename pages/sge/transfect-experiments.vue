@@ -93,27 +93,12 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs: ColumnDefinitions = {
+    name: {
+        index: 1,
+    },
     startedOn: {
-        format: 'date-time'
-    },
-    technician: {
-        path: 'technician.name',
-    },
-    transfectTargets: {
-        header: 'Targets',
-        format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
-            return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
-        }), ', '),
-        path: 'transfectTargets.displayValue',
-        type: 'string',
-    },
-    transfectLotUsage: {
-        header: 'Reagents',
-        format: (x) => _.join(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
-            return  y.lot.lotNumber
-        }), ', '),
-        path: 'transfectLotUsage.displayValue',
-        type: 'string',
+        format: 'date-time',
+        index: 3,
     },
     currentDay: {
         header: 'Current day #',
@@ -123,6 +108,48 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'currentDay.displayValue',
         type: 'string',
+        index: 3,
+    },
+    replicateCount: {
+        header: 'Replicate count',
+        index: 4,
+    },
+    transfectionCount: {
+        header: 'Transfections per replicate',
+        index: 5,
+    },
+    negativeControl: {
+        header: 'Negative control',
+        index: 6,
+    },
+    totalTransfections: {
+        header: 'Total transfections',
+        format: (x) => {
+            return _.toString(x.transfectionCount * x.replicateCount + (x.negativeControl ? 1 : 0))
+        },
+        path: 'totalTransfections.displayValue',
+        index: 7,
+    },
+    transfectTargets: {
+        header: 'Targets',
+        format: (x) => _.join(_.map(_.get(x, 'transfectTargets', []), (y) => {
+            return  y.target?.name || `${y.target?.region?.gene?.symbol}: ${y.target?.region?.name}`
+        }), ', '),
+        path: 'transfectTargets.displayValue',
+        type: 'string',
+        index: 8,
+    },
+    transfectLotUsage: {
+        header: 'Reagents',
+        format: (x) => _.join(_.map(_.get(x, 'transfectLotUsage', []), (y) => {
+            return  y.lot.lotNumber
+        }), ', '),
+        path: 'transfectLotUsage.displayValue',
+        type: 'string',
+        index: 9,
+    },
+    technician: {
+        path: 'technician.name',
     },
 }
 

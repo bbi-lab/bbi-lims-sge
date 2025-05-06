@@ -23,7 +23,7 @@ type PelletInsert = z.infer<typeof pelletInsert>
 const pelletSelect = createSelectSchema(pellets)
 type PelletSelect = z.infer<typeof pelletSelect>
 // type for pellet plus transfection target ID
-type TranfectionExperimentPellet = PelletSelect & {
+export type TranfectionExperimentPellet = PelletSelect & {
     transfectTargetId: string
 }
 const transfectionTargetSelect = createSelectSchema(transfectTargets)
