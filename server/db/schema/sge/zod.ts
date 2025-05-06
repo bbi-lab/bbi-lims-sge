@@ -10,7 +10,6 @@ import { extractionExperiments, extractionLotUsage } from './extraction-experime
 import { pcrExperiments } from './pcr-experiment'
 import { plates, viewPlatesWithWellCounts } from './plate'
 import { pellets } from './pellet'
-import { storageBoxes } from './storage-box'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
@@ -100,10 +99,6 @@ const updateWellContentsSchema = insertWellContentsSchema
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
 const updatePelletsSchema = insertPelletsSchema
-
-const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
-const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true})
-const updateStorageBoxesSchema = insertStorageBoxesSchema
 
 const selectLotsSchema = createSelectSchema(lots, {preparedOn: nullableDateSchema, storedOn: nullableDateSchema, startedUseOn: nullableDateSchema, endedUseOn: nullableDateSchema, expiresOn: nullableDateSchema})
 const insertLotsSchema = selectLotsSchema.omit({id: true})
@@ -226,11 +221,6 @@ export const schemas = {
         select: selectPelletsSchema,
         insert: insertPelletsSchema,
         update: updatePelletsSchema,
-    },
-    storageBoxes: {
-        select: selectStorageBoxesSchema,
-        insert: insertStorageBoxesSchema,
-        update: updateStorageBoxesSchema,
     },
     lots: {
         select: selectLotsSchema,

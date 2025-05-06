@@ -1,5 +1,4 @@
 import { pgTable, uuid, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
-import { storageBoxes } from './storage-box'
 import { extractionExperiments } from './extraction-experiment'
 import { pellets } from './pellet'
 import { InferSelectModel } from 'drizzle-orm'
@@ -9,8 +8,6 @@ export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
 export const nucleicAcids = pgTable('nucleic_acids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   extractionExperimentId: uuid('extraction_experiment_id').references(() => extractionExperiments.id),
-  // storageBoxId: uuid('storage_box_id').references(() => storageBoxes.id),
-  // storageBoxLoc: varchar('storage_box_loc'),
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
   dnaConcentration: doublePrecision('dna_concentration'),
   dnaVolume: doublePrecision('dna_volume'),

@@ -70,13 +70,6 @@ const columnDefs = {
         path: 'plasmidExperiment.name',
         index: 2,
     },
-    // storageBox: {
-    //     path: 'storageBox.name',
-    //     index: 3,
-    // },
-    // storageBoxLoc: {
-    //     index: 4,
-    // },
     externalLink: {
         format: 'hyperlink',
         index: 3,
@@ -84,9 +77,6 @@ const columnDefs = {
     plasmidExperimentId: {
         display: false
     },
-    // storageBoxId: {
-    //     display: false
-    // },
     targetId: {
         display: false
     }
@@ -102,16 +92,6 @@ const fieldDefs: FieldDefinitions = {
             displayFields: ['name'],
         }
     },
-    // storageBoxId: {
-    //     label: 'Storage box',
-    //     component: 'AutoCompleter',
-    //     props: {
-    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-    //         searchFields: ['name'],
-    //         valueField: 'id',
-    //         displayFields: ['name'],
-    //     }
-    // },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -143,7 +123,6 @@ const displayWithClause = {
     },
     plasmidExperiment: {
         columns: {name: true},
-        // storageBox: {columns: {name: true}
     }
 }
 

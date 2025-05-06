@@ -82,11 +82,6 @@ const refreshPlate = async () => {
 }
 
 const sharedWithClause = {
-    // storageBox: {
-    //     columns: {
-    //         name: true
-    //     }
-    // },
     wellContents: {
         with: {
             well: {
@@ -176,22 +171,12 @@ const sharedColumnDefs = {
         },
     },
     wellContents: {
-        header: 'Plate: Well',
+        header: 'Location',
         format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
         path: 'wellContents.displayValue',
         type: 'string',
         index: 2,
     },
-    // storageBoxId: {
-    //     header: 'Storage',
-    //     format: (x: any) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
-    //     path: 'storageBoxId.displayValue',
-    //     type: 'string',
-    //     index: 3,
-    // },
-    // storageBoxLoc: {
-    //     display: false
-    // },
 }
 const columnDefs = {
     'amplification-primers': {

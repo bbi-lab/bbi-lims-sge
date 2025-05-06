@@ -83,24 +83,26 @@ const displayWithClause = Object.freeze({
             },
         },
     },
-    // storageBox: {
-    //     columns: {
-    //         name: true
-    //     }
-    // },
-    // well: {
-    //     columns: {
-    //         x: true,
-    //         y: true,
-    //     },
-    //     with: {
-    //         plate: {
-    //             columns: {
-    //                 name: true
-    //             }
-    //         }
-    //     }
-    // },
+    wellContents: {
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
+    },
 })
 
 const columnDefs = {
@@ -123,22 +125,12 @@ const columnDefs = {
         path: 'project.displayValue',
         index: 3,
     },
-    // storageBoxId: {
-    //     header: 'Storage',
-    //     format: (x) => { return _.compact([_.get(x, 'storageBox.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
-    //     path: 'storageBoxId.displayValue',
-    //     type: 'string',
-    //     index: 4,
-    // },
-    // storageBoxLoc: {
-    //     display: false
-    // },
-    well: {
-        header: 'Plate: Well',
-        format: (x: any) => { return _.has(x, 'well.plate') ? ` ${_.get(x, 'well.plate.name')}: ${wellCoordinateToChar(x.well?.y)}${x.well?.x}` : ''},
-        path: 'well.displayValue',
+    wellContents: {
+        header: 'Location',
+        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        path: 'wellContents.displayValue',
         type: 'string',
-        index: 4,
+        index: 5,
     },
 }
 
@@ -154,16 +146,6 @@ const fieldDefs: FieldDefinitions = {
             dropdown: true,
         }
     },
-    // storageBoxId: {
-    //     label: 'Storage box',
-    //     component: 'AutoCompleter',
-    //     props: {
-    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-    //         searchFields: ['name'],
-    //         valueField: 'id',
-    //         displayFields: ['name'],
-    //     }
-    // },
 }
 </script>
 <template>

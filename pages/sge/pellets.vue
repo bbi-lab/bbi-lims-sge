@@ -3,6 +3,7 @@ import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { wellCoordinateToChar } from '@/composables/lib/plate-diagram'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -113,11 +114,26 @@ const displayWithClause = Object.freeze({
             id: true
         },
     },
-    // storageBox: {
-    //     columns: {
-    //         name: true,
-    //     }
-    // }
+    wellContents: {
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
+    },
 })
 
 const columnDefs: ColumnDefinitions = {
@@ -143,12 +159,19 @@ const columnDefs: ColumnDefinitions = {
         path: 'transfectTarget.experiment.name',
         index: 4,
     },
+    wellContents: {
+        header: 'Location',
+        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        path: 'wellContents.displayValue',
+        type: 'string',
+        index: 5,
+    },
     transfectTarget: {
         header: 'Target',
         format: (x: any) => { return _.get(x, 'transfectTarget.target.name') || `${_.get(x, 'transfectTarget.target.region.gene.symbol')} : ${_.get(x, 'transfectTarget.target.region.name')}`},
         path: 'transfectTarget.displayValue',
         type: 'string',
-        index: 5,
+        index: 6,
     },
     transfectTargetId: {
         display: false,
@@ -156,18 +179,6 @@ const columnDefs: ColumnDefinitions = {
     harvestedBy: {
         path: 'harvestedBy.name',
     },
-    // storageBox: {
-    //     header: 'Storage',
-    //     format: (x: any) => { return _.compact([_.get(x, 'storageBoxId.name', '') ,_.get(x, 'storageBoxLoc', '')]).join(': ')},
-    //     path: 'storageBoxId.displayValue',
-    //     type: 'string',
-    // },
-    // storageBoxId: {
-    //     display: false,
-    // },
-    // storageBoxLoc: {
-    //     display: false
-    // },
 }
 const fieldDefs: FieldDefinitions = {
     transfectTargetId: {
@@ -201,20 +212,6 @@ const fieldDefs: FieldDefinitions = {
             dropdown: true,
         }
     },
-    // storageBoxId: {
-    //     label: 'Storage box',
-    //     component: 'AutoCompleter',
-    //     props: {
-    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-    //         searchFields: ['name'],
-    //         valueField: 'id',
-    //         displayFields: ['name'],
-    //         dropdown: true,
-    //     }
-    // },
-    // storageBoxLoc: {
-    //     label: 'Storage box location'
-    // },
     harvestedOn: {
         readOnly: true,
     },

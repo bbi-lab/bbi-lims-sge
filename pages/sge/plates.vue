@@ -61,6 +61,7 @@ function didDeleteRecord(event: any) {
 }
 const columnDefs = {
     plateType: { display: false },
+    plateTypeLabel: { header: 'Type' },
     pcrExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
@@ -118,7 +119,7 @@ const readonlyValues = queryParams
                 ref="platesTable"
                 tableName="view-plates-with-well-counts"
                 schemaName="select"
-                title="Plates"
+                title="Plates/Storage boxes"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"

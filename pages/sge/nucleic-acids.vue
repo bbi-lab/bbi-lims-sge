@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-
+import { wellCoordinateToChar } from '@/composables/lib/plate-diagram'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -65,11 +65,28 @@ const displayWithClause = Object.freeze({
     extractionExperiment: {
         columns: {name: true}
     },
-    // storageBox: {
-    //     columns: {name: true}
-    // },
     pellet: {
         columns: {id: true, name: true, isBackup: true},
+    },
+    wellContents: {
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
     },
 })
 const columnDefs: ColumnDefinitions = {
@@ -98,22 +115,19 @@ const columnDefs: ColumnDefinitions = {
         path: 'extractionExperiment.name',
         index: 3,
     },
-    // storageBox: {
-    //     path: 'storageBox.name',
-    //     index: 3,
-    // },
-    // storageBoxLoc: {
-    //     index: 4,
-    // },
-    protocol: {
+    wellContents: {
+        header: 'Location',
+        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        path: 'wellContents.displayValue',
+        type: 'string',
         index: 4,
+    },
+    protocol: {
+        index: 5,
     },
     extractionExperimentId: {
         display: false
     },
-    // storageBoxId: {
-    //     display: false
-    // },
     pelletId: {
         display: false
     },
@@ -147,16 +161,6 @@ const fieldDefs: FieldDefinitions = {
             displayFields: ['name'],
         }
     },
-    // storageBoxId: {
-    //     label: 'Storage box',
-    //     component: 'AutoCompleter',
-    //     props: {
-    //         searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-    //         searchFields: ['name'],
-    //         valueField: 'id',
-    //         displayFields: ['name'],
-    //     }
-    // },
     pelletId: {
         label: 'Pellet',
         component: 'AutoCompleter',

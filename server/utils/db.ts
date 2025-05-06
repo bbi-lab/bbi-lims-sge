@@ -16,7 +16,6 @@ import {pellets} from '../db/schema/sge/pellet'
 import {plasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
-import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
@@ -49,7 +48,6 @@ export const schema = {
   pellets,
   lots,
   reagents,
-  // storageBoxes,
   transfectExperiments,
   transfectTargets,
   transfectLotUsage,
@@ -80,7 +78,6 @@ export const schema = {
   nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
   pelletsRelations: sgeRelations.pelletsRelations,
   lotsRelations: sgeRelations.lotsRelations,
-  // storageBoxesRelations: sgeRelations.storageBoxesRelations,
   transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
   transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
   transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
