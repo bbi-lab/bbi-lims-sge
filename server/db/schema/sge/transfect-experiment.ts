@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision, unique } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision, unique, boolean } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
 import { lots } from './lots'
@@ -10,6 +10,7 @@ export const transfectExperiments = pgTable('transfect_experiments', {
   startedOn: timestamp('started_on').defaultNow(),
   transfectionCount: integer('transfection_count'),
   replicateCount: integer('replicates_count'),
+  negativeControl: boolean('negative_control'),
 })
 
 export const transfectTargets = pgTable('transfect_targets', {
