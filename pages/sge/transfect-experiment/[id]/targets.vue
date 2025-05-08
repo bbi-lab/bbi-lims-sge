@@ -60,6 +60,10 @@ const columnDefs = {
         type: 'string',
         index: 0,
     },
+    transfectionCount: {
+        header: '# transfections',
+        index: 1,
+    },
     experimentId: {
         display: false,
     },
@@ -95,9 +99,6 @@ const columnDefs = {
     },
     xfectPolymerPerTransfect: {
         header: 'Xfect polymer (μL) per transfection'
-    },
-    transfectionCount: {
-        header: '# transfections'
     },
     snvLibNeeded: {
         header: 'SNV library needed (μL)'
