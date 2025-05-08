@@ -42,7 +42,8 @@ type TranfectionExperimentTarget = TransfectionTargetSelect & {
 }
 type IdOnly = {id: string}
 
-export const VALID_REPLICATES = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
+// export const VALID_REPLICATES = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
+export const VALID_TRANSFECTIONS = ['NC', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9']
 
 export class TransfectionExperiment {
     id?: string
@@ -79,7 +80,7 @@ export class TransfectionExperiment {
                                     id: true,
                                     name: true,
                                     harvestDay: true,
-                                    replicates: true,
+                                    transfections: true,
                                 },
                             },
                             target: {

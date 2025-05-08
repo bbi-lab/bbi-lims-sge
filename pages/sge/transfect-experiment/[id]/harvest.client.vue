@@ -3,7 +3,8 @@ import moment from 'moment'
 import _ from 'lodash'
 import  {
     TransfectionExperiment,
-    VALID_REPLICATES,
+    // VALID_REPLICATES,
+    VALID_TRANSFECTIONS,
     type TranfectionExperimentPellet,
 } from '~/shared/sge/transfection-experiment'
 
@@ -63,7 +64,7 @@ const formData = ref<FormFields>({})
 interface DraftPellet extends Partial<FormFields> {
     name: string
     target: {label: string, code: string}
-    replicates: string[]
+    transfections: string[]
     harvestDay: number
 }
 
@@ -71,13 +72,13 @@ const pelletsToAdd = ref<DraftPellet[]>([])
 
 const selectedTargets = ref<{label: string, code: string}[]>([])
 const selectedPellets = ref<{label: string, code: TranfectionExperimentPellet}[]>([])
-const selectedReplicates = ref<{label: string, code: string}[]>([])
+const selectedTransfections = ref<{label: string, code: string}[]>([])
 
 const harvestBy = ref()
 const harvestProtocol = ref()
 const now = ref(new Date())
 
-const validReplicatesLimited = computed(() => experiment.value?.data?.replicateCount ? _.filter(VALID_REPLICATES, (x) => !_.startsWith(x, 'R') || parseInt(x.slice(-1)) <= (experiment.value?.data?.replicateCount ?? 0)) : VALID_REPLICATES)
+const validTransfectionsLimited = computed(() => experiment.value?.data?.replicateCount ? _.filter(VALID_TRANSFECTIONS, (x) => !_.startsWith(x, 'T') || parseInt(x.slice(-1)) <= (experiment.value?.data?.transfectionCount ?? 0)) : VALID_TRANSFECTIONS)
 // set min date to Day 5, max to Day 17
 const minDate = computed(() => experiment.value?.data?.startedOn ? moment(experiment.value?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
 const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
@@ -87,7 +88,7 @@ const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment
 
 const targetsOrPelletsSelected = computed (() => {return !_.isEmpty(selectedTargets.value) || !_.isEmpty(selectedPellets.value)})
 
-const replicatesSelected = computed (() => {return !_.isEmpty(selectedReplicates.value)})
+// const transfectionsSelected = computed (() => {return !_.isEmpty(selectedTransfections.value)})
 
 onMounted(async() => {
     await refreshExperiment()
@@ -139,30 +140,30 @@ async function addDraftPellets() {
     if (currentHarvestDay.value == 5) {
         for (const selectedTarget of selectedTargets.value) {
             let newPelletName = ''
-            // check to make sure no pellets exist with any of same replicates
-            const pelletWithSameReplicates = _.find(experiment.value?.pellets, (x) => {
+            // check to make sure no pellets exist with any of same transfections
+            const pelletWithSameTransfections = _.find(experiment.value?.pellets, (x) => {
                 return selectedTarget.code == x.transfectTargetId &&
                     x.isBackup === formData.value.isBackup &&
-                    _.some(x.replicates, (replicate) => {
-                        return _.includes(_.map(selectedReplicates.value, 'code'), replicate)
+                    _.some(x.transfections, (transfection) => {
+                        return _.includes(_.map(selectedTransfections.value, 'code'), transfection)
                     })
             })
 
-            const draftPelletWithSameReplicates = _.find(pelletsToAdd.value, (x) => {
+            const draftPelletWithSameTransfections = _.find(pelletsToAdd.value, (x) => {
                 return x.target.code == selectedTarget.code &&
                     x.isBackup === formData.value.isBackup &&
-                    _.some(x.replicates, (replicate) => {
-                        return _.includes(_.map(selectedReplicates.value, 'code'), replicate)
+                    _.some(x.transfections, (transfection) => {
+                        return _.includes(_.map(selectedTransfections.value, 'code'), transfection)
                     })
             })
-            if (pelletWithSameReplicates) {
-                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 pellet with same replicates already exists: ${pelletWithSameReplicates.name} (${_.join(pelletWithSameReplicates.replicates, ',')})`, life: 10000 })
+            if (pelletWithSameTransfections) {
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 pellet with same transfections already exists: ${pelletWithSameTransfections.name} (${_.join(pelletWithSameTransfections.transfections, ',')})`, life: 10000 })
                 throw new Error('Pellet with same replicates already exists')
-            } else if (draftPelletWithSameReplicates) {
-                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 draft pellet with same replicates already exists: ${draftPelletWithSameReplicates.name} (${_.join(draftPelletWithSameReplicates.replicates, ',')})`, life: 10000 })
+            } else if (draftPelletWithSameTransfections) {
+                toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 draft pellet with same transfections already exists: ${draftPelletWithSameTransfections.name} (${_.join(draftPelletWithSameTransfections.transfections, ',')})`, life: 10000 })
                 throw new Error('Draft pellet with same replicates already exists')
             } else {
-                if (selectedReplicates.value.length == 1 && selectedReplicates.value[0].code == 'NC') {
+                if (selectedTransfections.value.length == 1 && selectedTransfections.value[0].code == 'NC') {
                     newPelletName = `${selectedTarget.label}_D05_NC`
                 } else {
                     const maxPelletByName = _.last(_.sortBy(_.filter(experiment.value?.pellets, (x) => x.transfectTargetId == selectedTarget.code), (x:any) => x.name))
@@ -180,8 +181,8 @@ async function addDraftPellets() {
                     name: newPelletName,
                     target: selectedTarget,
                     harvestDay: currentHarvestDay.value,
-                    replicates: _.map(selectedReplicates.value, (x) => x.code).sort(),
-                    ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
+                    transfections: _.map(selectedTransfections.value, (x) => x.code).sort(),
+                    ..._.omit(_.cloneDeep(formData.value), ['selectedTransfections', 'selectedTargets'])
                 })
             }
         }
@@ -206,7 +207,7 @@ async function addDraftPellets() {
                 toast.add({ severity: 'error', summary: 'Warning', detail: `Draft pellet already exists: ${newPelletName}`, life: 10000 })
                 throw new Error('Draft pellet with same name already exists')
             }
-            if (!newPelletName || !target || !selectedPellet.replicates) {
+            if (!newPelletName || !target || !selectedPellet.transfections) {
                 toast.add({ severity: 'error', summary: 'Warning', detail: `Error determining target/replicate`, life: 10000 })
                 throw new Error('Error determining target/replicate')
             }
@@ -214,8 +215,8 @@ async function addDraftPellets() {
                 name: newPelletName,
                 target: {label: target.target.name, code: target?.id},
                 harvestDay: currentHarvestDay.value,
-                replicates: selectedPellet.replicates,
-                ..._.omit(_.cloneDeep(formData.value), ['selectedReplicates', 'selectedTargets'])
+                transfections: selectedPellet.transfections,
+                ..._.omit(_.cloneDeep(formData.value), ['selectedTransfections', 'selectedTargets'])
             })
         }
     }
@@ -289,8 +290,8 @@ async function submitPellets() {
                 </div>
                 <div class="col-span-12 md:col-span-6 lg:col-span-3 xl:col-span-3 space-y-3 mb-5">
                     <div v-if="currentHarvestDay==5" class="flex items-stretch w-60">
-                        <label for="harvestReplicatesInput" class="mt-auto mb-auto font-bold">Replicates</label>
-                        <MultiSelect id="harvestReplicatesInput" v inputClass="w-20" class="ml-auto" v-model="selectedReplicates" :options="valuesToCodedList(validReplicatesLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" :disabled="!targetsOrPelletsSelected"/>
+                        <label for="harvestTransfectionsInput" class="mt-auto mb-auto font-bold">Transfections</label>
+                        <MultiSelect id="harvestTransfectionsInput" v inputClass="w-20" class="ml-auto" v-model="selectedTransfections" :options="valuesToCodedList(validTransfectionsLimited)" optionLabel="label" :showToggleAll="false" :maxSelectedLabels="3" :disabled="!targetsOrPelletsSelected"/>
                     </div>
                     <div class="flex items-stretch w-60">
                         <label for="pctPassagedInput" class="mt-auto mb-auto font-bold">% passaged</label>
@@ -343,9 +344,9 @@ async function submitPellets() {
                             </template>
                         </Column>
                         <Column field="target.label" header="Target"></Column>
-                        <Column field="replicates" header="Replicates">
+                        <Column field="transfections" header="Transfections">
                             <template #body="slotProps">
-                                {{ _.join(slotProps.data.replicates, ', ') }}
+                                {{ _.join(slotProps.data.transfections, ', ') }}
                             </template>
                         </Column>
                         <Column field="pctPassaged" header="% passaged"></Column>
@@ -376,12 +377,11 @@ async function submitPellets() {
                                 {{ slotProps.data.isBackup ? '✓' : '' }}
                             </template>
                         </Column>
-                        <Column field="replicates" header="Replicates">
+                        <Column field="transfections" header="Transfections">
                             <template #body="slotProps">
-                                {{ _.join(slotProps.data.replicates, ', ') }}
+                                {{ _.join(slotProps.data.transfections, ', ') }}
                             </template>
                         </Column>
-
                         <Column field="harvestDay" header="Day"></Column>
                         <Column field="pctPassaged" header="% passaged"></Column>
                         <Column field="pctHarvested" header="% harvested"></Column>

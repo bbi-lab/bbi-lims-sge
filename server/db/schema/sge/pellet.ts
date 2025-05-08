@@ -8,7 +8,7 @@ export const pellets = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).unique(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
-  replicates: varchar('replicates', { length: 3 }).array(),
+  transfections: varchar('transfections', { length: 3 }).array(),
   harvestedOn: timestamp('harvested_on').notNull(),
   harvestDay: integer('harvest_day').notNull(),
   harvestedBy: uuid('harvested_by').references(() => users.id),

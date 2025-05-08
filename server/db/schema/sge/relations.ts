@@ -196,6 +196,11 @@ const transfectExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
+        cycle: {
+            fields: [transfectExperiments.cycleId],
+            referenceTable: cycles,
+            references: [cycles.id],
+        },
     },
     many: {
         transfectTargets: {

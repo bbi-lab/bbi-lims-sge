@@ -2,10 +2,11 @@ import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision, uniq
 import { users } from '../user'
 import { targets } from './target'
 import { lots } from './lots'
+import { cycles } from './cycle'
 
 export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull().unique(),
+  cycleId: uuid('cycle').references(() => cycles.id).unique().notNull(),
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
   transfectionCount: integer('transfection_count'),

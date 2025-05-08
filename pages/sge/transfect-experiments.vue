@@ -5,6 +5,7 @@ import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { cycles } from '~/server/db/schema/sge/cycle'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -55,6 +56,7 @@ function getPelletCount(targets: any) {
 
 const editWithClause = Object.freeze({transfectTargets: {with: {target:  true}}})
 const displayWithClause = Object.freeze({
+    cycle: {columns: {name: true}},
     technician: {columns: {name: true}},
     transfectLotUsage: {columns: {},
         with: {
@@ -93,8 +95,10 @@ const displayWithClause = Object.freeze({
 })
 
 const columnDefs: ColumnDefinitions = {
-    name: {
+    cycleId: {
+        header: 'Cycle',
         index: 1,
+        path: 'cycle.name',
     },
     startedOn: {
         format: 'date-time',
@@ -111,7 +115,7 @@ const columnDefs: ColumnDefinitions = {
         index: 3,
     },
     replicateCount: {
-        header: 'Replicate count',
+        header: 'Number of replicates',
         index: 4,
     },
     transfectionCount: {
@@ -120,6 +124,11 @@ const columnDefs: ColumnDefinitions = {
     },
     negativeControl: {
         header: 'Negative control',
+        format: (x) => {
+            return x.negativeControl ? '1' : '0'
+        },
+        path: 'negativeControl.displayValue',
+        type: 'string',
         index: 6,
     },
     totalTransfections: {
@@ -193,6 +202,20 @@ const rowActions = {
 }
 
 const fieldDefs: FieldDefinitions = {
+    cycleId: {
+        label: 'Cycle',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/cycles`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
+    replicateCount: {
+        label: 'Number of replicates',
+    },
     'transfectTargets.*': {
         label: 'Targets',
         component: 'ManyToMany',
@@ -207,13 +230,14 @@ const fieldDefs: FieldDefinitions = {
                 searchBaseUrl: `${config.public.apiBase}/targets`,
                 searchFields: ['region.gene.symbol', 'region.name', 'name'],
                 valueField: 'id',
-                displayFormat: (x) => {
+                displayFormat: (x: any) => {
                     return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
                 },
                 searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
             },
         }
     },
+    transfectLotUsage: {display: false},
 }
 </script>
 <template>
@@ -236,7 +260,7 @@ const fieldDefs: FieldDefinitions = {
                 v-if="showAddForm"
                 tableName="transfect-experiments"
                 schemaName="insert"
-                :fieldDefs="{transfectTargets: {display: false}, transfectLotUsage: {display: false}}"
+                :fieldDefs="{...fieldDefs, transfectTargets: {display: false}}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
