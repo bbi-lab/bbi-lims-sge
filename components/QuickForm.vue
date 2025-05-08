@@ -11,6 +11,7 @@ const toast = useToast()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const formSchemPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
+const formSchemPropertiesComputedSorted = computed(() =>  _.sortBy(_.entries(formSchemPropertiesComputed.value), ([key, value]) => _.get(props.fieldDefs, [key, 'index'])))
 
 interface FieldDefinition {
     label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
@@ -21,6 +22,7 @@ interface FieldDefinition {
     canUpdate?: boolean,
     canDelete?: boolean,
     type?: string,
+    index?: number,
 }
 export interface FieldDefinitions {[key: string]: FieldDefinition}
 
@@ -190,7 +192,7 @@ function isReadOnly(key: string) {
         <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete'}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
-        <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
+        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>

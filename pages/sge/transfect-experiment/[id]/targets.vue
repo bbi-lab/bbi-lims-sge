@@ -113,6 +113,7 @@ const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
     return {
         display: v.display ?? true,
         label: v.header || k,
+        index: v.index,
     }
 })
 // Include an AutoCompleter widget for adding new targets
@@ -129,6 +130,7 @@ editFormFieldDefs['targetId'] = {
         },
         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
     },
+    index: 0,
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
