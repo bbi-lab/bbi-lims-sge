@@ -32,9 +32,7 @@ export const transfectTargets = pgTable('transfect_targets', {
   snvLibNeeded: doublePrecision('snv_lib_needed'),
   sgRnaNeeded: doublePrecision('sg_rna_needed'),
   notes: text('notes'),
-}, (t) => [
-  unique('unique_transfect_experiment_target').on(t.experimentId, t.targetId),
-])
+})
 
 export const transfectLotUsage = pgTable('transfect_lot_usage', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

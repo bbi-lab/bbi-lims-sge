@@ -1,0 +1,1 @@
+ALTER TABLE "transfect_targets" DROP CONSTRAINT "unique_transfect_experiment_target";
