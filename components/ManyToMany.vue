@@ -3,7 +3,7 @@ import _ from 'lodash'
 
 const props = defineProps({
     fixedValueField: String,
-    components: Array as PropType<{ variableField: string, inputClass: string, label: string, component: string, componentProps: Object }[]>,
+    components: Array as PropType<{ variableField: string, inputClass: string, label: string, component: string, componentProps: any }[]>,
     disabled: Boolean,
     canDelete: Boolean,
 })
@@ -11,12 +11,22 @@ const props = defineProps({
 const modelValue = defineModel<Record<string, any>>()
 
 const emit = defineEmits([
-    'didClickDelete'
+    'didClickDelete',
+    'update:modelValue',
 ])
 
 function didClickDelete() {
     emit('didClickDelete', modelValue)
 }
+
+onMounted(() => {
+    _.forEach(props.components, (c) => {
+        if (modelValue.value && _.isEmpty(_.get(modelValue.value, c.variableField)) && _.has(c.componentProps, 'defaultValue')) {
+            const valueToUse = modelValue.value[c.variableField] || _.get(c.componentProps, 'defaultValue')
+            emit('update:modelValue', {...modelValue.value, [c.variableField]: valueToUse})
+        }
+    })
+})
 
 </script>
 <template>
@@ -35,7 +45,7 @@ function didClickDelete() {
                     v-else
                     :is="c.component"
                     v-model="modelValue![c.variableField]"
-                    v-bind="modelValue![c.variableField] ? {...c.componentProps, defaultValue: undefined} : {...c.componentProps, modelValue: _.get(c.componentProps, 'defaultValue')}"
+                    v-bind="_.omit(c.componentProps, 'defaultValue')"
                     :disabled="disabled"
                 />
                 <label :for="c.variableField">
