@@ -20,12 +20,12 @@ function didClickDelete() {
 
 </script>
 <template>
-    <div class="flex flex-row">
+    <div class="flex flex-wrap">
         <template v-for="c of components" :key="modelValue![c.variableField]">
-            <IftaLabel class="mr-2">
+            <IftaLabel class="mr-2 mb-2">
                 <AutoCompleter
                     v-if="c.component=='AutoCompleter'"
-                    v-model="modelValue![c.variableField!]"
+                    v-model="modelValue![c.variableField]"
                     v-bind="_.omit(c.componentProps, 'searchBaseUrl')"
                     :search-base-url="_.get(c.componentProps, 'searchBaseUrl', '')"
                     :hide-clear-button="true"
@@ -35,7 +35,7 @@ function didClickDelete() {
                     v-else
                     :is="c.component"
                     v-model="modelValue![c.variableField]"
-                    v-bind="c.componentProps"
+                    v-bind="modelValue![c.variableField] ? {...c.componentProps, defaultValue: undefined} : {...c.componentProps, modelValue: _.get(c.componentProps, 'defaultValue')}"
                     :disabled="disabled"
                 />
                 <label :for="c.variableField">
@@ -43,6 +43,6 @@ function didClickDelete() {
                 </label>
             </IftaLabel>
         </template>
-        <Button v-if="props.canDelete" icon="pi pi-times" severity="secondary" outlined @click="didClickDelete" />
+        <Button v-if="props.canDelete" class="mb-2" icon="pi pi-times" severity="secondary" outlined @click="didClickDelete" />
     </div>
 </template>
