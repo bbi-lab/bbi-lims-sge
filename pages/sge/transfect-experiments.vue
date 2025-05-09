@@ -152,9 +152,13 @@ const columnDefs: ColumnDefinitions = {
             const transfectionCounts = _.map(x.transfectTargets, 'transfectionCount')
             const minTransfectionsPerReplicate = _.min(transfectionCounts)
             const maxTransfectionsPerReplicate = _.max(transfectionCounts)
-            return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
-                _.toString(minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)) :
-                `${minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)} - ${maxTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)}`
+            if (!minTransfectionsPerReplicate) {
+                return ''
+            } else {
+                return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
+                    _.toString(minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)) :
+                    `${minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)} - ${maxTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)}`
+            }
         },
         path: 'totalTransfections.displayValue',
         index: 7,
