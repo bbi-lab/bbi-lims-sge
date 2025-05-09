@@ -78,7 +78,10 @@ export class TransfectionExperiment {
                         columns: {name: true},
                     },
                     transfectTargets: {
-                        columns: {id: true},
+                        columns: {
+                            id: true,
+                            transfectionCount: true
+                        },
                         with: {
                             pellets: {
                                 columns: {
