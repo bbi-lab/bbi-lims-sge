@@ -6,7 +6,7 @@ import { cycles } from './cycle'
 
 export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  cycleId: uuid('cycle').references(() => cycles.id).unique().notNull(),
+  cycleId: uuid('cycle_id').references(() => cycles.id).unique().notNull(),
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').notNull().defaultNow(),
   transfectionCount: integer('transfection_count'),

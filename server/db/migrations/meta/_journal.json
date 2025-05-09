@@ -330,6 +330,13 @@
       "when": 1746822734500,
       "tag": "0046_cold_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1746823555153,
+      "tag": "0047_futuristic_microchip",
+      "breakpoints": true
     }
   ]
 }
