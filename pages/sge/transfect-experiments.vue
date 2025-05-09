@@ -222,19 +222,32 @@ const fieldDefs: FieldDefinitions = {
         canDelete: false,
         canUpdate: false,
         props: {
-            baseUrl: `${config.public.apiBase}/transfect-targets`,
             fixedValueField: 'experimentId',
-            variableField: 'targetId',
-            component: 'AutoCompleter',
-            componentProps: {
-                searchBaseUrl: `${config.public.apiBase}/targets`,
-                searchFields: ['region.gene.symbol', 'region.name', 'name'],
-                valueField: 'id',
-                displayFormat: (x: any) => {
-                    return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['region.gene.symbol', 'region.name', 'name'],
+                        valueField: 'id',
+                        inputClass: 'w-64',
+                        displayFormat: (x: any) => {
+                            return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+                        },
+                        searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+                    },
                 },
-                searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
-            },
+                {
+                    variableField: 'transfectionCount',
+                    component: 'InputNumber',
+                    label: '# of transfections',
+                    componentProps:{
+                        inputClass: 'w-32',
+                    },
+                },
+            ]
         }
     },
     transfectLotUsage: {display: false},
