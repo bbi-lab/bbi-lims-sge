@@ -5,7 +5,6 @@ import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { cycles } from '~/server/db/schema/sge/cycle'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
@@ -68,11 +67,14 @@ const displayWithClause = Object.freeze({
         }
     },
     transfectTargets:{
-        columns: {},
+        columns: {
+            transfectionCount: true,
+        },
         with: {
             target:  {
                 columns: {
                     name: true,
+
                 },
                 with: {
                     region:{
@@ -119,22 +121,43 @@ const columnDefs: ColumnDefinitions = {
         index: 4,
     },
     transfectionCount: {
+        display: false,
+    },
+    transfectionsPerReplicate: {
         header: 'Transfections per replicate',
+        format: (x) => {
+            const transfectionCounts = _.map(x.transfectTargets, 'transfectionCount')
+            const minTransfectionsPerReplicate = _.min(transfectionCounts)
+            const maxTransfectionsPerReplicate = _.max(transfectionCounts)
+            return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ? minTransfectionsPerReplicate : `${minTransfectionsPerReplicate} - ${maxTransfectionsPerReplicate}`
+        },
+        path: 'transfectionsPerReplicate.displayValue',
         index: 5,
     },
-    negativeControl: {
+    negativeControlCount: {
         header: 'Negative control',
         format: (x) => {
             return x.negativeControl ? '1' : '0'
         },
-        path: 'negativeControl.displayValue',
+        path: 'negativeControlCount.displayValue',
         type: 'string',
         index: 6,
+    },
+    negativeControl: {
+        display: false,
     },
     totalTransfections: {
         header: 'Total transfections',
         format: (x) => {
-            return _.toString(x.transfectionCount * x.replicateCount + (x.negativeControl ? 1 : 0))
+            const transfectionCounts = _.map(x.transfectTargets, 'transfectionCount')
+            const minTransfectionsPerReplicate = _.min(transfectionCounts)
+            const maxTransfectionsPerReplicate = _.max(transfectionCounts)
+            console.log('minTransfectionsPerReplicate', minTransfectionsPerReplicate)
+            console.log('maxTransfectionsPerReplicate', maxTransfectionsPerReplicate)
+            console.log('negativeControl', x.negativeControl)
+            return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
+                _.toString(minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)) :
+                `${minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)} - ${maxTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)}`
         },
         path: 'totalTransfections.displayValue',
         index: 7,
@@ -216,6 +239,9 @@ const fieldDefs: FieldDefinitions = {
     replicateCount: {
         label: 'Number of replicates',
     },
+    transfectionCount: {
+        display: false,
+    },
     'transfectTargets.*': {
         label: 'Targets',
         component: 'ManyToMany',
@@ -244,7 +270,9 @@ const fieldDefs: FieldDefinitions = {
                     component: 'InputNumber',
                     label: '# of transfections',
                     componentProps:{
-                        inputClass: 'w-32',
+                        inputClass: 'w-40',
+                        defaultValue: 3,
+                        showButtons: true,
                     },
                 },
             ]
