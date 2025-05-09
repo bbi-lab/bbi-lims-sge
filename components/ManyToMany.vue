@@ -1,23 +1,48 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
 
 const props = defineProps({
-    baseUrl: String,
     fixedValueField: String,
-    variableField: String,
-    component: String,
-    componentProps: Object,
+    components: Array as PropType<{ variableField: string, inputClass: string, label: string, component: string, componentProps: Object }[]>,
+    disabled: Boolean,
+    canDelete: Boolean,
 })
 
-const modelValue = defineModel()
+const modelValue = defineModel<Record<string, any>>()
+
+const emit = defineEmits([
+    'didClickDelete'
+])
+
+function didClickDelete() {
+    emit('didClickDelete', modelValue)
+}
 
 </script>
 <template>
-    <AutoCompleter
-        :key="modelValue[variableField]"
-        v-if="component=='AutoCompleter'"
-        v-model="modelValue[variableField]"
-        v-bind="componentProps"
-        :hide-clear-button="true"
-    />
+    <div class="flex flex-row">
+        <template v-for="c of components" :key="modelValue![c.variableField]">
+            <IftaLabel class="mr-2">
+                <AutoCompleter
+                    v-if="c.component=='AutoCompleter'"
+                    v-model="modelValue![c.variableField!]"
+                    v-bind="_.omit(c.componentProps, 'searchBaseUrl')"
+                    :search-base-url="_.get(c.componentProps, 'searchBaseUrl', '')"
+                    :hide-clear-button="true"
+                    :disabled="disabled"
+                />
+                <component
+                    v-else
+                    :is="c.component"
+                    v-model="modelValue![c.variableField]"
+                    v-bind="c.componentProps"
+                    :disabled="disabled"
+                />
+                <label :for="c.variableField">
+                    {{ c.label || c.variableField}}
+                </label>
+            </IftaLabel>
+        </template>
+        <Button v-if="props.canDelete" icon="pi pi-times" severity="secondary" outlined @click="didClickDelete" />
+    </div>
 </template>

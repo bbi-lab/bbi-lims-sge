@@ -115,7 +115,6 @@ defineExpose({
     <component :is="_.isEmpty(iftaLabel) ? 'span' : 'IftaLabel'">
         <AutoComplete
             v-model="currentValue"
-            class="w-80"
             :inputClass="inputClass"
             :id="inputId"
             :suggestions="suggestions"
@@ -131,9 +130,3 @@ defineExpose({
 
     <Button v-if="!disabled && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clickedClearValue" />
 </template>
-
-<style>
-.p-autocomplete-input {
-    width: 100%;
-}
-</style>
