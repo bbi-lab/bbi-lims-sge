@@ -1,0 +1,1 @@
+ALTER TABLE "transfect_experiments" ALTER COLUMN "started_on" SET NOT NULL;

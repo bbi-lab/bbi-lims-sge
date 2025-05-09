@@ -8,7 +8,7 @@ export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   cycleId: uuid('cycle').references(() => cycles.id).unique().notNull(),
   technician: uuid('technician').references(() => users.id),
-  startedOn: timestamp('started_on').defaultNow(),
+  startedOn: timestamp('started_on').notNull().defaultNow(),
   transfectionCount: integer('transfection_count'),
   replicateCount: integer('replicates_count').notNull(),
   negativeControl: boolean('negative_control'),
