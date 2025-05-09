@@ -10,7 +10,7 @@ export const transfectExperiments = pgTable('transfect_experiments', {
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
   transfectionCount: integer('transfection_count'),
-  replicateCount: integer('replicates_count'),
+  replicateCount: integer('replicates_count').notNull(),
   negativeControl: boolean('negative_control'),
 })
 
@@ -28,11 +28,13 @@ export const transfectTargets = pgTable('transfect_targets', {
   hprt1SgRnaTo12ugVol: doublePrecision('hprt1_sg_rna_to_12ug_vol'),
   xfectBuffer: doublePrecision('xfect_buffer'),
   xfectPolymerPerTransfect: doublePrecision('xfect_polymer_per_transfect'),
-  transfectionCount: integer('transfection_count'),
+  transfectionCount: integer('transfection_count').notNull(),
   snvLibNeeded: doublePrecision('snv_lib_needed'),
   sgRnaNeeded: doublePrecision('sg_rna_needed'),
   notes: text('notes'),
-})
+}, (t) => [
+  unique('unique_transfect_experiment_target_count').on(t.experimentId, t.targetId, t.transfectionCount),
+])
 
 export const transfectLotUsage = pgTable('transfect_lot_usage', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
