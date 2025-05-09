@@ -152,9 +152,6 @@ const columnDefs: ColumnDefinitions = {
             const transfectionCounts = _.map(x.transfectTargets, 'transfectionCount')
             const minTransfectionsPerReplicate = _.min(transfectionCounts)
             const maxTransfectionsPerReplicate = _.max(transfectionCounts)
-            console.log('minTransfectionsPerReplicate', minTransfectionsPerReplicate)
-            console.log('maxTransfectionsPerReplicate', maxTransfectionsPerReplicate)
-            console.log('negativeControl', x.negativeControl)
             return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
                 _.toString(minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)) :
                 `${minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)} - ${maxTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)}`
