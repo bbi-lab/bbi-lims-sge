@@ -16,8 +16,8 @@ const route = useRoute()
 
 onMounted(async() => {
     if (route.params.id) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id)
-        tableTitle.value = `${experiment.name}: targets`
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id, {cycle: {columns: {name: true}}})
+        tableTitle.value = `${experiment.cycle.name}: targets`
     } else {
         tableTitle.value = 'Transfection experiment targets'
     }

@@ -14,8 +14,8 @@ const rowActions = {}
 const route = useRoute()
 
 onMounted(async() => {
-    const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id)
-    tableTitle.value = `${experiment.name}: Reagents`
+    const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id, {cycle: {columns: {name: true}}})
+    tableTitle.value = `${experiment.cycle.name}: Reagents`
 })
 
 function didClickRecordEdit(event) {

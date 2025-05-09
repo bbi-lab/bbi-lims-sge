@@ -249,6 +249,7 @@ async function submitPellets() {
     <div v-if="loaded">
         <div class="grid grid-cols-12 p-5">
             <div class="col-span-12 md:col-span-12 lg:col-span-12 xl:col-span-12">
+                <h5>{{ experiment?.name }} transfection</h5>
                 <div>Started on: {{ experimentStartedOn }}</div>
                 <div v-if="experimentStartedOn">Time elapsed: {{ timeElapsed }}</div>
             </div>

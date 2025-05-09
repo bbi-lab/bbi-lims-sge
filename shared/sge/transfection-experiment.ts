@@ -49,6 +49,8 @@ export class TransfectionExperiment {
     id?: string
     data?: TransfectionExperimentUpdate
 
+    name?: string
+
     // related data
     transfectTargets?: TranfectionExperimentTarget[]
     pellets?: TranfectionExperimentPellet[]
@@ -72,6 +74,9 @@ export class TransfectionExperiment {
         const fetchQuery = {
             query: {
                 with: {
+                    cycle: {
+                        columns: {name: true},
+                    },
                     transfectTargets: {
                         columns: {id: true},
                         with: {
@@ -112,6 +117,9 @@ export class TransfectionExperiment {
         if (transfectionExperimentSelect.safeParse(data).success) {
             this.data = transfectionExperimentSelect.parse(data)
 
+            if (_.has(data, 'cycle')) {
+                this.name = _.get(data, 'cycle.name', '')
+            }
             if (_.has(data, 'transfectTargets')) {
                 this.pellets = _.compact(
                     _.flatten(
