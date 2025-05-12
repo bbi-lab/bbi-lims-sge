@@ -84,6 +84,11 @@ const rowActions = {
         tooltip: 'Plates',
     }
 }
+const fieldDefs = {
+    plates: {
+        display: false,
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -105,6 +110,7 @@ const rowActions = {
                 v-if="showAddForm"
                 tableName="pcr-experiments"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -113,6 +119,7 @@ const rowActions = {
                 :recordId="editingRecordId"
                 tableName="pcr-experiments"
                 schemaName="update"
+                :fieldDefs="{...fieldDefs, pcrType: { readOnly: true }}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
