@@ -42,6 +42,12 @@ const props = defineProps({
     },
 })
 
+const rotated = ref(false)
+
+const plateDiagramClasses = computed(() => {
+    return rotated.value ? "z-10 mt-[calc(25%)] rotate-90 w-80" : "z-10 w-80"
+})
+
 const emit = defineEmits([
     'well-range-selected',
     'well-selection-cleared',
@@ -90,7 +96,7 @@ defineExpose({
             <slot name="header" />
         </div>
         <div class="flex">
-            <div ref="plateDiagramDiv" class="z-10"></div>
+            <div ref="plateDiagramDiv" :class="plateDiagramClasses"></div>
             <div v-if="showSidebar" class="flex flex-col z-0">
                 <Button v-if="showSelectAllButton" v-tooltip="{value: 'Select all wells', showDelay: 500}" @click="allWellsSelected" severity="secondary">
                     <template #icon>
@@ -102,6 +108,7 @@ defineExpose({
                         <PhSelectionSlash />
                     </template>
                 </Button>
+                <Button icon="pi pi-refresh" v-tooltip="{value: 'Rotate', showDelay: 500}" @click="rotated = !rotated" severity="secondary" />
                 <slot name="button1" />
                 <slot name="button2" />
                 <slot name="button3" />
