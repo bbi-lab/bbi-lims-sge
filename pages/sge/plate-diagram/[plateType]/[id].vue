@@ -169,6 +169,7 @@ const sharedColumnDefs = {
                 ${x.sequenceType ? _.upperCase(x.sequenceType[0]) : ''}
             </span>` : ''
         },
+        searchable: false,
     },
     wellContents: {
         header: 'Location',
@@ -382,6 +383,7 @@ const rowActions = {
                 :where="displayWhereClause"
                 :columnDefs="_.get(columnDefs, tableName)"
                 :rowActions="rowActions"
+                :showColumnFilters="true"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds"
             />
