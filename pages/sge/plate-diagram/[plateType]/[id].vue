@@ -4,7 +4,7 @@ import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
-import { type PlateWithWellContents, type WellSpecs, updateWellSpecs } from '~/utils/sge/plateUtils'
+import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
@@ -143,7 +143,27 @@ const displayWithClause = Object.freeze({
             columns: {
                 id: true,
                 name: true,
+                transfections: true,
+                harvestDay: true,
             },
+            with: {
+                transfectTarget: {
+                    columns: {},
+                    with: {
+                        experiment: {
+                            columns: {},
+                            with: {
+                                cycle: {
+                                    columns: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     }
 })
@@ -220,6 +240,14 @@ const columnDefs = {
             path: 'pellet.displayValue',
             index: 1
         },
+        cycle: {
+            header: 'Cycle',
+            format: (x: any) => {
+                return x.pellet?.transfectTarget?.experiment?.cycle?.name || ''
+            },
+            path: 'cycle.displayValue',
+            index: 1
+        },
         protocol: {
             index: 4,
         }
@@ -259,6 +287,27 @@ const wellSelectionCleared = function(wells: PlateDiagramWell[]) {
         life: 1000,
     })
 }
+const layoutPreseq1 = async () => {
+    if (plateWithWellContents.value) {
+        const wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
+
+        if (!_.isEmpty(wellContentsAdded)) {
+            const updatedWellIds = _.map(wellContentsAdded, 'wellId')
+            const oldValues = _.values(_.pick(wellSpecs.value, updatedWellIds))
+
+            await refreshPlate()
+            const updatedWells = _.values(_.pick(wellSpecs.value, updatedWellIds))
+            if (!_.isEmpty(updatedWells)) {
+                plateDiagram.value.updateWells(
+                    updatedWells,
+                    oldValues
+                )
+            }
+        }
+
+    }
+}
+
 const actionOnSelectedWells = function() {
     toast.add({
         severity: 'info',
@@ -385,8 +434,19 @@ const rowActions = {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 emptyMessage=""
-                v-model:frozenRecordIds="frozenRecordIds"
-            />
+                v-model:frozenRecordIds="frozenRecordIds">
+                <template #header-buttons>
+                    <Button
+                        v-if="plateWithPlateDiagramWells?.plateType == 'preseq-1'"
+                        size="large"
+                        icon="pi pi-bolt"
+                        iconPos="right"
+                        severity="warn"
+                        class="flex-none"
+                        label="Auto-layout"
+                        @click="layoutPreseq1" />
+                </template>
+            </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
             <PlateDiagram

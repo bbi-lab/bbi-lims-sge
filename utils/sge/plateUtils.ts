@@ -5,6 +5,7 @@ import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { Plate } from "~/server/db/schema/sge/plate"
 import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer } from "~/server/db/schema/sge/primer"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
+import { RecordService } from "../service/RecordService"
 
 export type PlateDiagramColorMap = {
     [key: string]: {
@@ -44,6 +45,8 @@ export type WellWithContents = Well & {
 export type PlateWithWellContents = Plate & {
     wells: WellWithContents[]
 }
+
+type NucleicAcidWithPellet = NucleicAcid & {pellet: Pellet}
 
 export const PLATE_TYPE_SPECS = {
     'amp-storage':{
@@ -90,7 +93,11 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
     const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentTypeShortName'])
     const wellContentNamePath = _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plate.plateType) ? 'pellet.name' : 'name'
 
-    const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ? [wellContentsKey, 'targetId'] : undefined
+    const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ?
+        [wellContentsKey, 'targetId'] :
+        _.includes(['preseq-1'], plate.plateType) ?
+        [wellContentsKey, 'pellet', 'id'] :
+        undefined
 
     // remove empty wells from color map
     _.forEach(plate.wells, (well: WellWithContents) => {
@@ -162,4 +169,66 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
             _.set(wellSpecs, [well.id, 'symbol'], _.upperCase(_.get(wellContent, 'sequenceType.0')))
         }
     })
+}
+
+export const assignNucleicAcidsToPreseq1Plate = async (nucleicAcids: NucleicAcidWithPellet[], plate: PlateWithWellContents, apiBase: string) => {
+    const wellContentsAdded = []
+    let lastColumnPopulated = 0
+
+    // should be only one negative control
+    const negativeControl = _.find(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.transfections?.length == 1 && nucleicAcid.pellet.transfections[0] == 'NC'
+    })
+
+    if (negativeControl) {
+        // assign to the first column (8 wells)
+        const wellsToAssignTo = _.filter(plate.wells, (well) => well.x == 1)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: negativeControl.id,
+            }
+        })
+        const wellContents = await RecordService.addRecords(`${apiBase}/well-contents`, wellContentsToAdd) as WellContent[]
+        wellContentsAdded.push(...wellContents)
+        lastColumnPopulated++
+    }
+
+    const dayFiveNucleicAcids = _.sortBy(_.filter(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.harvestDay == 5 && !_.includes(nucleicAcid.pellet.transfections, 'NC')
+    }), (x) => x.pellet.name)
+
+    for (const dayFiveNucleicAcid of dayFiveNucleicAcids) {
+        // assign each to one column (8 wells)
+        const wellsToAssignTo = _.filter(plate.wells, (well) => well.x == lastColumnPopulated + 1)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: dayFiveNucleicAcid.id,
+            }
+        })
+        const wellContents = await RecordService.addRecords(`${apiBase}/well-contents`, wellContentsToAdd) as WellContent[]
+        wellContentsAdded.push(...wellContents)
+        lastColumnPopulated++
+    }
+
+    const dayThirteenNucleicAcids = _.sortBy(_.filter(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.harvestDay == 13 && !_.includes(nucleicAcid.pellet.transfections, 'NC')
+    }), (x) => x.pellet.name)
+
+    for (const dayThirteenNucleicAcid of dayThirteenNucleicAcids) {
+        // assign each to 2 columns (16 wells)
+        const wellsToAssignTo = _.filter(plate.wells, (well) => well.x > lastColumnPopulated && well.x <= lastColumnPopulated + 2)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: dayThirteenNucleicAcid.id,
+            }
+        })
+        const wellContents = await RecordService.addRecords(`${apiBase}/well-contents`, wellContentsToAdd) as WellContent[]
+        wellContentsAdded.push(...wellContents)
+        lastColumnPopulated = lastColumnPopulated + 2
+    }
+
+    return wellContentsAdded
 }
