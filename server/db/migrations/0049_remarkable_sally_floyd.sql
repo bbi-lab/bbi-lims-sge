@@ -1,0 +1,1 @@
+ALTER TABLE "well_contents" DROP CONSTRAINT "well_contents_nucleic_acid_id_unique";
