@@ -54,4 +54,32 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             },
         },
     },
+    'pcrExperiments': {
+        'pcrType': {
+            'lin-pcr': {
+                desc: 'Linearization primer PCR',
+                label: 'LIN PCR',
+            },
+            'amp-pcr': {
+                desc: 'Amplification primer PCR',
+                label: 'AMP PCR',
+            },
+            'ha-pcr': {
+                desc: 'Homology arm primer PCR',
+                label: 'HA PCR',
+            },
+            'preseq-1': {
+                desc: 'PreSeq 1',
+                label: 'PreSeq 1',
+            },
+            'preseq-2': {
+                desc: 'PreSeq 2',
+                label: 'PreSeq 2',
+            },
+            'preseq-3': {
+                desc: 'PreSeq 3',
+                label: 'PreSeq 3',
+            },
+        },
+    },
 } as const

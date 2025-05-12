@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showAddForm = ref(false)
@@ -50,7 +51,14 @@ const columnDefs: ColumnDefinitions = {
     },
     technician: {
         path: 'technician.name',
-    }
+    },
+    pcrType: {
+        header: 'Type',
+        format: (x: any) => {
+            return _.get(ENUM_LOOKUPS.pcrExperiments.pcrType, [x.pcrType, 'label'])
+        },
+        path: 'pcrType.displayValue',
+    },
 }
 const rowActions = {
     plates: {

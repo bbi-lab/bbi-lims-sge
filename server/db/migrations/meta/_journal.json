@@ -337,6 +337,13 @@
       "when": 1746823555153,
       "tag": "0047_futuristic_microchip",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1747064357678,
+      "tag": "0048_regular_kingpin",
+      "breakpoints": true
     }
   ]
 }
