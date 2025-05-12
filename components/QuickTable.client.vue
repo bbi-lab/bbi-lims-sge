@@ -124,6 +124,7 @@ interface ColumnDefinition {
     sortable?: boolean,
     element?: string | ((data: any) => string),
     elementSearchText?: (data: any) => string,
+    searchable?: boolean,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -206,7 +207,9 @@ watch(sortedColumnDefs, (newValue, oldValue) => {
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
             const key = colDef.path || colDef.key
-            _.set(acc,[key],{ value: null, matchMode: FilterMatchMode.CONTAINS })
+            if (colDef.searchable !== false) {
+                _.set(acc,[key],{ value: null, matchMode: FilterMatchMode.CONTAINS })
+            }
             return acc
         }, {})
         filters.value = _.merge({global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, filtersEntries)
@@ -441,8 +444,8 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         <template #loading> Loading </template>
 
         <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" frozen />
-        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
-            <template v-if="showColumnFilters" #header>
+        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || props.showColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
+            <template v-if="props.showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/>
             </template>
             <template #body="slotProps">
