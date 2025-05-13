@@ -17,37 +17,50 @@ const transfectionExperimentUpdate = transfectionExperimentSelect.omit({id: true
 type TransfectionExperimentSelect = z.infer<typeof transfectionExperimentSelect>
 type TransfectionExperimentUpdate = z.infer<typeof transfectionExperimentUpdate>
 
-const pelletInsert = createInsertSchema(pellets).merge(z.object({ replicates: z.string().array() }))
-export type PelletInsert = z.infer<typeof pelletInsert>
+const pelletInsert = createInsertSchema(pellets)
+type PelletInsert = z.infer<typeof pelletInsert>
 
-const pelletSelect = createSelectSchema(pellets).merge(z.object({ replicates: z.string().array() }))
+const pelletSelect = createSelectSchema(pellets)
 type PelletSelect = z.infer<typeof pelletSelect>
-
+// type for pellet plus transfection target ID
+export type TranfectionExperimentPellet = PelletSelect & {
+    transfectTargetId: string
+}
 const transfectionTargetSelect = createSelectSchema(transfectTargets)
-export type TransfectionTargetSelect = z.infer<typeof transfectionTargetSelect>
-
+type TransfectionTargetSelect = z.infer<typeof transfectionTargetSelect>
+// type for target minus pellets
+type TranfectionExperimentTarget = TransfectionTargetSelect & {
+    target: {
+        name: string
+        region: {
+            name: string
+            gene: {
+                symbol: string
+            }
+        }
+    }
+}
 type IdOnly = {id: string}
 
-export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
-export const VALID_REPLICATES = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
+// export const VALID_REPLICATES = ['NC', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9']
+export const VALID_TRANSFECTIONS = ['NC', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9']
 
 export class TransfectionExperiment {
     id?: string
     data?: TransfectionExperimentUpdate
 
-    fetchOptions?: {query: {with: DBQueryConfig["with"] }}
+    name?: string
 
     // related data
-    transfectTargets?: Object[]
-    pellets?: Object[]
+    transfectTargets?: TranfectionExperimentTarget[]
+    pellets?: TranfectionExperimentPellet[]
 
-    constructor(val?: string | TransfectionExperimentUpdate, withClause?: DBQueryConfig["with"]) {
+    constructor(val?: string | TransfectionExperimentUpdate) {
         if (!_.isObject(val)) {
             this.id = val
         } else {
             this.data = val
         }
-        if (withClause) this.fetchOptions = {query: {with: withClause}}
     }
 
     // assign values and save to database
@@ -58,21 +71,72 @@ export class TransfectionExperiment {
 
     // fetch instance from db and populate values
     async fetch() {
-        const data = await $fetch(`${baseUrl}/${this.id}`, this.fetchOptions)
+        const fetchQuery = {
+            query: {
+                with: {
+                    cycle: {
+                        columns: {name: true},
+                    },
+                    transfectTargets: {
+                        columns: {
+                            id: true,
+                            transfectionCount: true
+                        },
+                        with: {
+                            pellets: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    harvestDay: true,
+                                    transfections: true,
+                                },
+                            },
+                            target: {
+                                columns: {name: true},
+                                with: {
+                                    region: {
+                                        columns: {name: true},
+                                        with: {
+                                            gene: {
+                                                columns: {symbol: true}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        }
+
+        const data = await $fetch(`${baseUrl}/${this.id}`, fetchQuery)
         if (!data) {
             throw createError({
                 statusCode: 404,
                 statusMessage: 'Not Found'
             })
-        } 
+        }
         if (transfectionExperimentSelect.safeParse(data).success) {
             this.data = transfectionExperimentSelect.parse(data)
-            
-            if (_.has(data, 'transfectTargets')) {
-                this.transfectTargets = _.get(data, 'transfectTargets')
+
+            if (_.has(data, 'cycle')) {
+                this.name = _.get(data, 'cycle.name', '')
             }
-            if (_.has(data, 'pellets')) {
-                this.pellets = _.get(data, 'pellets')
+            if (_.has(data, 'transfectTargets')) {
+                this.pellets = _.compact(
+                    _.flatten(
+                        _.map(
+                            data.transfectTargets, (x: any) => _.map(x.pellets, (pellet) => {
+                                return {...pellet, transfectTargetId: x.id}  as TranfectionExperimentPellet
+                            })
+                        )
+                    )
+                )
+                this.transfectTargets = _.map(data.transfectTargets, (x) => {
+                    _.unset(x, 'pellets')
+                    return x
+                })
             }
             return {success: true}
         }
@@ -108,7 +172,7 @@ export class TransfectionExperiment {
             }
         }
     }
-    
+
     // delete experiment from db
     async delete() {
         const data = await $fetch<IdOnly>(`${baseUrl}/${this.id}`, {method: 'DELETE'})
@@ -128,11 +192,11 @@ export class TransfectionExperiment {
             const existingTargets = await db.select({targetId: transfectTargets.targetId})
                 .from(transfectTargets)
                 .where(eq(transfectTargets.experimentId, this.id))
-        
+
             const existingTargetIds =  _.map(existingTargets, (x) => x.targetId)
             const targetsToRemove = _.difference(existingTargetIds, targetIds)
             const targetsToAdd = _.difference(targetIds, existingTargetIds)
-        
+
             if (targetsToAdd?.length > 0)
                 await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string}}))
             if (targetsToRemove?.length > 0)

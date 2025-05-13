@@ -1,15 +1,19 @@
 
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
+import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const pcrExperimentsTable = ref()
 const router = useRouter()
+const config = useRuntimeConfig()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -27,20 +31,28 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+async function didAddRecord(event: any) {
+    // add corresponding plate
+    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
+        name: event.name,
+        sizeX: 12,
+        sizeY: 8,
+        plateType: event.pcrType,
+        pcrExperimentId: event.id,
+    })
     pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     pcrExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time'
     },
@@ -49,18 +61,33 @@ const columnDefs = {
     },
     technician: {
         path: 'technician.name',
-    }
+    },
+    pcrType: {
+        display: false,
+    },
+    pcrTypeLabel: {
+        header: 'Type',
+        format: (x: any) => {
+            return _.get(ENUM_LOOKUPS.pcrExperiments.pcrType, [x.pcrType, 'label'])
+        },
+        path: 'pcrType.displayValue',
+    },
 }
 const rowActions = {
     plates: {
-        label: (data) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
-        action: (data) => {
-            router.push({path:'/sge/pcr-plates', query: {'pcrExperimentId': data.id}})
+        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+        action: (data: any) => {
+            router.push({path:`/sge/plate-diagram/${data.pcrType}/${data.plates[0].id}`})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Plates',
     }
+}
+const fieldDefs = {
+    plates: {
+        display: false,
+    },
 }
 </script>
 <template>
@@ -72,7 +99,7 @@ const rowActions = {
                 schemaName="select"
                 title="PCR Experiments"
                 :rowActions="rowActions"
-                :withClause="{plates: true, technician: {columns: {name: true}}}"
+                :withClause="{plates: {columns: {id: true}}, technician: {columns: {name: true}}}"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
@@ -83,14 +110,16 @@ const rowActions = {
                 v-if="showAddForm"
                 tableName="pcr-experiments"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="pcr-experiments"
                 schemaName="update"
+                :fieldDefs="{...fieldDefs, pcrType: { readOnly: true }}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

@@ -6,11 +6,10 @@ import { regions } from './region'
 import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { plasmidExperiments } from './plasmid-experiment'
-import { extractionExperiments } from './extraction-experiment'
+import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
-import { plates } from './plate'
+import { plates, viewPlatesWithWellCounts } from './plate'
 import { pellets } from './pellet'
-import { storageBoxes } from './storage-box'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
@@ -18,8 +17,9 @@ import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
-import { wells } from './well'
+import { wellContents, wells } from './well'
 
+// tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
 const insertProjectSchema = selectProjectSchema.omit({id: true})
 const updateProjectSchema = insertProjectSchema
@@ -80,6 +80,10 @@ const selectExtractionExperimentsSchema = createSelectSchema(extractionExperimen
 const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
 const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
 
+const selectExtractionLotUsageSchema = createSelectSchema(extractionLotUsage, {usageOn: nullableDateSchema})
+const insertExtractionLotUsageSchema = selectExtractionLotUsageSchema.omit({id: true}).partial()
+const updateExtractionLotUsageSchema = insertExtractionLotUsageSchema
+
 const selectPlatesSchema = createSelectSchema(plates)
 const insertPlatesSchema = selectPlatesSchema.omit({id: true})
 const updatePlatesSchema = insertPlatesSchema
@@ -88,13 +92,13 @@ const selectWellsSchema = createSelectSchema(wells)
 const insertWellsSchema = selectWellsSchema.omit({id: true}).partial()
 const updateWellsSchema = insertWellsSchema.omit({plateId: true, x: true, y: true})
 
+const selectWellContentsSchema = createSelectSchema(wellContents)
+const insertWellContentsSchema = selectWellContentsSchema.omit({id: true}).partial()
+const updateWellContentsSchema = insertWellContentsSchema
+
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
 const updatePelletsSchema = insertPelletsSchema
-
-const selectStorageBoxesSchema = createSelectSchema(storageBoxes)
-const insertStorageBoxesSchema = createSelectSchema(storageBoxes).omit({id: true})
-const updateStorageBoxesSchema = insertStorageBoxesSchema
 
 const selectLotsSchema = createSelectSchema(lots, {preparedOn: nullableDateSchema, storedOn: nullableDateSchema, startedUseOn: nullableDateSchema, endedUseOn: nullableDateSchema, expiresOn: nullableDateSchema})
 const insertLotsSchema = selectLotsSchema.omit({id: true})
@@ -109,7 +113,7 @@ const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
 const updatePlasmidsSchema = insertPlasmidsSchema
 
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
-const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true})
+const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
 
 const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
@@ -124,7 +128,11 @@ const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
+// views
+const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
+
 export const schemas = {
+    // tables
     projects: {
         select: selectProjectSchema,
         insert: insertProjectSchema,
@@ -184,10 +192,20 @@ export const schemas = {
         insert: insertWellsSchema,
         update: updateWellsSchema,
     },
+    wellContents: {
+        select: selectWellContentsSchema,
+        insert: insertWellContentsSchema,
+        update: updateWellContentsSchema,
+    },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
         update: updateExtractionExperimentsSchema,
+    },
+    extractionLotUsage: {
+        select: selectExtractionLotUsageSchema,
+        insert: insertExtractionLotUsageSchema,
+        update: updateExtractionLotUsageSchema,
     },
     plasmids: {
         select: selectPlasmidsSchema,
@@ -203,11 +221,6 @@ export const schemas = {
         select: selectPelletsSchema,
         insert: insertPelletsSchema,
         update: updatePelletsSchema,
-    },
-    storageBoxes: {
-        select: selectStorageBoxesSchema,
-        insert: insertStorageBoxesSchema,
-        update: updateStorageBoxesSchema,
     },
     lots: {
         select: selectLotsSchema,
@@ -233,5 +246,10 @@ export const schemas = {
         select: selectLinearizationPrimerSchema,
         insert: insertLinearizationPrimerSchema,
         update: updateLinearizationPrimerSchema,
+    },
+
+    // views
+    viewPlatesWithWellCounts: {
+        select: selectViewPlatesWithWellCountsSchema,
     },
 }

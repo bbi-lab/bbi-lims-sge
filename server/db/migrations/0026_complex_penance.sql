@@ -1,0 +1,1 @@
+ALTER TABLE "pcr_experiments" ADD COLUMN "pcr_type" varchar NOT NULL;

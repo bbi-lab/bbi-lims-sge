@@ -1,15 +1,22 @@
 
-<script setup>
+<script setup lang="ts">
+import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { wellCoordinateToChar } from '@/composables/lib/plate-diagram'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
-const editingRecordId = ref(null)
+const editingMultipleRecordsIds = ref<string[]>([])
+const editingRecordId = ref<string | null>(null)
 const nucleicAcidsTable = ref()
-const router = useRouter()
-const config = useRuntimeConfig()
 
-function didClickRecordEdit(event) {
+const route = useRoute()
+const config = useRuntimeConfig()
+const queryParams = route.query
+
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -26,7 +33,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -36,53 +43,114 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) nucleicAcidsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     nucleicAcidsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-const columnDefs = {
+const displayWithClause = Object.freeze({
+    extractionExperiment: {
+        columns: {name: true}
+    },
     pellet: {
-        format: (x) => `${x.pellet?.transfectTargetId?.experiment?.name}: ${x.pellet?.transfectTargetId?.target?.name}`,
-        path: 'pellet.displayValue',
-        type: 'string',
+        columns: {id: true, name: true, isBackup: true},
+    },
+    wellContents: {
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
+    },
+})
+const columnDefs: ColumnDefinitions = {
+    pellet: {
         index: 1,
+        type: 'element',
+        element: (x: any) => {
+            const href = `/sge/pellets?id=${x.pellet.id}`
+            return `<a href="${href}" class="text-blue-500 hover:underline">${x.pellet.name}</a>`
+        },
+        elementSearchText: (x: any) => {
+            return x.pellet.name
+        },
+    },
+    pelletIsBackup: {
+        path: 'pelletIsBackup.displayValue',
+        header: 'Backup pellet',
+        type: 'bool',
+        format: (data: any) => {
+            return data.pellet?.isBackup ? '✓' : ''
+        },
+
+        index: 2,
     },
     extractionExperiment: {
         path: 'extractionExperiment.name',
-        index: 2,
-    },
-    storageBox: {
-        path: 'storageBox.name',
         index: 3,
     },
-    storageBoxLoc: {
+    wellContents: {
+        header: 'Location',
+        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        path: 'wellContents.displayValue',
+        type: 'string',
         index: 4,
+    },
+    protocol: {
+        index: 5,
     },
     extractionExperimentId: {
         display: false
     },
-    storageBoxId: {
-        display: false
-    },
     pelletId: {
         display: false
-    }
+    },
+    dnaConcentration: {
+        header: 'DNA conc (ng/μL)',
+    },
+    dnaVolume: {
+        header: 'DNA vol (μL)',
+    },
+    dnaYield: {
+        header: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        header: 'RNA conc (ng/μL)',
+    },
+    rnaVolume: {
+        header: 'RNA vol (μL)',
+    },
+    rnaYield: {
+        header: 'RNA yield (μg)',
+    },
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     extractionExperimentId: {
         label: 'Experiment',
         component: 'AutoCompleter',
@@ -93,30 +161,39 @@ const fieldDefs = {
             displayFields: ['name'],
         }
     },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
     pelletId: {
         label: 'Pellet',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/pellets`,
-            searchFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
-            searchWithClause: {
-                transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
-            },
+            searchFields: ['name'],
             valueField: 'id',
-            displayFields: ['transfectTargetId.experiment.name', 'transfectTargetId.target.name'],
+            displayFields: ['name', 'isBackup'],
+            displayFormat: (x: any) => x.isBackup ? `${x.name} (backup)` : x.name,
         }
     },
+    dnaConcentration: {
+        label: 'DNA concentration (ng/μL)',
+    },
+    dnaVolume: {
+        label: 'DNA volume (μL)',
+    },
+    dnaYield: {
+        label: 'DNA yield (μg)',
+    },
+    rnaConcentration: {
+        label: 'RNA concentration (ng/μL)',
+    },
+    rnaVolume: {
+        label: 'RNA volume (μL)',
+    },
+    rnaYield: {
+        label: 'RNA yield (μg)',
+    },
 }
+const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+const readonlyValues = queryParams
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -127,7 +204,8 @@ const fieldDefs = {
                 schemaName="select"
                 title="Nucleic Acids"
                 :columnDefs="columnDefs"
-                :withClause="{extractionExperiment: {columns: {name: true}}, storageBox: {columns: {name: true}}, pellet: {columns: {}, with: {transfectTargetId: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}}}}}"
+                :where="whereClauses"
+                :withClause="displayWithClause"
                 :canEditMultiple="true"
                 :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
                 @clickedRecordEdit="didClickRecordEdit"
@@ -141,15 +219,17 @@ const fieldDefs = {
                 tableName="nucleicAcids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="nucleicAcids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"
@@ -160,6 +240,7 @@ const fieldDefs = {
                 :recordIds="editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelMultipleEditForm"
                 @records-update="didUpdateMultipleRecords"
             />

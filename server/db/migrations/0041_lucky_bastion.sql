@@ -1,0 +1,1 @@
+ALTER TABLE "transfect_experiments" ADD COLUMN "negative_control" boolean;

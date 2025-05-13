@@ -1,16 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const config = useRuntimeConfig()
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const lotsTable = ref()
 const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref([])
+const editingMultipleRecordsIds = ref<string[]>([])
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -28,19 +30,19 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     lotsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     lotsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     lotsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -50,13 +52,13 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
-    event.forEach(e => {
+function didUpdateMultipleRecords(event: any) {
+    event.forEach((e: any) => {
         if (e.id) lotsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-const columnDefs = {
+const columnDefs: ColumnDefinitions = {
     startedUseOn: {
         format: 'date-time'
     },
@@ -99,7 +101,7 @@ const columnDefs = {
     },
 }
 
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     reagent: {
         label: 'Reagent',
         component: 'AutoCompleter',
@@ -113,7 +115,7 @@ const fieldDefs = {
     concentration: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Concentration (${relatedData.reagent?.soluteUnit}/${relatedData.reagent?.volumeUnit})`
+                return `Concentration (${_.get(relatedData.reagent, 'soluteUnit')}/${_.get(relatedData.reagent, 'volumeUnit')})`
             } else {
                 return 'Concentration'
             }
@@ -122,7 +124,7 @@ const fieldDefs = {
     startingVolume: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Starting Volume (${relatedData.reagent?.volumeUnit})`
+                return `Starting Volume (${_.get(relatedData.reagent, 'volumeUnit')})`
             } else {
                 return 'Starting Volume'
             }
@@ -131,7 +133,7 @@ const fieldDefs = {
     remainingVolume: {
         label: (_data, relatedData) => {
             if (_.isObject(relatedData?.reagent)) {
-                return `Remaining Volume (${relatedData.reagent?.volumeUnit})`
+                return `Remaining Volume (${_.get(relatedData.reagent, 'volumeUnit')})`
             } else {
                 return 'Remaining Volume'
             }
@@ -168,7 +170,7 @@ const fieldDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="lots"
                 schemaName="update"

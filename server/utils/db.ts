@@ -5,8 +5,8 @@ import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
-import {plates} from '../db/schema/sge/plate'
-import {wells} from '../db/schema/sge/well'
+import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
+import {wellContents, wells} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
@@ -16,10 +16,9 @@ import {pellets} from '../db/schema/sge/pellet'
 import {plasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
-import {storageBoxes} from '../db/schema/sge/storage-box'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
-import { extractionExperiments } from '../db/schema/sge/extraction-experiment'
+import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
@@ -38,6 +37,7 @@ export const schema = {
   pcrExperiments,
   plates,
   wells,
+  wellContents,
   projects,
   targets,
   genes,
@@ -48,15 +48,18 @@ export const schema = {
   pellets,
   lots,
   reagents,
-  storageBoxes,
   transfectExperiments,
   transfectTargets,
   transfectLotUsage,
   plasmidExperiments,
   extractionExperiments,
+  extractionLotUsage,
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
+
+  //views
+  viewPlatesWithWellCounts,
 
   // relations
   usersRelations,
@@ -65,6 +68,7 @@ export const schema = {
   platesRelations: sgeRelations.platesRelations,
   pcrExperimentsRelations: sgeRelations.pcrExperimentsRelations,
   wellsRelations: sgeRelations.wellsRelations,
+  wellContentsRelations: sgeRelations.wellContentsRelations,
   projectsRelations: sgeRelations.projectsRelations,
   targetsRelations: sgeRelations.targetsRelations,
   regionsRelations: sgeRelations.regionsRelations,
@@ -74,12 +78,12 @@ export const schema = {
   nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
   pelletsRelations: sgeRelations.pelletsRelations,
   lotsRelations: sgeRelations.lotsRelations,
-  storageBoxesRelations: sgeRelations.storageBoxesRelations,
   transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
   transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
   transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
   plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
   extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
+  extractionLotUsageRelations: sgeRelations.extractionLotUsageRelations,
   amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
   linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,

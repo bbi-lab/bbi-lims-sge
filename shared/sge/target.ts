@@ -25,7 +25,7 @@ export class Target {
         }
         if (withClause) this.fetchOptions = {query: {with: withClause}}
     }
-    
+
     // fetch instance from db and populate values
     async fetch() {
         const data = await $fetch(`${baseUrl}/${this.id}`, this.fetchOptions)
@@ -34,10 +34,10 @@ export class Target {
                 statusCode: 404,
                 statusMessage: 'Not Found'
             })
-        } 
+        }
         if (targetSelect.safeParse(data).success) {
             this.data = targetSelect.parse(data)
-            
+
             return {success: true}
         }
     }
@@ -46,7 +46,7 @@ export class Target {
         Object.assign(this, values)
         return await this.save()
     }
-    
+
     // update existing target in db
     async save() {
         if (this.data) {
@@ -64,29 +64,29 @@ export class Target {
         if (this.data) {
             try {
                 const existingTargetName = this.data.name || ''
-                const targetBaseName = _.split(existingTargetName, '_v')[0]
+                const targetBaseName = _.split(existingTargetName, 'v')[0]
                 let newTargetName
                 const lastTarget = await $fetch<TargetSelect[]>(`${baseUrl}`, {
                     query: {
                         where: {
-                            startsWith: [{var: 'name'}, `${targetBaseName}_v`]
+                            startsWith: [{var: 'name'}, `${targetBaseName}v`]
                         },
                         limit: 1,
                         order: {name: 'desc'}
                     }
                 })
                 if (lastTarget.length == 1) {
-                    if (lastTarget[0].name && /_v[0-9]$/.test(lastTarget[0].name)) {
-                        const lastTargetNameParts = _.split(lastTarget[0].name, '_v')
+                    if (lastTarget[0].name && /v[0-9]$/.test(lastTarget[0].name)) {
+                        const lastTargetNameParts = _.split(lastTarget[0].name, 'v')
                         if (lastTargetNameParts.length == 2) {
                             newTargetName = `${lastTargetNameParts[0]}_v${parseInt(lastTargetNameParts[1]) + 1}`
                         }
                     } else {
                         return {success: false, message:  'Invalid target name'}
                     }
-                } else if (lastTarget.length == 0 && !existingTargetName.includes('_v')) {
-                    newTargetName = `${existingTargetName}_v2`
-                } 
+                } else if (lastTarget.length == 0 && !existingTargetName.includes('v')) {
+                    newTargetName = `${existingTargetName}v2`
+                }
 
                 if (newTargetName) {
                     return {...this.data, id: undefined, name: newTargetName}

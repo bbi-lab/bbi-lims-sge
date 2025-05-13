@@ -2,11 +2,29 @@ import * as d3 from "d3"
 import {type ValueFn} from "d3"
 import _ from "lodash"
 import type { PlateWithPlateDiagramWells } from "~/components/PlateDiagram.vue"
+import type { PlateType } from "~/server/db/schema/sge/plate"
 
 type Accessor<T, Self> = (value?: T) => T | Self
 
 interface CoordinatePair {x: number, y: number}
-export type PlateType = 'storage' | 'pcr'
+
+function hexToRgb(hex: string): {r: number, g: number, b: number} | null {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+export function getWellTextColor(hex: string): string {
+    const rgb = hexToRgb(hex)
+    if (rgb) {
+        var sum = Math.round(((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000)
+        return (sum > 128) ? '#000' : '#fff'
+    } else {
+        return 'var(--p-text-color)'
+    }
+}
 
 export const VALID_WELL_COLORS = [
     "#F0A3FF",
@@ -43,6 +61,7 @@ export interface PlateDiagramWell {
     color?: string,
     tooltip?: string,
     symbol?: string,
+    contentFKs?: string[],
     selected?: boolean,
     inSelectionRange?: boolean,
 }
@@ -67,7 +86,7 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
-export function makePlateDiagram(plateType: PlateType): PlateDiagram {
+export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY: number = 8): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
 
@@ -85,8 +104,8 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
         id: '',
         name: '',
         pcrExperimentId: null,
-        sizeX: 12,
-        sizeY: 8,
+        sizeX: sizeX,
+        sizeY: sizeY,
         plateType,
         wells: [],  // wells to be set via wells() method
     }
@@ -111,24 +130,30 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                             .style('opacity', 0.8)
                     }
                 })
+            // raise text decorations to the top of display order
+            d3.selectAll('text.well-decoration-text').raise()
         }
     }
 
     const updateWellDisplay: (svg: d3.Selection<SVGGElement, any, any, any>, updatedWells: PlateDiagramWell[]) => void = (svg, updatedWells) => {
         if (svg && updatedWells) {
+            const updatedWellIds = _.map(updatedWells, (x) => x.id)
             svg.selectAll<SVGRectElement, PlateDiagramWell>('rect')
                 .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGRectElement>) {
-                    if (_.map(updatedWells, (x) => x.id).includes(d.id)){
-                        const updatedColor = _.find(updatedWells, (x) => x.id == d.id)?.color || '#ddd'
-                        const updatedTooltip = _.find(updatedWells, (x) => x.id == d.id)?.tooltip
-                        if (updatedColor) {
-                            d3.select(this)
-                                .style('fill', updatedColor)
-                        }
-                        if (updatedTooltip) {
-                            d3.select(this)
-                                .attr('tooltip', updatedTooltip)
-                        }
+                    if (updatedWellIds.includes(d.id)){
+                        const updatedWell = _.find(updatedWells, (x) => x.id == d.id)
+                        d3.select(this)
+                            .style('fill', updatedWell?.color || '#ddd')
+                            .attr('tooltip', updatedWell?.tooltip || "")
+                    }
+                })
+            svg.selectAll<SVGTextElement, PlateDiagramWell>('text.well-decoration-text')
+                .each(function(d: PlateDiagramWell, i: number, nodes: ArrayLike<SVGTextElement>) {
+                    if (updatedWellIds.includes(d.id)){
+                        const updatedWell = _.find(updatedWells, (x) => x.id == d.id)
+                        d3.select(this)
+                            .text(updatedWell?.symbol || "")
+                            .style('fill', getWellTextColor(updatedWell?.color || "#ddd"))
                     }
                 })
         }
@@ -268,18 +293,18 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                 // Three function that change the tooltip when user hover / move / leave a cell
                 const mouseover = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
                     const tooltipText = d3.select(this).attr("tooltip")
-                    if (w.tooltip)
-                        tooltip
-                            .html(tooltipText)
-                            .style("opacity", 1)
-                            .style("pointer-events", "none")
-                            .style("left", (event.pageX + 20) + "px")
-                            .style("top", (event.pageY - 20) + "px")
-                            .raise()
+                    tooltip
+                        .html(tooltipText)
+                        .style("opacity", 1)
+                        .style("pointer-events", "none")
+                        .style("left", (event.pageX + 20) + "px")
+                        .style("top", (event.pageY - 20) + "px")
+                        .raise()
                     d3.select(this)
                         .style("stroke", "var(--p-text-color)")
                         .style("opacity", 1)
                         .raise()
+                    d3.selectAll('text.well-decoration-text').raise()
                 }
 
                 const mousemove = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
@@ -370,10 +395,24 @@ export function makePlateDiagram(plateType: PlateType): PlateDiagram {
                     .on('mousedown', mousedown)
                     .on('mouseup', mouseup)
                     .on('click', mouseclick)
-                }
-                if (svg) updateWellOutlines(svg)
-                return plateDiagram
+
+                // add the well decoration symbols
+                svg.selectAll()
+                    .data(plate.wells)
+                    .enter()
+                    .append('text')
+                    .attr('class', 'well-decoration-text')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', (w:PlateDiagramWell) => getX(w) + (x.bandwidth() - wellSpacing.x)/2)
+                    .attr('y', (w:PlateDiagramWell) => getY(w) + (y.bandwidth() - wellSpacing.y)/2 + 5)
+                    .text((w:PlateDiagramWell) => { return w.symbol || ""})
+                    .style('fill', (w:PlateDiagramWell) => getWellTextColor(w.color || "#ddd"))
+                    .style('pointer-events', 'none')
+
+                updateWellOutlines(svg)
             }
+            return plateDiagram
+        }
     }
     return plateDiagram
 }

@@ -1,15 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import _ from 'lodash'
+import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import BeakerOutline from '~icons/mdi/beaker-outline'
+import Molecule from '~icons/mdi/molecule'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)
-const editingRecordId = ref(null)
+const editingRecordId = ref<string | null>(null)
 const extractionExperimentsTable = ref()
 const router = useRouter()
 
-const rowActions = {}
-
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -27,26 +28,81 @@ function didClickCancelEditForm() {
     showEditForm.value = false
 }
 
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     extractionExperimentsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     extractionExperimentsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     extractionExperimentsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
 
-const columnDefs = {
+const displayWithClause = Object.freeze({
+    technician: {columns: {name: true}},
+    extractionLotUsage: {columns: {},
+        with: {
+            lot:  {
+                columns: {
+                    lotNumber: true
+                }
+            },
+        }
+    },
+    nucleicAcids: {columns: {id: true}},
+})
+
+const columnDefs: ColumnDefinitions = {
     extractedOn: {
         format: 'date-time'
     },
     technician: {
         path: 'technician.name'
-    }
+    },
+    nucleicAcids: {
+        display: false,
+    },
+    extractionLotUsage: {
+        header: 'Reagents',
+        format: (x) => _.join(_.map(_.get(x, 'extractionLotUsage', []), (y) => {
+            return  y.lot.lotNumber
+        }), ', '),
+        path: 'extractionLotUsage.displayValue',
+        type: 'string',
+    },
+}
+
+const rowActions = {
+    nucleicAcids: {
+        label: (data: any) => { return `${_.size(data.nucleicAcids)}`},
+        action: (data: any) => {
+            router.push({path:'/sge/nucleic-acids', query: {'extractionExperimentId': data.id}})
+        },
+        iconComponent: Molecule,
+        iconPos: 'right',
+        tooltip: 'Nucleic acids',
+    },
+    reagents: {
+        label: (data: any) => { return `${data.extractionLotUsage?.length || 0}`},
+        action: (data: any) => {
+            router.push({path:`/sge/extraction-experiment/${data.id}/lot-usage`})
+        },
+        iconComponent: BeakerOutline,
+        iconPos: 'right',
+        tooltip: 'Reagents',
+    },
+    extraction: {
+        label: () => 'Extraction',
+        action: (data: any) => {
+            router.push({path:`/sge/extraction-experiment/${data.id}/extraction`})
+        },
+        severity: 'warn',
+        icon: 'pi pi-bolt',
+        iconPos: 'right',
+    },
 }
 </script>
 <template>
@@ -58,7 +114,7 @@ const columnDefs = {
                 schemaName="select"
                 title="Extraction experiments"
                 :rowActions="rowActions"
-                :withClause="{technician: {columns: {name: true}}}"
+                :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
@@ -73,7 +129,7 @@ const columnDefs = {
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
                 tableName="extraction-experiments"
                 schemaName="update"

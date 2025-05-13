@@ -103,7 +103,6 @@ defineExpose({
                 :hideClearButton="true"
                 :placeholderValue="placeholderValue"
                 :inputClass="inputClass"
-                @update:modelValue="finalValueChanged"
             />
             <Button v-if="!_.isEmpty(parentValue) && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
         </div>

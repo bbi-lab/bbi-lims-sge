@@ -11,6 +11,21 @@ const toast = useToast()
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const formSchemPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
+const formSchemPropertiesComputedSorted = computed(() =>  _.sortBy(_.entries(formSchemPropertiesComputed.value), ([key, value]) => _.get(props.fieldDefs, [key, 'index'])))
+
+interface FieldDefinition {
+    label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
+    component?: string,
+    props?: Record<string, any>,
+    display?: boolean,
+    readOnly?: boolean,
+    canUpdate?: boolean,
+    canDelete?: boolean,
+    type?: string,
+    index?: number,
+    onChange?: (record: any) => void,
+}
+export interface FieldDefinitions {[key: string]: FieldDefinition}
 
 const props = defineProps({
   recordId: String,
@@ -19,8 +34,8 @@ const props = defineProps({
   readOnly: {type: Boolean, default: false},
   withClause: {type: Object},
   canDelete: {type: Boolean, default: true},
-  fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  defaultValues: {type: Object},             // to hide fields on form, and set defaults for new records
+  fieldDefs: {type: Object as PropType<FieldDefinitions> },    // to override widgets/labels for individual fields
+  readonlyValues: {type: Object},                       // to set values for and lock fields on form
   values: {type: Object},
 })
 
@@ -32,8 +47,8 @@ const refreshForm = async function() {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
     }
-    if (props.defaultValues) {
-        _.assign(record.value, props.defaultValues)
+    if (props.readonlyValues) {
+        _.assign(record.value, props.readonlyValues)
     }
     dataChanged.value = false
     if (props.values) {
@@ -155,36 +170,20 @@ async function saveRecord() {
         // new record
         const values = _.pick(record.value, Object.keys(formSchema.value.properties))
 
-        // TODO - Two methods are available, either using a custom class or generic service. The use of custom classes with this component
-        // can likely be made dynamic in the future if underlying classes are defined consistently with 2 properties: id (primary key) and data (everything else).
-        if (props.tableName=='transfect-experiments') {
-            const newExperiment = new TransfectionExperiment({
-                name: values.name || null,
-                technician: values.technician || null,
-                startedOn: values.startedOn || new Date(),
-                transfectionCount: values.transfectionCount || null,
-                replicateCount: values.replicateCount || null
-            })
-            const result = await newExperiment.create()
-            if (result && result.success) {
-                emit('record-add', {id: newExperiment.id, ...newExperiment.data})
+        RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
+            emit('record-add', result)
+        }).catch(error => {
+            if (formElement.value && _.isArray(error.data?.data)) {
+                addErrorsToForm(formElement.value, error.data.data)
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             }
-        } else {
-            RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
-                toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
-                emit('record-add', result)
-            }).catch(error => {
-                if (formElement.value && _.isArray(error.data?.data)) {
-                    addErrorsToForm(formElement.value, error.data.data)
-                } else {
-                    toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-                }
-            })
-        }
+        })
     }
 }
 function isReadOnly(key: string) {
-    return props.readOnly ? true : _.has(props.defaultValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
+    return props.readOnly ? true : _.has(props.readonlyValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 </script>
 <template>
@@ -194,7 +193,7 @@ function isReadOnly(key: string) {
         <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete'}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
-        <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
+        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
             <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
@@ -245,15 +244,35 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="val?.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.enum" :disabled="isReadOnly(key)" />
+                    <Select
+                        :id="key"
+                        v-model="record[key]"
+                        :options="val.enum"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }} {{_.get(fieldDefs, [key, 'valueChanged'])}}</label>
+                    <Select
+                        :id="key"
+                        v-model="record[key]"
+                        :options="val.oneOf"
+                        optionLabel="title"
+                        optionValue="const"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="isReadOnly(key)" />
+                    <Checkbox
+                        :id="key"
+                        v-model="record[key]"
+                        :binary="true"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -273,8 +292,9 @@ function isReadOnly(key: string) {
                                 v-model="record[key][arrayIndex]"
                                 v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
                                 :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
+                                :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
+                                @did-click-delete="record[key].splice(arrayIndex, 1)"
                             />
-                            <Button v-if="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                         </div>
                         <!-- Check that all array item properties are covered by JSON schema -->
                         <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">

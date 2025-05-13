@@ -16,8 +16,8 @@ const route = useRoute()
 
 onMounted(async() => {
     if (route.params.id) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id)
-        tableTitle.value = `${experiment.name}: targets`
+        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id, {cycle: {columns: {name: true}}})
+        tableTitle.value = `${experiment.cycle.name}: targets`
     } else {
         tableTitle.value = 'Transfection experiment targets'
     }
@@ -60,6 +60,10 @@ const columnDefs = {
         type: 'string',
         index: 0,
     },
+    transfectionCount: {
+        header: '# transfections',
+        index: 1,
+    },
     experimentId: {
         display: false,
     },
@@ -96,9 +100,6 @@ const columnDefs = {
     xfectPolymerPerTransfect: {
         header: 'Xfect polymer (μL) per transfection'
     },
-    transfectionCount: {
-        header: '# transfections'
-    },
     snvLibNeeded: {
         header: 'SNV library needed (μL)'
     },
@@ -108,10 +109,11 @@ const columnDefs = {
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => { 
+const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
     return {
-        display: v.display ?? true, 
+        display: v.display ?? true,
         label: v.header || k,
+        index: v.index,
     }
 })
 // Include an AutoCompleter widget for adding new targets
@@ -128,11 +130,12 @@ editFormFieldDefs['targetId'] = {
         },
         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
     },
+    index: 0,
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const defaultValues = {experimentId: route.params.id}  // queryParams
+const readonlyValues = {experimentId: route.params.id}  // queryParams
 
 </script>
 <template>
@@ -157,7 +160,7 @@ const defaultValues = {experimentId: route.params.id}  // queryParams
                 tableName="transfectTargets"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
-                :defaultValues="defaultValues"
+                :readonlyValues="readonlyValues"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />

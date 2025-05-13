@@ -15,6 +15,7 @@ const exportFilename = computed(() => `${props.tableName}_${new Date().toISOStri
 const route = useRoute()
 const localStorageKey = `settings::${route.path}`
 const dtKey = ref(uuidv4())
+const dtId = useId()
 
 const refreshFormattedValues = (ids?: string[]) => {
     const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
@@ -30,7 +31,8 @@ const refreshFormattedValues = (ids?: string[]) => {
 
 onMounted(async() => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
+
 
     refreshFormattedValues()
 
@@ -72,16 +74,23 @@ const props = defineProps({
   canEditMultiple: {type: Boolean, default: false},
   canDelete: {type: Boolean, default: true},
   canExport: {type: Boolean, default: true},
+  hideSettings: {type: Boolean, default: false},
   rowsPerPageOptions: {type: Array as PropType<Array<number>> },
   selectionMode: {type: String, default: 'multiple'},
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
   selectionDisabled: {type: Boolean, default: false},
+  expandEnums: {type: Boolean, default: false},
+  emptyMessage: {type: String, default: 'No data'},
 })
+
+const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
+
 const emit = defineEmits([
     'clicked-record-edit',
     'clicked-multiple-record-edit',
     'clicked-record-add',
+    'did-delete-multiple-records',
 ])
 
 const sortedColumnDefs = computed(() => {
@@ -107,11 +116,15 @@ const visibleColumns = ref()
 
 interface ColumnDefinition {
     header?: string,
-    index?: string,
+    index?: number,
     format?: string | ((data: any) => string),
     path?: string,
     type?: string,
     display?: boolean,
+    sortable?: boolean,
+    element?: string | ((data: any) => string),
+    elementSearchText?: (data: any) => string,
+    searchable?: boolean,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -146,14 +159,57 @@ function toggleColumnFilters() {
     displayColumnFilters.value = !displayColumnFilters.value
 }
 
+const frozenRecords = computed(() => {
+    if (frozenRecordIds.value) {
+        return _.filter(records.value, (x) => (frozenRecordIds.value ?? []).includes(x.id))
+    } else {
+        return []
+    }
+})
+
+const nonFrozenRecords = computed(() => {
+    if (frozenRecordIds.value) {
+        return _.filter(records.value, (x) => !(frozenRecordIds.value ?? []).includes(x.id))
+    } else {
+        return records.value
+    }
+})
+
+watch(frozenRecords, (newValue) => {
+    nextTick(() => {
+        const frozenTbody = document.querySelector(`#${dtId} .p-datatable-scrollable-table > .p-datatable-frozen-tbody`) as HTMLElement
+        const datatableContainer = document.querySelector(`#${dtId} .p-datatable-table-container`) as HTMLElement
+        const datatableColHeaderRow = document.querySelector(`#${dtId} .p-datatable-scrollable-table > thead.p-datatable-thead`) as HTMLElement
+
+        const frozenTbodyHeight = frozenTbody.getBoundingClientRect().height || 0
+        const datatableContainerHeight = datatableContainer.getBoundingClientRect().height || 0
+
+        // if frozen rows take up more than half of the scrollable area, add sticky positioning to keep non-frozen rows scrollable
+        if (frozenTbodyHeight && frozenTbodyHeight && frozenTbodyHeight > datatableContainerHeight/2) {
+            frozenTbody.setAttribute('style', 'position: sticky; z-index: 10;')
+            datatableColHeaderRow.setAttribute('style', 'position: sticky; z-index: 20;')
+        }
+    })
+})
+
 watch(sortedColumnDefs, (newValue, oldValue) => {
   if (newValue != oldValue) {
-    globalFilterFields.value = _.map(newValue, (x) => _.isFunction(x.format) ? x.format : (x.path ?? x.key))
+    globalFilterFields.value = _.map(newValue, (x) => {
+        if (_.isFunction(x.format)) {
+            return x.format
+        } else if (x.element && _.isFunction(x.elementSearchText)) {
+            return x.elementSearchText
+        } else {
+            return x.path ?? x.key
+        }
+  })
 
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
             const key = colDef.path || colDef.key
-            _.set(acc,[key],{ value: null, matchMode: FilterMatchMode.CONTAINS })
+            if (colDef.searchable !== false) {
+                _.set(acc,[key],{ value: null, matchMode: FilterMatchMode.CONTAINS })
+            }
             return acc
         }, {})
         filters.value = _.merge({global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, filtersEntries)
@@ -165,7 +221,6 @@ function formatDate(value: string) {
     const isoDate = value ? new Date(value) : null
     return isoDate?.toLocaleDateString('fr-CA') || ''
 }
-
 function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
 }
@@ -178,6 +233,9 @@ function didClickDeleteSelectedRecords(event: MouseEvent) {
         const deletedRecordIds = _.map(result, (x) => x.id)
         records.value = _.reject(records.value, (x) => deletedRecordIds.includes(x.id))
         selectedRecords.value = _.reject(selectedRecords.value, (x) => deletedRecordIds.includes(x.id))
+        if (!_.isEmpty(result)) {
+            emit('did-delete-multiple-records', result)
+        }
     }).catch(error => {
         toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
     })
@@ -249,7 +307,7 @@ const exportXLSX = function() {
 }
 
 const addOrRefreshRecordId = async (recordId: string) => {
-    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause)
+    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
@@ -268,7 +326,7 @@ function confirmDeleteSelected() {
 }
 
 function columnHeader(sortedColumnDef: SortedColumnDefinition) {
-    return sortedColumnDef.header || _.startCase(sortedColumnDef.key)
+    return _.get(sortedColumnDef, 'header', _.startCase(sortedColumnDef.key))
 }
 
 const exportOptions = ref([
@@ -283,7 +341,7 @@ const exportOptions = ref([
         command: () => exportCSV()
     }
 ])
-defineExpose({ addOrRefreshRecordId, removeRecordId })
+defineExpose({ addOrRefreshRecordId, removeRecordId, selectedRecords })
 
 function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
@@ -326,23 +384,24 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 
 <template>
     <DataTable
-        ref="dt"
+        :id="dtId"
         :key="dtKey"
         v-model:selection="selectedRecords"
-        :value="records"
+        :value="nonFrozenRecords"
+        :frozenValue="frozenRecords"
         dataKey="id"
         :nullSortOrder="-1"
         scrollable
         scrollHeight="flex"
         v-model:filters="filters"
+        :selectionMode="selectionMode"
+        :metaKeySelection="true"
         :paginator="paginator"
         :reorderableColumns="true"
         @column-reorder="updateColOrder"
         :rows="rowsPerPage"
         :rowsPerPageOptions="props.rowsPerPageOptions"
         :loading="loading"
-        table-class="border-collapse"
-        filterHeaderClass="border-collapse"
         :filter-display="displayColumnFilters ? 'row' : undefined"
         :globalFilterFields="globalFilterFields"
         @update:filters="filteringInProgress = true"
@@ -360,14 +419,15 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </template>
                     <template #end>
                         <SplitButton v-if="props.canExport" label="Export" class="mr-2" :model="exportOptions" severity="secondary" @click="exportXLSX"></SplitButton>
-                        <Button icon="pi pi-cog" :disabled="showSettings" class="mr-2" severity="secondary" @click="showSettings=!showSettings"/>
-                        <IftaLabel :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`">
-                            <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
-                            <label for="visibileColumnsInput" v-if="showSettings">Columns</label>
-                        </IftaLabel>
-                        <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings'}" @click="clearSettings"/>
-                        <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings'}" @click="saveSettings" />
-
+                        <template v-if="!props.hideSettings">
+                            <Button icon="pi pi-cog" :disabled="showSettings" class="mr-2" severity="secondary" @click="showSettings=!showSettings"/>
+                            <IftaLabel :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`">
+                                <MultiSelect inputId="visibileColumnsInput" v-model="visibleColumns" :options="visibleColumnsOptions" optionLabel="name" :maxSelectedLabels="0" placeholder="select" />
+                                <label for="visibileColumnsInput" v-if="showSettings">Columns</label>
+                            </IftaLabel>
+                            <Button icon="pi pi-sync" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" severity="secondary" v-tooltip="{value: 'Clear settings'}" @click="clearSettings"/>
+                            <Button icon="pi pi-check" :class="`mr-2 ${showSettings ? 'visible' : 'invisible'}`" style="color: green" severity="secondary" v-tooltip="{value: 'Save settings'}" @click="saveSettings" />
+                        </template>
                         <ProgressSpinner :class="`size-8 ${filteringInProgress ? 'visible' : 'invisible'}`" />
                     </template>
                 </Toolbar>
@@ -377,26 +437,34 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                     </InputIcon>
                     <InputText v-model="globalSearchTerm" placeholder="Search..." @input="debounceSearch(setGlobalSearchTerm)()"/>
                 </IconField>
+                <slot name="header-buttons" />
             </div>
         </template>
-        <template #empty> No data </template>
+        <template #empty> {{ props.emptyMessage }} </template>
         <template #loading> Loading </template>
 
         <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" frozen />
-        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || displayColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
-            <template v-if="showColumnFilters" #header>
+        <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || props.showColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
+            <template v-if="props.showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/>
             </template>
             <template #body="slotProps">
                 <div class="group">
                     <Button v-if="props.canEdit" icon="pi pi-pencil" text rounded @click="didClickEditRecord(slotProps.data)" :disabled="!_.isEmpty(selectedRecords)" />
-                    <Button :class="v.class" :key="`${slotProps.data.id}-${k}`" :icon="v.icon" text rounded v-for="(v, k) in rowActionsStart" :severity="v.severity || 'info'" @click="v.action(slotProps.data)" />
+                    <Button
+                        :class="v.class"
+                        :key="`${slotProps.data.id}-${k}`"
+                        :icon="v.icon" text rounded
+                        v-for="(v, k) in rowActionsStart"
+                        :severity="v.severity || 'info'"
+                        :disabled="_.isFunction(v.disabled) ? v.disabled(slotProps.data) : false"
+                        @click="v.action(slotProps.data)" />
                 </div>
             </template>
         </Column>
         <template v-for="columnDef of filterByColumnVisibility(sortedColumnDefs)">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -404,7 +472,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -412,7 +480,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -424,7 +492,17 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                         </a>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" sortable>
+                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                    <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                    </template>
+                    <template #body="slotProps">
+                        <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)"></span>
+                        <span v-else-if="_.isString(columnDef.element)" v-html="columnDef.element"></span>
+                        <span v-else>err</span>
+                    </template>
+                </Column>
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
                     </template>
@@ -438,8 +516,25 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
             <template #body="{ data }">
                 <div class="flex items-start">
                     <template v-for="(v, k) in rowActionsEnd">
-                        <Button v-tooltip.top="v.tooltip" v-if="!v.iconComponent" class="mr-1 mb-1" :icon="v.icon" :iconPos="v.iconPos" :severity="v.severity || 'info'" :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))" @click="v.action(data)" />
-                        <Button v-tooltip.top="v.tooltip" v-if="v.iconComponent" class="mr-1 mb-1" :severity="v.severity || 'info'" :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))" @click="v.action(data)">
+                        <Button
+                            v-if="!v.iconComponent"
+                            v-tooltip.top="v.tooltip"
+                            :class="`mr-1 mb-1 ${_.isFunction(v.visible) && !v.visible(data) ? 'invisible' : ''}`"
+                            :icon="v.icon"
+                            :iconPos="v.iconPos"
+                            :severity="v.severity || 'info'"
+                            :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))"
+                            :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false"
+                            @click="v.action(data)" />
+                        <Button
+                            v-if="v.iconComponent"
+                            v-tooltip.top="v.tooltip"
+                            :class="`mr-1 mb-1 ${_.isFunction(v.visible) && !v.visible(data) ? 'invisible' : ''}`"
+                            :severity="v.severity || 'info'"
+                            :label="_.isFunction(v.label) ? v.label(data) : (_.has(v, 'label') ? v.label : _.startCase(_.toString(k)))"
+                            :disabled="_.isFunction(v.disabled) ? v.disabled(data) : false"
+                            @click="v.action(data)"
+                        >
                             <template #icon>
                                 <span :class="`pi pi-fw p-button-icon ${v.iconPos=='right' ? 'p-button-icon-right' : ''} inline-block`">
                                     <component :is="v.iconComponent" />
@@ -469,5 +564,16 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
 }
 .p-datatable-thead > tr:last-child {
     border-bottom-width: 1px;
+}
+.p-datatable-frozen-tbody > tr {
+    box-shadow: inset 0 0 1px black;
+    background-color: var(--p-content-border-color);
+    color: var(--p-text-color);
+}
+.p-datatable-scrollable td.p-datatable-frozen-column {
+    background-color: inherit;
+}
+.p-datatable-table tr {
+    box-shadow: 0 0 1px var(--p-text-color);
 }
 </style>

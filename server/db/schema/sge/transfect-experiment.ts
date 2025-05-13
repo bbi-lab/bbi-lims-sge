@@ -1,15 +1,17 @@
-import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision, unique } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, integer, varchar, text, doublePrecision, unique, boolean } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
 import { lots } from './lots'
+import { cycles } from './cycle'
 
 export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull().unique(),
+  cycleId: uuid('cycle_id').references(() => cycles.id).unique().notNull(),
   technician: uuid('technician').references(() => users.id),
-  startedOn: timestamp('started_on').defaultNow(),
+  startedOn: timestamp('started_on').notNull().defaultNow(),
   transfectionCount: integer('transfection_count'),
-  replicateCount: integer('replicates_count'),
+  replicateCount: integer('replicates_count').notNull(),
+  negativeControl: boolean('negative_control'),
 })
 
 export const transfectTargets = pgTable('transfect_targets', {
@@ -26,12 +28,12 @@ export const transfectTargets = pgTable('transfect_targets', {
   hprt1SgRnaTo12ugVol: doublePrecision('hprt1_sg_rna_to_12ug_vol'),
   xfectBuffer: doublePrecision('xfect_buffer'),
   xfectPolymerPerTransfect: doublePrecision('xfect_polymer_per_transfect'),
-  transfectionCount: integer('transfection_count'),
+  transfectionCount: integer('transfection_count').notNull(),
   snvLibNeeded: doublePrecision('snv_lib_needed'),
   sgRnaNeeded: doublePrecision('sg_rna_needed'),
   notes: text('notes'),
 }, (t) => [
-  unique('unique_transfect_experiment_target').on(t.experimentId, t.targetId),
+  unique('unique_transfect_experiment_target_count').on(t.experimentId, t.targetId, t.transfectionCount),
 ])
 
 export const transfectLotUsage = pgTable('transfect_lot_usage', {

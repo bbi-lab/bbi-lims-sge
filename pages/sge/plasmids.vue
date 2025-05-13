@@ -1,15 +1,17 @@
 
-<script setup>
+<script setup lang="ts">
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+
 const showAddForm = ref(false)
 const showEditForm = ref(false)
 const showMultipleEditForm = ref(false)
-const editingRecordId = ref(null)
-const editingMultipleRecordsIds = ref([])
+const editingRecordId = ref<string | null>(null)
+const editingMultipleRecordsIds = ref<string[]>([])
 const plasmidsTable = ref()
 const router = useRouter()
 const config = useRuntimeConfig()
 
-function didClickRecordEdit(event) {
+function didClickRecordEdit(event: any) {
     editingRecordId.value = event.id
     showEditForm.value = true
     showAddForm.value = false
@@ -26,7 +28,7 @@ function didClickCancelEditForm() {
     editingRecordId.value = null
     showEditForm.value = false
 }
-function didClickMultipleRecordEdit(recordIds) {
+function didClickMultipleRecordEdit(recordIds: string[]) {
     editingMultipleRecordsIds.value = recordIds
     showMultipleEditForm.value = true
     showEditForm.value = false
@@ -36,21 +38,21 @@ function didClickCancelMultipleEditForm() {
     editingMultipleRecordsIds.value = []
     showMultipleEditForm.value = false
 }
-function didUpdateMultipleRecords(event) {
+function didUpdateMultipleRecords(event: any) {
     event.forEach(e => {
         if (e.id) plasmidsTable.value.addOrRefreshRecordId(e.id)
     })
     showMultipleEditForm.value = false
 }
-function didAddRecord(event) {
+function didAddRecord(event: any) {
     plasmidsTable.value.addOrRefreshRecordId(event.id)
     showAddForm.value = false
 }
-function didUpdateRecord(event) {
+function didUpdateRecord(event: any) {
     plasmidsTable.value.addOrRefreshRecordId(event.id)
     showEditForm.value = false
 }
-function didDeleteRecord(event) {
+function didDeleteRecord(event: any) {
     plasmidsTable.value.removeRecordId(event.id)
     showEditForm.value = false
 }
@@ -68,43 +70,23 @@ const columnDefs = {
         path: 'plasmidExperiment.name',
         index: 2,
     },
-    storageBox: {
-        path: 'storageBox.name',
-        index: 3,
-    },
-    storageBoxLoc: {
-        index: 4,
-    },
     externalLink: {
         format: 'hyperlink',
-        index: 5,
+        index: 3,
     },
     plasmidExperimentId: {
-        display: false
-    },
-    storageBoxId: {
         display: false
     },
     targetId: {
         display: false
     }
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     plasmidExperimentId: {
         label: 'Experiment',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/plasmid-experiments`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
-    storageBoxId: {
-        label: 'Storage box',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/storage-boxes`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -140,8 +122,7 @@ const displayWithClause = {
         }
     },
     plasmidExperiment: {
-        columns: {name: true}},
-        storageBox: {columns: {name: true}
+        columns: {name: true},
     }
 }
 
@@ -169,7 +150,7 @@ const displayWithClause = {
                 tableName="plasmids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true, storageBox: true}"
+                :withClause="{plasmidExperiment: true}"
                 @cancel="didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -179,7 +160,7 @@ const displayWithClause = {
                 tableName="plasmids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true, storageBox: true}"
+                :withClause="{plasmidExperiment: true}"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

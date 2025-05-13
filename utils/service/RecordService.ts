@@ -2,8 +2,9 @@ import type { DBQueryConfig } from 'drizzle-orm'
 import _ from 'lodash'
 
 export const RecordService = {
-    async getRecord(baseUrl: string, id: string, withClause?: Object) {
-        const fetchOptions = withClause ? {query: {with: withClause}} : undefined
+    async getRecord(baseUrl: string, id: string, withClause: Object | undefined, expandEnums: boolean = false) {
+        const fetchOptions = {query: {expandEnums}}
+        if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
         const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
         return record
     },
@@ -21,12 +22,11 @@ export const RecordService = {
         return records
     },
 
-    async getRecords(baseUrl: string, withClause?: Object, where?: Object): Promise<any[]> {
-        const fetchOptions = withClause ? {query: {with: withClause}} : {}
-        if (where) {
-            _.set(fetchOptions, ['query', 'where'], where)
-        }
-        const records = await $fetch(`${baseUrl}`, fetchOptions) as any[]
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false): Promise<any[]> {
+        const fetchOptions = {query: {expandEnums}}
+        if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
+        if (where) _.set(fetchOptions, ['query', 'where'], where)
+        const records =  await $fetch(`${baseUrl}`, fetchOptions) as any[]
         return records
     },
 
@@ -36,15 +36,29 @@ export const RecordService = {
         return schema
     },
 
-    async updateRecord(baseUrl: string, record: any) {
+    async updateRecord(baseUrl: string, record: any, withClause?: Object) {
         const {id, ...values} = record
         const updatedRecords = await $fetch(`${baseUrl}/${id}`, {method: 'PUT', body: values})
-        return updatedRecords
+
+        if (!_.isEmpty(withClause)) {
+            const fetchOptions = {query: {with: withClause}}
+            const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
+            return record
+        } else {
+            return updatedRecords
+        }
     },
 
-    async updateRecords(baseUrl: string, ids: string[], values: Object) {
-        const updatedRecords = await $fetch(`${baseUrl}`, {method: 'PUT', body: {ids, values}})
-        return updatedRecords
+    async updateRecords(baseUrl: string, ids: string[], values: Object, withClause?: Object) {
+        const updatedRecords = await $fetch(baseUrl, {method: 'PUT', body: {ids, values}})
+        if (!_.isEmpty(withClause) && !_.isEmpty(updatedRecords)) {
+            const whereClause = {"in": [{"var": "id"}, ids]}
+            const fetchOptions = {query: {with: withClause, where: whereClause}}
+            const records = await $fetch(baseUrl, fetchOptions)
+            return records
+        } else {
+            return updatedRecords
+        }
     },
 
     async addRecord(baseUrl: string, record: any) {
