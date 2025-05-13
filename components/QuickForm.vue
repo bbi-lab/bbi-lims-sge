@@ -23,6 +23,7 @@ interface FieldDefinition {
     canDelete?: boolean,
     type?: string,
     index?: number,
+    onChange?: (record: any) => void,
 }
 export interface FieldDefinitions {[key: string]: FieldDefinition}
 
@@ -243,15 +244,35 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else-if="val?.enum">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.enum" :disabled="isReadOnly(key)" />
+                    <Select
+                        :id="key"
+                        v-model="record[key]"
+                        :options="val.enum"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Select :id="key" v-model="record[key]" :options="val.oneOf" optionLabel="title" optionValue="const" :disabled="isReadOnly(key)"/>
+                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }} {{_.get(fieldDefs, [key, 'valueChanged'])}}</label>
+                    <Select
+                        :id="key"
+                        v-model="record[key]"
+                        :options="val.oneOf"
+                        optionLabel="title"
+                        optionValue="const"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <Checkbox :id="key" v-model="record[key]" :binary="true" :disabled="isReadOnly(key)" />
+                    <Checkbox
+                        :id="key"
+                        v-model="record[key]"
+                        :binary="true"
+                        :disabled="isReadOnly(key)"
+                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
