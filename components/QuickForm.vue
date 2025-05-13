@@ -17,7 +17,7 @@ interface FieldDefinition {
     label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
     component?: string,
     props?: Record<string, any>,
-    display?: boolean,
+    display?: boolean | ((record: any) => boolean),
     readOnly?: boolean,
     canUpdate?: boolean,
     canDelete?: boolean,
@@ -194,7 +194,7 @@ function isReadOnly(key: string) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
-            <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
+            <template v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <AutoCompleter
