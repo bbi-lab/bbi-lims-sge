@@ -9,7 +9,7 @@ const editingMultipleRecordsIds = ref<string[]>([])
 const editingRecordId = ref<string | null>(null)
 const platesTable = ref()
 const router = useRouter()
-const poolingPlates = ref<{id: string, name: string}[]>([])
+// const poolingPlates = ref<{id: string, name: string}[]>([])
 const route = useRoute()
 
 const queryParams = route.query
@@ -83,20 +83,20 @@ const rowActions = {
         action: (data: any) => {
             router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
         },
-        disabled: ({plateType}: { plateType: PlateType }) => !_.isEmpty(poolingPlates.value) || _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
+        disabled: ({plateType}: { plateType: PlateType }) => _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },
-    pool: {
-        action: ({id, name}: {id: string, name: string}) => {
-            if (_.size(poolingPlates.value)==0) {
-                poolingPlates.value = [{id, name}]
-            } else if (_.size(poolingPlates.value)==1 && poolingPlates.value[0].id !== id) {
-                poolingPlates.value.push({id, name})
-                router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
-            }
-        },
-        visible: ({plateType}: { plateType: PlateType }) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
-        disabled: ({id}: {id: string}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
-    }
+    // pool: {
+    //     action: ({id, name}: {id: string, name: string}) => {
+    //         if (_.size(poolingPlates.value)==0) {
+    //             poolingPlates.value = [{id, name}]
+    //         } else if (_.size(poolingPlates.value)==1 && poolingPlates.value[0].id !== id) {
+    //             poolingPlates.value.push({id, name})
+    //             router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
+    //         }
+    //     },
+    //     visible: ({plateType}: { plateType: PlateType }) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
+    //     disabled: ({id}: {id: string}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
+    // }
 }
 
 const fieldDefs = {
@@ -124,10 +124,10 @@ const readonlyValues = queryParams
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
-            <div class="bg-red-100 p-5" v-if="_.size(poolingPlates) == 1">
+            <!-- <div class="bg-red-100 p-5" v-if="_.size(poolingPlates) == 1">
                 <span class="mr-5">Plate {{ poolingPlates[0].name}} is selected for pooling. Now select a plate to pool into.</span>
                 <Button label="Cancel" severity="warn" @click="poolingPlates = []"/>
-            </div>
+            </div> -->
             <QuickTable
                 ref="platesTable"
                 tableName="view-plates-with-well-counts"
