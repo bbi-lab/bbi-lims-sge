@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { VALID_WELL_COLORS, wellCoordinateToChar } from "~/composables/lib/plate-diagram"
+import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from "~/composables/lib/plate-diagram"
 import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { Plate } from "~/server/db/schema/sge/plate"
@@ -234,4 +234,51 @@ export const assignNucleicAcidsToPreseq1Plate = async (nucleicAcids: NucleicAcid
     }
 
     return wellContentsAdded
+}
+
+export const poolPreseq1PlateToWells = async (plateId: string, selectedWells: PlateDiagramWell[], apiBase: string) => {
+    // sort wells by x and inverse y coordinate to achieve the correct order
+    const sortedWellIds = _.map(_.sortBy(selectedWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`), 'id')
+
+    const preseq1Plate = await RecordService.getRecord(`${apiBase}/plates`, plateId, {
+        wells: {
+            columns: {id: true},
+            with: {
+                wellContents: {
+                    columns: {id: true},
+                    with: {
+                        nucleicAcid: {
+                            columns: {id: true},
+                            with: {
+                                pellet: {
+                                    columns: {id: true, name: true, isBackup: true},
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        }
+    }) as PlateWithWellContents
+
+    const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
+        const nucleicAcid = _.get(well, ['wellContents', 0, 'nucleicAcid'])
+        if (nucleicAcid?.id && !_.has(acc, nucleicAcid.id)) {
+            _.set(acc, nucleicAcid.id, nucleicAcid)
+        }
+        return acc
+    }, {})), (x) => {
+        return x.pellet.name
+    }) as NucleicAcidWithPellet[]
+
+    if (pooledNucleicAcids.length > sortedWellIds.length) {
+        throw new Error('Number of selected wells is less than number of nucleic acids in the plate')
+    } else {
+        return _.map(pooledNucleicAcids, (value, index) => {
+          return {
+            wellId: sortedWellIds[index],
+            nucleicAcidId: value.id,
+          }
+        })
+    }
 }

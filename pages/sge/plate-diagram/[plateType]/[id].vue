@@ -4,7 +4,7 @@ import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
-import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, updateWellSpecs } from '~/utils/sge/plateUtils'
+import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, poolPreseq1PlateToWells, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
@@ -342,7 +342,6 @@ const layoutPreseq1 = async () => {
                 )
             }
         }
-
     }
 }
 
@@ -413,17 +412,35 @@ const rowActions = {
                 const selectedWellIds = _.map(selectedWells.value || [], 'id')
                 const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
 
-                const wellContentsToAdd = _.map(selectedWellIds, (x) => {
-                    return {
-                        wellId: x,
-                        [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
+                let newRecords: WellContent[] = []
+                if (plateType == 'preseq-1') {
+                    const wellContentsToAdd = _.map(selectedWellIds, (x) => {
+                        return {
+                            wellId: x,
+                            [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
+                        }
+                    })
+                    newRecords = await RecordService.addRecords(
+                        `${config.public.apiBase}/wellContents`,
+                        wellContentsToAdd
+                    ) as WellContent[]
+                } else if (plateType == 'preseq-2' && selectedWells.value) {
+                    try {
+                        const wellContentsToAdd = await poolPreseq1PlateToWells(data.id, selectedWells.value, config.public.apiBase)
+                        newRecords = await RecordService.addRecords(
+                            `${config.public.apiBase}/wellContents`,
+                            wellContentsToAdd
+                        ) as WellContent[]
+                    } catch (e: any) {
+                        toast.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: e.message || 'Error adding well contents',
+                            life: 3000,
+                        })
+                        return
                     }
-                })
-
-                const newRecords = await RecordService.addRecords(
-                    `${config.public.apiBase}/wellContents`,
-                    wellContentsToAdd
-                )
+                }
 
                 if (!_.isEmpty(newRecords)) {
                     await refreshPlate()
