@@ -54,23 +54,39 @@ function didDeleteRecord(event: any) {
 
 const columnDefs: ColumnDefinitions = {
     startedOn: {
-        format: 'date-time'
+        format: 'date-time',
+        index: 2,
     },
     plates: {
         display: false,
     },
     technician: {
         path: 'technician.name',
+        index: 3,
     },
     pcrType: {
         display: false,
+    },
+    transfectTargetId: {
+        display: false,
+    },
+    name: {
+        index: 0,
     },
     pcrTypeLabel: {
         header: 'Type',
         format: (x: any) => {
             return _.get(ENUM_LOOKUPS.pcrExperiments.pcrType, [x.pcrType, 'label'])
         },
-        path: 'pcrType.displayValue',
+        path: 'pcrTypeLabel.displayValue',
+        index: 1,
+    },
+    transfectTargetId: {
+        header: 'Target',
+        format: (x: any) => {
+            return x.transfectTarget ? `${x.transfectTarget?.experiment?.cycle?.name}: ${x.transfectTarget?.target?.name}` : ''
+        },
+        path: 'transfectTargetId.displayValue',
     },
 }
 const rowActions = {
@@ -88,7 +104,58 @@ const fieldDefs = {
     plates: {
         display: false,
     },
+    transfectTargetId: {
+        label: 'Target',
+        component: 'NestedSelect',
+        display: (x: any) => {
+            return x.pcrType == 'preseq-1'
+        },
+        props: {
+            parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
+            parentSearchFields: ['cycle.name'],
+            parentValueField: 'id',
+            parentDisplayFields: ['cycle.name'],
+            parentIftaLabel: 'Experiment',
+            parentSearchWithClause: {
+                cycle: {columns: {name: true}},
+            },
+
+            searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
+            searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
+            valueField: 'id',
+            displayFormat: (x:any) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
+            parentKeyField: 'experimentId',
+            searchWithClause: {
+                target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
+            },
+        }
+    },
 }
+const withClause = {
+    plates: {columns: {id: true}},
+    technician: {columns: {name: true}},
+    transfectTarget: {
+        columns: {},
+        with: {
+            target: {
+                columns: {
+                    name: true
+                },
+            },
+            experiment: {
+                columns: {},
+                with: {
+                    cycle: {
+                        columns: {
+                            name: true
+                        }
+                    }
+                }
+            }
+        }
+    },
+}
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -99,7 +166,7 @@ const fieldDefs = {
                 schemaName="select"
                 title="PCR Experiments"
                 :rowActions="rowActions"
-                :withClause="{plates: {columns: {id: true}}, technician: {columns: {name: true}}}"
+                :withClause="withClause"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
