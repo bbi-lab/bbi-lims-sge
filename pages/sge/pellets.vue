@@ -186,10 +186,13 @@ const fieldDefs: FieldDefinitions = {
         component: 'NestedSelect',
         props: {
             parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
-            parentSearchFields: ['name'],
+            parentSearchFields: ['cycle.name'],
             parentValueField: 'id',
-            parentDisplayFields: ['name'],
+            parentDisplayFields: ['cycle.name'],
             parentIftaLabel: 'Experiment',
+            parentSearchWithClause: {
+                cycle: {columns: {name: true}},
+            },
 
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
