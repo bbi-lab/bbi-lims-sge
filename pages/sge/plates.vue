@@ -101,7 +101,20 @@ const rowActions = {
 
 const fieldDefs = {
     pcrExperimentId: { display: false },
-    wells: { display: false }
+    wells: { display: false },
+    name: { index: 0 },
+    plateType: {
+        index: 1,
+        onChange: (x: any) => {
+            if (_.endsWith(x.plateType, '-storage')) {
+                x.sizeX = 9
+                x.sizeY = 9
+            } else {
+                x.sizeX = 12
+                x.sizeY = 8
+            }
+        }
+    },
 }
 
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
@@ -145,7 +158,7 @@ const readonlyValues = queryParams
                 :recordId="editingRecordId"
                 tableName="plates"
                 schemaName="update"
-                :fieldDefs="fieldDefs"
+                :fieldDefs="{...fieldDefs, plateType: {readOnly: true, index: 1}, sizeX: {readOnly: true}, sizeY: {readOnly: true}}"
                 :readonlyValues="readonlyValues"
                 @cancel="didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
