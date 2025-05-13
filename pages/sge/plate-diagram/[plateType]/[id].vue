@@ -21,10 +21,13 @@ const plateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
 const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
 const wellSpecs = ref<WellSpecs>({})
+const pcrExperiment = ref()
 
 const plateType = route.params.plateType as PlateType
 const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
 const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
+const tableWhereClause = ref()
+
 
 const colorMapBySelectionTableId = computed(() => {
     const colorMap = {}
@@ -67,10 +70,33 @@ const refreshPlate = async () => {
                         }
                     },
                 }
-            }
+            },
         }
     )
+
     if (_.isEmpty(plateWithWellContents.value)) return
+
+    if (_.get(plateWithWellContents.value, 'pcrExperimentId')) {
+        pcrExperiment.value = await RecordService.getRecord(
+            `${config.public.apiBase}/pcrExperiments`,
+            plateWithWellContents.value.pcrExperimentId as string,
+            {
+                transfectTarget: {
+                    columns: {id: true},
+                }
+            }
+        )
+    }
+
+    tableWhereClause.value = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableWhereClause'], (pcrExperiment.value?.transfectTarget?.id ?
+        {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]} :
+        {
+            'or':[
+                {'==':[{'var': 'wellContents'}, null]},
+                {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
+            ]
+        })
+    )
 
     updateWellSpecs(wellSpecs.value, plateWithWellContents.value)
 
@@ -148,7 +174,7 @@ const displayWithClause = Object.freeze({
             },
             with: {
                 transfectTarget: {
-                    columns: {},
+                    columns: {id: true},
                     with: {
                         experiment: {
                             columns: {},
@@ -166,13 +192,6 @@ const displayWithClause = Object.freeze({
             }
         },
     }
-})
-
-const displayWhereClause = Object.freeze({
-    'or':[
-        {'==':[{'var': 'wellContents'}, null]},
-        {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
-    ]
 })
 
 const sharedColumnDefs = {
@@ -252,6 +271,25 @@ const columnDefs = {
             index: 4,
         }
     },
+    'view-plates-with-well-counts': {
+        plateType: { display: false },
+        plateTypeLabel: { header: 'Type' },
+        pcrExperimentId: { display: false},
+        sizeX: { display: false },
+        sizeY: { display: false },
+        wellsCount: { display: false },
+        wellsWithContentCount: { display: false },
+        filled: {
+            format: (data: any) => {
+                if (data.wellsCount - data.wellsWithContentCount) {
+                    return `${data.wellsWithContentCount} / ${data.wellsCount}`
+                } else {
+                    return '-'
+                }
+            },
+            path: 'filled.displayValue',
+        }
+    }
 }
 
 const wellRangeSelected = function(wells: PlateDiagramWell[]) {
@@ -420,7 +458,7 @@ const rowActions = {
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
-                v-if="tableName"
+                v-if="tableName && tableWhereClause"
                 ref="contentSelectionTable"
                 :tableName="tableName"
                 schemaName="select"
@@ -429,7 +467,7 @@ const rowActions = {
                 :canEdit="false"
                 :canExport="false"
                 :withClause="_.get(displayWithClause, tableName, {})"
-                :where="displayWhereClause"
+                :where="tableWhereClause"
                 :columnDefs="_.get(columnDefs, tableName)"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
@@ -444,6 +482,7 @@ const rowActions = {
                         severity="warn"
                         class="flex-none"
                         label="Auto-layout"
+                        :disabled="_.isEmpty(contentSelectionTable?.selectedRecords)"
                         @click="layoutPreseq1" />
                 </template>
             </QuickTable>
