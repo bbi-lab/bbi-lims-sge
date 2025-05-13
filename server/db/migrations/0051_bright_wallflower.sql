@@ -1,0 +1,2 @@
+ALTER TABLE "pcr_experiments" ADD COLUMN "cycle_id" uuid;--> statement-breakpoint
+ALTER TABLE "pcr_experiments" ADD CONSTRAINT "pcr_experiments_cycle_id_cycles_id_fk" FOREIGN KEY ("cycle_id") REFERENCES "public"."cycles"("id") ON DELETE no action ON UPDATE no action;

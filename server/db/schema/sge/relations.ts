@@ -43,6 +43,11 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: transfectTargets,
             references: [transfectTargets.id],
         },
+        cycle: {
+            fields: [pcrExperiments.cycleId],
+            referenceTable: cycles,
+            references: [cycles.id],
+        },
     },
     many: {
         plates: {
