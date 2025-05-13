@@ -402,7 +402,7 @@ const rowActions = {
     assign: {
         label: '',
         action: async (data: any) => {
-            if (_.size(selectedWells.value) != 1) {
+            if (_.size(selectedWells.value) != 1 && !_.includes(['preseq-1', 'preseq-2'], plateType)) {
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
@@ -410,28 +410,34 @@ const rowActions = {
                     life: 1000,
                 })
             } else {
-                const oldValues = selectedWells.value ? _.get(wellSpecs.value, selectedWells.value[0].id) : {}
+                const selectedWellIds = _.map(selectedWells.value || [], 'id')
+                const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
 
-                const newRecord = await RecordService.addRecord(
-                    `${config.public.apiBase}/wellContents`,
-                    {
-                        wellId: _.get(selectedWells.value, [0, 'id']),
+                const wellContentsToAdd = _.map(selectedWellIds, (x) => {
+                    return {
+                        wellId: x,
                         [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
                     }
+                })
+
+                const newRecords = await RecordService.addRecords(
+                    `${config.public.apiBase}/wellContents`,
+                    wellContentsToAdd
                 )
-                if (newRecord?.wellId) {
+
+                if (!_.isEmpty(newRecords)) {
                     await refreshPlate()
-                    const updatedWell = _.get(wellSpecs.value, newRecord.wellId)
-                    if (updatedWell) {
+                    const updatedWells = _.values(_.pick(wellSpecs.value, selectedWellIds))
+                    if (!_.isEmpty(updatedWells)) {
                         plateDiagram.value.updateWells(
-                            [updatedWell],
-                            [oldValues]
+                            updatedWells,
+                            oldValues
                         )
                     }
-                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
+                    contentSelectionTable.value.addOrRefreshRecordIds(data.id)
                     toast.add({
                         severity: 'info',
-                        summary: 'Updated well',
+                        summary: 'Updated well contents',
                         detail: 'Well contents updated',
                         life: 1000,
                     })
