@@ -100,7 +100,7 @@ const refreshPlate = async () => {
                 ]
             }
         }
-    } else if (plateType == 'preseq-1') {
+    } else if (plateType == 'preseq-1' && pcrExperiment.value?.transfectTarget) {
         tableWhereClause.value = {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]}
     } else {
         tableWhereClause.value = {
