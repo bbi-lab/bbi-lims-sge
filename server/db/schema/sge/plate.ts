@@ -58,7 +58,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
     left join ${transfectTargets} on ${eq(pcrExperiments.transfectTargetId, transfectTargets.id)}
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
-    left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)}
+    left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)} or ${eq(pcrExperiments.cycleId, cycles.id)}
     group by ${plates.id}, ${cycles.id}`
 )
 
