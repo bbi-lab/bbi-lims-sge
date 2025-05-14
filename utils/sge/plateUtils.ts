@@ -75,9 +75,6 @@ export const PLATE_TYPE_SPECS = {
     },
     'preseq-2':{
         selectionTableName: 'view-plates-with-well-counts',
-        selectionTableWhereClause: {
-            "==": [{"var": "plateType"}, "preseq-1"]
-        },
         wellContentsKey: 'nucleicAcid',
         wellContentsFK: 'nucleicAcidId',
         wellContentTypeShortName: 'DNA',

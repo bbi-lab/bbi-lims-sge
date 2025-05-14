@@ -88,15 +88,28 @@ const refreshPlate = async () => {
         )
     }
 
-    tableWhereClause.value = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableWhereClause'], (pcrExperiment.value?.transfectTarget?.id ?
-        {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]} :
-        {
+    if (plateType == 'preseq-2') {
+        tableWhereClause.value = {
+            "==": [{"var": "plateType"}, "preseq-1"]
+        }
+        if (pcrExperiment.value?.cycleId) {
+            tableWhereClause.value = {
+                "and": [
+                    tableWhereClause.value,
+                    {"==": [{"var": "cycleId"}, pcrExperiment.value.cycleId]}
+                ]
+            }
+        }
+    } else if (plateType == 'preseq-1') {
+        tableWhereClause.value = {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]}
+    } else {
+        tableWhereClause.value = {
             'or':[
                 {'==':[{'var': 'wellContents'}, null]},
                 {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
             ]
-        })
-    )
+        }
+    }
 
     updateWellSpecs(wellSpecs.value, plateWithWellContents.value)
 
@@ -274,6 +287,8 @@ const columnDefs = {
     'view-plates-with-well-counts': {
         plateType: { display: false },
         plateTypeLabel: { header: 'Type' },
+        cycleName: { header: 'Cycle' },
+        cycleId: { display: false },
         pcrExperimentId: { display: false},
         sizeX: { display: false },
         sizeY: { display: false },
@@ -288,7 +303,7 @@ const columnDefs = {
                 }
             },
             path: 'filled.displayValue',
-        }
+        },
     }
 }
 

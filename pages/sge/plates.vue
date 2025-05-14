@@ -65,6 +65,8 @@ const columnDefs = {
     pcrExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
+    cycleId: { display: false },
+    cycleName: { header: 'Cycle' },
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
     filled: {
