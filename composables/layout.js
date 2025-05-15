@@ -13,10 +13,18 @@ const layoutState = reactive({
     configSidebarVisible: false,
     staticMenuMobileActive: false,
     menuHoverActive: false,
-    activeMenuItem: null
+    activeMenuItem: null,
+    loginModalVisible: false,
 });
 
 export function useLayout() {
+    const showLoginModal = () => {
+        layoutState.loginModalVisible = true;
+    }
+    const hideLoginModal = () => {
+        layoutState.loginModalVisible = false;
+    }
+
     const setPrimary = (value) => {
         layoutConfig.primary = value;
     };
@@ -74,9 +82,11 @@ export function useLayout() {
 
     const isDarkTheme = computed(() => layoutConfig.darkTheme);
 
+    const isLoginModalVisible = computed(() => layoutState.loginModalVisible == true);
+
     const getPrimary = computed(() => layoutConfig.primary);
 
     const getSurface = computed(() => layoutConfig.surface);
 
-    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode };
+    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, isLoginModalVisible, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode, hideLoginModal, showLoginModal, };
 }
