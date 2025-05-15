@@ -14,6 +14,7 @@ const config = useRuntimeConfig()
 const toast = useToast()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
+const { showLoginModal } = useLayout()
 
 const plateWithWellContents = ref<PlateWithWellContents>()
 const contentSelectionTable = ref()
@@ -342,7 +343,17 @@ const wellSelectionCleared = function(wells: PlateDiagramWell[]) {
 }
 const layoutPreseq1 = async () => {
     if (plateWithWellContents.value) {
-        const wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
+        let wellContentsAdded
+        try {
+            wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
+        } catch (error: any) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            }
+            return
+        }
 
         if (!_.isEmpty(wellContentsAdded)) {
             const updatedWellIds = _.map(wellContentsAdded, 'wellId')
@@ -388,10 +399,20 @@ const emptySelectedWells = async () => {
     const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
         return _.get(x, 'data.wellContents')
     })))
-    const deletedRecords = await RecordService.deleteRecords(
-        `${config.public.apiBase}/wellContents`,
-        wellContentsToDelete
-    ) as WellContent[]
+    let deletedRecords: WellContent[]
+    try {
+        deletedRecords = await RecordService.deleteRecords(
+            `${config.public.apiBase}/wellContents`,
+            wellContentsToDelete
+        )
+    } catch (error: any) {
+        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            showLoginModal()
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        }
+        return
+    }
     if (!_.isEmpty(deletedRecords)) {
         await refreshPlate()
         const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
@@ -427,32 +448,44 @@ const rowActions = {
                 const selectedWellIds = _.map(selectedWells.value || [], 'id')
                 const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
 
-                let newRecords: WellContent[] = []
+                let newRecords
+                let wellContentsToAdd
                 if (plateType == 'preseq-1') {
-                    const wellContentsToAdd = _.map(selectedWellIds, (x) => {
+                    wellContentsToAdd = _.map(selectedWellIds, (x) => {
                         return {
                             wellId: x,
                             [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
                         }
                     })
-                    newRecords = await RecordService.addRecords(
-                        `${config.public.apiBase}/wellContents`,
-                        wellContentsToAdd
-                    ) as WellContent[]
                 } else if (plateType == 'preseq-2' && selectedWells.value) {
                     try {
-                        const wellContentsToAdd = await poolPreseq1PlateToWells(data.id, selectedWells.value, config.public.apiBase)
+                        wellContentsToAdd = await poolPreseq1PlateToWells(data.id, selectedWells.value, config.public.apiBase)
+                    } catch (e: any) {
+                        if (e.statusCode == 401 && e.statusMessage == 'TOKEN EXPIRED') {
+                            showLoginModal()
+                        } else {
+                            toast.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: e.message || 'Error calculating plate layout',
+                                life: 3000,
+                            })
+                        }
+                        return
+                    }
+                }
+                if (!_.isEmpty(wellContentsToAdd)) {
+                    try {
                         newRecords = await RecordService.addRecords(
                             `${config.public.apiBase}/wellContents`,
                             wellContentsToAdd
-                        ) as WellContent[]
-                    } catch (e: any) {
-                        toast.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: e.message || 'Error adding well contents',
-                            life: 3000,
-                        })
+                        )
+                    } catch(error: any) {
+                        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                            showLoginModal()
+                        } else {
+                            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+                        }
                         return
                     }
                 }
@@ -511,18 +544,6 @@ const rowActions = {
                 :showColumnFilters="true"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
-                <template #header-buttons>
-                    <Button
-                        v-if="plateWithPlateDiagramWells?.plateType == 'preseq-1'"
-                        size="large"
-                        icon="pi pi-bolt"
-                        iconPos="right"
-                        severity="warn"
-                        class="flex-none"
-                        label="Auto-layout"
-                        :disabled="_.isEmpty(contentSelectionTable?.selectedRecords)"
-                        @click="layoutPreseq1" />
-                </template>
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
@@ -540,13 +561,13 @@ const rowActions = {
                 <template #header>
                     {{ plateWithPlateDiagramWells.name }}
                 </template>
-                <template #button1>
+                <template v-if="plateWithPlateDiagramWells?.plateType == 'preseq-1'" #button1>
                     <Button
                         class="p-button-secondary"
                         icon="pi pi-star"
-                        v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(selectedWells)"
-                        @click="actionOnSelectedWells" />
+                        v-tooltip="{value: 'Auto-layout', showDelay: 500}"
+                        :disabled="_.isEmpty(contentSelectionTable?.selectedRecords)"
+                        @click="layoutPreseq1" />
                 </template>
                 <template #button2>
                     <Button
