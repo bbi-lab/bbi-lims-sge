@@ -18,7 +18,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -80,6 +80,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             fields: [wellContents.homologyArmPrimerId],
             referenceTable: homologyArmPrimers,
             references: [homologyArmPrimers.id],
+        },
+        indexPrimer: {
+            fields: [wellContents.indexPrimerId],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
         },
         nucleicAcid: {
             fields: [wellContents.nucleicAcidId],
@@ -436,6 +441,15 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
+const indexPrimersRelationsConfig: RelationsConfig = {
+    oneToOne: {
+        wellContents: {
+            table: wellContents
+        }
+    },
+}
+export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
     wells: wellsRelationsConfig,
@@ -458,4 +472,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     amplificationPrimers: amplificationPrimersRelationsConfig,
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
+    indexPrimers: indexPrimersRelationsConfig,
 }
