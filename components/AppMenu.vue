@@ -42,6 +42,7 @@ const model = ref([
                     { label: 'Amplification', to: '/sge/amplification-primers' },
                     { label: 'Linearization', to: '/sge/linearization-primers' },
                     { label: 'Homology Arm', to: '/sge/homology-arm-primers' },
+                    { label: 'Index', to: '/sge/index-primers' },
                 ]
             }
         ]
