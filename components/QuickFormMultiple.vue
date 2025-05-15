@@ -9,6 +9,8 @@ const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
 const activeElement = useActiveElement()
+const { showLoginModal, isLoginModalVisible } = useLayout()
+const { loggedIn, fetch } = useUserSession()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -85,7 +87,15 @@ const changedToNullCheck = (key: string) => {
         _.unset(combinedRecord.value, [key, 'valClearedByUser'])
     }
 }
-onMounted(() => refreshForm())
+
+onMounted(async () => {
+    await fetch()
+    if (!loggedIn.value) {
+        showLoginModal()
+    } else {
+        await refreshForm()
+    }
+})
 
 const refreshForm = async function() {
     formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
@@ -118,6 +128,12 @@ watch(() => combinedRecord.value, (newValue, oldValue) => {
     }
 }, { deep: true })
 
+watch(isLoginModalVisible, (newValue, oldValue) => {
+    if (oldValue == true && newValue == false && _.isEmpty(combinedRecord.value)) {
+        refreshForm()
+    }
+})
+
 async function saveRecords() {
     if (props.readOnly) return
 
@@ -130,7 +146,9 @@ async function saveRecords() {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
-        if (formElement.value && _.isArray(error.data?.data)) {
+        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            showLoginModal()
+        } else if (formElement.value && _.isArray(error.data?.data)) {
             addErrorsToForm(formElement.value, error.data.data)
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })

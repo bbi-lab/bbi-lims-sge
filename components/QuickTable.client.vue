@@ -8,6 +8,9 @@ import {v4 as uuidv4} from 'uuid'
 import {formatFieldLabel} from '@/utils/formUtils'
 
 const config = useRuntimeConfig()
+const { loggedIn } = useUserSession()
+const { showLoginModal, isLoginModalVisible } = useLayout()
+
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
@@ -28,8 +31,7 @@ const refreshFormattedValues = (ids?: string[]) => {
         }
     }
 }
-
-onMounted(async() => {
+const loadTableData = async () => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
 
@@ -59,6 +61,20 @@ onMounted(async() => {
 
     visibleColumns.value = _.get(clientSettings.value, 'columnVisibility', visibleColumnsOptions.value)
     loading.value = false
+}
+
+watch(isLoginModalVisible, (newValue, oldValue) => {
+    if (oldValue == true && newValue == false) {
+        loadTableData()
+    }
+})
+
+onMounted(async() => {
+    if (!loggedIn.value) {
+        showLoginModal()
+    } else {
+        await loadTableData()
+    }
 })
 
 const toast = useToast()

@@ -7,6 +7,8 @@ import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } fr
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
+const { showLoginModal, isLoginModalVisible } = useLayout()
+const { loggedIn, fetch } = useUserSession()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -73,7 +75,20 @@ const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
 const displayDiscardConfirmation = ref(false)
 
-onMounted(() => refreshForm())
+watch(isLoginModalVisible, (newValue, oldValue) => {
+    if (oldValue == true && newValue == false && !record.value) {
+        refreshForm()
+    }
+})
+
+onMounted(async () => {
+    await fetch()
+    if (!loggedIn.value) {
+        showLoginModal()
+    } else {
+        await refreshForm()
+    }
+})
 
 watch(() => props.recordId, (newValue, oldValue) => {
   if (newValue != oldValue ) {
@@ -108,7 +123,11 @@ function deleteRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
         }).catch(error => {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            }
         })
     }
     displayDeleteConfirmation.value = false
@@ -160,7 +179,9 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            if (formElement.value && _.isArray(error.data?.data)) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
@@ -174,7 +195,9 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
         }).catch(error => {
-            if (formElement.value && _.isArray(error.data?.data)) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
