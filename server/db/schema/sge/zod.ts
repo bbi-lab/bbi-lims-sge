@@ -16,7 +16,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wells } from './well'
 
 // tables
@@ -127,6 +127,10 @@ const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
+
+const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
+const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
+const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
@@ -246,6 +250,11 @@ export const schemas = {
         select: selectLinearizationPrimerSchema,
         insert: insertLinearizationPrimerSchema,
         update: updateLinearizationPrimerSchema,
+    },
+    indexPrimers: {
+        select: selectIndexPrimerSchema,
+        insert: insertIndexPrimerSchema,
+        update: updateIndexPrimerSchema,
     },
 
     // views
