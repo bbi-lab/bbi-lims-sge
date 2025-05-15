@@ -327,7 +327,7 @@ const addOrRefreshRecordId = async (recordId: string) => {
     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
     if (existingRecordIndex!=-1) {
         records.value[existingRecordIndex] = currentRecord
-    } else {
+    } else if (currentRecord){
         records.value = _.concat(records.value, currentRecord)
     }
     refreshFormattedValues([recordId])
