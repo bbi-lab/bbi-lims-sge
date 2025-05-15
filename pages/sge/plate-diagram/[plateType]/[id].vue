@@ -466,7 +466,7 @@ const rowActions = {
                             oldValues
                         )
                     }
-                    contentSelectionTable.value.addOrRefreshRecordIds(data.id)
+                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
                     toast.add({
                         severity: 'info',
                         summary: 'Updated well contents',
