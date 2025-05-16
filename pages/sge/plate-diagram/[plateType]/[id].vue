@@ -504,6 +504,16 @@ const rowActions = {
                             `${config.public.apiBase}/wellContents`,
                             wellContentsToAdd
                         )
+                        if (data.plateType == 'preseq-1') {
+                            // mark as processed
+                            await RecordService.updateRecords(
+                                `${config.public.apiBase}/plates`,
+                                [data.id],
+                                {
+                                    processed: true,
+                                }
+                            )
+                        }
                     } catch(error: any) {
                         if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
                             showLoginModal()
@@ -542,7 +552,7 @@ const rowActions = {
         },
         icon: 'pi pi-fw pi-arrow-right',
         iconPos: 'right',
-        tooltip: 'Assign to well',
+        tooltip: 'Assign to selected wells',
         disabled: (data: any) => {
             return _.has(data, 'well.id')
         },
