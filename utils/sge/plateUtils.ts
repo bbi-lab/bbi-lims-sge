@@ -89,7 +89,7 @@ export const PLATE_TYPE_SPECS = {
         selectionTableName: 'index-primers',
         wellContentsKey: 'indexPrimer',
         wellContentsFK: 'indexPrimerId',
-        wellContentTypeShortName: 'INDEX',
+        wellContentTypeShortName: (x: any) => `${x.primerType} INDEX`,
     },
 }
 
@@ -167,7 +167,8 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
         // set tooltip
         const wellTooltips = _.compact(_.map(well.wellContents, (x) => {
             const wellContent = _.get(x, wellContentsKey)
-            return wellContent ? `${_.get(wellContent, wellContentNamePath)} (${wellContentTypeShortName})` : null
+            const shortName = _.isFunction(wellContentTypeShortName) ? wellContentTypeShortName(wellContent) : wellContentTypeShortName
+            return wellContent ? `${_.get(wellContent, wellContentNamePath)} (${shortName})` : null
         }))
 
         _.set(wellSpecs, [well.id, 'tooltip'], `${wellCoordinateToChar(well.y)}${well.x}:<br>${wellTooltips.join('<br>')}`)
