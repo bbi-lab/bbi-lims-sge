@@ -85,6 +85,12 @@ export const PLATE_TYPE_SPECS = {
         wellContentsFK: 'nucleicAcidId',
         wellContentTypeShortName: 'DNA',
     },
+    'seq-index':{
+        selectionTableName: 'index-primers',
+        wellContentsKey: 'indexPrimer',
+        wellContentsFK: 'indexPrimerId',
+        wellContentTypeShortName: 'INDEX',
+    },
 }
 
 export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellContents) => {

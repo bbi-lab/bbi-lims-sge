@@ -177,6 +177,9 @@ const displayWithClause = Object.freeze({
     'linearization-primers': {
         ...sharedWithClause,
     },
+    'index-primers': {
+        ...sharedWithClause,
+    },
     'nucleic-acids': {
         ...sharedWithClause,
         pellet: {
@@ -260,6 +263,15 @@ const columnDefs = {
     },
     'homology-arm-primers': {
         ...sharedColumnDefs
+    },
+    'index-primers': {
+        ...sharedColumnDefs,
+        sequence: { display: false },
+        kit: {display: false},
+        name: {
+            index: 0,
+        },
+
     },
     'nucleic-acids': {
         ...sharedColumnDefs,
@@ -540,7 +552,7 @@ const rowActions = {
                 :withClause="_.get(displayWithClause, tableName, {})"
                 :where="tableWhereClause"
                 :columnDefs="_.get(columnDefs, tableName)"
-                :rowActions="rowActions"
+                :rowActions="plateType != 'seq-index' ? rowActions: {}"
                 :showColumnFilters="true"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
