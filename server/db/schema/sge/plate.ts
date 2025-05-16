@@ -9,7 +9,7 @@ import { wellContents, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 
-export type PlateType = 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3'
+export type PlateType = 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'seq-index'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

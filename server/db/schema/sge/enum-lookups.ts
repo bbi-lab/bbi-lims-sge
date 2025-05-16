@@ -52,6 +52,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'PreSeq 3',
                 label: 'PreSeq 3',
             },
+            'seq-index': {
+                desc: 'Sequencing index plate',
+                label: 'Seq index',
+            },
         },
     },
     'pcrExperiments': {
