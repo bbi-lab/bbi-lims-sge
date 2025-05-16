@@ -68,6 +68,7 @@ const refreshPlate = async () => {
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
                             nucleicAcid: _.includes(['preseq-1', 'preseq-2', 'preseq-3'], route.params.plateType) ? {with: {pellet: true}} : false,
+                            indexPrimer: route.params.plateType == 'seq-index',
                         }
                     },
                 }
@@ -103,6 +104,8 @@ const refreshPlate = async () => {
         }
     } else if (plateType == 'preseq-1' && pcrExperiment.value?.transfectTarget) {
         tableWhereClause.value = {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]}
+    } else if (plateType == 'seq-index') {
+        tableWhereClause.value = {}
     } else {
         tableWhereClause.value = {
             'or':[
@@ -269,9 +272,18 @@ const columnDefs = {
         sequence: { display: false },
         kit: {display: false},
         name: {
-            index: 0,
+            index: 1,
         },
-
+        wellContents: {
+            header: 'Location',
+            format: (x: any) => {
+                const wellContents = _.find(x.wellContents, (x) => x.well.plate.id == route.params.id)
+                return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            },
+            path: 'wellContents.displayValue',
+            type: 'string',
+            index: 2,
+        },
     },
     'nucleic-acids': {
         ...sharedColumnDefs,
@@ -581,7 +593,7 @@ const rowActions = {
                         :disabled="_.isEmpty(contentSelectionTable?.selectedRecords)"
                         @click="layoutPreseq1" />
                 </template>
-                <template #button2>
+                <template v-if="plateWithPlateDiagramWells?.plateType != 'seq-index'" #button2>
                     <Button
                         class="p-button-secondary"
                         icon="pi pi-trash"

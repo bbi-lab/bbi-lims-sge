@@ -442,10 +442,12 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
 const indexPrimersRelationsConfig: RelationsConfig = {
-    oneToOne: {
+    many: {
         wellContents: {
-            table: wellContents
-        }
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.indexPrimerId],
+        },
     },
 }
 export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)

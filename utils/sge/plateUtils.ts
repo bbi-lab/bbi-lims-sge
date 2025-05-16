@@ -97,7 +97,9 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
     const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsKey'])
     const wellContentsFK = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentsFK'])
     const wellContentTypeShortName = _.get(PLATE_TYPE_SPECS, [plate.plateType, 'wellContentTypeShortName'])
-    const wellContentNamePath = _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plate.plateType) ? 'pellet.name' : 'name'
+    const wellContentNamePath = _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plate.plateType) ?
+        'pellet.name' :
+        (plate.plateType == 'seq-index' ? 'indexSequence' : 'name')
 
     const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ?
         [wellContentsKey, 'targetId'] :
@@ -167,6 +169,7 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
             const wellContent = _.get(x, wellContentsKey)
             return wellContent ? `${_.get(wellContent, wellContentNamePath)} (${wellContentTypeShortName})` : null
         }))
+
         _.set(wellSpecs, [well.id, 'tooltip'], `${wellCoordinateToChar(well.y)}${well.x}:<br>${wellTooltips.join('<br>')}`)
 
         // set symbol
