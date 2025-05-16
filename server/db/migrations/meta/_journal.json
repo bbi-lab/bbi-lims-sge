@@ -393,6 +393,13 @@
       "when": 1747352493555,
       "tag": "0055_little_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1747435559166,
+      "tag": "0056_majestic_white_queen",
+      "breakpoints": true
     }
   ]
 }
