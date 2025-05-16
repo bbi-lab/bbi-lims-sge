@@ -60,16 +60,18 @@ function didDeleteRecord(event: any) {
     showEditForm.value = false
 }
 const columnDefs = {
+    name: { index: 0},
     plateType: { display: false },
-    plateTypeLabel: { header: 'Type' },
+    plateTypeLabel: { header: 'Type', index: 1 },
     pcrExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     cycleId: { display: false },
-    cycleName: { header: 'Cycle' },
+    cycleName: { header: 'Cycle', index: 2 },
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
     filled: {
+        index: 3,
         format: (data: any) => {
             if (_.isNumber(data.wellsCount) && data.wellsCount > 0 && _.isNumber(data.wellsWithContentCount)) {
                 return `${data.wellsWithContentCount} / ${data.wellsCount}`
@@ -78,7 +80,9 @@ const columnDefs = {
             }
         },
         path: 'filled.displayValue',
-    }
+    },
+    discarded: { index: 5 },
+    processed: { index: 6 }
 }
 const rowActions = {
     layout: {
