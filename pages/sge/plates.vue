@@ -71,7 +71,7 @@ const columnDefs = {
     wellsWithContentCount: { display: false },
     filled: {
         format: (data: any) => {
-            if (data.wellsCount - data.wellsWithContentCount) {
+            if (_.isNumber(data.wellsCount) && data.wellsCount > 0 && _.isNumber(data.wellsWithContentCount)) {
                 return `${data.wellsWithContentCount} / ${data.wellsCount}`
             } else {
                 return '-'
