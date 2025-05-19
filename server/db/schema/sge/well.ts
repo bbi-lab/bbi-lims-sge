@@ -1,5 +1,5 @@
 import { sql, type InferSelectModel } from 'drizzle-orm'
-import { pgTable, uuid, smallint, primaryKey, unique, check} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, smallint, primaryKey, unique, check, timestamp} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -7,6 +7,7 @@ import { plates } from './plate'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { nucleicAcids } from './nucleic-acid'
 import { pellets } from './pellet'
+import { users } from '../user'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -28,6 +29,16 @@ export const wellContents = pgTable('well_contents', {
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
 }, (t) => [
   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}) = 1`),
+])
+
+export const wellSources = pgTable('well_sources', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),
+  destWellId: uuid('dest_well_id').references(() => wells.id).notNull(),
+  createdOn: timestamp('started_on').defaultNow(),
+  createdBy: uuid('harvested_by').references(() => users.id),
+}, (t) => [
+  unique('unique_well_source_dest').on(t.sourceWellId, t.destWellId),
 ])
 
 const selectWellSchema = createSelectSchema(wells)
