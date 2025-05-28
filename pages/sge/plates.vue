@@ -68,6 +68,7 @@ const columnDefs = {
     sizeY: { display: false },
     cycleId: { display: false },
     cycleName: { header: 'Cycle', index: 2 },
+    targets: { index: 4 },
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
     filled: {
