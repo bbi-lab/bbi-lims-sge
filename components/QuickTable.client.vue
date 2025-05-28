@@ -35,7 +35,6 @@ const loadTableData = async () => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
     records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
 
-
     refreshFormattedValues()
 
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
@@ -163,6 +162,8 @@ const filteringInProgress = ref(false)
 const globalFilterFields: Ref<GlobalFilterField[]> = ref([])
 const globalSearchTerm = ref(null)
 const selectionCount = computed(() => props.selectionMode == 'multiple' ? `${selectedRecords.value?.length || 0} of ${records.value?.length || 0} selected` : `${records.value?.length || 0} records`)
+const columnFilterInputs = ref({})
+const lastColumnFilterInputKey = ref<string | null>(null)
 
 const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
 // TODO: add support for posititing buttons in any column. For now, 0 or negative index action buttons will be combined into the first column,
@@ -363,8 +364,9 @@ function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
 }
 
-function debounceSearch(f: Function) {
+function debounceSearch(f: Function, columnDefKey?: string) {
     filteringInProgress.value = true
+    lastColumnFilterInputKey.value = columnDefKey || null
     return _.debounce(() => {
         f()
 }, 1000)}
@@ -401,6 +403,15 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
     const visibleColumnKeys = _.map(visibleColumns.value, (x) => x.code)
     return _.filter(columns, (x) => x.key == 'id' || _.includes(visibleColumnKeys, x.key))
 }
+function filteringComplete() {
+    filteringInProgress.value = false
+
+    // if filtering by column, focus the last input
+    if (lastColumnFilterInputKey.value) {
+        const input = _.get(columnFilterInputs.value, lastColumnFilterInputKey.value)
+        if (input) input.$el.focus()
+    }
+}
 </script>
 
 <template>
@@ -426,7 +437,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
         :filter-display="displayColumnFilters ? 'row' : undefined"
         :globalFilterFields="globalFilterFields"
         @update:filters="filteringInProgress = true"
-        @filter="filteringInProgress = false"
+        @filter="filteringComplete"
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -487,7 +498,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
             <template v-if="columnDef.display!==false">
                 <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data[columnDef.key]) }}
@@ -495,7 +506,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 </Column>
                 <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
@@ -503,7 +514,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 </Column>
                 <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
                         <a class="text-blue-600 underline visited:text-purple-600 hover:text-blue-800"
@@ -515,7 +526,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 </Column>
                 <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
                         <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)"></span>
@@ -525,7 +536,7 @@ function filterByColumnVisibility(columns: SortedColumnDefinition[]): SortedColu
                 </Column>
                 <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
-                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback)()" />
+                        <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template v-if="columnDef.path" #body="slotProps">
                         {{ columnDef.type == 'array' ? _.join(_.get(slotProps.data, columnDef.path), ', ') : _.get(slotProps.data, columnDef.path) }}
