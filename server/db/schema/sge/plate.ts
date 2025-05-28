@@ -8,6 +8,7 @@ import { ENUM_LOOKUPS } from './enum-lookups'
 import { wellContents, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
+import { targets } from './target'
 
 export type PlateType = 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'seq-index'
 
@@ -41,6 +42,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   processed: boolean('processed'),
   cycleId: varchar('cycle_id'),
   cycleName: varchar('cycle_name'),
+  targets: varchar('targets'),
   plateTypeLabel: varchar('plate_type_label'),
   wellsCount: smallint('wells_count'),
   wellsWithContentCount: smallint('wells_with_content_count'),
@@ -55,6 +57,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     ${plates.processed},
     ${cycles.id} as cycle_id,
     ${cycles.name} as cycle_name,
+    string_agg(distinct ${targets.name}, ',') as targets,
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
     count(distinct(${wells.id})) as wells_count,
     count(distinct(${wellContents.wellId})) as wells_with_content_count
@@ -63,6 +66,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
     left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
     left join ${transfectTargets} on ${eq(pcrExperiments.transfectTargetId, transfectTargets.id)}
+    left join ${targets} on ${eq(targets.id, transfectTargets.targetId)}
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
     left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)} or ${eq(pcrExperiments.cycleId, cycles.id)}
     group by ${plates.id}, ${cycles.id}`
