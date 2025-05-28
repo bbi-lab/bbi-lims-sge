@@ -421,6 +421,13 @@
       "when": 1748450201995,
       "tag": "0059_robust_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1748469309269,
+      "tag": "0060_wet_pretty_boy",
+      "breakpoints": true
     }
   ]
 }
