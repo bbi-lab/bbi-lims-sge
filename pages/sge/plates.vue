@@ -145,6 +145,7 @@ const readonlyValues = queryParams
                 :rowActions="rowActions"
                 :where="whereClauses"
                 :canDelete="false"
+                :showColumnFilters="true"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
