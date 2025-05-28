@@ -85,7 +85,7 @@ const insertExtractionLotUsageSchema = selectExtractionLotUsageSchema.omit({id: 
 const updateExtractionLotUsageSchema = insertExtractionLotUsageSchema
 
 const selectPlatesSchema = createSelectSchema(plates)
-const insertPlatesSchema = selectPlatesSchema.omit({id: true})
+const insertPlatesSchema = selectPlatesSchema.omit({id: true}).partial()
 const updatePlatesSchema = insertPlatesSchema
 
 const selectWellsSchema = createSelectSchema(wells)

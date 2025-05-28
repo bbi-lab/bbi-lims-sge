@@ -69,8 +69,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
 )
 
 const selectPlateSchema = createSelectSchema(plates)
-const insertPlateSchema = selectPlateSchema.omit({id: true})
-const updatePlateSchema = selectPlateSchema.omit({id: true})
+const insertPlateSchema = selectPlateSchema.omit({id: true}).partial()
+const updatePlateSchema = selectPlateSchema.omit({id: true}).partial()
 
 export const schemas: Record<string, ZodObject<any>> = {
     selectPlateSchema,
