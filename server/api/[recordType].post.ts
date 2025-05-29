@@ -7,6 +7,13 @@ import { parsePutPostError } from '../utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
+    if (recordType != _.kebabCase(recordType)) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: `Invalid record type: ${recordType}. Record type must be kebab-case.`
+        })
+    }
+
     const db = useDrizzle()
     try {
         const body = await readBody(event)
