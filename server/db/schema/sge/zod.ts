@@ -17,7 +17,7 @@ import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
-import { wellContents, wells, wellSources } from './well'
+import { wellContents, wellContentSources, wells } from './well'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -96,9 +96,13 @@ const selectWellContentsSchema = createSelectSchema(wellContents)
 const insertWellContentsSchema = selectWellContentsSchema.omit({id: true}).partial()
 const updateWellContentsSchema = insertWellContentsSchema
 
-const selectWellSourcesSchema = createSelectSchema(wellSources)
-const insertWellSourcesSchema = selectWellSourcesSchema.omit({id: true}).partial()
-const updateWellSourcesSchema = insertWellSourcesSchema
+const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
+const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
+const updateWellContentSourcesSchema = insertWellContentSourcesSchema
+
+// const selectWellSourcesSchema = createSelectSchema(wellSources)
+// const insertWellSourcesSchema = selectWellSourcesSchema.omit({id: true}).partial()
+// const updateWellSourcesSchema = insertWellSourcesSchema
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -205,11 +209,16 @@ export const schemas = {
         insert: insertWellContentsSchema,
         update: updateWellContentsSchema,
     },
-    wellSources: {
-        select: selectWellSourcesSchema,
-        insert: insertWellSourcesSchema,
-        update: updateWellSourcesSchema,
+    wellContentSources: {
+        select: selectWellContentSourcesSchema,
+        insert: insertWellContentSourcesSchema,
+        update: updateWellContentSourcesSchema,
     },
+    // wellSources: {
+    //     select: selectWellSourcesSchema,
+    //     insert: insertWellSourcesSchema,
+    //     update: updateWellSourcesSchema,
+    // },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,

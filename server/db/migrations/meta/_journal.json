@@ -435,6 +435,13 @@
       "when": 1748534164239,
       "tag": "0061_numerous_rumiko_fujikawa",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1748541009268,
+      "tag": "0062_spicy_toad_men",
+      "breakpoints": true
     }
   ]
 }

@@ -31,6 +31,16 @@ export const wellContents = pgTable('well_contents', {
   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}) = 1`),
 ])
 
+export const wellContentSources = pgTable('well_content_sources', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  wellContentId: uuid('well_content_id').references(() => wellContents.id).notNull(),
+  sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: uuid('created_by').references(() => users.id),
+}, (t) => [
+  unique('unique_well_content_id_source_well_id').on(t.wellContentId, t.sourceWellId),
+])
+
 export const wellSources = pgTable('well_sources', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),

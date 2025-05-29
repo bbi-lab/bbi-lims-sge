@@ -5,7 +5,7 @@ import { transfectExperiments, transfectTargets, transfectLotUsage } from './tra
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
-import { wellContents, wells, wellSources } from './well'
+import { wellContents, wellContentSources, wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
@@ -100,26 +100,47 @@ const wellContentsRelationsConfig: RelationsConfig = {
 }
 export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
 
-const wellSourcesRelationsConfig: RelationsConfig = {
+const wellContentSourcesRelationsConfig: RelationsConfig = {
     one: {
-        sourceWell: {
-            fields: [wellSources.sourceWellId],
-            referenceTable: wells,
-            references: [wells.id],
+        wellContent: {
+            fields: [wellContentSources.wellContentId],
+            referenceTable: wellContents,
+            references: [wellContents.id],
         },
-        destWell: {
-            fields: [wellSources.destWellId],
+        sourceWell: {
+            fields: [wellContentSources.sourceWellId],
             referenceTable: wells,
             references: [wells.id],
         },
         createdBy: {
-            fields: [wellSources.createdBy],
+            fields: [wellContentSources.createdBy],
             referenceTable: users,
             references: [users.id],
         },
     },
 }
-export const wellSourcesRelations = relationsConfigToRelations(wellSources, wellSourcesRelationsConfig)
+export const wellContentSourcesRelations = relationsConfigToRelations(wellContentSources, wellContentSourcesRelationsConfig)
+
+// const wellSourcesRelationsConfig: RelationsConfig = {
+//     one: {
+//         sourceWell: {
+//             fields: [wellSources.sourceWellId],
+//             referenceTable: wells,
+//             references: [wells.id],
+//         },
+//         destWell: {
+//             fields: [wellSources.destWellId],
+//             referenceTable: wells,
+//             references: [wells.id],
+//         },
+//         createdBy: {
+//             fields: [wellSources.createdBy],
+//             referenceTable: users,
+//             references: [users.id],
+//         },
+//     },
+// }
+// export const wellSourcesRelations = relationsConfigToRelations(wellSources, wellSourcesRelationsConfig)
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
@@ -475,7 +496,8 @@ export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, in
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
-    wellSources: wellSourcesRelationsConfig,
+    wellContentSources: wellContentSourcesRelationsConfig,
+    // wellSources: wellSourcesRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
     projects: projectsRelationsConfig,
