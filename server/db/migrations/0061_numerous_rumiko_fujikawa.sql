@@ -1,0 +1,1 @@
+ALTER TABLE "well_sources" RENAME COLUMN "created_on" TO "created_at";
