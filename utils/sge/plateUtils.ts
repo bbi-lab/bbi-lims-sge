@@ -6,6 +6,7 @@ import type { Plate } from "~/server/db/schema/sge/plate"
 import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer } from "~/server/db/schema/sge/primer"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
 import { RecordService } from "../service/RecordService"
+import type { User } from "~/server/db/schema/user"
 
 export type PlateDiagramColorMap = {
     [key: string]: {
@@ -47,6 +48,7 @@ export type PlateWithWellContents = Plate & {
 }
 
 type NucleicAcidWithPellet = NucleicAcid & {pellet: Pellet}
+type NucleicAcidWithPelletAndWellIds = NucleicAcidWithPellet & {wellIds: String[]}
 
 export const PLATE_TYPE_SPECS = {
     'amp-storage':{
@@ -243,7 +245,7 @@ export const assignNucleicAcidsToPreseq1Plate = async (nucleicAcids: NucleicAcid
     return wellContentsAdded
 }
 
-export const poolPreseq1PlateToWells = async (plateId: string, selectedWells: PlateDiagramWell[], apiBase: string) => {
+const poolPreseq1PlateToWells = async (plateId: string, selectedWells: PlateDiagramWell[], apiBase: string, user: User) => {
     // sort wells by x and inverse y coordinate to achieve the correct order
     const sortedWellIds = _.map(_.sortBy(selectedWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`), 'id')
 
@@ -270,22 +272,69 @@ export const poolPreseq1PlateToWells = async (plateId: string, selectedWells: Pl
 
     const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
         const nucleicAcid = _.get(well, ['wellContents', 0, 'nucleicAcid'])
-        if (nucleicAcid?.id && !_.has(acc, nucleicAcid.id)) {
-            _.set(acc, nucleicAcid.id, nucleicAcid)
+        if (nucleicAcid?.id) {
+            const existingWellIds = _.get(acc, [nucleicAcid.id, 'wellIds'], [])
+            _.set(acc, nucleicAcid.id, {...nucleicAcid, wellIds: [...existingWellIds, well.id]})
         }
         return acc
     }, {})), (x) => {
         return x.pellet.name
-    }) as NucleicAcidWithPellet[]
+    }) as NucleicAcidWithPelletAndWellIds[]
 
     if (pooledNucleicAcids.length > sortedWellIds.length) {
         throw new Error('Number of selected wells is less than number of nucleic acids in the plate')
     } else {
-        return _.map(pooledNucleicAcids, (value, index) => {
-          return {
-            wellId: sortedWellIds[index],
-            nucleicAcidId: value.id,
-          }
+        const wellContentsAndSources = _.map(pooledNucleicAcids, (value, index) => {
+            return {
+                wellId: sortedWellIds[index],
+                nucleicAcidId: value.id,
+                sourceWellIds: value.wellIds,
+                createdBy: user.id || null,
+            }
         })
+        return wellContentsAndSources
+    }
+}
+
+export const assignToPlate = async(plateType: string, selectedWells: PlateDiagramWell[] | undefined, sourceData: any, apiBase: string, user: User) => {
+    if (_.isEmpty(plateType) || _.isEmpty(selectedWells) || _.isEmpty(sourceData) || _.isEmpty(apiBase)) {
+        throw new Error('Invalid parameters for assignToPlate')
+    }
+
+    let newRecords: WellContent[] = []
+    let wellContentsToAdd: any[] = []
+
+    // generate records to be saved
+    if (plateType == 'preseq-1') {
+        // sourceData is nucleic acid
+        wellContentsToAdd = _.map(selectedWells, (x) => {
+            return {
+                wellId: x.id,
+                [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: sourceData.id,
+            }
+        })
+    } else if (plateType == 'preseq-2' && selectedWells) {
+        // sourceData is preseq-1 plate
+        wellContentsToAdd = await poolPreseq1PlateToWells(sourceData.id, selectedWells, apiBase, user)
+    }
+
+    // save records
+    if (!_.isEmpty(wellContentsToAdd)) {
+        newRecords = await RecordService.addRecords(
+                `${apiBase}/well-contents`,
+                wellContentsToAdd
+            ) as WellContent[]
+
+        if (sourceData.plateType == 'preseq-1') {
+            // mark as processed
+            await RecordService.updateRecords(
+                `${apiBase}/plates`,
+                [sourceData.id],
+                {
+                    processed: true,
+                }
+            )
+        }
+        return newRecords
     }
 }

@@ -172,7 +172,7 @@ const poolSelectedWells = async () => {
         const wellContentId = sourceWell.data.wellContents?.[0]?.id
 
         const updatedRecord = await RecordService.updateRecord(
-            `${config.public.apiBase}/wellContents`,
+            `${config.public.apiBase}/well-contents`,
             {
                 id: wellContentId,
                 wellId: destinationWellId,

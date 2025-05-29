@@ -4,7 +4,7 @@ import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
-import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, poolPreseq1PlateToWells, updateWellSpecs } from '~/utils/sge/plateUtils'
+import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, assignToPlate, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
@@ -15,6 +15,7 @@ const toast = useToast()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
 const { showLoginModal } = useLayout()
+const { user } = useUserSession()
 
 const plateWithWellContents = ref<PlateWithWellContents>()
 const contentSelectionTable = ref()
@@ -80,7 +81,7 @@ const refreshPlate = async () => {
 
     if (_.get(plateWithWellContents.value, 'pcrExperimentId')) {
         pcrExperiment.value = await RecordService.getRecord(
-            `${config.public.apiBase}/pcrExperiments`,
+            `${config.public.apiBase}/pcr-experiments`,
             plateWithWellContents.value.pcrExperimentId as string,
             {
                 transfectTarget: {
@@ -426,7 +427,7 @@ const emptySelectedWells = async () => {
     let deletedRecords: WellContent[]
     try {
         deletedRecords = await RecordService.deleteRecords(
-            `${config.public.apiBase}/wellContents`,
+            `${config.public.apiBase}/well-contents`,
             wellContentsToDelete
         )
     } catch (error: any) {
@@ -473,57 +474,21 @@ const rowActions = {
                 const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
 
                 let newRecords
-                let wellContentsToAdd
-                if (plateType == 'preseq-1') {
-                    wellContentsToAdd = _.map(selectedWellIds, (x) => {
-                        return {
-                            wellId: x,
-                            [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
-                        }
-                    })
-                } else if (plateType == 'preseq-2' && selectedWells.value) {
-                    try {
-                        wellContentsToAdd = await poolPreseq1PlateToWells(data.id, selectedWells.value, config.public.apiBase)
-                    } catch (e: any) {
-                        if (e.statusCode == 401 && e.statusMessage == 'TOKEN EXPIRED') {
-                            showLoginModal()
-                        } else {
-                            toast.add({
-                                severity: 'error',
-                                summary: 'Error',
-                                detail: e.message || 'Error calculating plate layout',
-                                life: 3000,
-                            })
-                        }
-                        return
+                try {
+                    newRecords = await assignToPlate(plateType, selectedWells.value, data, config.public.apiBase, user.value)
+                } catch (e: any) {
+                    if (e.statusCode == 401 && e.statusMessage == 'TOKEN EXPIRED') {
+                        showLoginModal()
+                    } else {
+                        toast.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: e.message || 'Error calculating plate layout',
+                            life: 3000,
+                        })
                     }
+                    return
                 }
-                if (!_.isEmpty(wellContentsToAdd)) {
-                    try {
-                        newRecords = await RecordService.addRecords(
-                            `${config.public.apiBase}/wellContents`,
-                            wellContentsToAdd
-                        )
-                        if (data.plateType == 'preseq-1') {
-                            // mark as processed
-                            await RecordService.updateRecords(
-                                `${config.public.apiBase}/plates`,
-                                [data.id],
-                                {
-                                    processed: true,
-                                }
-                            )
-                        }
-                    } catch(error: any) {
-                        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                            showLoginModal()
-                        } else {
-                            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-                        }
-                        return
-                    }
-                }
-
                 if (!_.isEmpty(newRecords)) {
                     await refreshPlate()
                     const updatedWells = _.values(_.pick(wellSpecs.value, selectedWellIds))
