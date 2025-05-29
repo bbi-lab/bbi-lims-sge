@@ -59,7 +59,15 @@ export const schemas: Record<string, ZodObject<any>> = {
     insertWellSchema
 }
 
+const selectWellContentSchema = createSelectSchema(wellContents)
+const insertWellContentSchema = selectWellContentSchema.omit({id: true}).partial()
+
+export const wellContentSchemas: Record<string, ZodObject<any>> = {
+    selectWellContentSchema,
+    insertWellContentSchema
+}
 export type Well = InferSelectModel<typeof wells>
 export type NewWell = z.infer<typeof insertWellSchema>
 
 export type WellContent = InferSelectModel<typeof wellContents>
+export type NewWellContent = z.infer<typeof insertWellContentSchema>
