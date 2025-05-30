@@ -320,6 +320,7 @@ const columnDefs = {
         sizeY: { display: false },
         wellsCount: { display: false },
         wellsWithContentCount: { display: false },
+        wellsProcessedCount: { header: 'Wells processed' },
         filled: {
             format: (data: any) => {
                 if (data.wellsCount - data.wellsWithContentCount) {

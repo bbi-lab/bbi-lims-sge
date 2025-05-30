@@ -71,6 +71,7 @@ const columnDefs = {
     targets: { index: 4 },
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
+    wellsProcessedCount: { display: false },
     filled: {
         index: 3,
         format: (data: any) => {
@@ -82,8 +83,16 @@ const columnDefs = {
         },
         path: 'filled.displayValue',
     },
+    wellsProcessed: {
+        header: 'Wells processed',
+        index: 3,
+        format: (data: any) => {
+            return data.plateType == 'preseq-1' ? data.wellsProcessedCount : ''
+        },
+        path: 'wellsProcessed.displayValue',
+    },
     discarded: { index: 5 },
-    processed: { index: 6 }
+    processed: { header: 'Plate processed', index: 6 }
 }
 const rowActions = {
     layout: {
