@@ -103,11 +103,14 @@ export const updateWellSpecs = (wellSpecs: WellSpecs, plate: PlateWithWellConten
         'pellet.name' :
         (plate.plateType == 'seq-index' ? 'indexSequence' : 'name')
 
-    const wellContentGroupIdPath = _.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType) ?
-        [wellContentsKey, 'targetId'] :
-        _.includes(['preseq-1'], plate.plateType) ?
-        [wellContentsKey, 'pellet', 'id'] :
-        undefined
+    let wellContentGroupIdPath
+    if (_.includes(['ha-storage', 'amp-storage', 'lin-storage'], plate.plateType)) {
+        wellContentGroupIdPath = [wellContentsKey, 'targetId']
+    } else if (_.includes(['preseq-1', 'preseq-2'], plate.plateType)) {
+        wellContentGroupIdPath = [wellContentsKey, 'pellet', 'id']
+    } else {
+        wellContentGroupIdPath = undefined
+    }
 
     // remove empty wells from color map
     _.forEach(plate.wells, (well: WellWithContents) => {
