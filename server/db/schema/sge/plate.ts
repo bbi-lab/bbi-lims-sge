@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { pcrExperiments } from './pcr-experiment'
 import { ENUM_LOOKUPS } from './enum-lookups'
-import { wellContents, wells } from './well'
+import { wellContents, wellContentSources, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 import { targets } from './target'
@@ -46,6 +46,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   plateTypeLabel: varchar('plate_type_label'),
   wellsCount: smallint('wells_count'),
   wellsWithContentCount: smallint('wells_with_content_count'),
+  wellsProcessedCount: smallint('wells_processed_count'),
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
     ${plates.pcrExperimentId},
@@ -60,9 +61,11 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     string_agg(distinct ${targets.name}, ',') as targets,
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
     count(distinct(${wells.id})) as wells_count,
-    count(distinct(${wellContents.wellId})) as wells_with_content_count
+    count(distinct(${wellContents.wellId})) as wells_with_content_count,
+    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count
     from ${plates}
     join ${wells} on ${eq(plates.id, wells.plateId)}
+    left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
     left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
     left join ${transfectTargets} on ${eq(pcrExperiments.transfectTargetId, transfectTargets.id)}
