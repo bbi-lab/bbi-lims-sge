@@ -70,6 +70,26 @@ const refreshPlate = async () => {
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
                             nucleicAcid: _.includes(['preseq-1', 'preseq-2', 'preseq-3'], route.params.plateType) ? {with: {pellet: true}} : false,
                             indexPrimer: route.params.plateType == 'seq-index',
+                            wellContentSources: {
+                                with: {
+                                    sourceWell: {
+                                        columns: {
+                                            id: true,
+                                            x: true,
+                                            y: true,
+                                        },
+                                        with: {
+                                            plate: {
+                                                columns: {
+                                                    id: true,
+                                                    name: true,
+                                                    plateType: true,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         }
                     },
                 }
@@ -444,6 +464,13 @@ const emptySelectedWells = async () => {
         const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
         const updatedWells = _.values(_.pick(wellSpecs.value, deletedWellIds))
         plateDiagram.value.updateWells(updatedWells, oldValues)
+
+        if (tableName == 'view-plates-with-well-counts') {
+            const plateIds = _.uniq(_.flattenDeep(_.map(oldValues, (x) => _.map(x.data.wellContents, (wellContent) => _.uniq(_.map(wellContent.wellContentSources, 'sourceWell.plate.id'))))))
+            for (const plateId of plateIds) {
+                contentSelectionTable.value.addOrRefreshRecordId(plateId)
+            }
+        }
         toast.add({
             severity: 'info',
             summary: 'Updated well',

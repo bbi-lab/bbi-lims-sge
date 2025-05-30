@@ -97,6 +97,13 @@ const wellContentsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
+    many: {
+        wellContentSources: {
+            table: wellContentSources,
+            schema: createSelectSchema(wellContentSources),
+            fields: [wellContentSources.wellContentId],
+        },
+    },
 }
 export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
 
