@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import type { PlateType } from '~/server/db/schema/sge/plate'
 
 const showAddForm = ref(false)
@@ -9,7 +10,6 @@ const editingMultipleRecordsIds = ref<string[]>([])
 const editingRecordId = ref<string | null>(null)
 const platesTable = ref()
 const router = useRouter()
-// const poolingPlates = ref<{id: string, name: string}[]>([])
 const route = useRoute()
 
 const queryParams = route.query
@@ -101,18 +101,6 @@ const rowActions = {
         },
         disabled: ({plateType}: { plateType: PlateType }) => _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },
-    // pool: {
-    //     action: ({id, name}: {id: string, name: string}) => {
-    //         if (_.size(poolingPlates.value)==0) {
-    //             poolingPlates.value = [{id, name}]
-    //         } else if (_.size(poolingPlates.value)==1 && poolingPlates.value[0].id !== id) {
-    //             poolingPlates.value.push({id, name})
-    //             router.push({path: `/sge/plate-diagram/pool/${poolingPlates.value[0].id}/${poolingPlates.value[1].id}`})
-    //         }
-    //     },
-    //     visible: ({plateType}: { plateType: PlateType }) => _.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType),
-    //     disabled: ({id}: {id: string}) => _.includes(poolingPlates.value.map(p => p.id), id) || _.size(poolingPlates.value) > 1
-    // }
 }
 
 const fieldDefs = {
@@ -121,15 +109,30 @@ const fieldDefs = {
     name: { index: 0 },
     plateType: {
         index: 1,
-        onChange: (x: any) => {
-            if (_.endsWith(x.plateType, '-storage')) {
-                x.sizeX = 9
-                x.sizeY = 9
-            } else {
-                x.sizeX = 12
-                x.sizeY = 8
+        component: 'Select',
+        props: {
+            options: _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
+                if (key === 'preseq-1' || key === 'preseq-2' || key === 'preseq-3') {
+                    return { label: value.label, code: key, disabled: true }
+                } else {
+                    return { label: value.label, code: key }
+                }
+            }),
+            optionLabel: 'label',
+            optionValue: 'code',
+            optionDisabled: 'disabled',
+        },
+        events: {
+            change: (record: any) => {
+                if (_.endsWith(record.plateType, '-storage')) {
+                    record.sizeX = 9
+                    record.sizeY = 9
+                } else {
+                    record.sizeX = 12
+                    record.sizeY = 8
+                }
             }
-        }
+        },
     },
 }
 
@@ -140,10 +143,6 @@ const readonlyValues = queryParams
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
-            <!-- <div class="bg-red-100 p-5" v-if="_.size(poolingPlates) == 1">
-                <span class="mr-5">Plate {{ poolingPlates[0].name}} is selected for pooling. Now select a plate to pool into.</span>
-                <Button label="Cancel" severity="warn" @click="poolingPlates = []"/>
-            </div> -->
             <QuickTable
                 ref="platesTable"
                 tableName="view-plates-with-well-counts"
