@@ -215,6 +215,7 @@ function getLabel(key: string) {
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                             <template #icon>
@@ -230,12 +231,13 @@ function getLabel(key: string) {
                             :key="key"
                             :input-id="key"
                             :inputClass="inputClasses[key]"
-                            :ref="(el) => inputRefs[key] = el"
+                            :ref="(el) => _.set(inputRefs, key, el)"
                             v-model="combinedRecord[key].val"
                             v-bind="_.get(fieldDefs, [key, 'props'])"
                             :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertNestedSelectToConflictingValue(key)">
                             <template #icon>
@@ -243,6 +245,18 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
+                </div>
+                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                    <Select
+                        :id="key"
+                        :class="inputClasses[key]"
+                        v-model="combinedRecord[key].val"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :placeholder="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
+                        :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
@@ -257,6 +271,7 @@ function getLabel(key: string) {
                             autofocus
                             :placeholder="placeholders[key]"
                             :disabled="isReadOnly(key)"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
@@ -281,6 +296,7 @@ function getLabel(key: string) {
                             autofocus
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
@@ -330,6 +346,7 @@ function getLabel(key: string) {
                         v-model="combinedRecord[key].val"
                         :binary="true"
                         :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                     />
                     <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val != null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
                         <template #icon>
@@ -351,6 +368,7 @@ function getLabel(key: string) {
                             :disabled="isReadOnly(key)"
                             :minFractionDigits="0"
                             :maxFractionDigits="0"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
@@ -372,6 +390,7 @@ function getLabel(key: string) {
                             :placeholder="placeholders[key]"
                             :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
                             :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
                         <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
@@ -450,6 +469,7 @@ function getLabel(key: string) {
                             :class="`w-80 ${inputClasses[key]}`"
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(combinedRecord, [key, 'conflictingValueCount']) || !_.isEmpty(combinedRecord[key].val))"
                             :href="combinedRecord[key].val"
