@@ -41,15 +41,15 @@ export const wellContentSources = pgTable('well_content_sources', {
   unique('unique_well_content_id_source_well_id').on(t.wellContentId, t.sourceWellId),
 ])
 
-export const wellSources = pgTable('well_sources', {
-  id: uuid('id').notNull().primaryKey().defaultRandom(),
-  sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),
-  destWellId: uuid('dest_well_id').references(() => wells.id).notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  createdBy: uuid('created_by').references(() => users.id),
-}, (t) => [
-  unique('unique_well_source_dest').on(t.sourceWellId, t.destWellId),
-])
+// export const wellSources = pgTable('well_sources', {
+//   id: uuid('id').notNull().primaryKey().defaultRandom(),
+//   sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),
+//   destWellId: uuid('dest_well_id').references(() => wells.id).notNull(),
+//   createdAt: timestamp('created_at').notNull().defaultNow(),
+//   createdBy: uuid('created_by').references(() => users.id),
+// }, (t) => [
+//   unique('unique_well_source_dest').on(t.sourceWellId, t.destWellId),
+// ])
 
 const selectWellSchema = createSelectSchema(wells)
 const insertWellSchema = z.object({})

@@ -1,0 +1,1 @@
+DROP TABLE "well_sources" CASCADE;
