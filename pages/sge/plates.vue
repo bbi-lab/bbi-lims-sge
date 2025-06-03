@@ -87,7 +87,7 @@ const columnDefs = {
         header: 'Wells processed',
         index: 3,
         format: (data: any) => {
-            return data.plateType == 'preseq-1' ? data.wellsProcessedCount : ''
+            return _.includes(['preseq-1', 'preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
         },
         path: 'wellsProcessed.displayValue',
     },
