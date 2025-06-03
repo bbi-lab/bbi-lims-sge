@@ -8,6 +8,7 @@ import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
+import { path } from 'd3'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -358,7 +359,13 @@ const columnDefs = {
         sizeY: { display: false },
         wellsCount: { display: false },
         wellsWithContentCount: { display: false },
-        wellsProcessedCount: { header: 'Wells processed' },
+        wellsProcessedCount: {
+            header: 'Wells processed',
+            format: (data: any) => {
+                return _.includes(['preseq-1', 'preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
+            },
+            path: 'wellsProcessedCount.displayValue',
+        },
         filled: {
             format: (data: any) => {
                 if (data.wellsCount - data.wellsWithContentCount) {
@@ -508,6 +515,9 @@ const rowActions = {
     assign: {
         label: '',
         action: async (data: any) => {
+            const selectedWellIds = _.map(selectedWells.value || [], 'id')
+            const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
+
             if (_.size(selectedWells.value) != 1 && !_.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType)) {
                 toast.add({
                     severity: 'error',
@@ -515,10 +525,32 @@ const rowActions = {
                     detail: 'Select a single well to add contents',
                     life: 1000,
                 })
-            } else {
-                const selectedWellIds = _.map(selectedWells.value || [], 'id')
-                const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
-
+            } else if (_.size(selectedWells.value) == 1 && !_.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType)) {
+                const newRecord = await RecordService.addRecord(
+                    `${config.public.apiBase}/well-contents`,
+                    {
+                        wellId: _.get(selectedWells.value, [0, 'id']),
+                        [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsRelations', 0, 'foreignKey'])]: data.id,
+                    }
+                )
+                if (newRecord?.wellId) {
+                    await refreshPlate()
+                    const updatedWell = _.get(wellSpecs.value, newRecord.wellId)
+                    if (updatedWell) {
+                        plateDiagram.value.updateWells(
+                            [updatedWell],
+                            [oldValues]
+                        )
+                    }
+                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
+                    toast.add({
+                        severity: 'info',
+                        summary: 'Updated well',
+                        detail: 'Well contents updated',
+                        life: 1000,
+                    })
+                }
+            } else if (_.size(selectedWells.value) > 0) {
                 let newRecords
                 try {
                     newRecords = await assignToPlate(plateType, selectedWells.value, data, config.public.apiBase, user.value)
@@ -559,6 +591,13 @@ const rowActions = {
                         life: 1000,
                     })
                 }
+            } else {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Select wells to add contents',
+                    life: 1000,
+                })
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
