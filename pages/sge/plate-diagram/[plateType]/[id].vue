@@ -26,7 +26,8 @@ const wellSpecs = ref<WellSpecs>({})
 const pcrExperiment = ref()
 
 const plateType = route.params.plateType as PlateType
-const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
+// TODO handle multiple wellContentsRelations (for PreSeq-3)
+const wellContentsRelationName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsRelations', 0, 'name'])
 const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
 const tableWhereClause = ref()
 
@@ -43,7 +44,7 @@ const colorMapBySelectionTableId = computed(() => {
 
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(selectedWells.value, (well) => {
-        return _.map(well.data.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })
+        return _.map(well.data.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })
     })))
 })
 
@@ -69,7 +70,7 @@ const refreshPlate = async () => {
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
                             nucleicAcid: _.includes(['preseq-1', 'preseq-2', 'preseq-3'], route.params.plateType) ? {with: {pellet: true}} : false,
-                            indexPrimer: route.params.plateType == 'seq-index',
+                            indexPrimer: _.includes(['seq-index', 'preseq-3'], route.params.plateType),
                             wellContentSources: {
                                 with: {
                                     sourceWell: {
@@ -111,7 +112,19 @@ const refreshPlate = async () => {
         )
     }
 
-    if (plateType == 'preseq-2') {
+    if (plateType == 'preseq-3') {
+        tableWhereClause.value = {
+            "in": [{"var": "plateType"}, ["preseq-2", "seq-index"]]
+        }
+        if (pcrExperiment.value?.cycleId) {
+            tableWhereClause.value = {
+                "and": [
+                    tableWhereClause.value,
+                    {"==": [{"var": "cycleId"}, pcrExperiment.value.cycleId]}
+                ]
+            }
+        }
+    } else if (plateType == 'preseq-2') {
         tableWhereClause.value = {
             "==": [{"var": "plateType"}, "preseq-1"]
         }
@@ -143,6 +156,11 @@ const refreshPlate = async () => {
         ...plateWithWellContents.value,
         wells: _.values(wellSpecs.value),
     }
+
+    // refresh selectedWells
+    selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+        return _.includes(_.map(selectedWells.value, 'id'), x.id)
+    })
 }
 
 const sharedWithClause = {
@@ -429,8 +447,8 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
     await refreshPlate()
 
     const contentSelectionTableIdsToRefresh = _.compact([
-        ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
-        ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
+        ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
+        ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
     ])
     contentSelectionTableIdsToRefresh.forEach((id) => {
         contentSelectionTable.value.addOrRefreshRecordId(id)
@@ -490,7 +508,7 @@ const rowActions = {
     assign: {
         label: '',
         action: async (data: any) => {
-            if (_.size(selectedWells.value) != 1 && !_.includes(['preseq-1', 'preseq-2'], plateType)) {
+            if (_.size(selectedWells.value) != 1 && !_.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType)) {
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
