@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makePlateDiagram } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram } from '~/lib/plate-diagram'
 import _ from 'lodash'
 
 describe('PlateDiagram composable tests', () => {

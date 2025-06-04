@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { wellCoordinateToChar } from '@/composables/lib/plate-diagram'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const showAddForm = ref(false)
 const showEditForm = ref(false)

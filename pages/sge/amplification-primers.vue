@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { wellCoordinateToChar } from '~/composables/lib/plate-diagram'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 

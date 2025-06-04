@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { VALID_WELL_COLORS, wellCoordinateToChar, type PlateDiagramWell } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 

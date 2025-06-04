@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
-import { type PlateDiagramWell } from '~/composables/lib/plate-diagram'
+import { type PlateDiagramWell } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import { updateWellSpecs, type PlateWithWellContents, type WellSpecs } from '~/utils/sge/plateUtils'
-import { wellCoordinateToChar } from '~/composables/lib/plate-diagram'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const unpooledPlateWithWellContents = ref<PlateWithWellContents>()
 const pooledPlateWithWellContents = ref<PlateWithWellContents>()

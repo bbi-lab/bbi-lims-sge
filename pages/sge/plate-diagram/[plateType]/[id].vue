@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
@@ -8,7 +8,6 @@ import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
-import { path } from 'd3'
 
 const route = useRoute()
 const config = useRuntimeConfig()
