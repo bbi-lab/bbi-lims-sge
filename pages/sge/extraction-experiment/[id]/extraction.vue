@@ -295,7 +295,7 @@ const nucleicAcidFieldDefinitions: FieldDefinitions = {
             <QuickForm
                 v-if="showEditForm"
                 :recordId="editingRecordId"
-                tableName="nucleicAcids"
+                tableName="nucleic-acids"
                 schemaName="update"
                 :fieldDefs="nucleicAcidFieldDefs"
                 @cancel="didClickCancelEditForm"

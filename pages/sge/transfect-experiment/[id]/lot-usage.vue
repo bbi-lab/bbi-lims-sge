@@ -110,7 +110,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
         <SplitterPanel :size="50">
             <QuickTable
                 ref="transfectLotUsageTable"
-                tableName="transfectLotUsage"
+                tableName="transfect-lot-usage"
                 schemaName="select"
                 :title="tableTitle"
                 :rowActions="rowActions"
@@ -124,7 +124,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
          <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
-                tableName="transfectLotUsage"
+                tableName="transfect-lot-usage"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
                 :readonlyValues="readonlyValues"
@@ -135,7 +135,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
             <QuickForm
                 v-if="showEditForm"
                 :recordId="editingRecordId"
-                tableName="transfectLotUsage"
+                tableName="transfect-lot-usage"
                 schemaName="update"
                 :fieldDefs="editFormFieldDefs"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"

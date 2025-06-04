@@ -109,7 +109,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
         <SplitterPanel :size="50">
             <QuickTable
                 ref="extractionLotUsageTable"
-                tableName="extractionLotUsage"
+                tableName="extraction-lot-usage"
                 schemaName="select"
                 :title="tableTitle"
                 :rowActions="rowActions"
@@ -123,7 +123,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
          <SplitterPanel v-if="showAddForm || showEditForm">
             <QuickForm
                 v-if="showAddForm"
-                tableName="extractionLotUsage"
+                tableName="extraction-lot-usage"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -134,7 +134,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
             <QuickForm
                 v-if="showEditForm"
                 :recordId="editingRecordId"
-                tableName="extractionLotUsage"
+                tableName="extraction-lot-usage"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"

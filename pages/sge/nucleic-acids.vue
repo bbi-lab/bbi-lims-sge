@@ -200,7 +200,7 @@ const readonlyValues = queryParams
         <SplitterPanel :size="50">
             <QuickTable
                 ref="nucleicAcidsTable"
-                tableName="nucleicAcids"
+                tableName="nucleic-acids"
                 schemaName="select"
                 title="Nucleic Acids"
                 :columnDefs="columnDefs"
@@ -216,7 +216,7 @@ const readonlyValues = queryParams
          <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
             <QuickForm
                 v-if="showAddForm"
-                tableName="nucleicAcids"
+                tableName="nucleic-acids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -226,7 +226,7 @@ const readonlyValues = queryParams
             <QuickForm
                 v-if="editingRecordId && showEditForm"
                 :recordId="editingRecordId"
-                tableName="nucleicAcids"
+                tableName="nucleic-acids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
