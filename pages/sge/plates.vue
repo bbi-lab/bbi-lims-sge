@@ -154,6 +154,7 @@ const readonlyValues = queryParams
                 :where="whereClauses"
                 :canDelete="false"
                 :showColumnFilters="true"
+                :sortBy="['plateTypeLabel', 'name']"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
                 @clickedRecordAdd="didClickRecordAdd"
