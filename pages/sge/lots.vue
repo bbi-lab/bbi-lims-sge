@@ -4,60 +4,8 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const config = useRuntimeConfig()
+const crudTable = useCrudTable()
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const lotsTable = ref()
-const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref<string[]>([])
-
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event: any) {
-    lotsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    lotsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    lotsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach((e: any) => {
-        if (e.id) lotsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
 const columnDefs: ColumnDefinitions = {
     startedUseOn: {
         format: 'date-time'
@@ -146,48 +94,48 @@ const fieldDefs: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="lotsTable"
+                :ref="crudTable.setTableRef"
                 tableName="lots"
                 schemaName="select"
                 title="Lots"
                 :columnDefs="columnDefs"
                 :withClause="{reagent: true}"
                 :canEditMultiple="true"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="lots"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :withClause="{reagent: true}"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="lots"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :withClause="{reagent: true}"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="lots"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

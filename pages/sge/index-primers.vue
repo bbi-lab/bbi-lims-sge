@@ -1,51 +1,21 @@
 <script setup lang="ts">
 import _ from 'lodash'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const indexPrimersTable = ref()
-
+const crudTable = useCrudTable()
 const rowActions = {}
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
+const columnDefs = {
+    wellContents:{ display: false }
 }
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
+const fieldDefs = {
+    wellContents:{ display: false }
 }
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event: any) {
-    indexPrimersTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    indexPrimersTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    indexPrimersTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-
-const columnDefs = {}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="indexPrimersTable"
+                :ref="crudTable.setTableRef"
                 tableName="index-primers"
                 schemaName="select"
                 title="Index Primers"
@@ -53,17 +23,18 @@ const columnDefs = {}
                 :columnDefs="columnDefs"
                 :can-edit="false"
                 :can-delete="false"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="index-primers"
                 schemaName="insert"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                :fieldDefs="fieldDefs"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
         </SplitterPanel>
     </Splitter>

@@ -5,62 +5,12 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref<string[]>([])
-const editingRecordId = ref<string | null>(null)
-const nucleicAcidsTable = ref()
-
 const route = useRoute()
 const config = useRuntimeConfig()
+const crudTable = useCrudTable()
+
 const queryParams = route.query
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach((e: any) => {
-        if (e.id) nucleicAcidsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
-function didAddRecord(event: any) {
-    nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    nucleicAcidsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 const displayWithClause = Object.freeze({
     extractionExperiment: {
         columns: {name: true}
@@ -199,7 +149,7 @@ const readonlyValues = queryParams
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="nucleicAcidsTable"
+                :ref="crudTable.setTableRef"
                 tableName="nucleic-acids"
                 schemaName="select"
                 title="Nucleic Acids"
@@ -207,42 +157,42 @@ const readonlyValues = queryParams
                 :where="whereClauses"
                 :withClause="displayWithClause"
                 :canEditMultiple="true"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="nucleic-acids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="nucleic-acids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="nucleic-acids"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

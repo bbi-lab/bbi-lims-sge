@@ -4,13 +4,8 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 const router = useRouter()
+const crudTable = useCrudTable()
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const showMultipleEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const editingMultipleRecordsIds = ref<string[]>([])
-const regionsTable = ref()
 const route = useRoute()
 const queryParams = route.query
 const config = useRuntimeConfig()
@@ -24,52 +19,6 @@ onMounted(async() => {
         tableTitle.value = `All Regions`
     }
 })
-
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach(e => {
-        if (e.id) regionsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
-function didAddRecord(event: any) {
-    regionsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    regionsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    regionsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 
 const displayWithClause = Object.freeze({
     gene:{
@@ -141,7 +90,7 @@ const readonlyValues = queryParams
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="regionsTable"
+                :ref="crudTable.setTableRef"
                 tableName="regions"
                 schemaName="select"
                 :title="tableTitle"
@@ -151,41 +100,41 @@ const readonlyValues = queryParams
                 :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :canEditMultiple="true"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="regions"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="regions"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="regions"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

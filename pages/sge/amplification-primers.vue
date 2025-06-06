@@ -4,60 +4,61 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const config = useRuntimeConfig()
+const crudTable = useCrudTable()
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const amplificationPrimersTable = ref()
-const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref<string[]>([])
+// const showAddForm = ref(false)
+// const showEditForm = ref(false)
+// const editingRecordId = ref<string | null>(null)
+// const amplificationPrimersTable = ref()
+// const showMultipleEditForm = ref(false)
+// const editingMultipleRecordsIds = ref<string[]>([])
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
+// function didClickRecordEdit(event: any) {
+//     editingRecordId.value = event.id
+//     showEditForm.value = true
+//     showAddForm.value = false
+// }
 
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
+// function didClickRecordAdd() {
+//     showAddForm.value = true
+//     showEditForm.value = false
+// }
+// function didClickCancelAddForm() {
+//     showAddForm.value = false
+// }
+// function didClickCancelEditForm() {
+//     editingRecordId.value = null
+//     showEditForm.value = false
+// }
 
-function didAddRecord(event: any) {
-    amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    amplificationPrimersTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach((e: any) => {
-        if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
+// function didAddRecord(event: any) {
+//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
+//     showAddForm.value = false
+// }
+// function didUpdateRecord(event: any) {
+//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
+//     showEditForm.value = false
+// }
+// function didDeleteRecord(event: any) {
+//     amplificationPrimersTable.value.removeRecordId(event.id)
+//     showEditForm.value = false
+// }
+// function didClickMultipleRecordEdit(recordIds: string[]) {
+//     editingMultipleRecordsIds.value = recordIds
+//     showMultipleEditForm.value = true
+//     showEditForm.value = false
+//     showAddForm.value = false
+// }
+// function didClickCancelMultipleEditForm() {
+//     editingMultipleRecordsIds.value = []
+//     showMultipleEditForm.value = false
+// }
+// function didUpdateMultipleRecords(event: any) {
+//     event.forEach((e: any) => {
+//         if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
+//     })
+//     showMultipleEditForm.value = false
+// }
 const displayWithClause = Object.freeze({
     target: {
         columns: {
@@ -119,7 +120,7 @@ const columnDefs = {
         index: 2,
     },
     project: {
-        format: (x) => {
+        format: (x: any) => {
             return x.target?.project?.name || ''
         },
         path: 'project.displayValue',
@@ -152,46 +153,46 @@ const fieldDefs: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="amplificationPrimersTable"
+                :ref="crudTable.setTableRef"
                 tableName="amplification-primers"
                 schemaName="select"
                 title="Amplification Primers"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="amplification-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="amplification-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="amplification-primers"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

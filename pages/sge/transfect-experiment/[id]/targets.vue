@@ -1,18 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref(null)
-const transfectTargetsTable = ref()
-const tableTitle = ref(null)
-const router = useRouter()
 const config = useRuntimeConfig()
-
-const rowActions = {}
+const crudTable = useCrudTable()
 const route = useRoute()
-//const queryParams = route.query
+
+const tableTitle = ref<string>()
+const rowActions = {}
 
 onMounted(async() => {
     if (route.params.id) {
@@ -23,39 +19,9 @@ onMounted(async() => {
     }
 })
 
-function didClickRecordEdit(event) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event) {
-    transfectTargetsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event) {
-    transfectTargetsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event) {
-    transfectTargetsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 const columnDefs = {
     target: {
-        format: (x) => { return x.target?.name || `${x.target?.region?.gene?.symbol}: ${x.target?.region?.name}` },
+        format: (x: any) => { return x.target?.name || `${x.target?.region?.gene?.symbol}: ${x.target?.region?.name}` },
         path: 'target.displayValue',
         type: 'string',
         index: 0,
@@ -109,7 +75,7 @@ const columnDefs = {
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
+const editFormFieldDefs: FieldDefinitions = _.mapValues(columnDefs, (v: any, k) => {
     return {
         display: v.display ?? true,
         label: v.header || k,
@@ -125,7 +91,7 @@ editFormFieldDefs['targetId'] = {
         searchBaseUrl: `${config.public.apiBase}/targets`,
         searchFields: ['region.gene.symbol', 'region.name', 'name'],
         valueField: 'id',
-        displayFormat: (x) => {
+        displayFormat: (x: any) => {
             return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
         },
         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
@@ -135,14 +101,14 @@ editFormFieldDefs['targetId'] = {
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
-const readonlyValues = {experimentId: route.params.id}  // queryParams
+const readonlyValues = {experimentId: route.params.id}
 
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="transfectTargetsTable"
+                :ref="crudTable.setTableRef"
                 tableName="transfect-targets"
                 schemaName="select"
                 :title="tableTitle"
@@ -150,29 +116,29 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
                 :columnDefs="columnDefs"
                 :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
                 :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="transfect-targets"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
                 :readonlyValues="readonlyValues"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="transfect-targets"
                 schemaName="update"
                 :fieldDefs="editFormFieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>

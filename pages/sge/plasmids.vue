@@ -2,60 +2,9 @@
 <script setup lang="ts">
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const showMultipleEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const editingMultipleRecordsIds = ref<string[]>([])
-const plasmidsTable = ref()
-const router = useRouter()
 const config = useRuntimeConfig()
+const crudTable = useCrudTable()
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach(e => {
-        if (e.id) plasmidsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
-function didAddRecord(event: any) {
-    plasmidsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    plasmidsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    plasmidsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 const columnDefs = {
     plasmidType: {
         header: 'Type',
@@ -131,48 +80,48 @@ const displayWithClause = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="plasmidsTable"
+                :ref="crudTable.setTableRef"
                 tableName="plasmids"
                 schemaName="select"
                 title="Plasmids"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :canEditMultiple="true"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="plasmids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :withClause="{plasmidExperiment: true}"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="plasmids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :withClause="{plasmidExperiment: true}"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="plasmids"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

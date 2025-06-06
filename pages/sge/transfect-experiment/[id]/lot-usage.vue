@@ -1,14 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref(null)
-const transfectLotUsageTable = ref()
-const tableTitle = ref(null)
-const router = useRouter()
+const tableTitle = ref<string>()
 const config = useRuntimeConfig()
+const crudTable = useCrudTable()
 
 const rowActions = {}
 const route = useRoute()
@@ -18,36 +15,6 @@ onMounted(async() => {
     tableTitle.value = `${experiment.cycle.name}: Reagents`
 })
 
-function didClickRecordEdit(event) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event) {
-    transfectLotUsageTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event) {
-    transfectLotUsageTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event) {
-    transfectLotUsageTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 const columnDefs = {
     experimentId: {
         display: false,
@@ -65,26 +32,26 @@ const columnDefs = {
         index: 0,
     },
     concentration: {
-        format: (x) => `${x.concentration || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
+        format: (x: any) => `${x.concentration || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
         path: 'concentration.displayValue',
         type: 'string',
     },
     volumeUsed: {
-        format: (x) => `${x.volumeUsed || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
-        path: 'concentration.displayValue',
+        format: (x: any) => `${x.volumeUsed || '--'} ${x?.lot?.reagent?.soluteUnit}/${x?.lot?.reagent?.volumeUnit}`,
+        path: 'volumeUsed.displayValue',
         type: 'string',
     }
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
-const editFormFieldDefs = _.mapValues(columnDefs, (v, k) => {
+const editFormFieldDefs: FieldDefinitions = _.mapValues(columnDefs, (v: any, k) => {
     return {
         display: v.display ?? true,
         label: v.header || _.startCase(k),
     }
 })
-_.set(editFormFieldDefs, 'concentration.label', (data) => data.lot?.reagent ? `Concentration (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Concentration')
-_.set(editFormFieldDefs, 'volumeUsed.label', (data) => data.lot?.reagent ? `Volume Used (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Volume Used')
+_.set(editFormFieldDefs, 'concentration.label', (data: any) => data.lot?.reagent ? `Concentration (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Concentration')
+_.set(editFormFieldDefs, 'volumeUsed.label', (data: any) => data.lot?.reagent ? `Volume Used (${data.lot?.reagent?.soluteUnit}/${data?.lot?.reagent?.volumeUnit})` : 'Volume Used')
 
 // Include an AutoCompleter widget for adding new targets
 editFormFieldDefs['lotId'] = {
@@ -94,7 +61,7 @@ editFormFieldDefs['lotId'] = {
         searchBaseUrl: `${config.public.apiBase}/lots`,
         searchFields: ['lotNumber', 'reagent.name'],
         valueField: 'id',
-        displayFormat: (x) => `${x.lotNumber}: ${x.reagent.name}`,
+        displayFormat: (x: any) => `${x.lotNumber}: ${x.reagent.name}`,
         searchWithClause: {reagent: {columns: {name: true}}},
     },
 }
@@ -109,7 +76,7 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="transfectLotUsageTable"
+                :ref="crudTable.setTableRef"
                 tableName="transfect-lot-usage"
                 schemaName="select"
                 :title="tableTitle"
@@ -117,31 +84,31 @@ const readonlyValues = {experimentId: route.params.id}  // queryParams
                 :columnDefs="columnDefs"
                 :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="transfect-lot-usage"
                 schemaName="insert"
                 :fieldDefs="addFormFieldDefs"
                 :readonlyValues="readonlyValues"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="transfect-lot-usage"
                 schemaName="update"
                 :fieldDefs="editFormFieldDefs"
                 :withClause="{lot: {columns: {lotNumber: true}, with: {reagent: true}}}"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>

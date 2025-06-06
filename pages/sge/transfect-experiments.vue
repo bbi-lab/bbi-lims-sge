@@ -6,43 +6,10 @@ import BeakerOutline from '~icons/mdi/beaker-outline'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const transfectionExperimentsTable = ref()
 const config = useRuntimeConfig()
 const router = useRouter()
+const crudTable = useCrudTable()
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event: any) {
-    transfectionExperimentsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    transfectionExperimentsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    transfectionExperimentsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 function getPelletCount(targets: any) {
     if (_.isArray(targets)) {
         return _.reduce(targets, (sum, {pellets}) => {
@@ -286,36 +253,36 @@ const fieldDefs: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="transfectionExperimentsTable"
+                :ref="crudTable.setTableRef"
                 tableName="transfect-experiments"
                 schemaName="select"
                 title="Transfection experiments"
                 :rowActions="rowActions"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="transfect-experiments"
                 schemaName="insert"
                 :fieldDefs="{...fieldDefs, transfectTargets: {display: false}}"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="transfect-experiments"
                 schemaName="update"
                 :withClause="editWithClause"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>

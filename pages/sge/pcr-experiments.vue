@@ -6,30 +6,9 @@ import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const pcrExperimentsTable = ref()
 const router = useRouter()
 const config = useRuntimeConfig()
-
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
+const crudTable = useCrudTable()
 
 async function didAddRecord(event: any) {
     // add corresponding plate
@@ -40,16 +19,8 @@ async function didAddRecord(event: any) {
         plateType: event.pcrType,
         pcrExperimentId: event.id,
     })
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    pcrExperimentsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    pcrExperimentsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
+    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
+    crudTable.state.showAddForm = false
 }
 
 const columnDefs: ColumnDefinitions = {
@@ -183,35 +154,35 @@ const withClause = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="pcrExperimentsTable"
+                :ref="crudTable.setTableRef"
                 tableName="pcr-experiments"
                 schemaName="select"
                 title="PCR Experiments"
                 :rowActions="rowActions"
                 :withClause="withClause"
                 :columnDefs="columnDefs"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="pcr-experiments"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelAddForm"
+                @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="pcr-experiments"
                 schemaName="update"
                 :fieldDefs="{...fieldDefs, pcrType: { readOnly: true }}"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>

@@ -3,43 +3,10 @@ import _ from 'lodash'
 import Papa from 'papaparse'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const projectsTable = ref()
 const config = useRuntimeConfig()
 const toast = useToast()
+const crudTable = useCrudTable()
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-// function didClickRecordAdd() {
-//     showAddForm.value = true
-//     showEditForm.value = false
-// }
-// function didClickCancelAddForm() {
-//     showAddForm.value = false
-// }
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-// function didAddRecord(event) {
-//     projectsTable.value.addOrRefreshRecordId(event.id)
-//     showAddForm.value = false
-// }
-function didUpdateRecord(event: any) {
-    projectsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-// function didDeleteRecord(event) {
-//     projectsTable.value.removeRecordId(event.id)
-//     showEditForm.value = false
-// }
 const rowActions = {
     targets: {
         action: async (data: any) => {
@@ -76,13 +43,14 @@ const columnDefs: ColumnDefinitions = {
     endPosition: {
         header: 'End'
     },
+    regions: { display: false },
 }
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="genesTable"
+                :ref="crudTable.setTableRef"
                 tableName="genes"
                 schemaName="select"
                 title="Genes"
@@ -93,19 +61,19 @@ const columnDefs: ColumnDefinitions = {
                 :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :showColumnFilters="true"
-                @clickedRecordEdit="didClickRecordEdit"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
             />
         </SplitterPanel>
-        <SplitterPanel v-if="showAddForm || showEditForm">
+        <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="genes"
                 :canDelete="false"
                 schemaName="update"
                 :readOnly="true"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
             />
         </SplitterPanel>
     </Splitter>

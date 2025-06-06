@@ -8,18 +8,14 @@ import  {
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | null>(null)
-const targetsTable = ref()
 const router = useRouter()
 const route = useRoute()
-const queryParams = route.query
+const crudTable = useCrudTable()
 const config = useRuntimeConfig()
+
+const queryParams = route.query
 const tableTitle = ref<string>()
 const addRecordValues = ref()
-const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref<string[]>([])
 
 const displayWithClause = Object.freeze({
     project:{
@@ -67,8 +63,8 @@ const rowActions = {
             const result = await target.getDuplicate()
             if (!_.isEmpty(result)) {
                 addRecordValues.value = result
-                showAddForm.value = true
-                showEditForm.value = false
+                crudTable.state.showAddForm = true
+                crudTable.state.showEditForm = false
             }
         }
     }
@@ -131,7 +127,7 @@ const fieldDefs: FieldDefinitions = {
             searchBaseUrl: `${config.public.apiBase}/regions`,
             searchFields: ['name', 'gene.symbol'],
             valueField: 'id',
-            displayFormat: (x) => `${x.gene.symbol}: ${x.name}`,
+            displayFormat: (x:any) => `${x.gene.symbol}: ${x.name}`,
             searchWithClause: {gene: {columns: {symbol:true}}},
         }
     },
@@ -174,53 +170,6 @@ onMounted(async() => {
     }
 })
 
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event: any) {
-    targetsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    targetsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    targetsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any) {
-    event.forEach((e: any) => {
-        if (e.id) targetsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
-
 // convert query params in to JSON Logic to pass as where clause
 // TODO - pass more than just the first to QuickTable
 const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
@@ -231,7 +180,7 @@ const readonlyValues = queryParams
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="targetsTable"
+                :ref="crudTable.setTableRef"
                 tableName="targets"
                 schemaName="select"
                 :title="tableTitle"
@@ -242,42 +191,42 @@ const readonlyValues = queryParams
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :showColumnFilters="true"
                 :canEditMultiple="true"
-                :selection-disabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                :selection-disabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="targets"
                 schemaName="insert"
                 :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 :values="addRecordValues"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="editingRecordId && showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="targets"
                 schemaName="update"
                 :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="targets"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>
