@@ -1,3 +1,5 @@
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+
 const layoutConfig = reactive({
     preset: 'none',
     primary: 'emerald',
@@ -16,6 +18,8 @@ const layoutState = reactive({
     activeMenuItem: null,
     loginModalVisible: false,
 });
+
+const breakpoints = useBreakpoints(breakpointsTailwind)
 
 export function useLayout() {
     const showLoginModal = () => {
@@ -88,5 +92,5 @@ export function useLayout() {
 
     const getSurface = computed(() => layoutConfig.surface);
 
-    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, isLoginModalVisible, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode, hideLoginModal, showLoginModal, };
+    return { layoutConfig: readonly(layoutConfig), layoutState: readonly(layoutState), onMenuToggle, isSidebarActive, isDarkTheme, isLoginModalVisible, getPrimary, getSurface, setActiveMenuItem, toggleDarkMode, setPrimary, setSurface, setPreset, resetMenu, setMenuMode, hideLoginModal, showLoginModal, breakpoints,};
 }
