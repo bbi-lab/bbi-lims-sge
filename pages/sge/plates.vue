@@ -47,7 +47,11 @@ const columnDefs = {
 const rowActions = {
     layout: {
         action: (data: any) => {
-            router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
+            if (_.includes(['amp-storage', 'lin-storage', 'ha-storage'], data.plateType)) {
+                router.push({path:`/sge/plate-layout/${data.plateType}/${data.id}`})
+            } else {
+                router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
+            }
         },
         disabled: ({plateType}: { plateType: PlateType }) => _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },

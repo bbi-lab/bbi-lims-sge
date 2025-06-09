@@ -12,15 +12,15 @@ const plateWithWellSpecs = ref()
 
 onMounted(async() => {
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['amplificationPrimer.targetId'],
-        selectionTableRecordIdPaths: ['amplificationPrimerId'],
+        colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPrimer.name'), /(_F|_R)$/g, '')],
+        selectionTableRecordIdPaths: ['homologyArmPrimerId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'amplificationPrimer', 'name'])
-            return primerName ? `${wellCoordinate}:<br>${primerName} (AMP)` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'homologyArmPrimer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (HA)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'amplificationPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'homologyArmPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -30,7 +30,7 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            amplificationPrimer: true,
+            homologyArmPrimer: true,
         },
     )
 
@@ -149,7 +149,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a primer.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'amplificationPrimerId')
+                await plateLayout.assignIdToSelectedWells(data.id, 'homologyArmPrimerId')
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
@@ -166,7 +166,7 @@ const rowActions = {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="amplification-primers"
+                tableName="homology-arm-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"

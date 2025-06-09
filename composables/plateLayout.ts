@@ -4,6 +4,7 @@ import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
 
+
 type WellSpecs = {
     [key: string]: {
         id: string
@@ -21,7 +22,7 @@ type WellSpecs = {
 }
 
 interface wellContentDisplayConfig {
-    colorByPaths?: _.PropertyPath[] // array of paths of well content properties to color by
+    colorBy?: (_.PropertyPath | Function)[] // array of paths of well content properties to color by
     selectionTableRecordIdPaths?: _.PropertyPath[] // array of paths of well content properties that correspond to selection table record IDs
     symbol?: Function | null
     tooltip?: Function | null
@@ -38,6 +39,7 @@ export const usePlateLayout = (plateId: string) => {
     const wellContentsWithClause = ref()
     const plateDiagramRef = ref()
     const selectionTableRef = ref()
+    const { user } = useUserSession()
 
     const setSelectionTableRef = (el: any) => {
         selectionTableRef.value = el
@@ -52,27 +54,9 @@ export const usePlateLayout = (plateId: string) => {
         }
     })
 
-    const loadPlate = async (contentsWithClause?: any) => {
-        wellContentsWithClause.value = contentsWithClause || {}
+    const reloadPlate = async() => {
         try {
-            plateWithWellContents.value = await RecordService.getRecord(
-                `${config.public.apiBase}/plates`,
-                plateId,
-                {
-                    wells: {
-                        columns: {
-                            id: true,
-                            x: true,
-                            y: true
-                        },
-                        with: {
-                            wellContents: {
-                                with: wellContentsWithClause.value,
-                            },
-                        },
-                    },
-                }
-            )
+            await loadPlate(wellContentsWithClause.value)
         } catch (error: any) {
             if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
@@ -81,6 +65,28 @@ export const usePlateLayout = (plateId: string) => {
             }
             return
         }
+    }
+
+    const loadPlate = async (contentsWithClause?: any) => {
+        wellContentsWithClause.value = contentsWithClause || {}
+        plateWithWellContents.value = await RecordService.getRecord(
+            `${config.public.apiBase}/plates`,
+            plateId,
+            {
+                wells: {
+                    columns: {
+                        id: true,
+                        x: true,
+                        y: true
+                    },
+                    with: {
+                        wellContents: {
+                            with: wellContentsWithClause.value,
+                        },
+                    },
+                },
+            }
+        )
         updateWellSpecs()
     }
 
@@ -109,7 +115,7 @@ export const usePlateLayout = (plateId: string) => {
             }
 
             const contentsToColorBy = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.colorByPaths, (x) => _.get(wellContent, x))
+                return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
             }))).sort()
 
             const selectionTableRecordIds = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
@@ -166,7 +172,7 @@ export const usePlateLayout = (plateId: string) => {
             return
         }
         if (!_.isEmpty(deletedRecords)) {
-            await loadPlate(wellContentsWithClause.value)
+            await reloadPlate()
             const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
             const updatedWells = _.values(_.pick(wellSpecs.value, deletedWellIds))
             // Update the plate diagram with the new well specs
@@ -189,7 +195,7 @@ export const usePlateLayout = (plateId: string) => {
     }
 
     const updatedWellContents = async function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
-        await loadPlate(wellContentsWithClause.value)
+        await reloadPlate()
 
         // plateDiagramRef.value.updateWells(newValues, oldValues)
 
@@ -230,7 +236,7 @@ export const usePlateLayout = (plateId: string) => {
             return
         }
         if (!_.isEmpty(newRecords)) {
-            await loadPlate(wellContentsWithClause.value)
+            await reloadPlate()
             const updatedWellIds = _.uniq(_.map(newRecords, 'wellId'))
             const updatedWells = _.values(_.pick(wellSpecs.value, updatedWellIds))
 
