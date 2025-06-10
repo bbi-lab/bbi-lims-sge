@@ -1,8 +1,9 @@
-import { pgTable, timestamp, uuid, varchar, smallint, unique } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, varchar, smallint, unique, check } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { users } from '../user'
 import { ENUM_LOOKUPS } from './enum-lookups'
 import { transfectTargets } from './transfect-experiment'
+import { sql } from 'drizzle-orm'
 
 export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3'
 
@@ -13,4 +14,6 @@ export const pcrExperiments = pgTable('pcr_experiments', {
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id),
-})
+}, (t) => [
+  check('preseq1_transfect_target_id_required', sql`(${t.pcrType} != 'preseq-1' AND ${t.transfectTargetId} IS NULL) OR ${t.transfectTargetId} IS NOT NULL`),
+])

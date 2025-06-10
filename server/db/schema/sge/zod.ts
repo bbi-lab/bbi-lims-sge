@@ -73,7 +73,23 @@ const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: 
 const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
-const insertPcrExperimentsSchema = selectPcrExperimentsSchema.omit({id: true})
+const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
+const insertPcrExperimentsSchema = insertPcrExperimentsSchemaOrig.superRefine((data, ctx) => {
+  if (data.pcrType === 'preseq-1' && !data.transfectTargetId) {
+    // transfectTargetId is required for preseq-1 PCR experiments, otherwise should be empty
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Target is required for PreSeq-1 PCR experiments",
+      path: ["transfectTargetId"], // path to the property where the error occurred
+    })
+  } else if (data.pcrType !== 'preseq-1' && data.transfectTargetId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Target should not be set for non PreSeq-1 PCR experiments",
+      path: ["transfectTargetId"],
+    })
+  }
+})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
