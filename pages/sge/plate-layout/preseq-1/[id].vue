@@ -176,10 +176,10 @@ const rowActions = {
         label: '',
         action: async (data: any) => {
             if (plateLayout.selectedWells.value.length === 0) {
-                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select wells to assign primers to.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
                 return
             } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
-                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a primer.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
                 await plateLayout.assignIdToSelectedWells(data.id, 'nucleicAcidId')

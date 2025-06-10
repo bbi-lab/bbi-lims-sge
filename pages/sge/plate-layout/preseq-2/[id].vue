@@ -15,7 +15,7 @@ const config = useRuntimeConfig()
 const selectionTableName = ref<string>('view-plates-with-well-counts')
 const selectionTableKey = ref(0)
 
-watch(selectionTableName, (newValue) => {
+watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
         if (newValue === 'nucleic-acids') {
             plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcidId']
@@ -27,10 +27,10 @@ watch(selectionTableName, (newValue) => {
             }]
         }
     }
-    loadPlate()
+    await loadPlate()
 })
 
-onMounted(async() => {
+onMounted(() => {
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['nucleicAcidId'],
         selectionTableRecordIdPaths: [(x: any) => {
@@ -248,10 +248,10 @@ const rowActions = {
         label: '',
         action: async (data: any) => {
             if (plateLayout.selectedWells.value.length === 0) {
-                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select wells to assign primers to.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
                 return
             } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
-                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a primer.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
                 if (selectionTableName.value === 'nucleic-acids') {
