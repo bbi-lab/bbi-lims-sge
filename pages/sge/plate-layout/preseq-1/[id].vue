@@ -142,7 +142,7 @@ const columnDefs = {
                 return consecutiveYRanges
             })
             return _.map(_.flatten(_.values(yRanges)), (val) => {
-                return `${wellCoordinateToChar(val.minY)}${val.x}-${wellCoordinateToChar(val.maxY)}${val.x}`
+                return val.minY == val.maxY ? `${wellCoordinateToChar(val.minY)}${val.x}` : `${wellCoordinateToChar(val.minY)}${val.x}-${wellCoordinateToChar(val.maxY)}${val.x}`
             }).join(', ')
         },
         path: 'wellContents.displayValue',
