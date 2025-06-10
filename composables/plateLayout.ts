@@ -1,8 +1,11 @@
-import type { PlateWithWellContents, } from "~/utils/sge/plateUtils"
+import type { PlateWithWellContents, WellWithContents } from "~/utils/sge/plateUtils"
 import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
+import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
+import type { Pellet } from "~/server/db/schema/sge/pellet"
+import type { User } from "~/server/db/schema/user"
 
 
 type WellSpecs = {
@@ -23,7 +26,7 @@ type WellSpecs = {
 
 interface wellContentDisplayConfig {
     colorBy?: (_.PropertyPath | Function)[] // array of paths of well content properties to color by
-    selectionTableRecordIdPaths?: _.PropertyPath[] // array of paths of well content properties that correspond to selection table record IDs
+    selectionTableRecordIdPaths?: (_.PropertyPath | Function)[] // array of paths or functions to retrieve ids from well contents that correspond to selection table record IDs
     symbol?: Function | null
     tooltip?: Function | null
 }
@@ -113,13 +116,12 @@ export const usePlateLayout = (plateId: string) => {
             if (_.isEmpty(well.wellContents)) {
                 _.unset(wellSpecs.value, well.id)
             }
-
             const contentsToColorBy = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
                 return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
             }))).sort()
 
             const selectionTableRecordIds = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.get(wellContent, x))
+                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
             }))).sort()
 
             const existingWellSpec = _.get(wellSpecs.value, well.id)
@@ -197,12 +199,10 @@ export const usePlateLayout = (plateId: string) => {
     const updatedWellContents = async function(newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) {
         await reloadPlate()
 
-        // plateDiagramRef.value.updateWells(newValues, oldValues)
-
-        const selectionTableIdsToRefresh = _.compact([
+        const selectionTableIdsToRefresh = _.uniq(_.flatten(_.compact([
             ..._.flatten(_.map(newValues || [], 'selectionTableRecordIds')),
             ..._.flatten(_.map(oldValues || [], 'selectionTableRecordIds')),,
-        ])
+        ])))
 
         selectionTableIdsToRefresh.forEach((id) => {
             selectionTableRef.value.addOrRefreshRecordId(id)
@@ -213,14 +213,12 @@ export const usePlateLayout = (plateId: string) => {
         })
     }
 
-    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId') => {
-        const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
-        const recordsToAdd = _.map(selectedWells.value, (well) => {
-            return {
-                wellId: well.id,
-                [column]: id,
-            }
-        })
+    interface WellContentsAndSources extends Partial<WellContent> {
+        sourceWellIds?: String[];
+        createdBy?: string | null;
+    }[]
+
+    const addWellContents = async (recordsToAdd: WellContentsAndSources[], oldValues: any) => {
         let newRecords: WellContent[] = []
         try {
             newRecords = await RecordService.addRecords(
@@ -246,6 +244,83 @@ export const usePlateLayout = (plateId: string) => {
         return newRecords
     }
 
+    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId') => {
+        const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
+        const recordsToAdd = _.map(selectedWells.value, (well) => {
+            return {
+                wellId: well.id,
+                [column]: id,
+            }
+        })
+        return addWellContents(recordsToAdd, oldValues)
+    }
+
+    const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
+        const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
+
+        let recordsToAdd: {
+            wellId: string;
+            nucleicAcidId: string;
+            sourceWellIds: String[];
+            createdBy: string | null;
+        }[]
+        // sort wells by x and inverse y coordinate to achieve the correct order
+        const sortedWellIds = _.map(_.sortBy(selectedWells.value, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`), 'id')
+
+        const preseq1Plate = await RecordService.getRecord(`${config.public.apiBase}/plates`, preseq1PlateId, {
+            wells: {
+                columns: {id: true},
+                with: {
+                    wellContents: {
+                        columns: {id: true},
+                        with: {
+                            nucleicAcid: {
+                                columns: {id: true},
+                                with: {
+                                    pellet: {
+                                        columns: {id: true, name: true, isBackup: true},
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            }
+        }) as PlateWithWellContents
+
+        type NucleicAcidWithPellet = NucleicAcid & {pellet: Pellet}
+        type NucleicAcidWithPelletAndWellIds = NucleicAcidWithPellet & {wellIds: String[]}
+
+        const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
+            const nucleicAcid = _.get(well, ['wellContents', 0, 'nucleicAcid'])
+            if (nucleicAcid?.id) {
+                const existingWellIds = _.get(acc, [nucleicAcid.id, 'wellIds'], [])
+                _.set(acc, nucleicAcid.id, {...nucleicAcid, wellIds: [...existingWellIds, well.id]})
+            }
+            return acc
+        }, {})), (x) => {
+            return x.pellet.name
+        }) as NucleicAcidWithPelletAndWellIds[]
+
+        if (pooledNucleicAcids.length > sortedWellIds.length) {
+            throw new Error('Number of selected wells is less than number of nucleic acids in the plate')
+        } else {
+            const wellContentsAndSources = _.map(pooledNucleicAcids, (value, index) => {
+                const userId = (user.value as User)?.id || null
+                return {
+                    wellId: sortedWellIds[index],
+                    nucleicAcidId: value.id,
+                    sourceWellIds: value.wellIds,
+                    createdBy: userId,
+                }
+            })
+            recordsToAdd = wellContentsAndSources
+        }
+
+        return addWellContents(recordsToAdd, oldValues)
+    }
+
+
     const wellRangeSelected = function(wells: PlateDiagramWell[]) {
         selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
             return _.includes(_.map(wells, 'id'), x.id)
@@ -260,21 +335,32 @@ export const usePlateLayout = (plateId: string) => {
     }
 
     return {
+        // data
         plateWithWellContents,
-        wellContentsDisplayConfig,
+        loadPlate,
+
+        // well specs
         wellSpecs,
-        selectedWells,
-        plateDiagramRef,
         getWellSpecBySelectionTableRecordId,
         updateWellSpecs,
+        wellContentsDisplayConfig,
+
+        // well selection
+        selectedWells,
         wellRangeSelected,
         selectedAllWells,
         wellSelectionCleared,
-        loadPlate,
         emptySelectedWells,
         updatedWellContents,
+
+        // plate diagram and selection table refs
+        plateDiagramRef,
+        selectionTableRef,
         setPlateDiagramRef,
         setSelectionTableRef,
+
+        // assign content to wells
         assignIdToSelectedWells,
+        poolPreSeq1PlateToSelectedWells,
     }
 }
