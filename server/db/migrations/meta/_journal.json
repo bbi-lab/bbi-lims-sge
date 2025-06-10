@@ -456,6 +456,13 @@
       "when": 1748983367435,
       "tag": "0064_smooth_micromax",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1749572201728,
+      "tag": "0065_steep_gabe_jones",
+      "breakpoints": true
     }
   ]
 }

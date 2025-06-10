@@ -41,9 +41,6 @@ const columnDefs: ColumnDefinitions = {
     transfectTargetId: {
         display: false,
     },
-    cycleId: {
-        display: false,
-    },
     name: {
         index: 0,
     },
@@ -60,7 +57,7 @@ const columnDefs: ColumnDefinitions = {
         format: (x: any) => {
             return x.transfectTarget ?
                 `${x.transfectTarget?.experiment?.cycle?.name}: ${x.transfectTarget?.target?.name}` :
-                (x.cycle ? `${x.cycle.name}` : '')
+                ''
         },
         path: 'cycleTarget.displayValue',
     },
@@ -106,20 +103,6 @@ const fieldDefs = {
             },
         }
     },
-    cycleId: {
-        label: 'Cycle',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/cycles`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        },
-        display: (x: any) => {
-            return x.pcrType == 'preseq-2'
-        },
-    },
 }
 const withClause = {
     plates: {columns: {id: true}},
@@ -143,9 +126,6 @@ const withClause = {
                 }
             }
         }
-    },
-    cycle: {
-        columns: {name: true}
     },
 }
 

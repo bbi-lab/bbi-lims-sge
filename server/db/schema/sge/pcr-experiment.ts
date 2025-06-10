@@ -3,7 +3,6 @@ import _ from 'lodash'
 import { users } from '../user'
 import { ENUM_LOOKUPS } from './enum-lookups'
 import { transfectTargets } from './transfect-experiment'
-import { cycles } from './cycle'
 
 export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3'
 
@@ -14,5 +13,4 @@ export const pcrExperiments = pgTable('pcr_experiments', {
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id),
-  cycleId: uuid('cycle_id').references(() => cycles.id),
 })

@@ -116,25 +116,9 @@ const refreshPlate = async () => {
         tableWhereClause.value = {
             "in": [{"var": "plateType"}, ["preseq-2", "seq-index"]]
         }
-        if (pcrExperiment.value?.cycleId) {
-            tableWhereClause.value = {
-                "and": [
-                    tableWhereClause.value,
-                    {"==": [{"var": "cycleId"}, pcrExperiment.value.cycleId]}
-                ]
-            }
-        }
     } else if (plateType == 'preseq-2') {
         tableWhereClause.value = {
             "==": [{"var": "plateType"}, "preseq-1"]
-        }
-        if (pcrExperiment.value?.cycleId) {
-            tableWhereClause.value = {
-                "and": [
-                    tableWhereClause.value,
-                    {"==": [{"var": "cycleId"}, pcrExperiment.value.cycleId]}
-                ]
-            }
         }
     } else if (plateType == 'preseq-1' && pcrExperiment.value?.transfectTarget) {
         tableWhereClause.value = {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]}
