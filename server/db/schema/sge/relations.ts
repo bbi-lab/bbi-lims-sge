@@ -434,9 +434,11 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
-    oneToOne: {
+    many: {
         wellContents: {
-            table: wellContents
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.nucleicAcidId],
         }
     },
 }
