@@ -93,6 +93,9 @@ const columnDefs = {
         index: 2,
     },
 }
+const frozenRecordIds = computed(() => {
+    return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
+})
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -108,7 +111,8 @@ const columnDefs = {
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :showColumnFilters="true"
-                emptyMessage="">
+                emptyMessage=""
+                v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">

@@ -282,6 +282,9 @@ watch(selectionTableName, (newValue, oldValue) => {
 const whereClause = computed(() => {
     return (selectionTableName.value === 'view-plates-with-well-counts') ? {"==": [{"var": "plateType"}, "preseq-1"]} : {}
 })
+const frozenRecordIds = computed(() => {
+    return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
+})
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -300,7 +303,8 @@ const whereClause = computed(() => {
                 :withClause="displayWithClause"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
-                emptyMessage="">
+                emptyMessage=""
+                v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
                 </template>
