@@ -47,11 +47,7 @@ const columnDefs = {
 const rowActions = {
     layout: {
         action: (data: any) => {
-            if (_.includes(['amp-storage', 'lin-storage', 'ha-storage', 'preseq-1', 'preseq-2'], data.plateType)) {
-                router.push({path:`/sge/plate-layout/${data.plateType}/${data.id}`})
-            } else {
-                router.push({path:`/sge/plate-diagram/${data.plateType}/${data.id}`})
-            }
+            router.push({path:`/sge/plate-layout/${data.plateType}/${data.id}`})
         },
         disabled: ({plateType}: { plateType: PlateType }) => _.includes(['amp-pcr', 'lin-pcr', 'ha-pcr'], plateType)
     },
