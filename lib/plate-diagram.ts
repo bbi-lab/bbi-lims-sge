@@ -27,8 +27,8 @@ export function getWellTextColor(hex: string): string {
 }
 
 export const VALID_WELL_COLORS = [
-    "#F0A3FF",
     "#0075DC",
+    "#F0A3FF",
     "#993F00",
     "#4C005C",
     "#005C31",
