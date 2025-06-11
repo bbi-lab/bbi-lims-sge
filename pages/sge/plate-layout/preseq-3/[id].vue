@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
-
+import type { User } from '~/server/db/schema/user';
+import IxMoveLayerDown from '~icons/ix/move-layer-down';
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -9,6 +10,8 @@ const plateLayout = usePlateLayout(route.params.id as string)
 let sourcePlateLayout: typeof plateLayout | null
 const sourcePlateWithWellSpecs = ref()
 const sourcePlateDiagramKey = ref<string>()
+const toast = useToast()
+const { user } = useUserSession()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -57,14 +60,43 @@ watch (selectedSourcePlate, async (newValue) => {
                     },
                 },
             })
-            sourcePlateWithWellSpecs.value = {
-                ...sourcePlateLayout.plateWithWellContents.value,
-                wells: _.values(sourcePlateLayout.wellSpecs.value),
-            }
-            sourcePlateDiagramKey.value = newValue.id
         } else if (newValue.plateType === 'seq-index') {
-            // TODO
+            sourcePlateLayout.wellContentsDisplayConfig.value = {
+                colorBy: [() => true],
+                selectionTableRecordIdPaths: ['indexPrimerId'],
+                tooltip: (well: any) => {
+                    const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
+                    const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+                    return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
+                },
+                symbol: (well: any) => {
+                    const primerDirection = _.get(well, ['wellContents', 0, 'indexPrimer', 'sequenceType'])
+                    return primerDirection ? _.upperCase(primerDirection[0]) : ''
+                },
+            }
+            await sourcePlateLayout.loadPlate({
+                indexPrimer: true,
+                wellContentSources: {
+                    with: {
+                        sourceWell: {
+                            columns: {},
+                            with: {
+                                plate: {
+                                    columns: {
+                                        id: true,
+                                    }
+                                }
+                            }
+                        },
+                    },
+                },
+            })
         }
+        sourcePlateWithWellSpecs.value = {
+            ...sourcePlateLayout.plateWithWellContents.value,
+            wells: _.values(sourcePlateLayout.wellSpecs.value),
+        }
+        sourcePlateDiagramKey.value = newValue.id
     } else {
         sourcePlateLayout = null
         sourcePlateWithWellSpecs.value = null
@@ -81,8 +113,17 @@ onMounted(() => {
         }],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const nucleicAcidName = _.get(well, ['wellContents', 0, 'nucleicAcid', 'pellet', 'name'])
-            return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
+            const wellContentsText = _.map(well.wellContents, (wellContent) => {
+                const nucleicAcid = wellContent.nucleicAcid
+                if (nucleicAcid) {
+                    return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
+                } else if (wellContent.indexPrimer) {
+                    return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                } else {
+                    return ''
+                }
+            }).join('<br>')
+            return wellContentsText ? `${wellCoordinate}:<br>${wellContentsText}` : wellCoordinate
         },
         symbol: (well: any) => {
             return _.size(well.wellContents) || ''
@@ -120,6 +161,34 @@ const loadPlate = async () => {
     plateWithWellSpecs.value = {
         ...plateLayout.plateWithWellContents.value,
         wells: _.values(plateLayout.wellSpecs.value),
+    }
+}
+
+const transferSelectedWellsContents = async () => {
+    const sourceWells = sourcePlateLayout!.selectedWells.value
+    const destinationWells = plateLayout.selectedWells.value
+
+    if (_.isEmpty(sourceWells)) {
+        toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
+    } else if (sourceWells.length !== destinationWells.length) {
+        toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells in destination plate', life: 3000})
+    } else {
+        const sourceWellsSorted = _.sortBy(sourceWells, ['x', 'y'])
+        const destinationWellsSorted = _.sortBy(destinationWells, ['x', 'y'])
+
+        const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
+            const wellContents = well.data.wellContents
+            const destinationWell = destinationWellsSorted[index]
+            return _.map(wellContents, (wellContent) => {
+                return {
+                    ..._.pick(wellContent, ['nucleicAcidId', 'indexPrimerId']),
+                    wellId: destinationWell.id,
+                    sourceWellIds: [well.id],
+                    createdBy: (user.value as User)?.id,
+                }
+            })
+        }))
+        await plateLayout.addWellContents(wellContentsToAdd.flat())
     }
 }
 
@@ -181,18 +250,29 @@ const whereClause ={
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
                         :key="sourcePlateDiagramKey"
-                        :ref="sourcePlateLayout.setPlateDiagramRef"
-                        v-if="sourcePlateLayout && sourcePlateWithWellSpecs"
+                        :ref="sourcePlateLayout?.setPlateDiagramRef"
+                        v-if="!_.isEmpty(selectedSourcePlate) && sourcePlateWithWellSpecs"
                         v-model="sourcePlateWithWellSpecs"
                         :plateType="sourcePlateWithWellSpecs.plateType"
                         :sizeX="sourcePlateWithWellSpecs.sizeX"
                         :sizeY="sourcePlateWithWellSpecs.sizeY"
-                        @well-range-selected="sourcePlateLayout.wellRangeSelected"
-                        @well-selection-cleared="sourcePlateLayout.wellSelectionCleared"
-                        @all-wells-selected="sourcePlateLayout.selectedAllWells"
-                        @well-contents-updated="sourcePlateLayout.updatedWellContents" >
+                        @well-range-selected="sourcePlateLayout?.wellRangeSelected"
+                        @well-selection-cleared="sourcePlateLayout?.wellSelectionCleared"
+                        @all-wells-selected="sourcePlateLayout?.selectedAllWells"
+                        @well-contents-updated="sourcePlateLayout?.updatedWellContents" >
                         <template #header>
                             {{ sourcePlateWithWellSpecs.name }}
+                        </template>
+                        <template #button1>
+                            <Button
+                                severity="secondary"
+                                v-tooltip="{value: 'Transfer well contents to PreSeq 3 plate', showDelay: 500}"
+                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells)"
+                                @click="transferSelectedWellsContents">
+                                <template #icon>
+                                    <IxMoveLayerDown />
+                                </template>
+                            </Button>
                         </template>
                     </PlateDiagram>
                     <div v-else>

@@ -99,6 +99,9 @@ importers:
       '@iconify-json/icon-park-solid':
         specifier: ^1.2.2
         version: 1.2.2
+      '@iconify-json/ix':
+        specifier: ^1.2.4
+        version: 1.2.4
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
@@ -774,6 +777,9 @@ packages:
 
   '@iconify-json/icon-park-solid@1.2.2':
     resolution: {integrity: sha512-CVIe1+WMb3axWWrZ4Yt9/ZAbF8UEYnQ77Zt+DooLuA5VxVcea9eVzFnmuNZ8UVgQ7lt2y8ZHU2VGI6BylLeYCA==}
+
+  '@iconify-json/ix@1.2.4':
+    resolution: {integrity: sha512-W9SyXTa+WFyqP7zG3cbIA2lxhII1v9oHYlWUKr0awmb7UWXlX/LI3GLnz1awLjOrdVrZCld9sxDMu9NrNIlQzQ==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
@@ -5227,6 +5233,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/icon-park-solid@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/ix@1.2.4':
     dependencies:
       '@iconify/types': 2.0.0
 
