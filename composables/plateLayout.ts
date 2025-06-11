@@ -36,9 +36,9 @@ export const usePlateLayout = (plateId: string) => {
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
     const wellSpecs = ref<WellSpecs>({})
     const selectedWells = ref<PlateDiagramWell[]>([])
-    const toast = useToast()
+    const toast = useComposableToast()
     const config = useRuntimeConfig()
-    const { showLoginModal } = useLayout()
+    const { showLoginModal } = useLayout() as { showLoginModal: () => void }
     const wellContentsWithClause = ref()
     const plateDiagramRef = ref()
     const selectionTableRef = ref()
@@ -265,8 +265,6 @@ export const usePlateLayout = (plateId: string) => {
     }
 
     const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
-        const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
-
         let recordsToAdd: {
             wellId: string;
             nucleicAcidId: string;
