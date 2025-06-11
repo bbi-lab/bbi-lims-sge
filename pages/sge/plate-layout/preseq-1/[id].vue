@@ -125,7 +125,7 @@ const columnDefs = {
     wellContents: {
         header: 'Wells',
         format: (x: any) => {
-            const wellCoordinates = _.map(x.wellContents, (wellContent) => {
+            const wellCoordinates = _.map(_.filter(x.wellContents, (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
                 return {x: wellContent.well.x, y: wellContent.well.y,}
             })
             const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
@@ -193,11 +193,74 @@ const rowActions = {
         },
     },
 }
+
+const layoutPreseq1 = async () => {
+    let lastColumnPopulated = 0
+    const allWellContentsToAdd = []
+
+    const nucleicAcids = plateLayout.selectionTableRef.value.selectedRecords
+    // should be only one negative control
+    const negativeControl = _.find(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.transfections?.length == 1 && nucleicAcid.pellet.transfections[0] == 'NC'
+    })
+
+    if (negativeControl) {
+        // assign to the first column (8 wells)
+        const wellsToAssignTo = _.filter(plateWithWellSpecs.value.wells, (well) => well.x == 1)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: negativeControl.id,
+            }
+        })
+        allWellContentsToAdd.push(...wellContentsToAdd)
+        if (!_.isEmpty(wellContentsToAdd)) lastColumnPopulated++
+    }
+
+    const dayFiveNucleicAcids = _.sortBy(_.filter(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.harvestDay == 5 && !_.includes(nucleicAcid.pellet.transfections, 'NC')
+    }), (x) => x.pellet.name)
+
+    for (const dayFiveNucleicAcid of dayFiveNucleicAcids) {
+        // assign each to one column (8 wells)
+        const wellsToAssignTo = _.filter(plateWithWellSpecs.value.wells, (well) => well.x == lastColumnPopulated + 1)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: dayFiveNucleicAcid.id,
+            }
+        })
+        allWellContentsToAdd.push(...wellContentsToAdd)
+        if (!_.isEmpty(wellContentsToAdd)) lastColumnPopulated++
+    }
+
+    const dayThirteenNucleicAcids = _.sortBy(_.filter(nucleicAcids, (nucleicAcid) => {
+        return nucleicAcid.pellet.harvestDay == 13 && !_.includes(nucleicAcid.pellet.transfections, 'NC')
+    }), (x) => x.pellet.name)
+
+    for (const dayThirteenNucleicAcid of dayThirteenNucleicAcids) {
+        // assign each to 2 columns (16 wells)
+        const wellsToAssignTo = _.filter(plateWithWellSpecs.value.wells, (well) => well.x > lastColumnPopulated && well.x <= lastColumnPopulated + 2)
+        const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
+            return {
+                wellId: well.id,
+                nucleicAcidId: dayThirteenNucleicAcid.id,
+            }
+        })
+        allWellContentsToAdd.push(...wellContentsToAdd)
+        if (!_.isEmpty(wellContentsToAdd)) lastColumnPopulated = lastColumnPopulated + 2
+    }
+    if (!_.isEmpty(allWellContentsToAdd)) {
+        await plateLayout.addWellContents(allWellContentsToAdd)
+    }
+}
+
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
+                v-if="whereClause"
                 :ref="plateLayout.setSelectionTableRef"
                 tableName="nucleic-acids"
                 schemaName="select"
@@ -229,6 +292,13 @@ const rowActions = {
                     {{ plateWithWellSpecs.name }}
                 </template>
                 <template #button1>
+                    <Button
+                        class="p-button-secondary"
+                        icon="pi pi-star"
+                        v-tooltip="{value: 'Auto-layout', showDelay: 500}"
+                        @click="layoutPreseq1" />
+                </template>
+                <template #button2>
                     <Button
                         class="p-button-secondary"
                         icon="pi pi-trash"

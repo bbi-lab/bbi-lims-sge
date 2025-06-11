@@ -91,6 +91,11 @@ export const usePlateLayout = (plateId: string) => {
             }
         )
         updateWellSpecs()
+
+        // refresh selected wells
+        selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+            return _.includes(_.map(selectedWells.value, 'id'), x.id)
+        })
     }
 
     const getWellSpecBySelectionTableRecordId = (selectionTableRecordId: string) => {
@@ -155,6 +160,7 @@ export const usePlateLayout = (plateId: string) => {
     }
 
     const emptySelectedWells = async () => {
+        await reloadPlate()
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
             return _.get(x, 'data.wellContents')
@@ -208,9 +214,9 @@ export const usePlateLayout = (plateId: string) => {
             selectionTableRef.value.addOrRefreshRecordId(id)
         })
         // forces frozen records to be re-evaluated when the well contents are being cleared
-        selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
-            return _.includes(_.map(newValues, 'id'), x.id)
-        })
+        // selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+        //     return _.includes(_.map(newValues, 'id'), x.id)
+        // })
     }
 
     interface WellContentsAndSources extends Partial<WellContent> {
@@ -218,8 +224,9 @@ export const usePlateLayout = (plateId: string) => {
         createdBy?: string | null;
     }[]
 
-    const addWellContents = async (recordsToAdd: WellContentsAndSources[], oldValues: any) => {
+    const addWellContents = async (recordsToAdd: WellContentsAndSources[]) => {
         let newRecords: WellContent[] = []
+        let oldValues: WellSpecs[string][]
         try {
             newRecords = await RecordService.addRecords(
                 `${config.public.apiBase}/well-contents`,
@@ -234,6 +241,7 @@ export const usePlateLayout = (plateId: string) => {
             return
         }
         if (!_.isEmpty(newRecords)) {
+            oldValues = _.values(_.pick(wellSpecs.value, _.map(newRecords, 'wellId')))
             await reloadPlate()
             const updatedWellIds = _.uniq(_.map(newRecords, 'wellId'))
             const updatedWells = _.values(_.pick(wellSpecs.value, updatedWellIds))
@@ -252,7 +260,8 @@ export const usePlateLayout = (plateId: string) => {
                 [column]: id,
             }
         })
-        return addWellContents(recordsToAdd, oldValues)
+        const newRecords = await addWellContents(recordsToAdd)
+        return newRecords
     }
 
     const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
@@ -317,8 +326,10 @@ export const usePlateLayout = (plateId: string) => {
             recordsToAdd = wellContentsAndSources
         }
 
-        return addWellContents(recordsToAdd, oldValues)
+        const newRecords = await addWellContents(recordsToAdd)
+        return newRecords
     }
+
 
 
     const wellRangeSelected = function(wells: PlateDiagramWell[]) {
@@ -361,6 +372,7 @@ export const usePlateLayout = (plateId: string) => {
 
         // assign content to wells
         assignIdToSelectedWells,
+        addWellContents,
         poolPreSeq1PlateToSelectedWells,
     }
 }
