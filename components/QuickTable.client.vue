@@ -143,6 +143,8 @@ interface ColumnDefinition {
     element?: string | ((data: any) => string),
     elementSearchText?: (data: any) => string,
     searchable?: boolean,
+    exportable?: boolean,
+    exportValue?: (record: any) => string,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -269,9 +271,11 @@ function getExportRecords() {
     const exportRecords = []
     for (const record of recordsToExport) {
         const exportRecord = {}
-        for (const columnDef of sortedColumnDefs.value) {
+        for (const columnDef of _.filter(sortedColumnDefs.value, (x) => x.exportable !== false)) {
             if (_.map(visibleColumns.value, (x) => x.code).includes(columnDef.key)) {
-                if (_.isFunction(columnDef.format)) {
+                if (columnDef.exportValue) {
+                    _.set(exportRecord, columnDef.key, columnDef.exportValue(record))
+                } else if (_.isFunction(columnDef.format)) {
                     _.set(exportRecord, columnDef.key, columnDef.format(record))
                 } else if (columnDef.format == 'date-time') {
                     _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
