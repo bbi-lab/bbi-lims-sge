@@ -7,7 +7,6 @@ import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
 
-
 type WellSpecs = {
     [key: string]: {
         id: string
@@ -35,7 +34,7 @@ export const usePlateLayout = (plateId: string) => {
     const plateWithWellContents = ref<PlateWithWellContents>()
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
     const wellSpecs = ref<WellSpecs>({})
-    const selectedWells = ref<PlateDiagramWell[]>([])
+    const selectedWells = ref<WellSpecs[string][]>([])
     const toast = useComposableToast()
     const config = useRuntimeConfig()
     const { showLoginModal } = useLayout() as { showLoginModal: () => void }
@@ -336,7 +335,7 @@ export const usePlateLayout = (plateId: string) => {
         })
     }
 
-    const selectedAllWells = function(wells: PlateDiagramWell[]) {
+    const selectedAllWells = function(wells: WellSpecs[string][]) {
         selectedWells.value = wells
     }
     const wellSelectionCleared = function() {
