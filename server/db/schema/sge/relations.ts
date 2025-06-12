@@ -198,11 +198,6 @@ const targetsRelationsConfig: RelationsConfig = {
             referenceTable: projects,
             references: [projects.id],
         },
-        cycle: {
-            fields: [targets.cycleId],
-            referenceTable: cycles,
-            references: [cycles.id],
-        },
         region: {
             fields: [targets.regionId],
             referenceTable: regions,
@@ -239,10 +234,10 @@ export const regionsRelations = relationsConfigToRelations(regions, regionsRelat
 
 const cyclesRelationsConfig: RelationsConfig = {
     many: {
-        targets: {
-            table: targets,
-            schema: createSelectSchema(targets),
-            fields: [targets.cycleId],
+        transfectionExperiments: {
+            table: transfectExperiments,
+            schema: createSelectSchema(transfectExperiments),
+            fields: [transfectExperiments.cycleId],
         }
     }
 }

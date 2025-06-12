@@ -54,7 +54,7 @@ const selectCycleSchema = createSelectSchema(cycles, {startedOn: nullableDateSch
 const insertCycleSchema = selectCycleSchema.omit({id: true})
 const updateCycleSchema = insertCycleSchema
 
-const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: nullableDateSchema})
+const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: dateSchema})
 const insertTransfectExperimentsSchema = selectTransfectExperimentsSchema.omit({id: true})
 const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
