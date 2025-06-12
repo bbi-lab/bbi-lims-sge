@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 
 const router = useRouter()
 const crudTable = useCrudTable()
@@ -12,23 +13,23 @@ const columnDefs: ColumnDefinitions = {
     endedOn: {
         format: 'date-time'
     },
-    targets: {
+    transfectionExperiments: {
         display: false,
     }
 }
 const rowActions = {
     targets: {
-        label: (data: any) => { return `${data.targets?.length || 0}`},
+        label: (data: any) => { return `${data.transfectionExperiments?.length || 0}`},
         action: (data: any) => {
-            router.push({path:'/sge/targets', query: {'cycleId': data.id}})
+            router.push({path:'/sge/transfect-experiments', query: {'cycleId': data.id}})
         },
-        icon: 'pi pi-fw pi-bullseye',
+        iconComponent: IconParkSolidExperiment,
         iconPos: 'right',
-        tooltip: 'Targets',
+        tooltip: 'Transfection experiments',
     }
 }
 const fieldDefs: FieldDefinitions = {
-    targets: {
+    transfectionExperiments: {
         display: false,
     }
 }
@@ -42,7 +43,7 @@ const fieldDefs: FieldDefinitions = {
                 schemaName="select"
                 title="SGE Cycles"
                 :rowActions="rowActions"
-                :withClause="{targets: true}"
+                :withClause="{transfectionExperiments: true}"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"

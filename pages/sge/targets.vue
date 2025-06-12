@@ -29,9 +29,6 @@ const displayWithClause = Object.freeze({
             }
         }
     },
-    cycle:{
-        columns: {name: true},
-    }
 })
 
 const rowActions = {
@@ -162,9 +159,6 @@ onMounted(async() => {
     if (queryParams.projectId) {
         const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId as string, {})
         tableTitle.value = `${project.name}: targets`
-    } else if (queryParams.cycleId) {
-        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, queryParams.cycleId as string, {})
-        tableTitle.value = `${cycle.name}: targets`
     } else {
         tableTitle.value = `All Targets`
     }

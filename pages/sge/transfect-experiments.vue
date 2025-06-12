@@ -5,10 +5,33 @@ import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { RecordService } from '~/utils/service/RecordService'
+import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
 const router = useRouter()
 const crudTable = useCrudTable()
+const route = useRoute()
+const queryParams = route.query
+const tableTitle = ref<string>('Transfection experiments')
+const whereClauses = ref()
+const readonlyValues = ref({})
+const tableKey = ref()
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const cycleId = newValue.cycleId
+    if (cycleId) {
+        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, cycleId as string, {})
+        tableTitle.value = `${cycle.name}: Transfection experiments`
+        whereClauses.value = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+        readonlyValues.value = queryParams
+    } else {
+        tableTitle.value = 'Transfection experiments'
+        whereClauses.value = null
+        readonlyValues.value = {}
+    }
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 function getPelletCount(targets: any) {
     if (_.isArray(targets)) {
@@ -250,18 +273,21 @@ const fieldDefs: FieldDefinitions = {
     },
     transfectLotUsage: {display: false},
 }
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="transfect-experiments"
                 schemaName="select"
-                title="Transfection experiments"
+                :title="tableTitle"
                 :rowActions="rowActions"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :where="whereClauses?.[0]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
@@ -272,6 +298,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="transfect-experiments"
                 schemaName="insert"
                 :fieldDefs="{...fieldDefs, transfectTargets: {display: false}}"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -282,6 +309,7 @@ const fieldDefs: FieldDefinitions = {
                 schemaName="update"
                 :withClause="editWithClause"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
