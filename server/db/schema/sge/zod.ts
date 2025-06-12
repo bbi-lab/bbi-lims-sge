@@ -59,9 +59,7 @@ const insertTransfectExperimentsSchema = selectTransfectExperimentsSchema.omit({
 const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
 const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
-const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
-    transfectionCount: z.bigint({ coerce: true }).nullish()
-}).omit({id: true}).partial()
+const insertTransfectTargetsSchema = createSelectSchema(transfectTargets).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
 const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usageOn: nullableDateSchema})

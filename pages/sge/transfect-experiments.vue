@@ -241,6 +241,7 @@ const fieldDefs: FieldDefinitions = {
                         inputClass: 'w-40',
                         defaultValue: 3,
                         showButtons: true,
+                        allowEmpty: false,
                     },
                 },
             ]
