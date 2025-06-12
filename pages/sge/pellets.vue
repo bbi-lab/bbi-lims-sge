@@ -6,6 +6,7 @@ import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const route = useRoute()
+const router = useRouter()
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 
@@ -132,6 +133,16 @@ const columnDefs: ColumnDefinitions = {
         path: 'harvestedBy.name',
     },
 }
+const rowActions = {
+    summary: {
+        label: '',
+        action: (data: any) => {
+            router.push({path:`/sge/pellet/summary/${data.id}`})
+        },
+        icon: 'pi pi-info-circle',
+        tooltip: 'Pellet summary',
+    }
+}
 const fieldDefs: FieldDefinitions = {
     transfectTargetId: {
         label: 'Target',
@@ -190,6 +201,7 @@ const readonlyValues = queryParams
                 :title="tableTitle"
                 schemaName="select"
                 :columnDefs="columnDefs"
+                :rowActions="rowActions"
                 :withClause="displayWithClause"
                 :where="whereClauses[0]"
                 :canAdd="false"
