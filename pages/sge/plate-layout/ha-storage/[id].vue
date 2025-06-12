@@ -107,6 +107,7 @@ const columnDefs = {
             </span>` : ''
         },
         searchable: false,
+        exportable: false,
     },
     name: {
         index: 1

@@ -188,6 +188,7 @@ const columnDefs = computed(() => {
                     </span>` : ''
                 },
                 searchable: false,
+                exportable: false,
             },
             wellContents: {
                 header: 'Wells',

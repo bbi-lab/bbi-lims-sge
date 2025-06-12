@@ -121,6 +121,7 @@ const columnDefs = {
             </span>` : ''
         },
         searchable: false,
+        exportable: false,
     },
     wellContents: {
         header: 'Wells',

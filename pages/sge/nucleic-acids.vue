@@ -50,6 +50,9 @@ const columnDefs: ColumnDefinitions = {
         elementSearchText: (x: any) => {
             return x.pellet.name
         },
+        exportValue: (x: any) => {
+            return x.pellet.name
+        },
     },
     pelletIsBackup: {
         path: 'pelletIsBackup.displayValue',

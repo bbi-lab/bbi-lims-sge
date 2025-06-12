@@ -103,6 +103,9 @@ const columnDefs: ColumnDefinitions = {
             const href = _.has(x, 'nucleicAcid.id') ? `/sge/nucleic-acids?pelletId=${x.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
         },
+        exportValue: (x: any) => {
+            return _.has(x, 'nucleicAcid.id') ? 'true' : 'false'
+        },
     },
     transfectionExperiment: {
         path: 'transfectTarget.experiment.name',

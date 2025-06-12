@@ -76,6 +76,7 @@ const columnDefs = {
             </span>` : ''
         },
         searchable: false,
+        exportable: false,
     },
     sequence: { display: false },
     kit: {display: false},
