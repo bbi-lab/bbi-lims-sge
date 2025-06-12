@@ -5,7 +5,7 @@ import { z, ZodObject } from 'zod'
 import _ from 'lodash'
 import { dateSchema } from '../helpers/schemas'
 
-// tables 
+// tables
 export const users = pgTable('users', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -16,6 +16,10 @@ export const users = pgTable('users', {
   code: text('code').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const preVerifiedUsers = pgTable('pre_verified_users', {
+  email: text('email').notNull().unique(),
 })
 
 export const userGroups = pgTable('user_groups', {
@@ -68,8 +72,8 @@ const adminUpdateUserSchema = selectUserSchema.extend({
   updatedAt: dateSchema,
   userGroupMemberships: z.array(createSelectSchema(userGroupMemberships))
 }).omit({
-    id: true, 
-    password: true, 
+    id: true,
+    password: true,
     code: true
 })
 

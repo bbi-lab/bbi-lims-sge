@@ -470,6 +470,13 @@
       "when": 1749576229414,
       "tag": "0066_bored_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1749742031828,
+      "tag": "0067_special_red_ghost",
+      "breakpoints": true
     }
   ]
 }

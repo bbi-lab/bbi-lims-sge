@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships } from '@/server/db/schema/user'
+import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships, preVerifiedUsers } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
@@ -88,10 +88,13 @@ export async function addUser(user: NewUser) {
   const code = crypto.randomBytes(32).toString('hex')
   const hashedPassword = await argon2.hash(password)
 
+  const isPreVerified = await db.select().from(preVerifiedUsers).where(eq(preVerifiedUsers.email, userDetails.email.toLowerCase())).limit(1)
+
   const [newUser] = await db
     .insert(users)
     .values({
       ...userDetails,
+      isVerified: isPreVerified.length == 1,
       password: hashedPassword,
       code,
     })
