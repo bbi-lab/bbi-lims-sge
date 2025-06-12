@@ -98,6 +98,18 @@ editFormFieldDefs['targetId'] = {
     },
     index: 0,
 }
+editFormFieldDefs['transfectionCount'] = {
+    label: '# transfections',
+    component: 'InputNumber',
+    props: {
+        inputClass: 'w-40',
+        defaultValue: 3,
+        showButtons: true,
+        allowEmpty: false,
+        min: 1,
+    },
+    index: 1,
+}
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 

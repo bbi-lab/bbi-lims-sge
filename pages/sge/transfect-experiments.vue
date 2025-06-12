@@ -242,6 +242,7 @@ const fieldDefs: FieldDefinitions = {
                         defaultValue: 3,
                         showButtons: true,
                         allowEmpty: false,
+                        min: 1,
                     },
                 },
             ]
