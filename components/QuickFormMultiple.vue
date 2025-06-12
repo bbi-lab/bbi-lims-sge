@@ -258,6 +258,39 @@ function getLabel(key: string) {
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                     />
                 </div>
+                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                    <div class="flex items-start quickform-input-wrapper">
+                        <InputText
+                            v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'])"
+                            :id="key"
+                            v-model="combinedRecord[key].val"
+                            :class="inputClasses[key]"
+                            :disabled="isReadOnly(key)"
+                            :placeholder="placeholders[key]"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
+                        />
+                        <InputNumber
+                            v-else
+                            :id="key"
+                            :inputId="key"
+                            :inputClass="inputClasses[key]"
+                            v-model="combinedRecord[key].val"
+                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            showButtons :disabled="isReadOnly(key)"
+                            :placeholder="placeholders[key]"
+                            :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
+                            :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                            v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
+                        />
+                        <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
+                        <Button v-if="showRevertButton(key)" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="revertToConflictingValue(key)">
+                            <template #icon>
+                                <GrommetIconsRevert />
+                            </template>
+                        </Button>
+                    </div>
+                </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <div class="flex items-start quickform-input-wrapper">

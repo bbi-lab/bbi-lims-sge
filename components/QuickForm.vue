@@ -249,6 +249,16 @@ function isReadOnly(key: string) {
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                 </div>
+                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                    <InputNumber
+                        :id="key"
+                        v-model="record[key]"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
+                </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                     <DatePicker
