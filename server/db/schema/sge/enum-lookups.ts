@@ -12,6 +12,10 @@ export type EnumLookup = {
 export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
     'plates': {
         'plateType': {
+            'pellet-storage': {
+                desc: 'Pellet storage',
+                label: 'Pellet storage',
+            },
             'lin-storage': {
                 desc: 'Linearization primer storage',
                 label: 'LIN primer storage',
