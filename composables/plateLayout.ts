@@ -212,10 +212,6 @@ export const usePlateLayout = (plateId: string) => {
         selectionTableIdsToRefresh.forEach((id) => {
             selectionTableRef.value.addOrRefreshRecordId(id)
         })
-        // forces frozen records to be re-evaluated when the well contents are being cleared
-        // selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
-        //     return _.includes(_.map(newValues, 'id'), x.id)
-        // })
     }
 
     interface WellContentsAndSources extends Partial<WellContent> {
@@ -326,8 +322,6 @@ export const usePlateLayout = (plateId: string) => {
         const newRecords = await addWellContents(recordsToAdd)
         return newRecords
     }
-
-
 
     const wellRangeSelected = function(wells: PlateDiagramWell[]) {
         selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
