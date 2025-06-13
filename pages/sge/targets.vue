@@ -137,6 +137,7 @@ const fieldDefs: FieldDefinitions = {
                 }
             }
         },
+        index: 2,
     },
     projectId: {
         label: 'Project',
@@ -147,7 +148,11 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             dropdown: true,
-        }
+        },
+        index: 1,
+    },
+    name: {
+        index: 3,
     },
     transfectTargets: {
         display: false,
