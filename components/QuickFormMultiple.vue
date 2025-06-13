@@ -4,6 +4,7 @@ import { RecordService } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
 import { useActiveElement } from '@vueuse/core'
+import moment from 'moment'
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
@@ -100,6 +101,21 @@ onMounted(async () => {
 const refreshForm = async function() {
     formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
     records.value = await RecordService.getRecordsByIds(apiBaseUrl.value, props.recordIds, props.withClause)
+
+    if (formSchema.value?.properties) {
+        // convert date strings to Date objects
+        _.forEach(formSchema.value.properties, (value, key) => {
+            _.forEach(records.value, (record) => {
+                if (record[key] && _.includes(['date', 'date-time'], getFieldType(value, key, props.fieldDefs))) {
+                    try {
+                        record[key] = moment(record[key]).toDate()
+                    } catch (e) {
+                        console.error(`Error converting field ${key} to date:`, e)
+                    }
+                }
+            })
+        })
+    }
 
     combinedRecord.value = _.reduce(records.value, (acc: any, record) => {
         _.forEach(record, (value, key) => {

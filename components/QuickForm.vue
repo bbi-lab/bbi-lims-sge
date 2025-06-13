@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
 import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
+import moment from 'moment'
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
@@ -45,9 +46,22 @@ const refreshForm = async function() {
     if (props.recordId) {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
         record.value = await RecordService.getRecord(apiBaseUrl.value, props.recordId, props.withClause)
+
     } else {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
+    }
+    if (formSchema.value?.properties) {
+        // convert date strings to Date objects
+        _.forEach(formSchema.value.properties, (value, key) => {
+            if (record.value[key] && _.includes(['date', 'date-time'], getFieldType(value, key, props.fieldDefs))) {
+                try {
+                    record.value[key] = moment(record.value[key]).toDate()
+                } catch (e) {
+                    console.error(`Error converting field ${key} to date:`, e)
+                }
+            }
+        })
     }
     if (props.readonlyValues) {
         _.assign(record.value, props.readonlyValues)
@@ -264,7 +278,7 @@ function isReadOnly(key: string) {
                     <DatePicker
                         class="w-80"
                         :id="key"
-                        v-model.trim="record[key]"
+                        v-model="record[key]"
                         showIcon
                         dateFormat="yy-mm-dd"
                         autofocus
@@ -278,7 +292,7 @@ function isReadOnly(key: string) {
                     <DatePicker
                         class="w-80"
                         :id="key"
-                        v-model.trim="record[key]"
+                        v-model="record[key]"
                         showTime
                         showIcon
                         dateFormat="yy-mm-dd"
