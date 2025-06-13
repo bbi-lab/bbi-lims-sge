@@ -7,6 +7,8 @@ import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } fr
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
 const toast = useToast()
+const { showLoginModal, isLoginModalVisible } = useLayout()
+const { loggedIn, fetch } = useUserSession()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
@@ -17,13 +19,13 @@ interface FieldDefinition {
     label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
     component?: string,
     props?: Record<string, any>,
-    display?: boolean,
+    display?: boolean | ((record: any) => boolean),
     readOnly?: boolean,
     canUpdate?: boolean,
     canDelete?: boolean,
     type?: string,
     index?: number,
-    onChange?: (record: any) => void,
+    events?: Record<string, Function>,
 }
 export interface FieldDefinitions {[key: string]: FieldDefinition}
 
@@ -73,7 +75,20 @@ const discardConfirmed = ref(false)
 const displayDeleteConfirmation = ref(false)
 const displayDiscardConfirmation = ref(false)
 
-onMounted(() => refreshForm())
+watch(isLoginModalVisible, (newValue, oldValue) => {
+    if (oldValue == true && newValue == false && !record.value) {
+        refreshForm()
+    }
+})
+
+onMounted(async () => {
+    await fetch()
+    if (!loggedIn.value) {
+        showLoginModal()
+    } else {
+        await refreshForm()
+    }
+})
 
 watch(() => props.recordId, (newValue, oldValue) => {
   if (newValue != oldValue ) {
@@ -108,7 +123,11 @@ function deleteRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
         }).catch(error => {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            }
         })
     }
     displayDeleteConfirmation.value = false
@@ -160,7 +179,9 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
             emit('record-update', result)
         }).catch(error => {
-            if (formElement.value && _.isArray(error.data?.data)) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
@@ -174,7 +195,9 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
             emit('record-add', result)
         }).catch(error => {
-            if (formElement.value && _.isArray(error.data?.data)) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
                 toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
@@ -194,7 +217,7 @@ function isReadOnly(key: string) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
-            <template v-if="record && key in record && _.get(fieldDefs, [key, 'display'])!==false">
+            <template v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
                     <AutoCompleter
@@ -203,6 +226,7 @@ function isReadOnly(key: string) {
                         v-model:obj="relatedRecords[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
@@ -212,6 +236,27 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         v-bind="_.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
+                </div>
+                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                    <Select
+                        :id="key"
+                        v-model="record[key]"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
+                </div>
+                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
+                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                    <InputNumber
+                        :id="key"
+                        v-model="record[key]"
+                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
@@ -224,6 +269,7 @@ function isReadOnly(key: string) {
                         dateFormat="yy-mm-dd"
                         autofocus
                         :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
@@ -239,6 +285,7 @@ function isReadOnly(key: string) {
                         hourFormat="24"
                         autofocus
                         :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
@@ -249,7 +296,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         :options="val.enum"
                         :disabled="isReadOnly(key)"
-                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
@@ -261,7 +308,7 @@ function isReadOnly(key: string) {
                         optionLabel="title"
                         optionValue="const"
                         :disabled="isReadOnly(key)"
-                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                 />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
@@ -271,16 +318,32 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         :binary="true"
                         :disabled="isReadOnly(key)"
-                        @change="_.isFunction(fieldDefs?.[key]?.onChange) ? fieldDefs[key].onChange(record) : undefined"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="0" :maxFractionDigits="0" />
+                    <InputNumber
+                        :id="key"
+                        v-model="record[key]"
+                        showButtons
+                        :disabled="isReadOnly(key)"
+                        :minFractionDigits="0"
+                        :maxFractionDigits="0"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputNumber :id="key" v-model="record[key]" showButtons :disabled="isReadOnly(key)" :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)" :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)" />
+                    <InputNumber
+                        :id="key"
+                        v-model="record[key]"
+                        showButtons
+                        :disabled="isReadOnly(key)"
+                        :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
+                        :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
@@ -329,7 +392,13 @@ function isReadOnly(key: string) {
                 </div>
                 <div class="mb-5" v-else>
                     <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
-                    <InputText :id="key" v-model="record[key]" class="w-80" :disabled="isReadOnly(key)" />
+                    <InputText
+                        :id="key"
+                        v-model="record[key]"
+                        class="w-80"
+                        :disabled="isReadOnly(key)"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                    />
                     <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
                         <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
                     </a>

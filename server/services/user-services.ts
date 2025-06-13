@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships } from '@/server/db/schema/user'
+import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships, preVerifiedUsers } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
 // import { sendVerificationEmail } from '@/utils/email'
 import { sha256 } from '@/server/utils/hash'
@@ -28,13 +28,13 @@ export async function getUserGroups(selectParams?: SelectParams) {
   }
 }
 
-export async function addUserGroup(values: NewUserGroup) {
-  const [newUserGroup] = await db
+export async function addUserGroups(records: NewUserGroup[]) {
+  const newUserGroups = await db
     .insert(userGroups)
-    .values(values)
+    .values(records)
     .returning()
 
-  return newUserGroup
+  return newUserGroups
 }
 
 export async function updateUserGroup(id: number, values: UpdateUserGroup) {
@@ -86,12 +86,15 @@ export async function getUserByEmail(email: string) {
 export async function addUser(user: NewUser) {
   const { password, ...userDetails } = user
   const code = crypto.randomBytes(32).toString('hex')
-  const hashedPassword = await argon2.hash(password) 
+  const hashedPassword = await argon2.hash(password)
+
+  const isPreVerified = await db.select().from(preVerifiedUsers).where(eq(preVerifiedUsers.email, userDetails.email.toLowerCase())).limit(1)
 
   const [newUser] = await db
     .insert(users)
     .values({
       ...userDetails,
+      isVerified: isPreVerified.length == 1,
       password: hashedPassword,
       code,
     })
@@ -259,7 +262,7 @@ export async function updateUser(user: User, { name, email, password }: UpdateUs
 }
 export async function changePassword(userId: string, password: string) {
 
-  const hashedPassword = await argon2.hash(password) 
+  const hashedPassword = await argon2.hash(password)
   const [updatedUser] = await db
     .update(users)
     .set({password: hashedPassword})
@@ -291,7 +294,7 @@ export async function adminUpdateUser(userId: string, values: AdminUpdateUser) {
   const existingGroupMemberships = await db.select().from(userGroupMemberships).where(eq(userGroupMemberships.userId, userId))
   const relatedRecordsToDelete = _.differenceBy(existingGroupMemberships, values.userGroupMemberships, 'userGroupId')
   const relatedRecordsToAdd = _.differenceBy(values.userGroupMemberships, existingGroupMemberships, 'userGroupId')
-  
+
   if (relatedRecordsToAdd?.length > 0)
     await db.insert(userGroupMemberships).values(relatedRecordsToAdd)
   if (relatedRecordsToDelete?.length > 0)

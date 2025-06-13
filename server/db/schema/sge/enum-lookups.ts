@@ -12,6 +12,10 @@ export type EnumLookup = {
 export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
     'plates': {
         'plateType': {
+            'pellet-storage': {
+                desc: 'Pellet storage',
+                label: 'Pellet storage',
+            },
             'lin-storage': {
                 desc: 'Linearization primer storage',
                 label: 'LIN primer storage',
@@ -51,6 +55,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             'preseq-3': {
                 desc: 'PreSeq 3',
                 label: 'PreSeq 3',
+            },
+            'seq-index': {
+                desc: 'Sequencing index plate',
+                label: 'Seq index',
             },
         },
     },

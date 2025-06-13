@@ -7,6 +7,12 @@ import { parsePutPostError } from '~/server/utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
+    if (recordType != _.kebabCase(recordType)) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: `Invalid record type: ${recordType}. Record type must be kebab-case.`
+        })
+    }
 
     try {
         const body = await readBody(event)

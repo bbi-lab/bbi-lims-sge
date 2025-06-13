@@ -5,7 +5,7 @@ import { transfectExperiments, transfectTargets, transfectLotUsage } from './tra
 import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
-import { wellContents, wells } from './well'
+import { wellContents, wellContentSources, wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
@@ -18,7 +18,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -37,6 +37,11 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             fields: [pcrExperiments.technician],
             referenceTable: users,
             references: [users.id],
+        },
+        transfectTarget: {
+            fields: [pcrExperiments.transfectTargetId],
+            referenceTable: transfectTargets,
+            references: [transfectTargets.id],
         },
     },
     many: {
@@ -71,6 +76,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: homologyArmPrimers,
             references: [homologyArmPrimers.id],
         },
+        indexPrimer: {
+            fields: [wellContents.indexPrimerId],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
         nucleicAcid: {
             fields: [wellContents.nucleicAcidId],
             referenceTable: nucleicAcids,
@@ -82,8 +92,57 @@ const wellContentsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
+    many: {
+        wellContentSources: {
+            table: wellContentSources,
+            schema: createSelectSchema(wellContentSources),
+            fields: [wellContentSources.wellContentId],
+        },
+    },
 }
 export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
+
+const wellContentSourcesRelationsConfig: RelationsConfig = {
+    one: {
+        wellContent: {
+            fields: [wellContentSources.wellContentId],
+            referenceTable: wellContents,
+            references: [wellContents.id],
+        },
+        sourceWell: {
+            fields: [wellContentSources.sourceWellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
+        createdBy: {
+            fields: [wellContentSources.createdBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+    },
+}
+export const wellContentSourcesRelations = relationsConfigToRelations(wellContentSources, wellContentSourcesRelationsConfig)
+
+// const wellSourcesRelationsConfig: RelationsConfig = {
+//     one: {
+//         sourceWell: {
+//             fields: [wellSources.sourceWellId],
+//             referenceTable: wells,
+//             references: [wells.id],
+//         },
+//         destWell: {
+//             fields: [wellSources.destWellId],
+//             referenceTable: wells,
+//             references: [wells.id],
+//         },
+//         createdBy: {
+//             fields: [wellSources.createdBy],
+//             referenceTable: users,
+//             references: [users.id],
+//         },
+//     },
+// }
+// export const wellSourcesRelations = relationsConfigToRelations(wellSources, wellSourcesRelationsConfig)
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
@@ -139,11 +198,6 @@ const targetsRelationsConfig: RelationsConfig = {
             referenceTable: projects,
             references: [projects.id],
         },
-        cycle: {
-            fields: [targets.cycleId],
-            referenceTable: cycles,
-            references: [cycles.id],
-        },
         region: {
             fields: [targets.regionId],
             referenceTable: regions,
@@ -155,6 +209,11 @@ const targetsRelationsConfig: RelationsConfig = {
             table: transfectTargets,
             schema: createSelectSchema(transfectTargets),
             fields: [transfectTargets.targetId],
+        },
+        plasmids: {
+            table: plasmids,
+            schema: createSelectSchema(plasmids),
+            fields: [plasmids.targetId],
         }
     }
 }
@@ -180,10 +239,10 @@ export const regionsRelations = relationsConfigToRelations(regions, regionsRelat
 
 const cyclesRelationsConfig: RelationsConfig = {
     many: {
-        targets: {
-            table: targets,
-            schema: createSelectSchema(targets),
-            fields: [targets.cycleId],
+        transfectionExperiments: {
+            table: transfectExperiments,
+            schema: createSelectSchema(transfectExperiments),
+            fields: [transfectExperiments.cycleId],
         }
     }
 }
@@ -370,9 +429,11 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             references: [pellets.id],
         },
     },
-    oneToOne: {
+    many: {
         wellContents: {
-            table: wellContents
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.nucleicAcidId],
         }
     },
 }
@@ -426,8 +487,21 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
+const indexPrimersRelationsConfig: RelationsConfig = {
+    many: {
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.indexPrimerId],
+        },
+    },
+}
+export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
+
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
+    wellContentSources: wellContentSourcesRelationsConfig,
+    // wellSources: wellSourcesRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
     projects: projectsRelationsConfig,
@@ -448,4 +522,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     amplificationPrimers: amplificationPrimersRelationsConfig,
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
+    indexPrimers: indexPrimersRelationsConfig,
 }

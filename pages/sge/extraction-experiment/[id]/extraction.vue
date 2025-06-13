@@ -1,24 +1,20 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
-import { VALID_PROTOCOLS, type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import { nucleicAcids, VALID_PROTOCOLS, type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-
-
-const extractionExperiment = ref()
-const pelletsTable = ref()
-const nucleicAcidsTable = ref()
-const showEditForm = ref(false)
-const showMultipleEditForm = ref(false)
-const showNucleicAcidEditDialog = computed(() => {
-    return showEditForm.value || showMultipleEditForm.value
-})
-const editingRecordId = ref<string | undefined>()
-const editingMultipleRecordsIds = ref<string[]>([])
+import { pellets } from '~/server/db/schema/sge/pellet'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
+const pelletsCrudTable = useCrudTable()
+const nucleicAcidsCrudTable = useCrudTable()
+
+const extractionExperiment = ref()
+const showNucleicAcidEditDialog = computed(() => {
+    return nucleicAcidsCrudTable.state.showEditForm || nucleicAcidsCrudTable.state.showMultipleEditForm
+})
 
 onMounted(async() => {
     const extractionExperimentId = route.params.id as string
@@ -26,7 +22,7 @@ onMounted(async() => {
 })
 
 const extractFromSelectedPellets = async () => {
-    const nucleicAcidsToAdd = _.map(pelletsTable.value.selectedRecords, (pellet) => {
+    const nucleicAcidsToAdd = _.map(pelletsCrudTable.tableRef.value.selectedRecords, (pellet) => {
         return {
             pelletId: pellet.id,
             extractionExperimentId: route.params.id,
@@ -42,10 +38,10 @@ const extractFromSelectedPellets = async () => {
                 life: 3000,
             })
             _.forEach(nucleicAcidsAdded, (x) => {
-                nucleicAcidsTable.value.addOrRefreshRecordId(x.id)
-                pelletsTable.value.removeRecordId(x.pelletId)
+                nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordId(x.id)
+                pelletsCrudTable.tableRef.value.removeRecordId(x.pelletId)
             })
-            pelletsTable.value.selectedRecords = []
+            pelletsCrudTable.tableRef.value.selectedRecords = []
         } else {
             toast.add({
                 severity: 'error',
@@ -64,44 +60,10 @@ const extractFromSelectedPellets = async () => {
     }
 }
 
-const didClickRecordEdit = (event: any) => {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showMultipleEditForm.value = false
-}
-
-const didClickMultipleRecordEdit = (recordIds: string[]) => {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-}
-
-const didClickCancelEditForm = () => {
-    editingRecordId.value = undefined
-    showEditForm.value = false
-}
-const didClickCancelMultipleEditForm = () => {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-const didUpdateRecord = (event: any) => {
-    if (event.id) nucleicAcidsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-const didUpdateMultipleRecords = (event: any[]) => {
-    event.forEach(e => {
-        if (e.id) nucleicAcidsTable.value.addOrRefreshRecordId(e.id)
-    })
-    showMultipleEditForm.value = false
-}
-const didDeleteRecord = (event: any) => {
-    if (event.id) nucleicAcidsTable.value.removeRecordId(event.id)
-    pelletsTable.value.addOrRefreshRecordId(event.pelletId)
-    showEditForm.value = false
-}
 const didDeleteMultipleNucleicAcids = (event: any[]) => {
+    console.log(event)
     event.forEach(e => {
-        pelletsTable.value.addOrRefreshRecordId(e.pelletId)
+        pelletsCrudTable.tableRef.value.addOrRefreshRecordId(e.pelletId)
     })
 }
 const pelletsWithClause = Object.freeze({
@@ -199,7 +161,7 @@ const nucleicAcidsColumnDefs = {
         header: 'RNA yield (μg)',
     },
 }
-const nucleicAcidFieldDefinitions: FieldDefinitions = {
+const nucleicAcidFieldDefs: FieldDefinitions = {
     extractionExperimentId: {
         display: false,
     },
@@ -244,7 +206,7 @@ const nucleicAcidFieldDefinitions: FieldDefinitions = {
         <Splitter class="h-full overflow-y-hidden">
             <SplitterPanel :size="50">
                 <QuickTable
-                    ref="pelletsTable"
+                    :ref="pelletsCrudTable.setTableRef"
                     tableName="pellets"
                     title="Pellets"
                     schemaName="select"
@@ -265,14 +227,14 @@ const nucleicAcidFieldDefinitions: FieldDefinitions = {
                             severity="warn"
                             class="flex-none"
                             label="Extract"
-                            :disabled="!pelletsTable?.selectedRecords?.length"
+                            :disabled="_.isEmpty(pelletsCrudTable.tableRef.value?.selectedRecords)"
                             @click="extractFromSelectedPellets" />
                     </template>
                 </QuickTable>
             </SplitterPanel>
             <SplitterPanel :size="50" :minSize="25">
                 <QuickTable
-                    ref="nucleicAcidsTable"
+                    :ref="nucleicAcidsCrudTable.setTableRef"
                     tableName="nucleic-acids"
                     title="Nucleic acids"
                     schemaName="select"
@@ -285,31 +247,31 @@ const nucleicAcidFieldDefinitions: FieldDefinitions = {
                     :canEditMultiple="true"
                     :canExport="false"
                     :hideSettings="true"
-                    @clickedRecordEdit="didClickRecordEdit"
-                    @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
+                    @clickedRecordEdit="nucleicAcidsCrudTable.didClickRecordEdit"
+                    @clickedMultipleRecordEdit="nucleicAcidsCrudTable.didClickMultipleRecordEdit"
                     @didDeleteMultipleRecords="didDeleteMultipleNucleicAcids"
                 />
             </SplitterPanel>
         </Splitter>
         <Dialog v-model:visible="showNucleicAcidEditDialog" modal header="Edit" :style="{ width: 'auto' }" :closable="false">
             <QuickForm
-                v-if="showEditForm"
-                :recordId="editingRecordId"
-                tableName="nucleicAcids"
+                v-if="nucleicAcidsCrudTable.state.editingRecordId && nucleicAcidsCrudTable.state.showEditForm"
+                :recordId="nucleicAcidsCrudTable.state.editingRecordId"
+                tableName="nucleic-acids"
                 schemaName="update"
                 :fieldDefs="nucleicAcidFieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="nucleicAcidsCrudTable.didClickCancelEditForm"
+                @recordUpdate="nucleicAcidsCrudTable.didUpdateRecord"
+                @recordDelete="nucleicAcidsCrudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="nucleicAcidsCrudTable.state.showMultipleEditForm"
                 tableName="nucleic-acids"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="nucleicAcidsCrudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="nucleicAcidFieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="nucleicAcidsCrudTable.didClickCancelMultipleEditForm"
+                @records-update="nucleicAcidsCrudTable.didUpdateMultipleRecords"
             />
         </Dialog>
     </div>

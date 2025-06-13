@@ -1,78 +1,28 @@
 <script setup lang="ts">
-import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { wellCoordinateToChar } from '@/composables/lib/plate-diagram'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
+import { read } from 'xlsx'
 
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref<string | undefined>()
-const pelletsTable = ref()
 const route = useRoute()
+const router = useRouter()
 const config = useRuntimeConfig()
-const tableTitle = ref<string>('Pellets')
-const showMultipleEditForm = ref(false)
-const editingMultipleRecordsIds = ref<string[]>([])
+const crudTable = useCrudTable()
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+const tableKey = ref()
 
-const queryParams = route.query
-
-onMounted(async() => {
-    if (_.has(queryParams, ['transfectTarget.experiment.id'])) {
-        const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, _.get(queryParams, ['transfectTarget.experiment.id']) as string, {cycle: {columns: {name: true}}})
-        tableTitle.value = `${tranfectExperiment.cycle.name}: pellets`
-    } else if (_.has(queryParams, ['extractionExperimentId'])) {
-        const extractionExperiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, _.get(queryParams, ['extractionExperimentId']) as string, {})
-        tableTitle.value = `${extractionExperiment.name}: pellets`
-    }
-})
-
-function didClickRecordEdit(event: any) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = undefined
-    showEditForm.value = false
-}
-
-function didAddRecord(event: any) {
-    pelletsTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event: any) {
-    pelletsTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event: any) {
-    pelletsTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
-function didClickMultipleRecordEdit(recordIds: string[]) {
-    editingMultipleRecordsIds.value = recordIds
-    showMultipleEditForm.value = true
-    showEditForm.value = false
-    showAddForm.value = false
-}
-function didClickCancelMultipleEditForm() {
-    editingMultipleRecordsIds.value = []
-    showMultipleEditForm.value = false
-}
-function didUpdateMultipleRecords(event: any[]) {
-    event.forEach(e => {
-        if (e.id) pelletsTable.value.addOrRefreshRecordId(e.id)
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
     })
-    showMultipleEditForm.value = false
-}
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
+
 const displayWithClause = Object.freeze({
     harvestedBy: {
         columns: {
@@ -84,6 +34,7 @@ const displayWithClause = Object.freeze({
         with: {
             target: {
                 columns: {
+                    id: true,
                     name: true
                 },
                 with: {
@@ -105,6 +56,13 @@ const displayWithClause = Object.freeze({
                 columns: {
                     id: true,
                     name: true
+                },
+                with: {
+                    cycle: {
+                        columns: {
+                            name: true
+                        }
+                    }
                 },
             }
         }
@@ -154,9 +112,12 @@ const columnDefs: ColumnDefinitions = {
             const href = _.has(x, 'nucleicAcid.id') ? `/sge/nucleic-acids?pelletId=${x.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
         },
+        exportValue: (x: any) => {
+            return _.has(x, 'nucleicAcid.id') ? 'true' : 'false'
+        },
     },
     transfectionExperiment: {
-        path: 'transfectTarget.experiment.name',
+        path: 'transfectTarget.experiment.cycle.name',
         index: 4,
     },
     wellContents: {
@@ -180,16 +141,29 @@ const columnDefs: ColumnDefinitions = {
         path: 'harvestedBy.name',
     },
 }
+const rowActions = {
+    summary: {
+        label: '',
+        action: (data: any) => {
+            router.push({path:`/sge/pellet/summary/${data.id}`})
+        },
+        icon: 'pi pi-info-circle',
+        tooltip: 'Pellet summary',
+    }
+}
 const fieldDefs: FieldDefinitions = {
     transfectTargetId: {
         label: 'Target',
         component: 'NestedSelect',
         props: {
             parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
-            parentSearchFields: ['name'],
+            parentSearchFields: ['cycle.name'],
             parentValueField: 'id',
-            parentDisplayFields: ['name'],
+            parentDisplayFields: ['cycle.name'],
             parentIftaLabel: 'Experiment',
+            parentSearchWithClause: {
+                cycle: {columns: {name: true}},
+            },
 
             searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
             searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
@@ -199,7 +173,8 @@ const fieldDefs: FieldDefinitions = {
             searchWithClause: {
                 target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
             },
-        }
+        },
+        readOnly: true,
     },
     extractionExperimentId: {
         label: 'Extraction experiment',
@@ -220,61 +195,56 @@ const fieldDefs: FieldDefinitions = {
     },
 }
 
-// convert query params in to JSON Logic to pass as where clause
-// TODO - pass more than just the first to QuickTable
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="pelletsTable"
+                :key="tableKey"
+                :ref="crudTable.setTableRef"
                 tableName="pellets"
-                :title="tableTitle"
+                title="Pellets"
                 schemaName="select"
                 :columnDefs="columnDefs"
+                :rowActions="rowActions"
                 :withClause="displayWithClause"
-                :where="whereClauses[0]"
+                :where="whereClauses?.[0]"
                 :canAdd="false"
                 :canEditMultiple="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
-                :selectionDisabled="showAddForm || showEditForm || showMultipleEditForm"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm || showMultipleEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="pellets"
                 schemaName="insert"
-                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
-                :recordId="editingRecordId"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="pellets"
                 schemaName="update"
-                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="showMultipleEditForm"
+                v-if="crudTable.state.showMultipleEditForm"
                 tableName="pellets"
-                :recordIds="editingMultipleRecordsIds"
+                :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                @cancel="didClickCancelMultipleEditForm"
-                @records-update="didUpdateMultipleRecords"
+                @cancel="crudTable.didClickCancelMultipleEditForm"
+                @records-update="crudTable.didUpdateMultipleRecords"
             />
         </SplitterPanel>
     </Splitter>

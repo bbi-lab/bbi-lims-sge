@@ -6,7 +6,7 @@ import {users, userGroups, userGroupMemberships} from '../db/schema/user';
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
 import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
-import {wellContents, wells} from '../db/schema/sge/well'
+import {wellContents, wells, wellContentSources} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
@@ -24,7 +24,7 @@ import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -38,6 +38,7 @@ export const schema = {
   plates,
   wells,
   wellContents,
+  wellContentSources,
   projects,
   targets,
   genes,
@@ -57,6 +58,7 @@ export const schema = {
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
+  indexPrimers,
 
   //views
   viewPlatesWithWellCounts,
@@ -69,6 +71,8 @@ export const schema = {
   pcrExperimentsRelations: sgeRelations.pcrExperimentsRelations,
   wellsRelations: sgeRelations.wellsRelations,
   wellContentsRelations: sgeRelations.wellContentsRelations,
+  wellContentSourcesRelations: sgeRelations.wellContentSourcesRelations,
+  // wellSourcesRelations: sgeRelations.wellSourcesRelations,
   projectsRelations: sgeRelations.projectsRelations,
   targetsRelations: sgeRelations.targetsRelations,
   regionsRelations: sgeRelations.regionsRelations,
@@ -87,6 +91,7 @@ export const schema = {
   amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
   linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
+  indexPrimersRelations: sgeRelations.indexPrimersRelations,
 }
 
 const ssl = config?.ssl != null ? config.ssl

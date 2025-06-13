@@ -16,8 +16,8 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, linearizationPrimers } from './primer'
-import { wellContents, wells } from './well'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
+import { wellContents, wellContentSources, wells } from './well'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -54,14 +54,12 @@ const selectCycleSchema = createSelectSchema(cycles, {startedOn: nullableDateSch
 const insertCycleSchema = selectCycleSchema.omit({id: true})
 const updateCycleSchema = insertCycleSchema
 
-const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: nullableDateSchema})
+const selectTransfectExperimentsSchema = createSelectSchema(transfectExperiments, {startedOn: dateSchema})
 const insertTransfectExperimentsSchema = selectTransfectExperimentsSchema.omit({id: true})
 const updateTransfectExperimentsSchema = insertTransfectExperimentsSchema
 
 const selectTransfectTargetsSchema = createSelectSchema(transfectTargets)
-const insertTransfectTargetsSchema = createSelectSchema(transfectTargets, {
-    transfectionCount: z.bigint({ coerce: true }).nullish()
-}).omit({id: true}).partial()
+const insertTransfectTargetsSchema = createSelectSchema(transfectTargets).omit({id: true}).partial()
 const updateTransfectTargetsSchema = insertTransfectTargetsSchema
 
 const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usageOn: nullableDateSchema})
@@ -73,7 +71,23 @@ const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: 
 const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
-const insertPcrExperimentsSchema = selectPcrExperimentsSchema.omit({id: true})
+const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
+const insertPcrExperimentsSchema = insertPcrExperimentsSchemaOrig.superRefine((data, ctx) => {
+  if (data.pcrType === 'preseq-1' && !data.transfectTargetId) {
+    // transfectTargetId is required for preseq-1 PCR experiments, otherwise should be empty
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Target is required for PreSeq-1 PCR experiments",
+      path: ["transfectTargetId"], // path to the property where the error occurred
+    })
+  } else if (data.pcrType !== 'preseq-1' && data.transfectTargetId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Target should not be set for non PreSeq-1 PCR experiments",
+      path: ["transfectTargetId"],
+    })
+  }
+})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
@@ -85,7 +99,7 @@ const insertExtractionLotUsageSchema = selectExtractionLotUsageSchema.omit({id: 
 const updateExtractionLotUsageSchema = insertExtractionLotUsageSchema
 
 const selectPlatesSchema = createSelectSchema(plates)
-const insertPlatesSchema = selectPlatesSchema.omit({id: true})
+const insertPlatesSchema = selectPlatesSchema.omit({id: true}).partial()
 const updatePlatesSchema = insertPlatesSchema
 
 const selectWellsSchema = createSelectSchema(wells)
@@ -95,6 +109,14 @@ const updateWellsSchema = insertWellsSchema.omit({plateId: true, x: true, y: tru
 const selectWellContentsSchema = createSelectSchema(wellContents)
 const insertWellContentsSchema = selectWellContentsSchema.omit({id: true}).partial()
 const updateWellContentsSchema = insertWellContentsSchema
+
+const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
+const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
+const updateWellContentSourcesSchema = insertWellContentSourcesSchema
+
+// const selectWellSourcesSchema = createSelectSchema(wellSources)
+// const insertWellSourcesSchema = selectWellSourcesSchema.omit({id: true}).partial()
+// const updateWellSourcesSchema = insertWellSourcesSchema
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -127,6 +149,10 @@ const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
+
+const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
+const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
+const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
@@ -197,6 +223,16 @@ export const schemas = {
         insert: insertWellContentsSchema,
         update: updateWellContentsSchema,
     },
+    wellContentSources: {
+        select: selectWellContentSourcesSchema,
+        insert: insertWellContentSourcesSchema,
+        update: updateWellContentSourcesSchema,
+    },
+    // wellSources: {
+    //     select: selectWellSourcesSchema,
+    //     insert: insertWellSourcesSchema,
+    //     update: updateWellSourcesSchema,
+    // },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
@@ -246,6 +282,11 @@ export const schemas = {
         select: selectLinearizationPrimerSchema,
         insert: insertLinearizationPrimerSchema,
         update: updateLinearizationPrimerSchema,
+    },
+    indexPrimers: {
+        select: selectIndexPrimerSchema,
+        insert: insertIndexPrimerSchema,
+        update: updateIndexPrimerSchema,
     },
 
     // views

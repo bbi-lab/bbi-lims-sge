@@ -1,13 +1,14 @@
 import JWT from 'jsonwebtoken'
 import _ from 'lodash'
+import type { StringValue } from "ms"
 
 const config = useRuntimeConfig()
 
 const JWT_ACCESS_CONFIG: JWT.SignOptions = {
-  expiresIn: config.authJwtAccessTokenExpiresIn,
+  expiresIn: config.authJwtAccessTokenExpiresIn as StringValue,
 }
 const JWT_REFRESH_CONFIG: JWT.SignOptions = {
-  expiresIn: config.authJwtRefreshTokenExpiresIn,
+  expiresIn: config.authJwtRefreshTokenExpiresIn as StringValue,
 }
 
 export function generateTokens(userId: string) {

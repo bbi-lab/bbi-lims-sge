@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { getWellTextColor, wellCoordinateToChar, type PlateDiagramWell } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { PlateWithPlateDiagramWells } from '~/components/PlateDiagram.vue'
 import type { WellContent } from '~/server/db/schema/sge/well'
-import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, updateWellSpecs } from '~/utils/sge/plateUtils'
+import { type PlateWithWellContents, type WellSpecs, assignNucleicAcidsToPreseq1Plate, assignToPlate, updateWellSpecs } from '~/utils/sge/plateUtils'
 import { PLATE_TYPE_SPECS } from '~/utils/sge/plateUtils'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { PlateType } from '~/server/db/schema/sge/plate'
@@ -14,6 +14,8 @@ const config = useRuntimeConfig()
 const toast = useToast()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
+const { showLoginModal } = useLayout()
+const { user } = useUserSession()
 
 const plateWithWellContents = ref<PlateWithWellContents>()
 const contentSelectionTable = ref()
@@ -21,10 +23,14 @@ const plateWithPlateDiagramWells = ref<PlateWithPlateDiagramWells>()
 const plateDiagram = ref()
 const selectedWells = ref<PlateDiagramWell[]>()
 const wellSpecs = ref<WellSpecs>({})
+const pcrExperiment = ref()
 
 const plateType = route.params.plateType as PlateType
-const wellContentsKey = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsKey'])
+// TODO handle multiple wellContentsRelations (for PreSeq-3)
+const wellContentsRelationName = _.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsRelations', 0, 'name'])
 const tableName = _.get(PLATE_TYPE_SPECS, [ plateType, 'selectionTableName'])
+const tableWhereClause = ref()
+
 
 const colorMapBySelectionTableId = computed(() => {
     const colorMap = {}
@@ -38,7 +44,7 @@ const colorMapBySelectionTableId = computed(() => {
 
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(selectedWells.value, (well) => {
-        return _.map(well.data.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })
+        return _.map(well.data.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })
     })))
 })
 
@@ -64,13 +70,68 @@ const refreshPlate = async () => {
                             linearizationPrimer: route.params.plateType == 'lin-storage',
                             homologyArmPrimer: route.params.plateType == 'ha-storage',
                             nucleicAcid: _.includes(['preseq-1', 'preseq-2', 'preseq-3'], route.params.plateType) ? {with: {pellet: true}} : false,
+                            indexPrimer: _.includes(['seq-index', 'preseq-3'], route.params.plateType),
+                            wellContentSources: {
+                                with: {
+                                    sourceWell: {
+                                        columns: {
+                                            id: true,
+                                            x: true,
+                                            y: true,
+                                        },
+                                        with: {
+                                            plate: {
+                                                columns: {
+                                                    id: true,
+                                                    name: true,
+                                                    plateType: true,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         }
                     },
                 }
-            }
+            },
         }
     )
+
     if (_.isEmpty(plateWithWellContents.value)) return
+
+    if (_.get(plateWithWellContents.value, 'pcrExperimentId')) {
+        pcrExperiment.value = await RecordService.getRecord(
+            `${config.public.apiBase}/pcr-experiments`,
+            plateWithWellContents.value.pcrExperimentId as string,
+            {
+                transfectTarget: {
+                    columns: {id: true},
+                }
+            }
+        )
+    }
+
+    if (plateType == 'preseq-3') {
+        tableWhereClause.value = {
+            "in": [{"var": "plateType"}, ["preseq-2", "seq-index"]]
+        }
+    } else if (plateType == 'preseq-2') {
+        tableWhereClause.value = {
+            "==": [{"var": "plateType"}, "preseq-1"]
+        }
+    } else if (plateType == 'preseq-1' && pcrExperiment.value?.transfectTarget) {
+        tableWhereClause.value = {'==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]}
+    } else if (plateType == 'seq-index') {
+        tableWhereClause.value = {}
+    } else {
+        tableWhereClause.value = {
+            'or':[
+                {'==':[{'var': 'wellContents'}, null]},
+                {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
+            ]
+        }
+    }
 
     updateWellSpecs(wellSpecs.value, plateWithWellContents.value)
 
@@ -79,6 +140,11 @@ const refreshPlate = async () => {
         ...plateWithWellContents.value,
         wells: _.values(wellSpecs.value),
     }
+
+    // refresh selectedWells
+    selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
+        return _.includes(_.map(selectedWells.value, 'id'), x.id)
+    })
 }
 
 const sharedWithClause = {
@@ -137,6 +203,9 @@ const displayWithClause = Object.freeze({
     'linearization-primers': {
         ...sharedWithClause,
     },
+    'index-primers': {
+        ...sharedWithClause,
+    },
     'nucleic-acids': {
         ...sharedWithClause,
         pellet: {
@@ -148,7 +217,7 @@ const displayWithClause = Object.freeze({
             },
             with: {
                 transfectTarget: {
-                    columns: {},
+                    columns: {id: true},
                     with: {
                         experiment: {
                             columns: {},
@@ -166,13 +235,6 @@ const displayWithClause = Object.freeze({
             }
         },
     }
-})
-
-const displayWhereClause = Object.freeze({
-    'or':[
-        {'==':[{'var': 'wellContents'}, null]},
-        {'==':[{'var': 'wellContents.well.plate.id'}, route.params.id]},
-    ]
 })
 
 const sharedColumnDefs = {
@@ -228,6 +290,24 @@ const columnDefs = {
     'homology-arm-primers': {
         ...sharedColumnDefs
     },
+    'index-primers': {
+        ...sharedColumnDefs,
+        sequence: { display: false },
+        kit: {display: false},
+        name: {
+            index: 1,
+        },
+        wellContents: {
+            header: 'Location',
+            format: (x: any) => {
+                const wellContents = _.find(x.wellContents, (x) => x.well.plate.id == route.params.id)
+                return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            },
+            path: 'wellContents.displayValue',
+            type: 'string',
+            index: 2,
+        },
+    },
     'nucleic-acids': {
         ...sharedColumnDefs,
         extractionExperimentId: { display: false},
@@ -252,6 +332,34 @@ const columnDefs = {
             index: 4,
         }
     },
+    'view-plates-with-well-counts': {
+        plateType: { display: false },
+        plateTypeLabel: { header: 'Type' },
+        cycleName: { header: 'Cycle' },
+        cycleId: { display: false },
+        pcrExperimentId: { display: false},
+        sizeX: { display: false },
+        sizeY: { display: false },
+        wellsCount: { display: false },
+        wellsWithContentCount: { display: false },
+        wellsProcessedCount: {
+            header: 'Wells processed',
+            format: (data: any) => {
+                return _.includes(['preseq-1', 'preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
+            },
+            path: 'wellsProcessedCount.displayValue',
+        },
+        filled: {
+            format: (data: any) => {
+                if (data.wellsCount - data.wellsWithContentCount) {
+                    return `${data.wellsWithContentCount} / ${data.wellsCount}`
+                } else {
+                    return '-'
+                }
+            },
+            path: 'filled.displayValue',
+        },
+    }
 }
 
 const wellRangeSelected = function(wells: PlateDiagramWell[]) {
@@ -289,7 +397,17 @@ const wellSelectionCleared = function(wells: PlateDiagramWell[]) {
 }
 const layoutPreseq1 = async () => {
     if (plateWithWellContents.value) {
-        const wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
+        let wellContentsAdded
+        try {
+            wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
+        } catch (error: any) {
+            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else {
+                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            }
+            return
+        }
 
         if (!_.isEmpty(wellContentsAdded)) {
             const updatedWellIds = _.map(wellContentsAdded, 'wellId')
@@ -304,7 +422,6 @@ const layoutPreseq1 = async () => {
                 )
             }
         }
-
     }
 }
 
@@ -320,8 +437,8 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
     await refreshPlate()
 
     const contentSelectionTableIdsToRefresh = _.compact([
-        ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
-        ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsKey, 'id']) })) })),
+        ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
+        ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
     ])
     contentSelectionTableIdsToRefresh.forEach((id) => {
         contentSelectionTable.value.addOrRefreshRecordId(id)
@@ -336,15 +453,32 @@ const emptySelectedWells = async () => {
     const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
         return _.get(x, 'data.wellContents')
     })))
-    const deletedRecords = await RecordService.deleteRecords(
-        `${config.public.apiBase}/wellContents`,
-        wellContentsToDelete
-    ) as WellContent[]
+    let deletedRecords: WellContent[]
+    try {
+        deletedRecords = await RecordService.deleteRecords(
+            `${config.public.apiBase}/well-contents`,
+            wellContentsToDelete
+        )
+    } catch (error: any) {
+        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            showLoginModal()
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        }
+        return
+    }
     if (!_.isEmpty(deletedRecords)) {
         await refreshPlate()
         const deletedWellIds = _.uniq(_.map(deletedRecords, (deletedRecord) => deletedRecord.wellId))
         const updatedWells = _.values(_.pick(wellSpecs.value, deletedWellIds))
         plateDiagram.value.updateWells(updatedWells, oldValues)
+
+        if (tableName == 'view-plates-with-well-counts') {
+            const plateIds = _.uniq(_.flattenDeep(_.map(oldValues, (x) => _.map(x.data.wellContents, (wellContent) => _.uniq(_.map(wellContent.wellContentSources, 'sourceWell.plate.id'))))))
+            for (const plateId of plateIds) {
+                contentSelectionTable.value.addOrRefreshRecordId(plateId)
+            }
+        }
         toast.add({
             severity: 'info',
             summary: 'Updated well',
@@ -364,21 +498,22 @@ const rowActions = {
     assign: {
         label: '',
         action: async (data: any) => {
-            if (_.size(selectedWells.value) != 1) {
+            const selectedWellIds = _.map(selectedWells.value || [], 'id')
+            const oldValues = !_.isEmpty(selectedWellIds) ? _.values(_.pick(wellSpecs.value, selectedWellIds)) : {}
+
+            if (_.size(selectedWells.value) != 1 && !_.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType)) {
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
                     detail: 'Select a single well to add contents',
                     life: 1000,
                 })
-            } else {
-                const oldValues = selectedWells.value ? _.get(wellSpecs.value, selectedWells.value[0].id) : {}
-
+            } else if (_.size(selectedWells.value) == 1 && !_.includes(['preseq-1', 'preseq-2', 'preseq-3'], plateType)) {
                 const newRecord = await RecordService.addRecord(
-                    `${config.public.apiBase}/wellContents`,
+                    `${config.public.apiBase}/well-contents`,
                     {
                         wellId: _.get(selectedWells.value, [0, 'id']),
-                        [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsFK'])]: data.id,
+                        [_.get(PLATE_TYPE_SPECS, [plateType, 'wellContentsRelations', 0, 'foreignKey'])]: data.id,
                     }
                 )
                 if (newRecord?.wellId) {
@@ -397,6 +532,40 @@ const rowActions = {
                         detail: 'Well contents updated',
                         life: 1000,
                     })
+                }
+            } else if (_.size(selectedWells.value) > 0) {
+                let newRecords
+                try {
+                    newRecords = await assignToPlate(plateType, selectedWells.value, data, config.public.apiBase, user.value)
+                } catch (e: any) {
+                    if (e.statusCode == 401 && e.statusMessage == 'TOKEN EXPIRED') {
+                        showLoginModal()
+                    } else {
+                        toast.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: e.message || 'Error calculating plate layout',
+                            life: 3000,
+                        })
+                    }
+                    return
+                }
+                if (!_.isEmpty(newRecords)) {
+                    await refreshPlate()
+                    const updatedWells = _.values(_.pick(wellSpecs.value, selectedWellIds))
+                    if (!_.isEmpty(updatedWells)) {
+                        plateDiagram.value.updateWells(
+                            updatedWells,
+                            oldValues
+                        )
+                    }
+                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
+                    toast.add({
+                        severity: 'info',
+                        summary: 'Updated well contents',
+                        detail: 'Well contents updated',
+                        life: 1000,
+                    })
                 } else {
                     toast.add({
                         severity: 'error',
@@ -405,11 +574,18 @@ const rowActions = {
                         life: 1000,
                     })
                 }
+            } else {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Select wells to add contents',
+                    life: 1000,
+                })
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
         iconPos: 'right',
-        tooltip: 'Assign to well',
+        tooltip: 'Assign to selected wells',
         disabled: (data: any) => {
             return _.has(data, 'well.id')
         },
@@ -420,7 +596,7 @@ const rowActions = {
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
-                v-if="tableName"
+                v-if="tableName && tableWhereClause"
                 ref="contentSelectionTable"
                 :tableName="tableName"
                 schemaName="select"
@@ -429,23 +605,12 @@ const rowActions = {
                 :canEdit="false"
                 :canExport="false"
                 :withClause="_.get(displayWithClause, tableName, {})"
-                :where="displayWhereClause"
+                :where="tableWhereClause"
                 :columnDefs="_.get(columnDefs, tableName)"
-                :rowActions="rowActions"
+                :rowActions="plateType != 'seq-index' ? rowActions: {}"
                 :showColumnFilters="true"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
-                <template #header-buttons>
-                    <Button
-                        v-if="plateWithPlateDiagramWells?.plateType == 'preseq-1'"
-                        size="large"
-                        icon="pi pi-bolt"
-                        iconPos="right"
-                        severity="warn"
-                        class="flex-none"
-                        label="Auto-layout"
-                        @click="layoutPreseq1" />
-                </template>
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
@@ -463,15 +628,15 @@ const rowActions = {
                 <template #header>
                     {{ plateWithPlateDiagramWells.name }}
                 </template>
-                <template #button1>
+                <template v-if="plateWithPlateDiagramWells?.plateType == 'preseq-1'" #button1>
                     <Button
                         class="p-button-secondary"
                         icon="pi pi-star"
-                        v-tooltip="{value: 'Action on selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(selectedWells)"
-                        @click="actionOnSelectedWells" />
+                        v-tooltip="{value: 'Auto-layout', showDelay: 500}"
+                        :disabled="_.isEmpty(contentSelectionTable?.selectedRecords)"
+                        @click="layoutPreseq1" />
                 </template>
-                <template #button2>
+                <template v-if="plateWithPlateDiagramWells?.plateType != 'seq-index'" #button2>
                     <Button
                         class="p-button-secondary"
                         icon="pi pi-trash"

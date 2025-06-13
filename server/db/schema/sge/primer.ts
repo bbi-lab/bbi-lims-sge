@@ -38,6 +38,18 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
 
+export const indexPrimers = pgTable('index_primers', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    sequence: varchar('sequence', { length: 255 }).notNull(),
+    indexSequence: varchar('index_sequence', { length: 255 }).notNull(),
+    primerType: varchar('primer_type', {enum: ['P5', 'P7']}),
+    kit: varchar('kit', {enum: ['nextera', 'truseq']}),
+}, (table) => [
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
 export type AmplificationPrimer = InferSelectModel<typeof amplificationPrimers>
 export type LinearizationPrimer = InferSelectModel<typeof linearizationPrimers>
 export type HomologyArmPrimer = InferSelectModel<typeof homologyArmPrimers>
+export type IndexPrimer = InferSelectModel<typeof indexPrimers>

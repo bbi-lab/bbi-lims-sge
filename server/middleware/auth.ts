@@ -1,14 +1,17 @@
 import _ from 'lodash'
 
 export default defineEventHandler(async (event) => {
-    if (event.method == 'POST' && ['/api/users/login', '/api/users/register'].includes(event.path)) return
+    // Skip middleware for non-API routes and API routes that don't require authentication
+    if (!event.path.startsWith('/api/') ||
+        (event.method == 'POST' && ['/api/users/login', '/api/users/register'].includes(event.path))
+    ) return
 
     let session = null
     let accessToken = null
     let refreshToken = null
 
     const headers = getHeaders(event)
-    
+
     if (headers.authorization) {
         // to support standard REST API requests using access token
         if (!headers.authorization.startsWith('Bearer ')) {
@@ -29,16 +32,24 @@ export default defineEventHandler(async (event) => {
 
     if (!accessToken) {
         await clearUserSession(event)
+        throw createError({
+            statusCode: 401,
+            statusMessage: 'UNAUTHORIZED'
+        })
     } else {
         try {
             verifyToken(accessToken)
         } catch (err: any) {
             // if expired, attempt token refresh and update user session
-            if (session && err.statusCode == '401' && err.message == 'TOKEN EXPIRED' && refreshToken) {
+            if (session && err.statusCode == 401 && err.message == 'TOKEN EXPIRED' && refreshToken) {
                 const result = refreshTokens(refreshToken)
                 if (!result.authenticated) {
                     // clear session if refresh token is invalid or expired
                     await clearUserSession(event)
+                    throw createError({
+                        statusCode: 401,
+                        statusMessage: 'TOKEN EXPIRED',
+                    })
                 } else if (session) {
                     // add new access and refresh tokens to the session
                     await setUserSession(event, {...session, secure: result})

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '@/composables/lib/plate-diagram'
+import { makePlateDiagram, type PlateDiagram, type PlateDiagramWell } from '~/lib/plate-diagram'
 import _ from 'lodash'
 import PhSelectionSlash from '~icons/ph/selection-slash'
 import PhSelectionAllFill from '~icons/ph/selection-all-fill'
 import type { Plate, PlateType } from '~/server/db/schema/sge/plate'
+import MdiRotateRightVariant from '~icons/mdi/rotate-right-variant'
+import MdiRotateLeftVariant from '~icons/mdi/rotate-left-variant'
 
 export type PlateWithPlateDiagramWells = Plate & {
     wells: PlateDiagramWell[]
@@ -108,7 +110,13 @@ defineExpose({
                         <PhSelectionSlash />
                     </template>
                 </Button>
-                <Button icon="pi pi-refresh" v-tooltip="{value: 'Rotate', showDelay: 500}" @click="rotated = !rotated" severity="secondary" />
+                <Button v-tooltip="{value: 'Rotate', showDelay: 500}" @click="rotated = !rotated" severity="secondary">
+                    <template #icon>
+                        <span class="pi pi-fw p-button-icon inline-block">
+                            <component :is="rotated ? MdiRotateLeftVariant : MdiRotateRightVariant" />
+                        </span>
+                    </template>
+                </Button>
                 <slot name="button1" />
                 <slot name="button2" />
                 <slot name="button3" />

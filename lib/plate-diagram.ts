@@ -27,8 +27,8 @@ export function getWellTextColor(hex: string): string {
 }
 
 export const VALID_WELL_COLORS = [
-    "#F0A3FF",
     "#0075DC",
+    "#F0A3FF",
     "#993F00",
     "#4C005C",
     "#005C31",
@@ -276,7 +276,7 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
                     .domain([1,100])
 
                 // create a tooltip
-                const tooltip = d3.select(_container)
+                const tooltip = d3.select("body")
                     .append("div")
                     .style("opacity", 0)
                     .attr("class", "tooltip")
@@ -287,6 +287,7 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
                     .style("border", "solid")
                     .style("border-width", "2px")
                     .style("border-radius", "5px")
+                    .style("z-index", "10")
                     .style("border-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
                     .style("padding", "5px")
 

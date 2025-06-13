@@ -1,47 +1,10 @@
-<script setup>
-import _ from 'lodash';
-import { userGroupMemberships } from '~/server/db/schema/user';
+<script setup lang="ts">
+import _ from 'lodash'
 
-const config = useRuntimeConfig()
-
-const showAddForm = ref(false)
-const showEditForm = ref(false)
-const editingRecordId = ref(null)
-const usersTable = ref()
+const crudTable = useCrudTable()
 
 const editWithClause = Object.freeze({userGroupMemberships:true})
 const displayWithClause = Object.freeze({userGroupMemberships:{columns: {}, with: {userGroup: {columns: {name: true}}}}})
-
-function didClickRecordEdit(event) {
-    editingRecordId.value = event.id
-    showEditForm.value = true
-    showAddForm.value = false
-}
-
-function didClickRecordAdd() {
-    showAddForm.value = true
-    showEditForm.value = false
-}
-function didClickCancelAddForm() {
-    showAddForm.value = false
-}
-function didClickCancelEditForm() {
-    editingRecordId.value = null
-    showEditForm.value = false
-}
-
-function didAddRecord(event) {
-    usersTable.value.addOrRefreshRecordId(event.id)
-    showAddForm.value = false
-}
-function didUpdateRecord(event) {
-    usersTable.value.addOrRefreshRecordId(event.id)
-    showEditForm.value = false
-}
-function didDeleteRecord(event) {
-    usersTable.value.removeRecordId(event.id)
-    showEditForm.value = false
-}
 
 const columnDefs = {
     name: {header: 'Name'},
@@ -50,7 +13,7 @@ const columnDefs = {
     isVerified: {header: 'Verified'},
     userGroupMemberships: {
         header: 'Groups',
-        format: ({userGroupMemberships}) => {  return _.map(userGroupMemberships, (x) => x.userGroup?.name)},
+        format: (x: any) => _.map(x.userGroupMemberships, 'userGroup.name'),
         path: 'userGroupMemberships.displayValue',
     },
 }
@@ -59,7 +22,7 @@ const columnDefs = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="usersTable"
+                :ref="crudTable.setTableRef"
                 tableName="users"
                 schemaName="select-user-schema"
                 title="Users"
@@ -67,31 +30,29 @@ const columnDefs = {
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :canDelete="false"
-                @clickedRecordEdit="didClickRecordEdit"
-                @clickedRecordAdd="didClickRecordAdd"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
         </SplitterPanel>
-         <SplitterPanel v-if="showAddForm || showEditForm">
+         <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
-                v-if="showAddForm"
+                v-if="crudTable.state.showAddForm"
                 tableName="users"
                 schemaName="insert-user-schema"
-                @cancel="didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @cancel="crudTable.didClickCancelAddForm"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
-                v-if="showEditForm"
+                v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :withClause="editWithClause"
-                :recordId="editingRecordId"
+                :recordId="crudTable.state.editingRecordId"
                 tableName="users"
                 schemaName="admin-update-user-schema"
                 :canDelete="true"
-                @cancel="didClickCancelEditForm"
-                @recordUpdate="didUpdateRecord"
-                @recordDelete="didDeleteRecord"
+                @cancel="crudTable.didClickCancelEditForm"
+                @recordUpdate="crudTable.didUpdateRecord"
+                @recordDelete="crudTable.didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>
-    
-    
 </template>
