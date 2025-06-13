@@ -124,24 +124,25 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFormat: (x:any) => `${x.gene.symbol}: ${x.name}`,
             searchWithClause: {gene: {columns: {symbol:true}}},
-        }
+        },
+        events: {
+            change: async (record: any) => {
+                if (record && record.regionId && _.isEmpty(record.name)) {
+                    const region = await RecordService.getRecord(`${config.public.apiBase}/regions`, record.regionId as string, {
+                        gene: {
+                            columns: {symbol: true}
+                        }
+                    })
+                    record.name = `${region.gene.symbol}_${_.replace(region.name, /exon[\s]+/gi , 'X')}`
+                }
+            }
+        },
     },
     projectId: {
         label: 'Project',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/projects`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        }
-    },
-    cycleId: {
-        label: 'Cycle',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/cycles`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
