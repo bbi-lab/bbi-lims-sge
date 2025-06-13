@@ -4,6 +4,7 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,17 +12,30 @@ const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 
 const tableTitle = ref<string>('Pellets')
-const queryParams = route.query
+const whereClauses = ref()
+const tableKey = ref()
 
-onMounted(async() => {
-    if (_.has(queryParams, ['transfectTarget.experiment.id'])) {
-        const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, _.get(queryParams, ['transfectTarget.experiment.id']) as string, {cycle: {columns: {name: true}}})
-        tableTitle.value = `${tranfectExperiment.cycle.name}: pellets`
-    } else if (_.has(queryParams, ['extractionExperimentId'])) {
-        const extractionExperiment = await RecordService.getRecord(`${config.public.apiBase}/extraction-experiments`, _.get(queryParams, ['extractionExperimentId']) as string, {})
-        tableTitle.value = `${extractionExperiment.name}: pellets`
+watch(() => route.query, async (newValue, oldValue) => {
+    const transfectTargetId = _.get(newValue, ['transfectTarget.target.id'])
+    const transfectionExperimentId = _.get(newValue, ['transfectTarget.experiment.id'])
+
+    if (transfectTargetId || transfectionExperimentId) {
+        if (transfectionExperimentId) {
+            const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, transfectionExperimentId as string, {cycle: {columns: {name: true}}})
+            tableTitle.value = `${tranfectExperiment.cycle.name}: pellets`
+        } else if (transfectTargetId) {
+            const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, transfectTargetId as string, {})
+            tableTitle.value = `${target.name}: pellets`
+        }
+        whereClauses.value = _.map(Object.entries(newValue), (x) => {
+            return {"==": [{"var": x[0]}, x[1]] }
+        })
+    } else {
+        tableTitle.value = 'Pellets'
+        whereClauses.value = null
     }
-})
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const displayWithClause = Object.freeze({
     harvestedBy: {
@@ -34,6 +48,7 @@ const displayWithClause = Object.freeze({
         with: {
             target: {
                 columns: {
+                    id: true,
                     name: true
                 },
                 with: {
@@ -165,7 +180,8 @@ const fieldDefs: FieldDefinitions = {
             searchWithClause: {
                 target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
             },
-        }
+        },
+        readOnly: true,
     },
     extractionExperimentId: {
         label: 'Extraction experiment',
@@ -186,16 +202,12 @@ const fieldDefs: FieldDefinitions = {
     },
 }
 
-// convert query params in to JSON Logic to pass as where clause
-// TODO - pass more than just the first to QuickTable
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="pellets"
                 :title="tableTitle"
@@ -203,7 +215,7 @@ const readonlyValues = queryParams
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :withClause="displayWithClause"
-                :where="whereClauses[0]"
+                :where="whereClauses?.[0]"
                 :canAdd="false"
                 :canEditMultiple="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
@@ -218,7 +230,6 @@ const readonlyValues = queryParams
                 v-if="crudTable.state.showAddForm"
                 tableName="pellets"
                 schemaName="insert"
-                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -228,7 +239,6 @@ const readonlyValues = queryParams
                 :recordId="crudTable.state.editingRecordId"
                 tableName="pellets"
                 schemaName="update"
-                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"

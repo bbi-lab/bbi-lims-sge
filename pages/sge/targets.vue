@@ -29,6 +29,11 @@ const displayWithClause = Object.freeze({
             }
         }
     },
+    transfectTargets: {
+        with: {
+            pellets: true
+        }
+    },
 })
 
 const rowActions = {
@@ -42,9 +47,9 @@ const rowActions = {
         tooltip: 'Plasmids',
     },
     pellets: {
-        label: (data: any) => { return `${data.pellets?.length || 0}`},
+        label: (data: any) => { return `${_.sumBy(data.transfectTargets, (x: any) => x.pellets.length)}`},
         action: (data: any) => {
-            router.push({path:'/sge/pellets', query: {'targetId': data.id}})
+            router.push({path:'/sge/pellets', query: {'transfectTarget.target.id': data.id}})
         },
         iconComponent: DotsTriangle,
         iconPos: 'right',
@@ -98,18 +103,11 @@ const columnDefs: ColumnDefinitions = {
         path: 'project.name',
         index: 4,
     },
-    cycleId: {
-        display: false
-    },
-    cycle: {
-        path: 'cycle.name',
-        index: 5,
-    },
     fixedEdits: {
         format: (x) => _.isArray(x.fixedEdits) ? x.fixedEdits.join(', ') : '',
         path: 'fixedEdits.displayValue',
         type: 'string',
-        index: 6,
+        index: 5,
     },
     transfectTargets: {
         display: false,
