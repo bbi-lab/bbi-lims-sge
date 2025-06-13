@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 
@@ -22,6 +22,7 @@ const props = defineProps({
   inputId: {type: String},
   placeholderValue: {type: String},
   inputClass: {type: String},
+  disabled: {type: Boolean, default: false},
 })
 
 const modelValue = defineModel()
@@ -37,7 +38,7 @@ const emit = defineEmits([
 
 onMounted(async () => {
     if (modelValue.value) {
-        const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value)
+        const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value as string, {})
         parentValue.value = _.get(record, props.parentKeyField)
     }
 })
@@ -52,13 +53,13 @@ watch(parentValue, (newValue, oldValue) => {
     }
 })
 
-const parentValueChanged = (event) => {
+const parentValueChanged = (event: any) => {
     if (autoCompleter.value) {
         autoCompleter.value.clearValue()
         emit('clearedValue')
     }
 }
-const clearValues = (event) => {
+const clearValues = (event: any) => {
     if (autoCompleter.value && parentAutoCompleter.value) {
         autoCompleter.value.clearValue()
         parentAutoCompleter.value.clearValue()
@@ -82,6 +83,7 @@ defineExpose({
                 :valueField="parentValueField"
                 :displayFields="parentDisplayFields"
                 :searchWithClause="parentSearchWithClause"
+                :disabled="disabled"
                 :dropdown="true"
                 :hideClearButton="true"
                 @changedValue="parentValueChanged"
@@ -99,12 +101,12 @@ defineExpose({
                 :searchWithClause="searchWithClause"
                 :searchWhereClause="searchWhereClauseFinal"
                 :dropdown="true"
-                :disabled="_.isEmpty(parentValue)"
+                :disabled="_.isEmpty(parentValue) || disabled"
                 :hideClearButton="true"
                 :placeholderValue="placeholderValue"
                 :inputClass="inputClass"
             />
-            <Button v-if="!_.isEmpty(parentValue) && !hideClearButton" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
+            <Button v-if="!_.isEmpty(parentValue) && !hideClearButton && !disabled" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="clearValues" />
         </div>
     </div>
 </template>
