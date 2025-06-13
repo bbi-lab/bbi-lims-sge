@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 const router = useRouter()
 const route = useRoute()
 const crudTable = useCrudTable()
+const config = useRuntimeConfig()
 
 const tableKey = ref<string>(uuidv4())
 const whereClauses = ref()
@@ -54,7 +55,8 @@ const columnDefs = {
         path: 'wellsProcessed.displayValue',
     },
     discarded: { index: 5 },
-    processed: { header: 'Plate processed', index: 6 }
+    processed: { header: 'Plate processed', index: 6 },
+    sequencingRunName: { header: 'Sequencing run', index: 7 },
 }
 const rowActions = {
     layout: {
@@ -96,11 +98,21 @@ const fieldDefs = {
             }
         },
     },
+    sequencingRunId: {
+        label: 'Sequencing run',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/sequencing-runs`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        display: (x: any) => {
+            return x.plateType == 'preseq-3'
+        },
+    }
 }
-
-// const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-// const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">

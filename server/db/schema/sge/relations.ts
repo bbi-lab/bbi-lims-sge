@@ -19,6 +19,7 @@ import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
+import { sequencingRuns } from './sequencing-run'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -168,6 +169,11 @@ const platesRelationsConfig: RelationsConfig = {
             fields: [plates.pcrExperimentId],
             referenceTable: pcrExperiments,
             references: [pcrExperiments.id],
+        },
+        sequencingRun: {
+            fields: [plates.sequencingRunId],
+            referenceTable: sequencingRuns,
+            references: [sequencingRuns.id],
         }
     },
     many: {
