@@ -18,6 +18,7 @@ import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
+import { sequencingRuns } from './sequencing-run'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -114,9 +115,9 @@ const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
 const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
 const updateWellContentSourcesSchema = insertWellContentSourcesSchema
 
-// const selectWellSourcesSchema = createSelectSchema(wellSources)
-// const insertWellSourcesSchema = selectWellSourcesSchema.omit({id: true}).partial()
-// const updateWellSourcesSchema = insertWellSourcesSchema
+const selectSequencingRunsSchema = createSelectSchema(sequencingRuns, {createdOn: nullableDateSchema, startedOn: nullableDateSchema, endedOn: nullableDateSchema})
+const insertSequencingRunsSchema = selectSequencingRunsSchema.omit({id: true}).partial()
+const updateSequencingRunsSchema = insertSequencingRunsSchema
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -228,11 +229,11 @@ export const schemas = {
         insert: insertWellContentSourcesSchema,
         update: updateWellContentSourcesSchema,
     },
-    // wellSources: {
-    //     select: selectWellSourcesSchema,
-    //     insert: insertWellSourcesSchema,
-    //     update: updateWellSourcesSchema,
-    // },
+    sequencingRuns: {
+        select: selectSequencingRunsSchema,
+        insert: insertSequencingRunsSchema,
+        update: updateSequencingRunsSchema,
+    },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,

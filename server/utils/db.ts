@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import pg from 'pg'
 
 import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
-import {users, userGroups, userGroupMemberships} from '../db/schema/user';
+import {users, userGroups, userGroupMemberships} from '../db/schema/user'
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
 import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
@@ -25,6 +25,7 @@ import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
+import { sequencingRuns } from '../db/schema/sge/sequencing-run'
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -59,6 +60,7 @@ export const schema = {
   linearizationPrimers,
   homologyArmPrimers,
   indexPrimers,
+  sequencingRuns,
 
   //views
   viewPlatesWithWellCounts,
