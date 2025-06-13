@@ -209,6 +209,11 @@ const targetsRelationsConfig: RelationsConfig = {
             table: transfectTargets,
             schema: createSelectSchema(transfectTargets),
             fields: [transfectTargets.targetId],
+        },
+        plasmids: {
+            table: plasmids,
+            schema: createSelectSchema(plasmids),
+            fields: [plasmids.targetId],
         }
     }
 }
