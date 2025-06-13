@@ -9,6 +9,7 @@ import DnaIcon from '~icons/mdi/dna'
 import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
+import FluentRun16Filled from '~icons/fluent/run-16-filled'
 
 const model = ref([
     {
@@ -44,7 +45,8 @@ const model = ref([
                     { label: 'Homology Arm', to: '/sge/homology-arm-primers' },
                     { label: 'Index', to: '/sge/index-primers' },
                 ]
-            }
+            },
+            { label: 'Sequencing runs', iconComponent: FluentRun16Filled, to: '/sge/sequencing-runs' },
         ]
     },
     {
