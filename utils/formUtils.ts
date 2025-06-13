@@ -87,14 +87,14 @@ export const addErrorsToForm = (formElement: HTMLElement, formErrors: Array<{pat
         if (element.tagName == 'INPUT') {
             inputElement = element
         } else {
-            inputElement = element.querySelector('input')
+            inputElement = element.querySelector('input') || element
         }
 
         if (inputElement) {
             inputElement.classList.add('lims-validation-error-input', '!border-red-500')
             const errorMsg = document.createElement('div')
             errorMsg.setAttribute('class', 'lims-validation-error text-red-500')
-            errorMsg.textContent = e.message
+            errorMsg.textContent = _.startsWith(e.message, 'Expected ') && _.endsWith(e.message, ', received null') ? 'Required' : e.message
 
             if (element.parentElement?.classList.contains('quickform-input-wrapper')) {
                 element.parentElement?.after(errorMsg)
