@@ -2,12 +2,24 @@
 import _ from 'lodash'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import type { PlateType } from '~/server/db/schema/sge/plate'
+import { v4 as uuidv4 } from 'uuid'
 
 const router = useRouter()
 const route = useRoute()
 const crudTable = useCrudTable()
 
-const queryParams = route.query
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const columnDefs = {
     name: { index: 0},
@@ -86,14 +98,15 @@ const fieldDefs = {
     },
 }
 
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
+// const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+// const readonlyValues = queryParams
 
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="view-plates-with-well-counts"
                 schemaName="select"

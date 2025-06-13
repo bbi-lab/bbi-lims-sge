@@ -7,25 +7,37 @@ import  {
 } from '~/shared/sge/target'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { v4 as uuidv4 } from 'uuid'
 
 const router = useRouter()
 const route = useRoute()
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
-const queryParams = route.query
-const tableTitle = ref<string>()
 const addRecordValues = ref()
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
+
 
 const displayWithClause = Object.freeze({
     project:{
-        columns: {name: true}
+        columns: {id: true, name: true}
     },
     region:{
-        columns: {name: true},
+        columns: {id: true, name: true},
         with: {
             gene: {
-                columns: {symbol: true, ncbiAccession: true, chromosome: true}
+                columns: {id: true, symbol: true, ncbiAccession: true, chromosome: true}
             }
         }
     },
@@ -33,6 +45,9 @@ const displayWithClause = Object.freeze({
         with: {
             pellets: true
         }
+    },
+    plasmids: {
+        columns: {id: true}
     },
 })
 
@@ -158,32 +173,18 @@ const fieldDefs: FieldDefinitions = {
         display: false,
     },
 }
-
-onMounted(async() => {
-    if (queryParams.projectId) {
-        const project = await RecordService.getRecord(`${config.public.apiBase}/projects`, queryParams.projectId as string, {})
-        tableTitle.value = `${project.name}: targets`
-    } else {
-        tableTitle.value = `All Targets`
-    }
-})
-
-// convert query params in to JSON Logic to pass as where clause
-// TODO - pass more than just the first to QuickTable
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="targets"
                 schemaName="select"
-                :title="tableTitle"
+                title="Targets"
                 :rowActions="rowActions"
-                :where="whereClauses[0]"
+                :where="whereClauses"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :rowsPerPageOptions="[10, 25, 50, 100]"

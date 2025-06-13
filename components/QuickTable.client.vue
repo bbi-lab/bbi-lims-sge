@@ -16,9 +16,14 @@ const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tabl
 const exportFilename = computed(() => `${props.tableName}_${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3)}`)
 
 const route = useRoute()
+const router = useRouter()
 const localStorageKey = `settings::${route.path}`
 const dtKey = ref(uuidv4())
 const dtId = useId()
+
+const clearRouteQueryParams = () => {
+    router.push({ path: route.path })
+}
 
 const refreshFormattedValues = (ids?: string[]) => {
     const formattedColumnDefs = _.pickBy(props.columnDefs, (x) => _.isFunction(x.format))
@@ -448,7 +453,15 @@ function filteringComplete() {
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
-                <h4 class="m-0">{{ props.title }}</h4>
+                <span v-if="props.title">
+                    <span class="text-2xl font-bold m-0">{{ !_.isEmpty(props.where) ? `${props.title} (filtered)` : props.title }}</span>
+                    <Button v-if="!_.isEmpty(props.where) && !_.isEmpty(route.query)"
+                        text
+                        icon="pi pi-filter-slash"
+                        severity="info"
+                        @click="clearRouteQueryParams"
+                        v-tooltip="{value: 'Clear filters'}" />
+                </span>
                 <Toolbar class="border-0">
                     <template #start>
                         <span class="mr-5">{{ selectionCount }}</span>

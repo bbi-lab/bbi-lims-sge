@@ -4,12 +4,23 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
 
-const queryParams = route.query
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const displayWithClause = Object.freeze({
     extractionExperiment: {
@@ -144,14 +155,15 @@ const fieldDefs: FieldDefinitions = {
         label: 'RNA yield (μg)',
     },
 }
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
+// const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
+// const readonlyValues = queryParams
 
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="nucleic-acids"
                 schemaName="select"

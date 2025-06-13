@@ -12,24 +12,16 @@ const config = useRuntimeConfig()
 const router = useRouter()
 const crudTable = useCrudTable()
 const route = useRoute()
-const queryParams = route.query
-const tableTitle = ref<string>('Transfection experiments')
 const whereClauses = ref()
 const readonlyValues = ref({})
 const tableKey = ref()
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const cycleId = newValue.cycleId
-    if (cycleId) {
-        const cycle = await RecordService.getRecord(`${config.public.apiBase}/cycles`, cycleId as string, {})
-        tableTitle.value = `${cycle.name}: Transfection experiments`
-        whereClauses.value = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-        readonlyValues.value = queryParams
-    } else {
-        tableTitle.value = 'Transfection experiments'
-        whereClauses.value = null
-        readonlyValues.value = {}
-    }
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -283,7 +275,7 @@ const fieldDefs: FieldDefinitions = {
                 :ref="crudTable.setTableRef"
                 tableName="transfect-experiments"
                 schemaName="select"
-                :title="tableTitle"
+                title="Transfection experiments"
                 :rowActions="rowActions"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"

@@ -1,39 +1,25 @@
 <script setup lang="ts">
-import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
+import { read } from 'xlsx'
 
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
-
-const tableTitle = ref<string>('Pellets')
 const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
 const tableKey = ref()
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const transfectTargetId = _.get(newValue, ['transfectTarget.target.id'])
-    const transfectionExperimentId = _.get(newValue, ['transfectTarget.experiment.id'])
-
-    if (transfectTargetId || transfectionExperimentId) {
-        if (transfectionExperimentId) {
-            const tranfectExperiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, transfectionExperimentId as string, {cycle: {columns: {name: true}}})
-            tableTitle.value = `${tranfectExperiment.cycle.name}: pellets`
-        } else if (transfectTargetId) {
-            const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, transfectTargetId as string, {})
-            tableTitle.value = `${target.name}: pellets`
-        }
-        whereClauses.value = _.map(Object.entries(newValue), (x) => {
-            return {"==": [{"var": x[0]}, x[1]] }
-        })
-    } else {
-        tableTitle.value = 'Pellets'
-        whereClauses.value = null
-    }
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -70,6 +56,13 @@ const displayWithClause = Object.freeze({
                 columns: {
                     id: true,
                     name: true
+                },
+                with: {
+                    cycle: {
+                        columns: {
+                            name: true
+                        }
+                    }
                 },
             }
         }
@@ -124,7 +117,7 @@ const columnDefs: ColumnDefinitions = {
         },
     },
     transfectionExperiment: {
-        path: 'transfectTarget.experiment.name',
+        path: 'transfectTarget.experiment.cycle.name',
         index: 4,
     },
     wellContents: {
@@ -210,7 +203,7 @@ const fieldDefs: FieldDefinitions = {
                 :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="pellets"
-                :title="tableTitle"
+                title="Pellets"
                 schemaName="select"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"

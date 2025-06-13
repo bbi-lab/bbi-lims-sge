@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { v4 as uuidv4 } from 'uuid'
+
 const router = useRouter()
 const crudTable = useCrudTable()
 
 const route = useRoute()
-const queryParams = route.query
 const config = useRuntimeConfig()
-const tableTitle = ref<string>()
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+const tableKey = ref<string>(uuidv4())
 
-onMounted(async() => {
-    if (queryParams.targetId) {
-        const target = await RecordService.getRecord(`${config.public.apiBase}/targets`, queryParams.targetId as string, {})
-        tableTitle.value = `${target.name}: regions`
-    } else {
-        tableTitle.value = `All Regions`
-    }
-})
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const displayWithClause = Object.freeze({
     gene:{
-        columns: {symbol: true, ncbiAccession: true}
+        columns: {id: true, symbol: true, ncbiAccession: true}
     },
     targets: {
         columns: {id: true}
@@ -79,22 +81,17 @@ const fieldDefs: FieldDefinitions = {
         display: false,
     },
 }
-
-// convert query params in to JSON Logic to pass as where clause
-// TODO - pass more than just the first to QuickTable
-const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="regions"
                 schemaName="select"
-                :title="tableTitle"
-                :where="whereClauses[0]"
+                title="Regions"
+                :where="whereClauses"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"

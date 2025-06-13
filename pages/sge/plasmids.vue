@@ -1,9 +1,25 @@
 
 <script setup lang="ts">
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { v4 as uuidv4 } from 'uuid'
+import _ from 'lodash'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
+const route = useRoute()
+
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const columnDefs = {
     plasmidType: {
@@ -86,6 +102,7 @@ const displayWithClause = {
                 title="Plasmids"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
+                :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
@@ -100,6 +117,7 @@ const displayWithClause = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :withClause="{plasmidExperiment: true}"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -110,6 +128,7 @@ const displayWithClause = {
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :withClause="{plasmidExperiment: true}"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
@@ -120,6 +139,7 @@ const displayWithClause = {
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"
             />
