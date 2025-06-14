@@ -140,7 +140,7 @@ const visibleColumns = ref()
 interface ColumnDefinition {
     header?: string,
     index?: number,
-    format?: string | ((data: any) => string),
+    format?: string | ((data: any) => string | string[]),
     path?: string,
     type?: string,
     display?: boolean,

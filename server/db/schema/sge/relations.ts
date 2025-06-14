@@ -174,7 +174,7 @@ const platesRelationsConfig: RelationsConfig = {
             fields: [plates.sequencingRunId],
             referenceTable: sequencingRuns,
             references: [sequencingRuns.id],
-        }
+        },
     },
     many: {
         wells: {
@@ -185,6 +185,17 @@ const platesRelationsConfig: RelationsConfig = {
     }
 }
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
+
+const sequencingRunsRelationsConfig: RelationsConfig = {
+    many: {
+        plates: {
+            table: plates,
+            schema: createSelectSchema(plates),
+            fields: [plates.sequencingRunId],
+        }
+    }
+}
+export const sequencingRunsRelations = relationsConfigToRelations(sequencingRuns, sequencingRunsRelationsConfig)
 
 const projectsRelationsConfig: RelationsConfig = {
     many: {
@@ -529,4 +540,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
+    sequencingRuns: sequencingRunsRelationsConfig,
 }

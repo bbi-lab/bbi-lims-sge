@@ -94,6 +94,7 @@ export const schema = {
   linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
   indexPrimersRelations: sgeRelations.indexPrimersRelations,
+  sequencingRunsRelations: sgeRelations.sequencingRunsRelations,
 }
 
 const ssl = config?.ssl != null ? config.ssl

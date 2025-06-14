@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import _ from 'lodash'
 
 const router = useRouter()
 const crudTable = useCrudTable()
@@ -16,6 +17,10 @@ const columnDefs: ColumnDefinitions = {
     endedOn: {
         format: 'date-time'
     },
+    plates: {
+        format: (x: any) => _.map(x.plates, 'name'),
+        path: 'plates.displayValue',
+    }
 }
 </script>
 <template>
@@ -28,6 +33,7 @@ const columnDefs: ColumnDefinitions = {
                 title="Sequencing runs"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
+                :withClause="{'plates': true}"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
