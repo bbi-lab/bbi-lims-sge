@@ -4,8 +4,8 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import _ from 'lodash'
 
-const router = useRouter()
 const crudTable = useCrudTable()
+const config = useRuntimeConfig()
 
 const columnDefs: ColumnDefinitions = {
     startedOn: {
@@ -20,6 +20,31 @@ const columnDefs: ColumnDefinitions = {
     plates: {
         format: (x: any) => _.map(x.plates, 'name'),
         path: 'plates.displayValue',
+    }
+}
+const fieldDefs: FieldDefinitions = {
+  'plates.*': {
+        label: 'Plates',
+        component: 'ManyToMany',
+        canDelete: false,
+        canUpdate: false,
+        props: {
+            components: [
+                {
+                    variableField: 'id',
+                    label: 'Plate',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/plates`,
+                        searchFields: ['name'],
+                        searchWhereClause: { 'and': [{'==': [{'var': 'sequencingRunId'}, null]}, {'==': [{'var': 'plateType'}, 'preseq-3']}] },
+                        valueField: 'id',
+                        inputClass: 'w-64',
+                        dropdown: true,
+                    },
+                },
+            ]
+        }
     }
 }
 </script>
@@ -45,6 +70,7 @@ const columnDefs: ColumnDefinitions = {
                 v-if="crudTable.state.showAddForm"
                 tableName="sequencing-runs"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 :values="{status: 'pending', createdOn: new Date()}"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -54,6 +80,8 @@ const columnDefs: ColumnDefinitions = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="sequencing-runs"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
+                :withClause="{'plates': true}"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
