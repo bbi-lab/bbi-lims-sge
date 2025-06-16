@@ -231,7 +231,6 @@ const fieldDefs: FieldDefinitions = {
         canDelete: false,
         canUpdate: false,
         props: {
-            fixedValueField: 'experimentId',
             components: [
                 {
                     variableField: 'targetId',

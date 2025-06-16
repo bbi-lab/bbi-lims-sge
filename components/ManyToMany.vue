@@ -2,7 +2,6 @@
 import _ from 'lodash'
 
 const props = defineProps({
-    fixedValueField: String,
     components: Array as PropType<{ variableField: string, inputClass: string, label: string, component: string, componentProps: any }[]>,
     disabled: Boolean,
     canDelete: Boolean,
