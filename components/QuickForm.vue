@@ -364,8 +364,8 @@ function isReadOnly(key: string) {
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
                     <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]">
-                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
-                            <ManyToMany
+                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
+                            <InputArray
                                 v-model="record[key][arrayIndex]"
                                 v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
                                 :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"

@@ -227,7 +227,7 @@ const fieldDefs: FieldDefinitions = {
     },
     'transfectTargets.*': {
         label: 'Targets',
-        component: 'ManyToMany',
+        component: 'InputArray',
         canDelete: false,
         canUpdate: false,
         props: {

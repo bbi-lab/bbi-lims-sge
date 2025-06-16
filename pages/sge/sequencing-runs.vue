@@ -25,7 +25,7 @@ const columnDefs: ColumnDefinitions = {
 const fieldDefs: FieldDefinitions = {
   'plates.*': {
         label: 'Plates',
-        component: 'ManyToMany',
+        component: 'InputArray',
         canDelete: false,
         canUpdate: false,
         props: {

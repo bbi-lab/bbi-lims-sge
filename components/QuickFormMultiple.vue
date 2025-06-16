@@ -468,8 +468,8 @@ function getLabel(key: string) {
 
                     <!-- Iterate over array items -->
                     <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
-                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
-                            <ManyToMany
+                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
+                            <InputArray
                                 v-model="combinedRecord[key].val[arrayIndex]"
                                 v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
                                 :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
