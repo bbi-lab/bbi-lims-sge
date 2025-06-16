@@ -18,7 +18,18 @@ const columnDefs: ColumnDefinitions = {
         format: 'date-time'
     },
     plates: {
-        format: (x: any) => _.map(x.plates, 'name'),
+        type: 'element',
+        element: (x: any) => {
+            const plates =  _.map(x.plates, 'name').join(', ')
+            const href = !_.isEmpty(plates) ? `/sge/plates?sequencingRunName=${x.name}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${plates}</a>` : ''
+        },
+        elementSearchText: (x: any) => {
+            return _.map(x.plates, 'name').join(', ')
+        },
+        exportValue: (x: any) => {
+            return _.map(x.plates, 'name').join(', ')
+        },
         path: 'plates.displayValue',
     }
 }
