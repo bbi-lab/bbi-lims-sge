@@ -6,6 +6,7 @@ import _ from 'lodash'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
+const router = useRouter()
 
 const columnDefs: ColumnDefinitions = {
     startedOn: {
@@ -58,6 +59,17 @@ const fieldDefs: FieldDefinitions = {
         }
     }
 }
+const rowActions = {
+    contents: {
+        label: '',
+        action: (data: any) => {
+            router.push({path:`/sge/sequencing-run/${data.id}/contents`})
+        },
+        icon: 'pi pi-fw pi-list',
+        iconPos: 'right',
+        tooltip: 'View contents',
+    }
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -71,6 +83,7 @@ const fieldDefs: FieldDefinitions = {
                 :canEditMultiple="true"
                 :withClause="{'plates': true}"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
+                :rowActions="rowActions"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
