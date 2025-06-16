@@ -505,6 +505,13 @@
       "when": 1749858342859,
       "tag": "0071_wild_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1750113600778,
+      "tag": "0072_keen_silver_sable",
+      "breakpoints": true
     }
   ]
 }

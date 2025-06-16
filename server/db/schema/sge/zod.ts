@@ -19,6 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns } from './sequencing-run'
+import { viewSequencingRunWellContents } from './views'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -157,6 +158,7 @@ const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
+const selectViewSequencingRunWellContentsSchema = createSelectSchema(viewSequencingRunWellContents)
 
 export const schemas = {
     // tables
@@ -293,5 +295,8 @@ export const schemas = {
     // views
     viewPlatesWithWellCounts: {
         select: selectViewPlatesWithWellCountsSchema,
+    },
+    viewSequencingRunWellContents: {
+        select: selectViewSequencingRunWellContentsSchema
     },
 }

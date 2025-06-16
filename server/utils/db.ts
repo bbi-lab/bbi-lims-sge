@@ -26,6 +26,7 @@ import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
 import { sequencingRuns } from '../db/schema/sge/sequencing-run'
+import { viewSequencingRunWellContents } from '../db/schema/sge/views'
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -64,6 +65,7 @@ export const schema = {
 
   //views
   viewPlatesWithWellCounts,
+  viewSequencingRunWellContents,
 
   // relations
   usersRelations,
