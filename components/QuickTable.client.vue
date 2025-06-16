@@ -453,7 +453,7 @@ function filteringComplete() {
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
-                <span v-if="props.title">
+                <span v-if="props.title && !$slots.title">
                     <span class="text-2xl font-bold m-0">{{ !_.isEmpty(props.where) ? `${props.title} (filtered)` : props.title }}</span>
                     <Button v-if="!_.isEmpty(props.where) && !_.isEmpty(route.query)"
                         text
@@ -461,6 +461,9 @@ function filteringComplete() {
                         severity="info"
                         @click="clearRouteQueryParams"
                         v-tooltip="{value: 'Clear filters'}" />
+                </span>
+                <span v-if="$slots.title">
+                    <slot name="title" />
                 </span>
                 <Toolbar class="border-0">
                     <template #start>
