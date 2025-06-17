@@ -25,11 +25,13 @@ const invalidRecords = computed(() => {
         }
         if (_.isEmpty(x.indexPrimerIds)) {
             messages.push('Missing index primers')
+        } else if (_.size(x.indexPrimerIds) > 2) {
+            messages.push('Too many index primers in well')
         }
         if (_.isEmpty(x.nucleicAcidIds)) {
             messages.push('Missing nucleic acid')
         } else if (_.size(x.nucleicAcidIds) > 1) {
-            messages.push('Too many nucleic acids')
+            messages.push('Too many nucleic acids in well')
         }
 
         if (_.isEmpty(messages)) {
