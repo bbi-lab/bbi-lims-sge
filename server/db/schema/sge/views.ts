@@ -28,8 +28,8 @@ export const viewSequencingRunWellContents = pgView('view_sequencing_run_well_co
     ${plates.name} as plate_name,
     ${sequencingRuns.id} AS sequencing_run_id,
     ${sequencingRuns.name} AS sequencing_run_name,
-    array_agg(${indexPrimers.id} ORDER BY ${indexPrimers.id}) FILTER (WHERE ${indexPrimers.id} IS NOT NULL) AS index_primer_ids,
-    array_agg(${indexPrimers.indexSequence} ORDER BY ${indexPrimers.id}) FILTER (WHERE ${indexPrimers.id} IS NOT NULL) AS index_primer_sequences,
+    array_agg(${indexPrimers.id} ORDER BY ${indexPrimers.primerType}) FILTER (WHERE ${indexPrimers.id} IS NOT NULL) AS index_primer_ids,
+    array_agg(${indexPrimers.indexSequence} || ' (' || ${indexPrimers.primerType} || ')' ORDER BY ${indexPrimers.primerType}) FILTER (WHERE ${indexPrimers.id} IS NOT NULL) AS index_primer_sequences,
     array_agg(${nucleicAcids.id} ORDER BY ${nucleicAcids.id}) FILTER (WHERE ${nucleicAcids.id} IS NOT NULL) AS nucleic_acid_ids,
     array_agg(${pellets.name} ORDER BY ${nucleicAcids.id}) FILTER (WHERE ${nucleicAcids.id} IS NOT NULL) AS pellet_names
     FROM ${wellContents}
