@@ -66,7 +66,7 @@ const rowActions = {
     plates: {
         label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
         action: (data: any) => {
-            router.push({path:`/sge/plate-diagram/${data.pcrType}/${data.plates[0].id}`})
+            router.push({path:`/sge/plate-layout/${data.pcrType}/${data.plates[0].id}`})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
