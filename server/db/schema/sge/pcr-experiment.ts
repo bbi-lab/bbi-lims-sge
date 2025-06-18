@@ -5,7 +5,7 @@ import { ENUM_LOOKUPS } from './enum-lookups'
 import { transfectTargets } from './transfect-experiment'
 import { sql } from 'drizzle-orm'
 
-export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3'
+export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
 
 export const pcrExperiments = pgTable('pcr_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

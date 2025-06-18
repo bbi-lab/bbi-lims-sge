@@ -32,6 +32,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Guide RNA storage',
                 label: 'Guide RNA storage',
             },
+            'guide-rna': {
+                desc: 'Guide RNA',
+                label: 'Guide RNA',
+            },
             'lin-pcr': {
                 desc: 'Linearization primer PCR',
                 label: 'LIN PCR',
@@ -55,6 +59,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             'preseq-3': {
                 desc: 'PreSeq 3',
                 label: 'PreSeq 3',
+            },
+            'snv-lib-preseq-2': {
+                desc: 'SNV-lib PreSeq 2',
+                label: 'SNV-lib PreSeq 2',
+            },
+            'snv-lib-preseq-3': {
+                desc: 'SNV-lib PreSeq 3',
+                label: 'SNV-lib PreSeq 3',
             },
             'seq-index': {
                 desc: 'Sequencing index plate',
@@ -87,6 +99,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             'preseq-3': {
                 desc: 'PreSeq 3',
                 label: 'PreSeq 3',
+            },
+            'snv-lib-preseq-2': {
+                desc: 'SNV-lib PreSeq 2',
+                label: 'SNV-lib PreSeq 2',
+            },
+            'snv-lib-preseq-3': {
+                desc: 'SNV-lib PreSeq 3',
+                label: 'SNV-lib PreSeq 3',
             },
         },
     },

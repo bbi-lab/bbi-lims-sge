@@ -11,7 +11,7 @@ import { cycles } from './cycle'
 import { targets } from './target'
 import { sequencingRuns } from './sequencing-run'
 
-export type PlateType = 'pellet-storage' | 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'seq-index'
+export type PlateType = 'pellet-storage' | 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'guide-rna' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3' | 'seq-index'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
