@@ -26,10 +26,10 @@ const model = ref([
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
-                    { label: 'PCR', to: '/sge/pcr-experiments' },
-                    { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Plasmid', to: '/sge/plasmid-experiments' },
+                    { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },
+                    { label: 'PCR', to: '/sge/pcr-experiments' },
                 ]
             },
             { label: 'Reagents', iconComponent: BeakerOutline,
