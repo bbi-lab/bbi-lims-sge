@@ -251,7 +251,7 @@ const whereClause ={
                     <PlateDiagram
                         :key="sourcePlateDiagramKey"
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
-                        v-if="!_.isEmpty(selectedSourcePlate) && sourcePlateWithWellSpecs"
+                        v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
                         v-model="sourcePlateWithWellSpecs"
                         :plateType="sourcePlateWithWellSpecs.plateType"
                         :sizeX="sourcePlateWithWellSpecs.sizeX"
@@ -267,7 +267,7 @@ const whereClause ={
                             <Button
                                 severity="secondary"
                                 v-tooltip="{value: 'Transfer well contents to PreSeq 3 plate', showDelay: 500}"
-                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells)"
+                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
                                 @click="transferSelectedWellsContents">
                                 <template #icon>
                                     <IxMoveLayerDown />
@@ -299,7 +299,7 @@ const whereClause ={
                                 class="p-button-secondary"
                                 icon="pi pi-trash"
                                 v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                                :disabled="_.isEmpty(plateLayout.selectedWells)"
+                                :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                                 @click="plateLayout.emptySelectedWells" />
                         </template>
                     </PlateDiagram>
