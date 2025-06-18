@@ -10,12 +10,15 @@ const config = useRuntimeConfig()
 const router = useRouter()
 const invalidRecords = ref()
 
-onMounted(async () => {
+const updateInvalidRecords = async () => {
     const sequencingRunErrors = _.map(
         await RecordService.getRecords(`${config.public.apiBase}/view-sequencing-run-errors`, {}),
         (x) => { return {id: x.id, messages: x.errorMessages} }
     )
     invalidRecords.value = _.mapValues(_.keyBy(sequencingRunErrors, 'id'), (x) => _.omit(x, 'id'))
+}
+onMounted(async () => {
+    updateInvalidRecords()
 })
 
 const columnDefs: ColumnDefinitions = {
@@ -89,6 +92,18 @@ const rowActions = {
         tooltip: 'View contents',
     }
 }
+const didAddRecord = async (record: any) => {
+    await updateInvalidRecords()
+    crudTable.didAddRecord(record)
+}
+const didUpdateRecord = async (record: any) => {
+    await updateInvalidRecords()
+    crudTable.didUpdateRecord(record)
+}
+const didDeleteRecord = async (record: any) => {
+    await updateInvalidRecords()
+    crudTable.didDeleteRecord(record)
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -117,7 +132,7 @@ const rowActions = {
                 :fieldDefs="fieldDefs"
                 :values="{status: 'pending', createdOn: new Date()}"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="crudTable.didAddRecord"
+                @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
@@ -127,8 +142,8 @@ const rowActions = {
                 :fieldDefs="fieldDefs"
                 :withClause="{'plates': true}"
                 @cancel="crudTable.didClickCancelEditForm"
-                @recordUpdate="crudTable.didUpdateRecord"
-                @recordDelete="crudTable.didDeleteRecord"
+                @recordUpdate="didUpdateRecord"
+                @recordDelete="didDeleteRecord"
             />
         </SplitterPanel>
     </Splitter>
