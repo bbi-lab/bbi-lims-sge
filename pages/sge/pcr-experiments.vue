@@ -103,6 +103,9 @@ const fieldDefs = {
             },
         }
     },
+    startedOn: {
+        type: 'date',
+    }
 }
 const withClause = {
     plates: {columns: {id: true}},

@@ -31,7 +31,13 @@ const rowActions = {
 const fieldDefs: FieldDefinitions = {
     transfectionExperiments: {
         display: false,
-    }
+    },
+    startedOn: {
+        type: 'date'
+    },
+    endedOn: {
+        type: 'date'
+    },
 }
 </script>
 <template>

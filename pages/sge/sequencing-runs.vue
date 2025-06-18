@@ -67,7 +67,16 @@ const fieldDefs: FieldDefinitions = {
                 },
             ]
         }
-    }
+    },
+    createdOn: {
+        type: 'date'
+    },
+    startedOn: {
+        type: 'date'
+    },
+    endedOn: {
+        type: 'date'
+    },
 }
 const rowActions = {
     contents: {

@@ -70,6 +70,11 @@ const rowActions = {
         iconPos: 'right',
     },
 }
+const fieldDefs = {
+    extractedOn: {
+        type: 'date'
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -91,6 +96,7 @@ const rowActions = {
                 v-if="crudTable.state.showAddForm"
                 tableName="extraction-experiments"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -99,6 +105,7 @@ const rowActions = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="extraction-experiments"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

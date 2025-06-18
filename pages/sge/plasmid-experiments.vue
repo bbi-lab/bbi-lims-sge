@@ -13,6 +13,11 @@ const columnDefs = {
         path: 'technician.name',
     }
 }
+const fieldDefs = {
+    startedOn: {
+        type: 'date'
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -34,6 +39,7 @@ const columnDefs = {
                 v-if="crudTable.state.showAddForm"
                 tableName="plasmid-experiments"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -42,6 +48,7 @@ const columnDefs = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="plasmid-experiments"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

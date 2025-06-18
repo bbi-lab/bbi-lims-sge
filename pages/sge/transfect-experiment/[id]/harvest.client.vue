@@ -44,7 +44,7 @@ const existingTargetReplicates = computed(() => {
 })
 
 const experimentStartedOn = computed(() => {
-    return experiment.value?.data?.startedOn ? `${experiment.value?.data?.startedOn.toLocaleDateString('fr-CA')} @ ${experiment.value?.data?.startedOn.toLocaleTimeString('en-GB')}` : ''
+    return experiment.value?.data?.startedOn ? `${experiment.value?.data?.startedOn.toLocaleDateString('fr-CA')}` : '' // @ ${experiment.value?.data?.startedOn.toLocaleTimeString('en-GB')}` : ''
 })
 
 const harvestDateTime = ref()
@@ -260,12 +260,10 @@ async function submitPellets(pellets: DraftPellet[]) {
                     class="w-80"
                     id="harvestDateInput"
                     v-model.trim="harvestDateTime"
-                    showTime
                     showIcon
                     :minDate="minDate"
                     :maxDate="maxDate"
                     dateFormat="yy-mm-dd"
-                    hourFormat="24"
                     autofocus
                     :disabledDates="disabledDates"
                 />

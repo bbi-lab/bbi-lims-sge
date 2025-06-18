@@ -263,6 +263,9 @@ const fieldDefs: FieldDefinitions = {
         }
     },
     transfectLotUsage: {display: false},
+    startedOn: {
+        type: 'date',
+    },
 }
 
 </script>
