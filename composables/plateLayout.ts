@@ -247,7 +247,7 @@ export const usePlateLayout = (plateId: string) => {
         return newRecords
     }
 
-    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId') => {
+    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId' | 'plasmidId') => {
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const recordsToAdd = _.map(selectedWells.value, (well) => {
             return {
