@@ -92,6 +92,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: pellets,
             references: [pellets.id],
         },
+        plasmid: {
+            fields: [wellContents.plasmidId],
+            referenceTable: plasmids,
+            references: [plasmids.id],
+        },
     },
     many: {
         wellContentSources: {
@@ -429,6 +434,13 @@ const plasmidsRelationsConfig: RelationsConfig = {
             referenceTable: plasmidExperiments,
             references: [plasmidExperiments.id],
         },
+    },
+    many: {
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.plasmidId],
+        }
     },
 }
 export const plasmidsRelations = relationsConfigToRelations(plasmids, plasmidsRelationsConfig)
