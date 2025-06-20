@@ -127,6 +127,9 @@ const columnDefs: ColumnDefinitions = {
     transfectTargets: {
         display: false,
     },
+    plasmids: {
+        display: false,
+    },
 }
 
 const fieldDefs: FieldDefinitions = {
