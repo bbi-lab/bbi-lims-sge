@@ -73,6 +73,11 @@ const displayWithClause = {
             name: true
         },
     },
+    plasmidExperiment: {
+        columns: {
+            name: true
+        },
+    },
 }
 
 const columnDefs = {
@@ -128,7 +133,16 @@ const columnDefs = {
         },
         path: 'target.displayValue',
         index: 1,
-    }
+    },
+    plasmidExperimentId: {
+        display: false,
+    },
+    plasmidExperiment: {
+        format: (x: any) => {
+            return x.plasmidExperiment ? x.plasmidExperiment.name : ''
+        },
+        path: 'plasmidExperiment.displayValue',
+    },
 }
 const rowActions = {
     assign: {
