@@ -10,12 +10,14 @@ import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 import { targets } from './target'
 import { sequencingRuns } from './sequencing-run'
+import { plasmidExperiments } from './plasmid-experiment'
 
 export type PlateType = 'pellet-storage' | 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'guide-rna' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3' | 'seq-index'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
+  plasmidExperimentId: uuid('plasmid_experiment_id').references(() => plasmidExperiments.id),
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
@@ -38,6 +40,7 @@ const plateTypesCte = `with plate_types(plate_type_value, plate_type_label, plat
 export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   id: uuid('id'),
   pcrExperimentId: uuid('pcr_experiment_id'),
+  plasmidExperimentId: uuid('plasmid_experiment_id'),
   name: varchar('name', { length: 255 }),
   sizeX: smallint('size_x'),
   sizeY: smallint('size_y'),
@@ -55,6 +58,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
     ${plates.pcrExperimentId},
+    ${plates.plasmidExperimentId},
     ${plates.name},
     ${plates.sizeX},
     ${plates.sizeY},

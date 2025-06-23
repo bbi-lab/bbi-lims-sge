@@ -27,6 +27,7 @@ const columnDefs = {
     plateType: { display: false },
     plateTypeLabel: { header: 'Type', index: 1 },
     pcrExperimentId: { display: false},
+    plasmidExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     cycleId: { display: false },
@@ -69,6 +70,7 @@ const rowActions = {
 
 const fieldDefs = {
     pcrExperimentId: { display: false },
+    plasmidExperimentId: { display: false },
     wells: { display: false },
     name: { index: 0 },
     plateType: {

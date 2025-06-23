@@ -175,6 +175,11 @@ const platesRelationsConfig: RelationsConfig = {
             referenceTable: pcrExperiments,
             references: [pcrExperiments.id],
         },
+        plasmidExperiment: {
+            fields: [plates.plasmidExperimentId],
+            referenceTable: plasmidExperiments,
+            references: [plasmidExperiments.id],
+        },
         sequencingRun: {
             fields: [plates.sequencingRunId],
             referenceTable: sequencingRuns,
