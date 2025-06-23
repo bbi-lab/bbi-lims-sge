@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm'
 
 export const plasmids = pgTable('plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull().unique(),
   plasmidType: varchar('plasmid_type', {enum: ['guide', 'library', 'homology arm']}),
   volume: doublePrecision('volume'),
   quant: doublePrecision('quant'),

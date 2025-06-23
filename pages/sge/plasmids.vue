@@ -22,22 +22,25 @@ watch(() => route.query, async (newValue, oldValue) => {
 }, { immediate: true })
 
 const columnDefs = {
+    name: {
+        index: 0,
+    },
     plasmidType: {
         header: 'Type',
-        index: 0,
+        index: 1,
     },
     target: {
         path: 'target.name',
         type: 'string',
-        index: 1,
+        index: 2,
     },
     plasmidExperiment: {
         path: 'plasmidExperiment.name',
-        index: 2,
+        index: 3,
     },
     externalLink: {
         format: 'hyperlink',
-        index: 3,
+        index: 4,
     },
     plasmidExperimentId: {
         display: false
