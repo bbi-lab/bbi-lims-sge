@@ -27,6 +27,7 @@ import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
 import { sequencingRuns } from '../db/schema/sge/sequencing-run'
 import { viewSequencingRunErrors, viewSequencingRunWellContents } from '../db/schema/sge/views'
+import { oligos } from '../db/schema/sge/oligos'
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -48,6 +49,7 @@ export const schema = {
   cycles,
   plasmids,
   nucleicAcids,
+  oligos,
   pellets,
   lots,
   reagents,
@@ -77,7 +79,6 @@ export const schema = {
   wellsRelations: sgeRelations.wellsRelations,
   wellContentsRelations: sgeRelations.wellContentsRelations,
   wellContentSourcesRelations: sgeRelations.wellContentSourcesRelations,
-  // wellSourcesRelations: sgeRelations.wellSourcesRelations,
   projectsRelations: sgeRelations.projectsRelations,
   targetsRelations: sgeRelations.targetsRelations,
   regionsRelations: sgeRelations.regionsRelations,
@@ -85,6 +86,7 @@ export const schema = {
   cyclesRelations: sgeRelations.cyclesRelations,
   plasmidsRelations: sgeRelations.plasmidsRelations,
   nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
+  oligosRelations: sgeRelations.oligosRelations,
   pelletsRelations: sgeRelations.pelletsRelations,
   lotsRelations: sgeRelations.lotsRelations,
   transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,

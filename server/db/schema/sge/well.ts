@@ -9,6 +9,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { pellets } from './pellet'
 import { users } from '../user'
 import { plasmids } from './plasmid'
+import { oligos } from './oligos'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -29,8 +30,9 @@ export const wellContents = pgTable('well_contents', {
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
   plasmidId: uuid('plasmid_id').references(() => plasmids.id),
+  oligoId: uuid('oligo_id').references(() => oligos.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.plasmidId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.plasmidId}, ${t.oligoId}) = 1`),
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {

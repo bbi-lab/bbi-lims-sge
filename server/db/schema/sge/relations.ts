@@ -20,6 +20,7 @@ import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { sequencingRuns } from './sequencing-run'
+import { oligos } from './oligos'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -96,6 +97,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             fields: [wellContents.plasmidId],
             referenceTable: plasmids,
             references: [plasmids.id],
+        },
+        oligo: {
+            fields: [wellContents.oligoId],
+            referenceTable: oligos,
+            references: [oligos.id],
         },
     },
     many: {
@@ -350,6 +356,13 @@ const plasmidExperimentsRelationsConfig: RelationsConfig = {
             references: [users.id],
         },
     },
+    many: {
+        plates: {
+            table: plates,
+            schema: createSelectSchema(plates),
+            fields: [plates.plasmidExperimentId],
+        }
+    },
 }
 export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
 
@@ -473,6 +486,24 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
+const oligosRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [oligos.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.oligoId],
+        }
+    },
+}
+export const oligosRelations = relationsConfigToRelations(oligos, oligosRelationsConfig)
+
 const amplificationPrimersRelationsConfig: RelationsConfig = {
     one: {
         target: {
@@ -544,6 +575,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     genes: genesRelationsConfig,
     plasmids: plasmidsRelationsConfig,
     nucleicAcids: nucleicAcidsRelationsConfig,
+    oligos: oligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     plasmidExperiments: plasmidExperimentsRelationsConfig,

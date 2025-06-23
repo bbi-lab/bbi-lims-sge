@@ -20,6 +20,7 @@ import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPr
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns } from './sequencing-run'
 import { viewSequencingRunErrors, viewSequencingRunWellContents } from './views'
+import { oligos } from './oligos'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -135,6 +136,10 @@ const updateReagentsSchema = insertReagentsSchema
 const selectPlasmidsSchema = createSelectSchema(plasmids)
 const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
 const updatePlasmidsSchema = insertPlasmidsSchema
+
+const selectOligosSchema = createSelectSchema(oligos)
+const insertOligosSchema = createSelectSchema(oligos).omit({id: true})
+const updateOligosSchema = insertOligosSchema
 
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
@@ -256,6 +261,11 @@ export const schemas = {
         select: selectNucleicAcidsSchema,
         insert: insertNucleicAcidsSchema,
         update: updateNucleicAcidsSchema,
+    },
+    oligos: {
+        select: selectOligosSchema,
+        insert: insertOligosSchema,
+        update: updateOligosSchema,
     },
     pellets: {
         select: selectPelletsSchema,
