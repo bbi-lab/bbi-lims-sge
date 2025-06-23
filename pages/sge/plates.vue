@@ -76,7 +76,8 @@ const fieldDefs = {
         component: 'Select',
         props: {
             options: _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
-                if (key === 'preseq-1' || key === 'preseq-2' || key === 'preseq-3') {
+                const pattern = /preseq-/
+                if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {
                     return { label: value.label, code: key }
