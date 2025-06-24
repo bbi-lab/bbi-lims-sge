@@ -86,6 +86,10 @@ export function wellCoordinateToChar(number: number) {
     return String.fromCharCode(96 + number).toUpperCase()
 }
 
+export function wellCharToCoordinate(letter: string) {
+    return letter.toLowerCase().charCodeAt(0) - 96
+}
+
 export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY: number = 8): PlateDiagram {
     // Container
     let _container: HTMLElement | null = null
