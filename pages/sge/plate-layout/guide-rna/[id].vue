@@ -6,9 +6,13 @@ import * as XLSX from 'xlsx'
 const { breakpoints } = useLayout()
 const route = useRoute()
 const plateLayout = usePlateLayout(route.params.id as string)
+const config = useRuntimeConfig()
+const { showLoginModal } = useLayout()
+const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
+const plateDiagramKey = ref(0)
 
 onMounted(async() => {
     plateLayout.wellContentsDisplayConfig.value = {
@@ -49,21 +53,56 @@ const fileToSheet = (file: any, callback: any) => {
         const worksheet = workbook.Sheets[sheetName]
 
         const jsonData = XLSX.utils.sheet_to_json(worksheet)
-        console.log('jsonData', jsonData)
         callback(_.map(jsonData, (data: JSON) => _.mapKeys(data, (value, key) => _.camelCase(key))))
     }
-
     reader.readAsArrayBuffer(file)
 }
 
-const importSgRnaOligos = async (e: any) => {
+const importSgRnaOligos = (e: any) => {
     try {
         const files = e.files
         const f = files[0]
 
-        fileToSheet(f, console.log)
+        fileToSheet(f, submitSgRnaOligos)
     } catch (error) {
         console.error('Error importing sgRNA oligos:', error)
+    }
+}
+
+const submitSgRnaOligos = async (data: any[]) => {
+    try {
+        const result = await $fetch(`${config.public.apiBase}/custom/plates/${route.params.id}/import-sg-rna-oligos`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: data,
+        })
+        if (!_.isEmpty(result)) {
+            toast.add({
+                severity: 'success',
+                summary: 'sgRNA oligos imported',
+                life: 3000,
+            })
+            _.forEach(result as any[], (x) => {
+                plateLayout.selectionTableRef.value.addOrRefreshRecordId(x.id)
+            })
+            await loadPlate()
+            // force a re-render of the plate diagram
+            plateDiagramKey.value += 1
+        } else {
+            toast.add({
+                severity: 'error',
+                summary: 'Error importing sgRNA oligos',
+                life: 3000,
+            })
+        }
+    } catch (error: any) {
+        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            showLoginModal()
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 5000 })
+        }
     }
 }
 const displayWithClause = {
@@ -85,6 +124,11 @@ const displayWithClause = {
                     }
                 }
             },
+        },
+    },
+    target: {
+        columns: {
+            name: true,
         },
     },
 }
@@ -110,6 +154,15 @@ const columnDefs = {
     name: {
         index: 1,
     },
+    target: {
+        header: 'Target',
+        format: (x: any) => {
+            return x.target ? x.target.name : ''
+        },
+        path: 'target.displayValue',
+        index: 2,
+    },
+    targetId: { display: false },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
@@ -118,7 +171,7 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 3,
     },
 }
 const frozenRecordIds = computed(() => {
@@ -133,18 +186,18 @@ const frozenRecordIds = computed(() => {
                 tableName="oligos"
                 schemaName="select"
                 :canAdd="false"
-                :canDelete="false"
                 :canEdit="false"
                 :canExport="true"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :showColumnFilters="true"
                 emptyMessage=""
-                v-model:frozenRecordIds="frozenRecordIds">
-            </QuickTable>
+                v-model:frozenRecordIds="frozenRecordIds"
+            />
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
             <PlateDiagram
+                :key="plateDiagramKey"
                 :ref="plateLayout.setPlateDiagramRef"
                 v-if="plateWithWellSpecs"
                 v-model="plateWithWellSpecs"
@@ -177,10 +230,14 @@ const frozenRecordIds = computed(() => {
                             <i class="pi pi-upload"></i>
                         </template>
                     </FileUpload>
-                    <!-- <Button
+                </template>
+                <template #button2>
+                    <Button
                         class="p-button-secondary"
-                        icon="pi pi-upload"
-                        @click="importSgRnaOligos" /> -->
+                        icon="pi pi-trash"
+                        v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
+                        :disabled="_.isEmpty(plateLayout.selectedWells)"
+                        @click="plateLayout.emptySelectedWells" />
                 </template>
             </PlateDiagram>
         </SplitterPanel>
