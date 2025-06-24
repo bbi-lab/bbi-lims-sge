@@ -36,7 +36,7 @@ watch (selectedSourcePlate, async (newValue) => {
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const plasmidName = _.get(well, ['wellContents', 0, 'plasmid', 'name'])
-                    return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (DNA)` : wellCoordinate
+                    return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : wellCoordinate
                 },
             }
             await sourcePlateLayout.loadPlate({
