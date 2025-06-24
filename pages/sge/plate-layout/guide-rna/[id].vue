@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
+import * as XLSX from 'xlsx'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -38,10 +39,29 @@ const loadPlate = async () => {
         wells: _.values(plateLayout.wellSpecs.value),
     }
 }
+const fileToSheet = (file: any, callback: any) => {
+    const reader = new FileReader();
 
-const importSgRnaOligos = async () => {
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer)
+        const workbook = XLSX.read(data, { type: "array" })
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+
+        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+        console.log('jsonData', jsonData)
+        callback(_.map(jsonData, (data: JSON) => _.mapKeys(data, (value, key) => _.camelCase(key))))
+    }
+
+    reader.readAsArrayBuffer(file)
+}
+
+const importSgRnaOligos = async (e: any) => {
     try {
+        const files = e.files
+        const f = files[0]
 
+        fileToSheet(f, console.log)
     } catch (error) {
         console.error('Error importing sgRNA oligos:', error)
     }
@@ -144,12 +164,16 @@ const frozenRecordIds = computed(() => {
                         accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
                         class="p-button-icon-only p-button-info"
                         :maxFileSize="1000000"
-                        @upload="importSgRnaOligos"
+                        :customUpload="true"
                         :auto="true"
+                        @uploader="importSgRnaOligos"
                         chooseLabel=""
                         v-tooltip="{value: 'Upload sgRNA oligos', showDelay: 500}"
                     >
                         <template #chooseicon>
+                            <i class="pi pi-upload"></i>
+                        </template>
+                        <template #uploadicon>
                             <i class="pi pi-upload"></i>
                         </template>
                     </FileUpload>

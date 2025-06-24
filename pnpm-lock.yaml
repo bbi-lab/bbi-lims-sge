@@ -138,6 +138,9 @@ importers:
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.11
+      '@types/xlsx':
+        specifier: ^0.0.36
+        version: 0.0.36
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
@@ -1515,6 +1518,10 @@ packages:
 
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
+
+  '@types/xlsx@0.0.36':
+    resolution: {integrity: sha512-mvfrKiKKMErQzLMF8ElYEH21qxWCZtN59pHhWGmWCWFJStYdMWjkDSAy6mGowFxHXaXZWe5/TW7pBUiWclIVOw==}
+    deprecated: This is a stub types definition for xlsx (https://github.com/sheetjs/js-xlsx). xlsx provides its own type definitions, so you don't need @types/xlsx installed!
 
   '@unhead/vue@2.0.2':
     resolution: {integrity: sha512-pUGcbmPNCALOVWnQRtIjJ5ubNaZus3nHfCBDPEVwhbiLzeLF6wbhgTakwksZ1EegKNOZwRAkmVbV6i+23OYEUQ==}
@@ -6106,6 +6113,10 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/web-bluetooth@0.0.21': {}
+
+  '@types/xlsx@0.0.36':
+    dependencies:
+      xlsx: 0.18.5
 
   '@unhead/vue@2.0.2(vue@3.5.13)':
     dependencies:
