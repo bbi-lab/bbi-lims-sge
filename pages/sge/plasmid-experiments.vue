@@ -1,23 +1,63 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import { RecordService } from '~/utils/service/RecordService'
+import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const crudTable = useCrudTable()
+const config = useRuntimeConfig()
+const toast = useToast()
+const router = useRouter()
 
-const rowActions = {}
+async function didAddRecord(event: any) {
+    // add corresponding plate
+    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
+            name: event.name,
+            sizeX: 12,
+            sizeY: 8,
+            plateType: 'guide-rna',
+            plasmidExperimentId: event.id,
+    }).catch(error => {
+        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+    })
+    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
+    crudTable.state.showAddForm = false
+}
 
+const rowActions = {
+    plates: {
+        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+        action: (data: any) => {
+            router.push({path:`/sge/plate-layout/guide-rna/${data.plates[0].id}`})
+        },
+        iconComponent: PhGridNineFill,
+        iconPos: 'right',
+        tooltip: 'Plates',
+    }
+}
 const columnDefs = {
     startedOn: {
         format: 'date-time'
     },
     technician: {
         path: 'technician.name',
-    }
+    },
+    plates: {
+        display: false,
+    },
 }
 const fieldDefs = {
     startedOn: {
         type: 'date'
     },
+    plates: {
+        display: false,
+    },
 }
+const withClause = {
+    technician: { columns: { name: true } },
+    plates: { columns: { id: true } }
+}
+
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -28,7 +68,7 @@ const fieldDefs = {
                 schemaName="select"
                 title="Plasmid experiments"
                 :rowActions="rowActions"
-                :withClause="{technician: {columns: {name: true}}}"
+                :withClause="withClause"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
@@ -41,7 +81,7 @@ const fieldDefs = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="crudTable.didAddRecord"
+                @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
