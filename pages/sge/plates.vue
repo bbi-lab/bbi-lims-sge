@@ -78,7 +78,7 @@ const fieldDefs = {
         component: 'Select',
         props: {
             options: _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
-                const pattern = /preseq-|-pcr$|^guide-rna$/
+                const pattern = /preseq-|-pcr$/
                 if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {

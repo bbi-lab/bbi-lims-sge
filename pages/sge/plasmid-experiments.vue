@@ -8,21 +8,6 @@ const config = useRuntimeConfig()
 const toast = useToast()
 const router = useRouter()
 
-async function didAddRecord(event: any) {
-    // add corresponding plate
-    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
-            name: event.name,
-            sizeX: 12,
-            sizeY: 8,
-            plateType: 'guide-rna',
-            plasmidExperimentId: event.id,
-    }).catch(error => {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-    })
-    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
-    crudTable.state.showAddForm = false
-}
-
 const rowActions = {
     plates: {
         label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
@@ -81,7 +66,7 @@ const withClause = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
