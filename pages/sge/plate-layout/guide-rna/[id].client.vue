@@ -16,7 +16,7 @@ const plateDiagramKey = ref(0)
 
 onMounted(async() => {
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: [() => true],
+        colorBy: ['oligo.targetId'],
         selectionTableRecordIdPaths: ['oligoId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
