@@ -10,6 +10,7 @@ import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 import FluentRun16Filled from '~icons/fluent/run-16-filled'
+import FluentMolecule16Filled from '~icons/fluent/molecule-16-filled'
 
 const model = ref([
     {
@@ -23,6 +24,7 @@ const model = ref([
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
+            { label: 'Oligos', iconComponent: FluentMolecule16Filled, to: '/sge/oligos' },
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
