@@ -4,7 +4,6 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
-import { read } from 'xlsx'
 
 const route = useRoute()
 const router = useRouter()
