@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples } from './sequencing-run'
-import { viewSequencingRunErrors, viewSequencingRunWellContents } from './views'
+// import { viewSequencingRunErrors, viewSequencingRunWellContents } from './views'
 import { oligos } from './oligos'
 
 // tables
@@ -167,8 +167,8 @@ const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
-const selectViewSequencingRunWellContentsSchema = createSelectSchema(viewSequencingRunWellContents)
-const selectViewSequencingRunErrorsSchema = createSelectSchema(viewSequencingRunErrors)
+// const selectViewSequencingRunWellContentsSchema = createSelectSchema(viewSequencingRunWellContents)
+// const selectViewSequencingRunErrorsSchema = createSelectSchema(viewSequencingRunErrors)
 
 export const schemas = {
     // tables
@@ -316,10 +316,10 @@ export const schemas = {
     viewPlatesWithWellCounts: {
         select: selectViewPlatesWithWellCountsSchema,
     },
-    viewSequencingRunWellContents: {
-        select: selectViewSequencingRunWellContentsSchema
-    },
-    viewSequencingRunErrors: {
-        select: selectViewSequencingRunErrorsSchema
-    },
+    // viewSequencingRunWellContents: {
+    //     select: selectViewSequencingRunWellContentsSchema
+    // },
+    // viewSequencingRunErrors: {
+    //     select: selectViewSequencingRunErrorsSchema
+    // },
 }

@@ -186,11 +186,6 @@ const platesRelationsConfig: RelationsConfig = {
             referenceTable: plasmidExperiments,
             references: [plasmidExperiments.id],
         },
-        sequencingRun: {
-            fields: [plates.sequencingRunId],
-            referenceTable: sequencingRuns,
-            references: [sequencingRuns.id],
-        },
     },
     many: {
         wells: {
@@ -204,10 +199,10 @@ export const platesRelations = relationsConfigToRelations(plates, platesRelation
 
 const sequencingRunsRelationsConfig: RelationsConfig = {
     many: {
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.sequencingRunId],
+        samples: {
+            table: sequencingRunSamples,
+            schema: createSelectSchema(sequencingRunSamples),
+            fields: [sequencingRunSamples.sequencingRunId],
         }
     }
 }

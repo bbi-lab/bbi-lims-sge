@@ -1,5 +1,5 @@
-import { type InferSelectModel, count, eq, sql } from 'drizzle-orm'
-import { pgTable, pgView, QueryBuilder, smallint, uuid, varchar, boolean, check } from 'drizzle-orm/pg-core'
+import { type InferSelectModel, eq, sql } from 'drizzle-orm'
+import { pgTable, pgView, smallint, uuid, varchar, boolean } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -9,7 +9,6 @@ import { wellContents, wellContentSources, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 import { targets } from './target'
-import { sequencingRuns } from './sequencing-run'
 import { plasmidExperiments } from './plasmid-experiment'
 
 export type PlateType = 'pellet-storage' | 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'guide-rna' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3' | 'seq-index'
@@ -24,12 +23,7 @@ export const plates = pgTable('plates', {
   plateType: varchar('plate_type', { enum: Object.keys(ENUM_LOOKUPS.plates.plateType) as [PlateType, ...PlateType[]] }).notNull(),
   discarded: boolean('discarded').default(false),
   processed: boolean('processed').default(false),
-  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id),
-}, (t) => [
-  check("sequencing_run_plate_type_check", sql`(${t.sequencingRunId} IS NULL AND ${t.plateType} != 'preseq-3') OR ${t.plateType} = 'preseq-3'`),
-])
-
-const qb = new QueryBuilder()
+})
 
 // create a CTE for plate types from ENUM_LOOKUPSto use in view
 const plateTypesAsSqlValues = _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
@@ -54,7 +48,6 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   wellsCount: smallint('wells_count'),
   wellsWithContentCount: smallint('wells_with_content_count'),
   wellsProcessedCount: smallint('wells_processed_count'),
-  sequencingRunName: varchar('sequencing_run_name'),
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
     ${plates.pcrExperimentId},
@@ -71,8 +64,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
     count(distinct(${wells.id})) as wells_count,
     count(distinct(${wellContents.wellId})) as wells_with_content_count,
-    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count,
-    (select name from sequencing_runs where ${sequencingRuns.id} = ${plates.sequencingRunId}) as sequencing_run_name
+    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count
     from ${plates}
     join ${wells} on ${eq(plates.id, wells.plateId)}
     left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
