@@ -110,4 +110,16 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             },
         },
     },
+    'plasmidExperiments': {
+        'experimentType': {
+            'sg-rna': {
+                desc: 'sgRNA cloning',
+                label: 'sgRNA cloning',
+            },
+            'snv-lib': {
+                desc: 'SNV-lib cloning',
+                label: 'SNV-lib cloning',
+            },
+        },
+    },
 } as const

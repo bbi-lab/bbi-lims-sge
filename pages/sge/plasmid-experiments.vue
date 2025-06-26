@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
@@ -17,6 +18,9 @@ const rowActions = {
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Plates',
+        disabled: (data: any) => {
+            return !_.size(data.plates)
+        },
     }
 }
 const columnDefs = {
@@ -29,6 +33,17 @@ const columnDefs = {
     plates: {
         display: false,
     },
+    name: {
+        index: 1,
+    },
+    experimentType: {
+        header: 'Type',
+        format: (x: any) => {
+            return _.get(ENUM_LOOKUPS.plasmidExperiments.experimentType, [x.experimentType, 'label'])
+        },
+        path: 'experimentType.displayValue',
+        index: 2,
+    }
 }
 const fieldDefs = {
     startedOn: {
