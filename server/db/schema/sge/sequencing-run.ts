@@ -1,7 +1,8 @@
-import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, varchar, uniqueIndex } from "drizzle-orm/pg-core";
 import { wells } from "./well";
 import { nucleicAcids } from "./nucleic-acid";
 import { indexPrimers } from "./primer";
+import { sql } from "drizzle-orm";
 
 export const sequencingRuns = pgTable('sequencing_runs', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -20,4 +21,6 @@ export const sequencingRunSamples = pgTable('sequencing_run_samples', {
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id).notNull(),
   sourceWellId: uuid('source_well_id').references(() => wells.id),
   createdAt: timestamp('created_at').defaultNow(),
-})
+}, (t) => [
+  uniqueIndex('unique_index_primers_per_sequencing_run').on(t.sequencingRunId, sql`least(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`, sql`greatest(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`),
+])
