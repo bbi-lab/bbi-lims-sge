@@ -19,7 +19,7 @@ import { reagents } from './reagents'
 import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
-import { sequencingRuns } from './sequencing-run'
+import { sequencingRuns, sequencingRunSamples } from './sequencing-run'
 import { oligos } from './oligos'
 
 const genesRelationsConfig: RelationsConfig = {
@@ -212,6 +212,37 @@ const sequencingRunsRelationsConfig: RelationsConfig = {
     }
 }
 export const sequencingRunsRelations = relationsConfigToRelations(sequencingRuns, sequencingRunsRelationsConfig)
+
+const sequencingRunSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        sequencingRun: {
+            fields: [sequencingRunSamples.id],
+            referenceTable: sequencingRuns,
+            references: [sequencingRuns.id],
+        },
+        nucleicAcid: {
+            fields: [sequencingRunSamples.nucleicAcidId],
+            referenceTable: nucleicAcids,
+            references: [nucleicAcids.id],
+        },
+        indexPrimer1: {
+            fields: [sequencingRunSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [sequencingRunSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        sourceWell: {
+            fields: [sequencingRunSamples.sourceWellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
+    },
+}
+export const sequencingRunSamplesRelations = relationsConfigToRelations(sequencingRunSamples, sequencingRunSamplesRelationsConfig)
 
 const projectsRelationsConfig: RelationsConfig = {
     many: {
@@ -590,4 +621,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,
+    sequencingRunSamples: sequencingRunSamplesRelationsConfig,
 }

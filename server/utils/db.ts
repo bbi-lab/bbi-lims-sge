@@ -25,7 +25,7 @@ import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
-import { sequencingRuns } from '../db/schema/sge/sequencing-run'
+import { sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
 import { viewSequencingRunErrors, viewSequencingRunWellContents } from '../db/schema/sge/views'
 import { oligos } from '../db/schema/sge/oligos'
 
@@ -64,6 +64,7 @@ export const schema = {
   homologyArmPrimers,
   indexPrimers,
   sequencingRuns,
+  sequencingRunSamples,
 
   //views
   viewPlatesWithWellCounts,
@@ -100,6 +101,7 @@ export const schema = {
   homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
   indexPrimersRelations: sgeRelations.indexPrimersRelations,
   sequencingRunsRelations: sgeRelations.sequencingRunsRelations,
+  sequencingRunSamplesRelations: sgeRelations.sequencingRunSamplesRelations,
 }
 
 const ssl = config?.ssl != null ? config.ssl
