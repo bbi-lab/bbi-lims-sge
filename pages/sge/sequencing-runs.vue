@@ -10,16 +10,16 @@ const config = useRuntimeConfig()
 const router = useRouter()
 const invalidRecords = ref()
 
-const updateInvalidRecords = async () => {
-    const sequencingRunErrors = _.map(
-        await RecordService.getRecords(`${config.public.apiBase}/view-sequencing-run-errors`, {}),
-        (x) => { return {id: x.id, messages: x.errorMessages} }
-    )
-    invalidRecords.value = _.mapValues(_.keyBy(sequencingRunErrors, 'id'), (x) => _.omit(x, 'id'))
-}
-onMounted(async () => {
-    updateInvalidRecords()
-})
+// const updateInvalidRecords = async () => {
+//     const sequencingRunErrors = _.map(
+//         await RecordService.getRecords(`${config.public.apiBase}/view-sequencing-run-errors`, {}),
+//         (x) => { return {id: x.id, messages: x.errorMessages} }
+//     )
+//     invalidRecords.value = _.mapValues(_.keyBy(sequencingRunErrors, 'id'), (x) => _.omit(x, 'id'))
+// }
+// onMounted(async () => {
+//     updateInvalidRecords()
+// })
 
 const columnDefs: ColumnDefinitions = {
     startedOn: {
@@ -31,46 +31,11 @@ const columnDefs: ColumnDefinitions = {
     endedOn: {
         format: 'date-time'
     },
-    plates: {
-        type: 'element',
-        element: (x: any) => {
-            const plates =  _.map(x.plates, 'name').join(', ')
-            const href = !_.isEmpty(plates) ? `/sge/plates?sequencingRunName=${x.name}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${plates}</a>` : ''
-        },
-        elementSearchText: (x: any) => {
-            return _.map(x.plates, 'name').join(', ')
-        },
-        exportValue: (x: any) => {
-            return _.map(x.plates, 'name').join(', ')
-        },
-        path: 'plates.displayValue',
-    }
+    samples: {
+        display: false,
+    },
 }
 const fieldDefs: FieldDefinitions = {
-  'plates.*': {
-        label: 'Plates',
-        component: 'InputArray',
-        canDelete: false,
-        canUpdate: false,
-        props: {
-            components: [
-                {
-                    variableField: 'id',
-                    label: 'Plate',
-                    component: 'AutoCompleter',
-                    componentProps: {
-                        searchBaseUrl: `${config.public.apiBase}/plates`,
-                        searchFields: ['name'],
-                        searchWhereClause: { 'and': [{'==': [{'var': 'sequencingRunId'}, null]}, {'==': [{'var': 'plateType'}, 'preseq-3']}] },
-                        valueField: 'id',
-                        inputClass: 'w-64',
-                        dropdown: true,
-                    },
-                },
-            ]
-        }
-    },
     createdOn: {
         type: 'date'
     },
@@ -80,28 +45,31 @@ const fieldDefs: FieldDefinitions = {
     endedOn: {
         type: 'date'
     },
+    samples: {
+        display: false,
+    },
 }
 const rowActions = {
-    contents: {
+    samples: {
         label: '',
         action: (data: any) => {
-            router.push({path:`/sge/sequencing-run/${data.id}/contents`})
+            router.push({path:`/sge/sequencing-run/${data.id}/samples`})
         },
         icon: 'pi pi-fw pi-list',
         iconPos: 'right',
-        tooltip: 'View contents',
+        tooltip: 'View samples',
     }
 }
 const didAddRecord = async (record: any) => {
-    await updateInvalidRecords()
+    // await updateInvalidRecords()
     crudTable.didAddRecord(record)
 }
 const didUpdateRecord = async (record: any) => {
-    await updateInvalidRecords()
+    // await updateInvalidRecords()
     crudTable.didUpdateRecord(record)
 }
 const didDeleteRecord = async (record: any) => {
-    await updateInvalidRecords()
+    // await updateInvalidRecords()
     crudTable.didDeleteRecord(record)
 }
 </script>
@@ -115,7 +83,6 @@ const didDeleteRecord = async (record: any) => {
                 title="Sequencing runs"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
-                :withClause="{'plates': true}"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
                 :rowActions="rowActions"
                 :invalidRecords="invalidRecords"
@@ -140,7 +107,6 @@ const didDeleteRecord = async (record: any) => {
                 tableName="sequencing-runs"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="{'plates': true}"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="didUpdateRecord"
                 @recordDelete="didDeleteRecord"

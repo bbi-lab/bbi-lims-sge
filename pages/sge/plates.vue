@@ -57,7 +57,6 @@ const columnDefs = {
     },
     discarded: { index: 5 },
     processed: { header: 'Plate processed', index: 6 },
-    sequencingRunName: { header: 'Sequencing run', index: 7 },
 }
 const rowActions = {
     layout: {
@@ -101,20 +100,6 @@ const fieldDefs = {
             }
         },
     },
-    sequencingRunId: {
-        label: 'Sequencing run',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/sequencing-runs`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        },
-        display: (x: any) => {
-            return x.plateType == 'preseq-3'
-        },
-    }
 }
 </script>
 <template>
