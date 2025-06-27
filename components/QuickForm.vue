@@ -46,7 +46,6 @@ const refreshForm = async function() {
     if (props.recordId) {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName, props.recordId)
         record.value = await RecordService.getRecord(apiBaseUrl.value, props.recordId, props.withClause)
-
     } else {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
@@ -230,7 +229,7 @@ function isReadOnly(key: string) {
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        v-bind="recordId ? _.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) : _.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
@@ -240,7 +239,7 @@ function isReadOnly(key: string) {
                     <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        v-bind="recordId ? _.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) : _.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
@@ -250,7 +249,7 @@ function isReadOnly(key: string) {
                     <Select
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        v-bind="recordId ? _.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) : _.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
@@ -260,7 +259,7 @@ function isReadOnly(key: string) {
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        v-bind="recordId ? _.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) : _.get(fieldDefs, [key, 'props'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
                     />
