@@ -11,15 +11,22 @@ const showPlatePanel = ref(false)
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
 const selectedPlateId = ref()
-let plateLayout = usePlateLayout('')
+const plateLayout = usePlateLayout()
 const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 const toast = useToast()
 const sequencingRunSamplesTable = ref()
 
+const frozenRecordIds = computed(() => {
+    const selectedWellIds = _.map(plateLayout.selectedWells.value, 'id')
+    return _.map(_.filter(sequencingRunSamplesTable.value?.records , (x) => {
+        return _.includes(selectedWellIds, x.sourceWellId)
+    }), 'id')
+})
+
 watch (selectedPlateId, async (newValue) => {
     if (newValue) {
-        plateLayout = usePlateLayout(newValue)
+        plateLayout.setPlateId(newValue)
         plateLayout.wellContentsDisplayConfig.value = {
             colorBy: [() => true],
             tooltip: (well: any) => {
@@ -76,7 +83,9 @@ onMounted(async () => {
 
 const addToSequencingRun = async (selectedWells: any) => {
     try {
-        const sequencingRunSamplesToAdd = _.map(selectedWells, ({data}) => {
+        const sequencingRunSamplesToAdd = _.compact(_.map(selectedWells, ({data}) => {
+            if (_.isEmpty(data.wellContents)) return null
+
             const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P7')
             const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P5')
             const nucleicAcidWellContents = _.filter(data.wellContents, (x) => x.nucleicAcidId)
@@ -91,23 +100,27 @@ const addToSequencingRun = async (selectedWells: any) => {
             } else {
                 throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one nucleic acid.')
             }
-        })
+        }))
         if (sequencingRunSamplesToAdd.length > 0) {
-            const newRecords = await RecordService.addRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunSamplesToAdd) as any[]
-            toast.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Samples added to sequencing run successfully.',
-            })
-            _.forEach(newRecords, (record) => {
-                sequencingRunSamplesTable.value.addOrRefreshRecordId(record.id)
-            })
+            const newRecords = await RecordService.addRecords(`${config.public.apiBase}/custom/sequencing-run/${route.params.id}/sequencing-run-samples`, sequencingRunSamplesToAdd) as any[]
+            if (!_.isEmpty(newRecords)) {
+                toast.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `${sequencingRunSamplesToAdd.length} samples added to sequencing run.`,
+                    life: 3000,
+                })
+                _.forEach(newRecords, (record) => {
+                    sequencingRunSamplesTable.value.addOrRefreshRecordId(record.id)
+                })
+            }
         }
     } catch (error: any) {
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.message || error.statusMessage,
+            detail: error.statusMessage || error.message,
+            life: 10000,
         })
     }
 }
@@ -160,7 +173,7 @@ const columnDefs = {
     },
     sourceWell: {
         format: (data: any) => {
-            return data.sourceWell ? `${data.sourceWell.plate.name}: ${wellCoordinateToChar(data.sourceWell.x)}${data.sourceWell.y}` : ''
+            return data.sourceWell ? `${data.sourceWell.plate.name}: ${wellCoordinateToChar(data.sourceWell.y)}${data.sourceWell.x}` : ''
         },
         path: 'sourceWell.displayValue',
     },
@@ -180,6 +193,7 @@ const columnDefs = {
                 :canDelete="true"
                 :columnDefs="columnDefs"
                 :where="{'==': [{'var': 'sequencingRunId'}, sequencingRun.id]}"
+                v-model:frozenRecordIds="frozenRecordIds"
             >
                 <template #title>
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
@@ -223,6 +237,8 @@ const columnDefs = {
                         :sizeX="plateWithWellSpecs.sizeX"
                         :sizeY="plateWithWellSpecs.sizeY"
                         @well-range-selected="plateLayout.wellRangeSelected"
+                        @well-selection-cleared="plateLayout.wellSelectionCleared"
+                        @all-wells-selected="plateLayout.selectedAllWells"
                     >
                         <template #button1>
                             <Button
