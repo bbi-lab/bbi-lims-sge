@@ -5,7 +5,7 @@ import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -31,6 +31,7 @@ watch(selectionTableName, async (newValue) => {
 })
 
 onMounted(() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['nucleicAcidId'],
         selectionTableRecordIdPaths: [(x: any) => {

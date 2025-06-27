@@ -6,8 +6,8 @@ import IxMoveLayerDown from '~icons/ix/move-layer-down';
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
-let sourcePlateLayout: typeof plateLayout | null
+const plateLayout = usePlateLayout()
+const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
 const sourcePlateDiagramKey = ref<string>()
 const toast = useToast()
@@ -23,7 +23,7 @@ const selectedSourcePlate = computed(() => {
 
 watch (selectedSourcePlate, async (newValue) => {
     if (newValue) {
-        sourcePlateLayout = usePlateLayout(newValue.id)
+        sourcePlateLayout.setPlateId(newValue.id)
 
         if (newValue.plateType === 'preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
@@ -98,12 +98,12 @@ watch (selectedSourcePlate, async (newValue) => {
         }
         sourcePlateDiagramKey.value = newValue.id
     } else {
-        sourcePlateLayout = null
         sourcePlateWithWellSpecs.value = null
     }
 })
 
 onMounted(() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
         selectionTableRecordIdPaths: [(x: any) => {
@@ -168,6 +168,8 @@ const transferSelectedWellsContents = async () => {
     const sourceWells = sourcePlateLayout!.selectedWells.value
     const destinationWells = plateLayout.selectedWells.value
 
+    console.log('sourceWells', sourceWells)
+    console.log('destinationWells', destinationWells)
     if (_.isEmpty(sourceWells)) {
         toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
     } else if (sourceWells.length !== destinationWells.length) {

@@ -30,18 +30,22 @@ interface wellContentDisplayConfig {
     tooltip?: Function | null
 }
 
-export const usePlateLayout = (plateId: string) => {
+export const usePlateLayout = () => {
     const plateWithWellContents = ref<PlateWithWellContents>()
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
     const wellSpecs = ref<WellSpecs>({})
     const selectedWells = ref<WellSpecs[string][]>([])
     const toast = useComposableToast()
     const config = useRuntimeConfig()
-    const { showLoginModal } = useLayout() as { showLoginModal: () => void }
     const wellContentsWithClause = ref()
     const plateDiagramRef = ref()
     const selectionTableRef = ref()
     const { user } = useUserSession()
+    const plateId = ref()
+
+    const setPlateId = (id: string) => {
+        plateId.value = id
+    }
 
     const setSelectionTableRef = (el: any) => {
         selectionTableRef.value = el
@@ -68,7 +72,7 @@ export const usePlateLayout = (plateId: string) => {
         wellContentsWithClause.value = contentsWithClause || {}
         plateWithWellContents.value = await RecordService.getRecord(
             `${config.public.apiBase}/plates`,
-            plateId,
+            plateId.value,
             {
                 wells: {
                     columns: {
@@ -326,6 +330,7 @@ export const usePlateLayout = (plateId: string) => {
     return {
         // data
         plateWithWellContents,
+        setPlateId,
         loadPlate,
 
         // well specs

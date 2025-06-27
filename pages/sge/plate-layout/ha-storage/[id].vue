@@ -4,13 +4,14 @@ import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 
 onMounted(async() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPrimer.name'), /(_F|_R)$/g, '')],
         selectionTableRecordIdPaths: ['homologyArmPrimerId'],

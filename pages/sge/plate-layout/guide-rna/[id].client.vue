@@ -5,7 +5,7 @@ import { read as readXlsx, utils as XlsxUtils } from 'xlsx'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const config = useRuntimeConfig()
 const { showLoginModal } = useLayout()
 const toast = useToast()
@@ -15,6 +15,7 @@ const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 
 onMounted(async() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['oligo.targetId'],
         selectionTableRecordIdPaths: ['oligoId'],
