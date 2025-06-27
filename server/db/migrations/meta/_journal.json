@@ -589,6 +589,13 @@
       "when": 1750967294327,
       "tag": "0083_noisy_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1751064636236,
+      "tag": "0084_secret_ken_ellis",
+      "breakpoints": true
     }
   ]
 }
