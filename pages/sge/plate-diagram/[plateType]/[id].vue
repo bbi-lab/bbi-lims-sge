@@ -401,11 +401,7 @@ const layoutPreseq1 = async () => {
         try {
             wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             return
         }
 
@@ -453,18 +449,14 @@ const emptySelectedWells = async () => {
     const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
         return _.get(x, 'data.wellContents')
     })))
-    let deletedRecords: WellContent[]
+    let deletedRecords: WellContent[] | undefined
     try {
         deletedRecords = await RecordService.deleteRecords(
             `${config.public.apiBase}/well-contents`,
             wellContentsToDelete
         )
     } catch (error: any) {
-        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-            showLoginModal()
-        } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-        }
+        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         return
     }
     if (!_.isEmpty(deletedRecords)) {
@@ -538,16 +530,12 @@ const rowActions = {
                 try {
                     newRecords = await assignToPlate(plateType, selectedWells.value, data, config.public.apiBase, user.value)
                 } catch (e: any) {
-                    if (e.statusCode == 401 && e.statusMessage == 'TOKEN EXPIRED') {
-                        showLoginModal()
-                    } else {
-                        toast.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: e.message || 'Error calculating plate layout',
-                            life: 3000,
-                        })
-                    }
+                    toast.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: e.message || 'Error calculating plate layout',
+                        life: 3000,
+                    })
                     return
                 }
                 if (!_.isEmpty(newRecords)) {

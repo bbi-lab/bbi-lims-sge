@@ -162,9 +162,7 @@ async function saveRecords() {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
-        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-            showLoginModal()
-        } else if (formElement.value && _.isArray(error.data?.data)) {
+        if (formElement.value && _.isArray(error.data?.data)) {
             addErrorsToForm(formElement.value, error.data.data)
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })

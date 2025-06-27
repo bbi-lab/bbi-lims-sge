@@ -60,12 +60,7 @@ export const usePlateLayout = (plateId: string) => {
         try {
             await loadPlate(wellContentsWithClause.value)
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
-            return
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
         }
     }
 
@@ -171,11 +166,7 @@ export const usePlateLayout = (plateId: string) => {
                 wellContentsToDelete
             )
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(deletedRecords)) {
@@ -228,11 +219,7 @@ export const usePlateLayout = (plateId: string) => {
                 recordsToAdd
             ) as WellContent[]
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
+            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(newRecords)) {
