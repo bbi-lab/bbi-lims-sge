@@ -163,7 +163,7 @@ export const usePlateLayout = () => {
         const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
             return _.get(x, 'data.wellContents')
         })))
-        let deletedRecords: WellContent[]
+        let deletedRecords: WellContent[] | undefined
         try {
             deletedRecords = await RecordService.deleteRecords(
                 `${config.public.apiBase}/well-contents`,
