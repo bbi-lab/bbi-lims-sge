@@ -116,30 +116,30 @@ const columnDefs: ColumnDefinitions = {
         path: 'transfectionsPerReplicate.displayValue',
         index: 5,
     },
-    negativeControlCount: {
-        header: 'Negative control',
-        format: (x) => {
-            return x.negativeControl ? '1' : '0'
-        },
-        path: 'negativeControlCount.displayValue',
-        type: 'string',
-        index: 6,
-    },
-    negativeControl: {
-        display: false,
-    },
+    // negativeControlCount: {
+    //     header: 'Negative control',
+    //     format: (x) => {
+    //         return x.negativeControl ? '1' : '0'
+    //     },
+    //     path: 'negativeControlCount.displayValue',
+    //     type: 'string',
+    //     index: 6,
+    // },
+    // negativeControl: {
+    //     display: false,
+    // },
     totalTransfections: {
         header: 'Total transfections',
         format: (x) => {
-            const transfectionCounts = _.map(x.transfectTargets, 'transfectionCount')
-            const minTransfectionsPerReplicate = _.min(transfectionCounts)
-            const maxTransfectionsPerReplicate = _.max(transfectionCounts)
+            const transfectionCountsWithNegControl = _.map(x.transfectTargets, (target) => { return target.transfectionCount + (target.negativeControl ? 1 : 0) })
+            const minTransfectionsPerReplicate = _.min(transfectionCountsWithNegControl)
+            const maxTransfectionsPerReplicate = _.max(transfectionCountsWithNegControl)
             if (!minTransfectionsPerReplicate) {
                 return ''
             } else {
                 return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
-                    _.toString(minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)) :
-                    `${minTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)} - ${maxTransfectionsPerReplicate * x.replicateCount + (x.negativeControl ? 1 : 0)}`
+                    _.toString(minTransfectionsPerReplicate * x.replicateCount) :
+                    `${minTransfectionsPerReplicate * x.replicateCount} - ${maxTransfectionsPerReplicate * x.replicateCount}`
             }
         },
         path: 'totalTransfections.displayValue',

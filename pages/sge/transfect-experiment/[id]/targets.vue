@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
+import { ne } from 'drizzle-orm'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
@@ -26,9 +27,30 @@ const columnDefs = {
         type: 'string',
         index: 0,
     },
-    transfectionCount: {
-        header: '# transfections',
+    replicateCount: {
+        header: 'Number of replicates',
+        format: (x: any) => { return x.experiment.replicateCount || '' },
+        path: 'replicateCount.displayValue',
         index: 1,
+    },
+    transfectionCount: {
+        header: 'Transfections per replicate',
+        index: 2,
+    },
+    negativeControl: {
+        header: 'Negative control',
+        type: 'boolean',
+        index: 3,
+    },
+    totalTransfections: {
+        header: 'Total transfections',
+        format: (x: any) => {
+            return (x.experiment.replicateCount && x.transfectionCount) ?
+                (x.experiment.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)) :
+                ''
+        },
+        index: 4,
+        path: 'totalTransfections.displayValue',
     },
     experimentId: {
         display: false,
@@ -36,42 +58,95 @@ const columnDefs = {
     targetId: {
         display: false,
     },
+    snvLib: {
+        header: 'SNV library',
+        format: (x: any) => { return x.snvLib?.name },
+        path: 'snvLib.displayValue',
+        index: 5,
+    },
     snvLibraryConc: {
         header: 'SNV library conc. (ng/μL)',
+        index: 6,
     },
     snvLibraryTo3ugVol: {
         header: 'Vol. of SNVlib to 3µg (μL)',
+        format: (x: any) => {
+            return x.snvLibraryConc ? _.round(3000 / x.snvLibraryConc, 1).toFixed(1) : ''
+        },
+        path: 'snvLibraryTo3ugVol.displayValue',
+        index: 7,
     },
     sgRna: {
         header: 'sgRNA',
+        format: (x: any) => { return x.sgRna?.name },
+        path: 'sgRna.displayValue',
+        index: 8,
     },
     sgRnaConc: {
-        header: 'Current sgRNA conc. (ng/μL)'
+        header: 'Current sgRNA conc. (ng/μL)',
+        index: 9,
     },
     sgRnaTo12ugVol: {
-        header: 'Vol. of sgRNA to 12µg (μL)'
+        header: 'Vol. of sgRNA to 12µg (μL)',
+        format: (x: any) => {
+            return x.sgRnaConc ? _.round(12000 / x.sgRnaConc, 1).toFixed(1) : ''
+        },
+        path: 'sgRnaTo12ugVol.displayValue',
+        index: 10,
     },
     sgRnaNegControl: {
-        header: 'sgRNA negative control'
+        header: 'sgRNA negative control',
+        index: 11,
     },
     hprt1SgRnaConc: {
-        header: 'HPRT1 sgRNA conc. (ng/μL)'
+        header: 'HPRT1 sgRNA conc. (ng/μL)',
+        index: 12,
     },
     hprt1SgRnaTo12ugVol: {
-        header: 'Vol. of HPRT1 sgRNA to 12µg (μL)'
+        header: 'Vol. of HPRT1 sgRNA to 12µg (μL)',
+        format: (x: any) => {
+            return x.hprt1SgRnaConc ? _.round(12000 / x.hprt1SgRnaConc, 1).toFixed(1) : ''
+        },
+        path: 'hprt1SgRnaTo12ugVol.displayValue',
+        index: 13,
     },
     xfectBuffer: {
-        header: 'Xfect Buffer (μL)'
+        header: 'Xfect Buffer (μL)',
+        index: 14,
     },
     xfectPolymerPerTransfect: {
-        header: 'Xfect polymer (μL) per transfection'
+        header: 'Xfect polymer (μL) per transfection',
+        index: 15,
     },
     snvLibNeeded: {
-        header: 'SNV library needed (μL)'
+        header: 'SNV library needed (μL)',
+        format: (x: any) => {
+            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount) {
+                const totalTransfections = x.experiment.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)
+                return _.round(3000 / x.snvLibraryConc * totalTransfections, 1).toFixed(1)
+            } else {
+                return ''
+            }
+        },
+        path: 'snvLibNeeded.displayValue',
+        index: 16,
     },
     sgRnaNeeded: {
-        header: 'sgRNA needed (μL)'
-    }
+        header: 'sgRNA needed (μL)',
+        format: (x: any) => {
+            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount) {
+                const totalTransfections = x.experiment.replicateCount * x.transfectionCount
+                return _.round(12000 / x.sgRnaConc * totalTransfections, 1).toFixed(1)
+            } else {
+                return ''
+            }
+        },
+        path: 'sgRnaNeeded.displayValue',
+        index: 17,
+    },
+    notes: {
+        index: 18,
+    },
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
@@ -110,11 +185,57 @@ editFormFieldDefs['transfectionCount'] = {
     },
     index: 1,
 }
+editFormFieldDefs['snvLib'] = {
+    label: 'SNV library',
+    component: 'AutoCompleter',
+    props: {
+        searchBaseUrl: `${config.public.apiBase}/plasmids`,
+        searchFields: ['name'],
+        valueField: 'id',
+        displayFields: ['name'],
+        dropdown: true,
+        searchWhereClause: {'==': [{'var': 'plasmidType'}, 'library']}
+    },
+    index: 5,
+}
+editFormFieldDefs['sgRna'] = {
+    label: 'SNV library',
+    component: 'AutoCompleter',
+    props: {
+        searchBaseUrl: `${config.public.apiBase}/plasmids`,
+        searchFields: ['name'],
+        valueField: 'id',
+        displayFields: ['name'],
+        dropdown: true,
+        searchWhereClause: {'==': [{'var': 'plasmidType'}, 'guide']}
+    },
+    index: 5,
+}
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 
 const readonlyValues = {experimentId: route.params.id}
 
+const displayWithClause = {
+    target: {
+        columns: {name: true},
+        with: {
+            region: {
+                columns: {name: true},
+                with: {
+                    gene: {
+                        columns: {symbol: true}
+                    }
+                }
+            }
+        }
+    },
+    experiment: {
+        columns: {cycle: true, replicateCount: true},
+    },
+    snvLib: true,
+    sgRna: true,
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -127,7 +248,7 @@ const readonlyValues = {experimentId: route.params.id}
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :where="{'==':[{'var': 'experimentId'}, route.params.id]}"
-                :withClause="{target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}}}"
+                :withClause="displayWithClause"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

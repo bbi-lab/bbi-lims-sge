@@ -347,6 +347,16 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        snvLib: {
+            fields: [transfectTargets.snvLib],
+            referenceTable: plasmids,
+            references: [plasmids.id],
+        },
+        sgRna: {
+            fields: [transfectTargets.sgRna],
+            referenceTable: plasmids,
+            references: [plasmids.id],
+        },
     },
     many: {
         pellets: {
