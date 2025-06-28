@@ -15,11 +15,12 @@ const router = useRouter()
 const toast = useToast()
 const experimentId = route.params.id as string
 const loaded = ref(false)
-
+const displayDeleteConfirmation = ref(false)
+const selectedExistingPellets = ref()
 const experiment =  ref<TransfectionExperiment>()
 
 const allTargets = computed(() => {
-    return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: `${x.target.name} (${x.transfectionCount} transfections)`, code: x.id}})
+    return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: `${x.target.name} (${x.transfectionCount} transfections per replicate)`, code: x.id}})
 })
 const existingTargetReplicates = computed(() => {
     if (currentHarvestDay.value == 5) return []
@@ -82,10 +83,13 @@ const now = ref(new Date())
 
 // const validTransfectionsLimited = computed(() => experiment.value?.data?.replicateCount ? _.filter(VALID_TRANSFECTIONS, (x) => !_.startsWith(x, 'T') || parseInt(x.slice(-1)) <= (experiment.value?.data?.transfectionCount ?? 0)) : VALID_TRANSFECTIONS)
 const validTransfectionsLimited = computed(() => {
-    let transfectionList = experiment.value?.data?.negativeControl ? ['NC'] : []
+    const transfectionList: string[] = []
 
     const experimentReplicateCount = experiment.value?.data?.replicateCount || 0
     if (selectedTransfectionTarget.value) {
+        if (selectedTransfectionTarget.value?.negativeControl) {
+            transfectionList.push('NC')
+        }
         const transfectionCount = selectedTransfectionTarget.value.transfectionCount * experimentReplicateCount
         for (let i = 1; i <= transfectionCount; i++) {
             transfectionList.push(`T${i}`)
@@ -220,6 +224,17 @@ async function addPellets() {
     }
     submitPellets(pellets)
 }
+async function didClickDeleteSelectedRecords() {
+    const pelletIds = _.map(selectedExistingPellets.value, 'id')
+    const response = await experiment.value?.deletePellets(pelletIds)
+    if (response?.success) {
+        toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records deleted`, life: 3000 })
+        await refreshExperiment()
+    } else {
+        toast.add({ severity: 'error', summary: 'Error deleting pellets', life: 3000 })
+    }
+    displayDeleteConfirmation.value = false
+}
 
 async function submitPellets(pellets: DraftPellet[]) {
     const newPellets = _.map(pellets, (x) => {
@@ -248,7 +263,6 @@ async function submitPellets(pellets: DraftPellet[]) {
                 <div>Started on: {{ experimentStartedOn }}</div>
                 <div v-if="experimentStartedOn">Time elapsed: {{ timeElapsed }}</div>
                 <div>Number of replicates: {{ experiment?.data?.replicateCount }}</div>
-                <div>Negative control: {{ experiment?.data?.negativeControl }}</div>
             </div>
             <hr class="col-span-12">
             <div class="col-span-12 text-xl font-bold mb-5">New harvest</div>
@@ -332,30 +346,53 @@ async function submitPellets(pellets: DraftPellet[]) {
                     </div>
                 </div>
             </template>
-                <div class="col-span-12 space-y-5 mb-5">
-                    <DataTable :value="experiment?.pellets" tableStyle="min-width: 50rem">
-                        <template #header>
-                            <span class="text-xl font-bold">Existing pellets</span>
+            <div class="col-span-12 space-y-5 mb-5">
+                <DataTable
+                    :value="experiment?.pellets"
+                    v-model:selection="selectedExistingPellets"
+                    tableStyle="min-width: 50rem"
+                    selectionMode="multiple">
+                    <template #header>
+                        <span class="text-xl font-bold">Existing pellets</span>
+                        <Button
+                            class="ml-2"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            label="Delete"
+                            outlined
+                            @click="displayDeleteConfirmation = true"
+                            :disabled="!selectedExistingPellets || selectedExistingPellets.length == 0" />
+                    </template>
+                    <template #empty> No data </template>
+                    <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" selectionMode="multiple" :exportable="false" frozen />
+                    <Column field="name" header="Name" sortable></Column>
+                    <Column field="isBackup" header="Is Backup" sortable>
+                        <template #body="slotProps">
+                            {{ slotProps.data.isBackup ? '✓' : '' }}
                         </template>
-                        <template #empty> No data </template>
-                        <Column field="name" header="Name" sortable></Column>
-                        <Column field="isBackup" header="Is Backup" sortable>
-                            <template #body="slotProps">
-                                {{ slotProps.data.isBackup ? '✓' : '' }}
-                            </template>
-                        </Column>
-                        <Column field="transfections" header="Transfections" sortable>
-                            <template #body="slotProps">
-                                {{ _.join(slotProps.data.transfections, ', ') }}
-                            </template>
-                        </Column>
-                        <Column field="harvestDay" header="Day" sortable></Column>
-                        <Column field="pctPassaged" header="% passaged" sortable></Column>
-                        <Column field="pctHarvested" header="% harvested" sortable></Column>
-                        <Column field="d3Confluency" header="% D3 confluency" sortable></Column>
-                        <Column field="harvestNotes" header="Notes" sortable></Column>
-                    </DataTable>
-                </div>
+                    </Column>
+                    <Column field="transfections" header="Transfections" sortable>
+                        <template #body="slotProps">
+                            {{ _.join(slotProps.data.transfections, ', ') }}
+                        </template>
+                    </Column>
+                    <Column field="harvestDay" header="Day" sortable></Column>
+                    <Column field="pctPassaged" header="% passaged" sortable></Column>
+                    <Column field="pctHarvested" header="% harvested" sortable></Column>
+                    <Column field="d3Confluency" header="% D3 confluency" sortable></Column>
+                    <Column field="harvestNotes" header="Notes" sortable></Column>
+                </DataTable>
+                <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
+                    <div class="flex items-center justify-center">
+                        <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
+                        <span>Are you sure you want to proceed?</span>
+                    </div>
+                    <template #footer>
+                        <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
+                        <Button label="Yes" icon="pi pi-check" @click="didClickDeleteSelectedRecords" severity="danger" outlined autofocus />
+                    </template>
+                </Dialog>
+            </div>
         </div>
     </div>
 </template>
