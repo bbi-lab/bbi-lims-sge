@@ -114,6 +114,10 @@ export const usePlateLayout = () => {
     const updateWellSpecs = () => {
         if (!plateWithWellContents.value) return
 
+        // remove any well specs that are not in the current plate
+        wellSpecs.value = _.pick(wellSpecs.value, _.map(plateWithWellContents.value.wells, 'id'))
+
+        // add or update well specs for each well in the plate
         plateWithWellContents.value.wells.forEach((well) => {
             // remove empty wells from color map
             if (_.isEmpty(well.wellContents)) {

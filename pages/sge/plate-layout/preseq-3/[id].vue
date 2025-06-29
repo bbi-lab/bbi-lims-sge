@@ -9,7 +9,7 @@ const route = useRoute()
 const plateLayout = usePlateLayout()
 const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
-const sourcePlateDiagramKey = ref<string>()
+// const sourcePlateDiagramKey = ref<string>()
 const toast = useToast()
 const { user } = useUserSession()
 
@@ -96,7 +96,7 @@ watch (selectedSourcePlate, async (newValue) => {
             ...sourcePlateLayout.plateWithWellContents.value,
             wells: _.values(sourcePlateLayout.wellSpecs.value),
         }
-        sourcePlateDiagramKey.value = newValue.id
+        // sourcePlateDiagramKey.value = newValue.id
     } else {
         sourcePlateWithWellSpecs.value = null
     }
@@ -168,8 +168,6 @@ const transferSelectedWellsContents = async () => {
     const sourceWells = sourcePlateLayout!.selectedWells.value
     const destinationWells = plateLayout.selectedWells.value
 
-    console.log('sourceWells', sourceWells)
-    console.log('destinationWells', destinationWells)
     if (_.isEmpty(sourceWells)) {
         toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
     } else if (sourceWells.length !== destinationWells.length) {
@@ -251,7 +249,6 @@ const whereClause ={
             <Splitter layout="vertical">
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
-                        :key="sourcePlateDiagramKey"
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
                         v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
                         v-model="sourcePlateWithWellSpecs"
