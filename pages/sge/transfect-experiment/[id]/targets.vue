@@ -174,7 +174,7 @@ editFormFieldDefs['targetId'] = {
     index: 0,
 }
 editFormFieldDefs['transfectionCount'] = {
-    label: '# transfections',
+    label: 'Transfections per replicate',
     component: 'InputNumber',
     props: {
         inputClass: 'w-40',
