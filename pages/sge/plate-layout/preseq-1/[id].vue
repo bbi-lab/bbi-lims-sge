@@ -308,7 +308,7 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-trash"
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(plateLayout.selectedWells)"
+                        :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
                 </template>
             </PlateDiagram>
