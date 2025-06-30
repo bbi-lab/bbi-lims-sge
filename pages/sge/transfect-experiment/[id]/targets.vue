@@ -146,6 +146,7 @@ const columnDefs = {
     },
     notes: {
         index: 18,
+        header: 'Notes',
     },
 }
 
@@ -199,7 +200,7 @@ editFormFieldDefs['snvLib'] = {
     index: 5,
 }
 editFormFieldDefs['sgRna'] = {
-    label: 'SNV library',
+    label: 'sgRNA',
     component: 'AutoCompleter',
     props: {
         searchBaseUrl: `${config.public.apiBase}/plasmids`,
@@ -209,7 +210,7 @@ editFormFieldDefs['sgRna'] = {
         dropdown: true,
         searchWhereClause: {'==': [{'var': 'plasmidType'}, 'guide']}
     },
-    index: 5,
+    index: 8,
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
