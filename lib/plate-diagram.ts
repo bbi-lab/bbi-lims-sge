@@ -136,7 +136,6 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
                     d3.select(this)
                         .style('stroke', <ValueFn<any, any, string>>wellOutlineColor)
                     // raise the selected wells so their outlines aren't obscured by those of unselected wells
-                    console.log(d.inSelectionRange || d.selected)
                     if (d.inSelectionRange || d.selected) {
                         d3.select(this)
                             .style('opacity', 1.0)

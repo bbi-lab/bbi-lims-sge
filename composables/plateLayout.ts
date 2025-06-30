@@ -163,6 +163,7 @@ export const usePlateLayout = () => {
 
     const emptySelectedWells = async () => {
         await reloadPlate()
+
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
             return _.get(x, 'data.wellContents')
@@ -334,6 +335,7 @@ export const usePlateLayout = () => {
     return {
         // data
         plateWithWellContents,
+        plateWithPlateDiagramWells,
         setPlateId,
         loadPlate,
 

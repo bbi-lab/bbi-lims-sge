@@ -39,10 +39,7 @@ const loadPlate = async () => {
         },
     )
 
-    plateWithWellSpecs.value = {
-        ...plateLayout.plateWithWellContents.value,
-        wells: _.values(plateLayout.wellSpecs.value),
-    }
+    plateWithWellSpecs.value = plateLayout.plateWithPlateDiagramWells.value
 
     pcrExperiment.value = await RecordService.getRecord(
         `${config.public.apiBase}/pcr-experiments`,
@@ -197,6 +194,12 @@ const rowActions = {
 }
 
 const layoutPreseq1 = async () => {
+    const wellContentsDetected = _.some(plateLayout.plateWithWellContents.value?.wells, (well) => !_.isEmpty(well.wellContents))
+    if (wellContentsDetected) {
+        toast.add({ severity: 'warn', summary: 'Wells already populated', detail: 'Auto-layout requires plate to be empty', life: 3000 })
+        return
+    }
+
     let lastColumnPopulated = 0
     const allWellContentsToAdd = []
 
@@ -301,6 +304,8 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-star"
                         v-tooltip="{value: 'Auto-layout', showDelay: 500}"
+                        :disabled="!_.isEmpty(plateLayout.selectedWells.value) || _.isEmpty(plateLayout.selectionTableRef.value?.selectedRecords)"
+
                         @click="layoutPreseq1" />
                 </template>
                 <template #button2>
