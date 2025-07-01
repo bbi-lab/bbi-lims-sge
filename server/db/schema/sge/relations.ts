@@ -397,7 +397,12 @@ const plasmidExperimentsRelationsConfig: RelationsConfig = {
             table: plates,
             schema: createSelectSchema(plates),
             fields: [plates.plasmidExperimentId],
-        }
+        },
+        snvLibs: {
+            table: plasmids,
+            schema: createSelectSchema(plasmids),
+            fields: [plasmids.plasmidExperimentId],
+        },
     },
 }
 export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
