@@ -13,14 +13,11 @@ const rowActions = {
     plates: {
         label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
         action: (data: any) => {
-            router.push({path:`/sge/plate-layout/guide-rna/${data.plates[0].id}`})
+            router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Plates',
-        disabled: (data: any) => {
-            return !_.size(data.plates)
-        },
     }
 }
 const columnDefs = {
