@@ -138,7 +138,7 @@ const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
 const selectPlasmidsSchema = createSelectSchema(plasmids)
-const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
+const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true}).partial()
 const updatePlasmidsSchema = insertPlasmidsSchema
 
 const selectOligosSchema = createSelectSchema(oligos)
