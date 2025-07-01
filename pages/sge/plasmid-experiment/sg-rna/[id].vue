@@ -4,6 +4,7 @@ import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
+const router = useRouter()
 const plateLayout = usePlateLayout()
 const toast = useToast()
 
@@ -32,37 +33,6 @@ const selectionTableOptions = [
 watch(selectionTableName, async (newValue) => {
     selectionTableKey.value += 1
 })
-
-const displayWithClause = {}
-// const displayWithClause = computed(() => {
-//     if (selectionTableName.value === 'plasmids') {
-//         return {
-//             wellContents: {
-//                 with: {
-//                     well: {
-//                         columns: {
-//                             id: true,
-//                             x: true,
-//                             y: true,
-//                         },
-//                         with: {
-//                             plate: {
-//                                 columns: {
-//                                     id: true,
-//                                     name: true,
-//                                     plateType: true,
-//                                 }
-//                             }
-//                         }
-//                     },
-//                 },
-//             },
-//             plasmid: true,
-//         }
-//     } else {
-//         return {}
-//     }
-// })
 
 const whereClause = computed(() => {
     if (selectionTableName.value === 'plasmids') {
@@ -182,7 +152,6 @@ const rowActions = {
                 :canExport="false"
                 :where="whereClause"
                 :columnDefs="columnDefs"
-                :withClause="displayWithClause"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 selectionMode="single"
@@ -205,6 +174,18 @@ const rowActions = {
                     {{ plate.name }}
                     <Button
                         class="ml-2"
+                        severity="info"
+                        v-tooltip="{ value: 'Plate layout', showDelay: 300 }"
+                        @click="router.push({path:`/sge/plate-layout/guide-rna/${plate.id}`})"
+                    >
+                        <template #icon>
+                            <span class="p-button-icon-right inline-block">
+                               <PhGridNineFill />
+                            </span>
+                        </template>
+                    </Button>
+                    <Button
+                        class="ml-2"
                         icon="pi pi-times"
                         severity="danger"
                         outlined
@@ -217,6 +198,15 @@ const rowActions = {
                 </div>
                 <div v-for="snvLib of plasmidExperiment.snvLibs" class="mb-2">
                     {{ snvLib.name }}
+                    <Button
+                        as="a"
+                        class="ml-2"
+                        severity="info"
+                        icon="pi pi-spinner"
+                        v-tooltip="{ value: 'Plasmid', showDelay: 300 }"
+                        :href="`/sge/plasmids?id=${snvLib.id}`"
+                    >
+                    </Button>
                     <Button
                         class="ml-2"
                         icon="pi pi-times"

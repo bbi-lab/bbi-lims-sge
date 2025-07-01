@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
-import { RecordService } from '~/utils/service/RecordService'
-import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const crudTable = useCrudTable()
-const config = useRuntimeConfig()
-const toast = useToast()
 const router = useRouter()
 
 const rowActions = {
     plates: {
-        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+        label: (data: any) => {
+            const plateCount = data.plates?.length || 0
+            const snvLibCount = data.snvLibs?.length || 0
+            return `${plateCount} plate${plateCount > 1 ? 's' : ''} ▪ ${snvLibCount} SNV-lib${snvLibCount > 1 ? 's' : ''}`},  // for this to work, we need to expand plates
         action: (data: any) => {
             router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
-        iconComponent: PhGridNineFill,
-        iconPos: 'right',
         tooltip: 'Plates',
     }
 }
@@ -28,6 +25,9 @@ const columnDefs = {
         path: 'technician.name',
     },
     plates: {
+        display: false,
+    },
+    snvLibs: {
         display: false,
     },
     name: {
@@ -49,10 +49,14 @@ const fieldDefs = {
     plates: {
         display: false,
     },
+    snvLibs: {
+        display: false,
+    },
 }
 const withClause = {
     technician: { columns: { name: true } },
-    plates: { columns: { id: true } }
+    plates: { columns: { id: true } },
+    snvLibs: { columns: { id: true } },
 }
 
 </script>
