@@ -22,8 +22,9 @@ const dtKey = ref(uuidv4())
 const dtId = useId()
 const invalidRecordMessages = ref()
 
-const clearRouteQueryParams = () => {
-    router.push({ path: route.path })
+const clearRouteQueryParams = async () => {
+    await router.push({ path: route.path })
+    loadTableData()
 }
 
 const refreshFormattedValues = (ids?: string[]) => {
