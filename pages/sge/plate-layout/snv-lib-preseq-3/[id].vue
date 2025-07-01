@@ -190,6 +190,7 @@ const columnDefs = {
     cycleId: { display: false },
     targets: { display: false },
     pcrExperimentId: { display: false},
+    plasmidExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     wellsCount: { display: false },

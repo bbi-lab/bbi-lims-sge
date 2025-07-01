@@ -151,6 +151,7 @@ const columnDefs = computed(() => {
             cycleName: { header: 'Cycle' },
             cycleId: { display: false },
             pcrExperimentId: { display: false},
+            plasmidExperimentId: { display: false},
             sizeX: { display: false },
             sizeY: { display: false },
             wellsCount: { display: false },
@@ -271,10 +272,10 @@ const rowActions = {
         },
     },
 }
-const selectionTableOptions = ref([
+const selectionTableOptions = [
     { label: 'Plates', value: 'view-plates-with-well-counts' },
     { label: 'DNA', value: 'nucleic-acids' },
-])
+]
 watch(selectionTableName, (newValue, oldValue) => {
     if (newValue != oldValue) {
         selectionTableKey.value += 1
