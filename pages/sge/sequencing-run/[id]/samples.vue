@@ -24,6 +24,17 @@ const frozenRecordIds = computed(() => {
     }), 'id')
 })
 
+const invalidRecords = computed(() => {
+    const nucleicAcidIdCounts = _.countBy(sequencingRunSamplesTable.value?.records || [], 'nucleicAcidId')
+    const recordsWithRepeatedNucleicAcids = _.filter(sequencingRunSamplesTable.value?.records || [], (record) => {
+        return _.get(nucleicAcidIdCounts, record.nucleicAcidId) > 1
+    }).map((record) => ({id: record.id, count: nucleicAcidIdCounts[record.nucleicAcidId]}))
+
+    return _.mapValues(_.keyBy(recordsWithRepeatedNucleicAcids, 'id'), (val, id) => {
+        return {messages: [`Repeated ${val?.count} times.`]}
+    })
+})
+
 watch (selectedPlateId, async (newValue) => {
     if (newValue) {
         plateLayout.setPlateId(newValue)
@@ -192,6 +203,7 @@ const columnDefs = {
                 :canEdit="false"
                 :canDelete="true"
                 :columnDefs="columnDefs"
+                :invalidRecords="invalidRecords"
                 :where="{'==': [{'var': 'sequencingRunId'}, sequencingRun.id]}"
                 v-model:frozenRecordIds="frozenRecordIds"
             >
