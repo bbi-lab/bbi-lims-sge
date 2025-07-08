@@ -29,6 +29,9 @@ const fieldDefs = {
             dropdown: true,
         }
     },
+    wellContents: {
+        display: false,
+    },
 }
 const displayWithClause = {
     target: {
