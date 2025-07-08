@@ -273,7 +273,7 @@ function didClickDeleteSelectedRecords(event: MouseEvent) {
             emit('did-delete-multiple-records', result)
         }
     }).catch(error => {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
     })
     displayDeleteConfirmation.value = false
 }

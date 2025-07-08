@@ -64,7 +64,7 @@ export const usePlateLayout = () => {
         try {
             await loadPlate(wellContentsWithClause.value)
         } catch (error: any) {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         }
     }
 
@@ -175,7 +175,7 @@ export const usePlateLayout = () => {
                 wellContentsToDelete
             )
         } catch (error: any) {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(deletedRecords)) {
@@ -228,7 +228,7 @@ export const usePlateLayout = () => {
                 recordsToAdd
             ) as WellContent[]
         } catch (error: any) {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(newRecords)) {

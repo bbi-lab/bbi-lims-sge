@@ -11,7 +11,7 @@ const passwordsMatch = computed(() => newPassword1.value == newPassword2.value)
 
 const updatePassword = function(event) {
     $fetch(`${config.public.apiBase}/users/changepassword`, {
-        method: 'POST', 
+        method: 'POST',
         body: {
             oldPassword: oldPassword.value,
             newPassword: newPassword2.value
@@ -23,7 +23,7 @@ const updatePassword = function(event) {
         newPassword1.value = null
         newPassword2.value = null
     }).catch(error => {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
     })
 }
 </script>
@@ -47,8 +47,8 @@ const updatePassword = function(event) {
             <div v-if="changingPassword" >
                 <div class="mb-5">
                     <label for="oldPasswordInput" class="block font-bold mb-3">Current password</label>
-                    <Password 
-                        id="oldPasswordInput" 
+                    <Password
+                        id="oldPasswordInput"
                         v-model="oldPassword"
                         placeholder="Password"
                         :toggleMask="true"
@@ -57,8 +57,8 @@ const updatePassword = function(event) {
                 </div>
                 <div class="mb-5">
                     <label for="newPasswordInput1" class="block font-bold mb-3">New password</label>
-                    <Password 
-                        id="newPasswordInput1" 
+                    <Password
+                        id="newPasswordInput1"
                         v-model="newPassword1"
                         placeholder="Password"
                         :toggleMask="true"
@@ -67,8 +67,8 @@ const updatePassword = function(event) {
                 </div>
                 <div class="mb-5">
                     <label for="newPasswordInput2" class="block font-bold mb-3">Confirm new password</label>
-                    <Password 
-                        id="newPasswordInput2" 
+                    <Password
+                        id="newPasswordInput2"
                         v-model="newPassword2"
                         placeholder="Password"
                         :toggleMask="true"
@@ -78,7 +78,7 @@ const updatePassword = function(event) {
                 </div>
                 <div>
                     <Button class="m-1" icon="pi" text label="Cancel" @click="changingPassword=false" />
-                    <Button 
+                    <Button
                         class="m-1"
                         icon="pi"
                         label="Submit"

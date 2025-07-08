@@ -165,7 +165,7 @@ async function saveRecords() {
         if (formElement.value && _.isArray(error.data?.data)) {
             addErrorsToForm(formElement.value, error.data.data)
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         }
     })
 }

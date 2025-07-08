@@ -11,7 +11,7 @@ export const RecordService = {
             const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
             return record
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -40,7 +40,7 @@ export const RecordService = {
             const records =  await $fetch(`${baseUrl}`, fetchOptions) as any[]
             return records
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -54,7 +54,7 @@ export const RecordService = {
             const schema = await $fetch(`${schemaBaseUrl}/${schemaName}${query}`)
             return schema
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -74,7 +74,7 @@ export const RecordService = {
                 return updatedRecords
             }
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -94,7 +94,7 @@ export const RecordService = {
                 return updatedRecords
             }
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -108,7 +108,7 @@ export const RecordService = {
             const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: [values]})
             return _.get(newRecords, 0)
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -122,7 +122,7 @@ export const RecordService = {
             const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: recordsCopy})
             return newRecords
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -135,7 +135,7 @@ export const RecordService = {
             const deletedRecord = await $fetch(`${baseUrl}/${id}`, {method: 'DELETE'})
             return deletedRecord
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error
@@ -152,7 +152,7 @@ export const RecordService = {
             }
             return deletedRecords
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
                 showLoginModal()
             } else {
                 throw error

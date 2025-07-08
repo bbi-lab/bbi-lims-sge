@@ -130,7 +130,7 @@ const addToSequencingRun = async (selectedWells: any) => {
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.statusMessage || error.message,
+            detail: error.data?.statusMessage || error.data?.message,
             life: 10000,
         })
     }

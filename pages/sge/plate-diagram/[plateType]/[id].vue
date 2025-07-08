@@ -401,7 +401,7 @@ const layoutPreseq1 = async () => {
         try {
             wellContentsAdded = await assignNucleicAcidsToPreseq1Plate(contentSelectionTable.value.selectedRecords, plateWithWellContents.value, config.public.apiBase)
         } catch (error: any) {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
 
@@ -456,7 +456,7 @@ const emptySelectedWells = async () => {
             wellContentsToDelete
         )
     } catch (error: any) {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         return
     }
     if (!_.isEmpty(deletedRecords)) {

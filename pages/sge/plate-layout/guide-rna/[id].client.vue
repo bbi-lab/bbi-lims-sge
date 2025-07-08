@@ -99,10 +99,10 @@ const submitSgRnaOligos = async (data: any[]) => {
             })
         }
     } catch (error: any) {
-        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
+        if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
             showLoginModal()
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 5000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
         }
     }
 }

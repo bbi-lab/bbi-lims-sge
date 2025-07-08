@@ -136,7 +136,7 @@ function deleteRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
             emit('record-delete', result)
         }).catch(error => {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         })
     }
     displayDeleteConfirmation.value = false
@@ -191,7 +191,7 @@ async function saveRecord() {
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             }
         })
     } else if (!props.recordId && formSchema.value) {
@@ -205,7 +205,7 @@ async function saveRecord() {
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             }
         })
     }
