@@ -151,7 +151,7 @@ const fieldDefs: FieldDefinitions = {
                             columns: {symbol: true}
                         }
                     })
-                    record.name = `${region.gene.symbol}_${_.replace(region.name, /exon[\s]+/gi , 'X')}`
+                    record.name = _.toUpper(`${region.gene.symbol}_${_.replace(region.name, /exon[\s]+/gi , 'X')}`)
                 }
             }
         },
