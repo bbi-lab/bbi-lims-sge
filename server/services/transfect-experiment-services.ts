@@ -3,11 +3,12 @@ import { db } from '~/server/utils/db'
 import _ from 'lodash'
 import { transfectTargets } from '../db/schema/sge/transfect-experiment'
 
-export async function updateTargets(experimentId: string, transfectionTargets: {id: string, targetId: string, transfectionCount: number}[]) {
+export async function updateTargets(experimentId: string, transfectionTargets: {id: string, targetId: string, transfectionCount: number, negativeControl: boolean}[]) {
     const existingTransfectionTargets = await db.select({
         id: transfectTargets.id,
         targetId: transfectTargets.targetId,
         transfectionCount: transfectTargets.transfectionCount,
+        negativeControl: transfectTargets.negativeControl,
     }).from(transfectTargets)
         .where(eq(transfectTargets.experimentId, experimentId))
 
@@ -25,6 +26,7 @@ export async function updateTargets(experimentId: string, transfectionTargets: {
                 await db.update(transfectTargets).set({
                     targetId: transfectionTarget.targetId,
                     transfectionCount: transfectionTarget.transfectionCount,
+                    negativeControl: transfectionTarget.negativeControl,
                 }).where(eq(transfectTargets.id, transfectionTarget.id))
             }
         }

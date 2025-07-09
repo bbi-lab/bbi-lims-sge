@@ -250,7 +250,7 @@ const fieldDefs: FieldDefinitions = {
                 {
                     variableField: 'transfectionCount',
                     component: 'InputNumber',
-                    label: '# of transfections',
+                    label: 'transfections per replicate',
                     componentProps:{
                         inputClass: 'w-40',
                         defaultValue: 3,
@@ -258,6 +258,11 @@ const fieldDefs: FieldDefinitions = {
                         allowEmpty: false,
                         min: 1,
                     },
+                },
+                {
+                    variableField: 'negativeControl',
+                    component: 'Checkbox',
+                    label: 'NC',
                 },
             ]
         }

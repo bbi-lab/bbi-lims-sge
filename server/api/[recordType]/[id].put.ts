@@ -27,7 +27,8 @@ export default defineEventHandler(async (event) => {
                 return {
                     id: x.id,
                     targetId: x.targetId,
-                    transfectionCount: x.transfectionCount
+                    transfectionCount: x.transfectionCount,
+                    negativeControl: x.negativeControl
                 }
             })
             await updateTargets(id, transfectionTargets)
