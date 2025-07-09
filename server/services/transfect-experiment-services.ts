@@ -19,7 +19,13 @@ export async function updateTargets(experimentId: string, transfectionTargets: {
     // add or update transfection targets that are in the incoming list
     transfectionTargets.forEach(async (transfectionTarget) => {
         if (!transfectionTarget.id) {
-            await db.insert(transfectTargets).values({...transfectionTarget, id: undefined, experimentId})
+            await db.insert(transfectTargets).values({
+                ...transfectionTarget,
+                id: undefined,
+                experimentId,
+                xfectBuffer: 700, // default value
+                xfectPolymerPerTransfect: 9, // default value
+            })
         } else {
             const existingTarget = _.find(existingTransfectionTargets, {id: transfectionTarget.id})
             if (!_.isEqual(existingTarget, transfectionTarget)) {

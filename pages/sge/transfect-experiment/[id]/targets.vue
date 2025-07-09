@@ -214,6 +214,8 @@ editFormFieldDefs['sgRna'] = {
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
+_.set(addFormFieldDefs, 'xfectBuffer.props.defaultValue', 700)
+_.set(addFormFieldDefs, 'xfectPolymerPerTransfect.props.defaultValue', 9)
 
 const readonlyValues = {experimentId: route.params.id}
 
