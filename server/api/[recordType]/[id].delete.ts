@@ -1,5 +1,6 @@
 import { deleteRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
+import { parseDeleteError } from '~/server/utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -22,6 +23,8 @@ export default defineEventHandler(async (event) => {
 
         return deletedRecord
     } catch (e: any) {
+        await parseDeleteError(e, id)
+
         throw createError({
             statusCode: 400,
             statusMessage: e.message

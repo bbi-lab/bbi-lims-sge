@@ -1,6 +1,8 @@
 import { type JsonLogicAll } from "json-logic-js"
 import _ from 'lodash'
 import jsonLogic, { type JsonLogicFilter } from 'json-logic-js'
+import { eq } from "drizzle-orm"
+import { wellContents } from "../db/schema/sge/well"
 
 export interface QueryParams {
     where: string,
@@ -93,4 +95,38 @@ export function parsePutPostError(error: any, recordType: string) {
     }
 
     return {error, data}
+}
+
+export async function parseDeleteError(error: any, recordId: string) {
+    // convert delete error due to constraint to more user-friendly error message
+    const regex = /^update or delete on table "([^"]*)" violates foreign key constraint "([^"]*)" on table "([^"]*)"/
+    const match = error.message?.match(regex)
+
+    if (match && match.length === 4) {
+        const relatedTable = match[3]
+
+        if (relatedTable == 'well_contents') {
+            const fieldName = `${_.camelCase(_.trimEnd(match[1], 's'))}Id`
+            if (wellContents[fieldName]) {
+                const relatedWellContents = await db.query.wellContents.findMany({
+                    with: {
+                        well: {
+                            with: {
+                                plate: {
+                                    columns: {
+                                        name: true,
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    where: eq(wellContents[fieldName], recordId),
+                })
+                const plateNames = _.uniq(_.map(relatedWellContents, 'well.plate.name'))
+                error.message = `Cannot delete due to presence in plate(s)/storage box(es): ${_.join(plateNames, ',')}.`
+            }
+        } else {
+            error.message = `Cannot delete due to related records in ${_.startCase(relatedTable)} table.`
+        }
+    }
 }

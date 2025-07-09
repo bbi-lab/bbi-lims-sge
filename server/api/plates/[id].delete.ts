@@ -25,6 +25,8 @@ export default defineEventHandler(async (event) => {
         const deletedRecord = await deleteRecord(plates, id)
         return deletedRecord
     } catch (e: any) {
+        await parseDeleteError(e, id)
+
         throw createError({
             statusCode: 400,
             statusMessage: e.message
