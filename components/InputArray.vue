@@ -31,7 +31,17 @@ onMounted(() => {
 <template>
     <div class="flex flex-wrap">
         <template v-for="c of components" :key="modelValue![c.variableField]">
-            <IftaLabel class="mr-2 mb-2">
+            <span v-if="c.component=='Checkbox'">
+                <label :for="c.variableField">
+                    {{ c.label || c.variableField}}
+                </label>
+                <br>
+                <Checkbox
+                    v-model="modelValue![c.variableField]"
+                    :binary="true" />
+            </span>
+
+            <IftaLabel v-else class="mr-2 mb-2">
                 <AutoCompleter
                     v-if="c.component=='AutoCompleter'"
                     v-model="modelValue![c.variableField]"
@@ -52,6 +62,6 @@ onMounted(() => {
                 </label>
             </IftaLabel>
         </template>
-        <Button v-if="props.canDelete" class="mb-2" icon="pi pi-times" severity="secondary" outlined @click="didClickDelete" />
+        <Button v-if="props.canDelete" class="mb-2 ml-2 mt-auto mb-auto h-fit" icon="pi pi-times" severity="danger" size="small" outlined @click="didClickDelete" />
     </div>
 </template>
