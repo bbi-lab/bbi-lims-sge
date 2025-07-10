@@ -3,7 +3,7 @@ import { users } from '../user'
 import { targets } from './target'
 import { lots } from './lots'
 import { cycles } from './cycle'
-import { plasmids } from './plasmid'
+import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 
 export const transfectExperiments = pgTable('transfect_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -20,11 +20,11 @@ export const transfectTargets = pgTable('transfect_targets', {
   experimentId: uuid('experiment_id').references(() => transfectExperiments.id).notNull(),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
   snvLibraryConc: doublePrecision('snv_library_conc'),
-  snvLib: uuid('snv_lib').references(() => plasmids.id),
+  snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   // snvLibraryTo3ugVol: doublePrecision('snv_library_to_3ug_vol'),
   // sgRna: varchar('name', { length: 255 }),
   sgRnaConc: doublePrecision('sg_rna_conc'),
-  sgRna: uuid('sg_rna').references(() => plasmids.id),
+  sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
   // sgRnaTo12ugVol: doublePrecision('sg_rna_to_12ug_vol'),
   sgRnaNegControl: varchar('sg_rna_neg_control', { length: 255 }),
   hprt1SgRnaConc: doublePrecision('hprt1_sg_rna_conc'),

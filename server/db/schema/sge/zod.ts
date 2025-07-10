@@ -5,7 +5,7 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
-import { plasmidExperiments } from './plasmid-experiment'
+import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates, viewPlatesWithWellCounts } from './plate'
@@ -14,7 +14,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { plasmids } from './plasmid'
+import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
@@ -69,9 +69,17 @@ const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usa
 const insertTransfectLotUsageSchema = selectTransfectLotUsageSchema.omit({id: true}).partial()
 const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
-const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema})
-const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: true})
-const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
+// const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema})
+// const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: true})
+// const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
+
+const selectSgRnaCloningExperimentsSchema = createSelectSchema(sgRnaCloningExperiments, {transformedOn: nullableDateSchema})
+const insertSgRnaCloningExperimentsSchema = selectSgRnaCloningExperimentsSchema.omit({id: true})
+const updateSgRnaCloningExperimentsSchema = insertSgRnaCloningExperimentsSchema
+
+const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {transformedOn: nullableDateSchema})
+const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
+const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
@@ -137,9 +145,17 @@ const selectReagentsSchema = createSelectSchema(reagents)
 const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
-const selectPlasmidsSchema = createSelectSchema(plasmids)
-const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true}).partial()
-const updatePlasmidsSchema = insertPlasmidsSchema
+// const selectPlasmidsSchema = createSelectSchema(plasmids)
+// const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true}).partial()
+// const updatePlasmidsSchema = insertPlasmidsSchema
+
+const selectSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids)
+const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids).omit({id: true})
+const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
+
+const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)
+const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids).omit({id: true})
+const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
 
 const selectOligosSchema = createSelectSchema(oligos)
 const insertOligosSchema = createSelectSchema(oligos).omit({id: true})
@@ -211,10 +227,20 @@ export const schemas = {
         insert: insertTransfectLotUsageSchema,
         update: updateTransfectLotUsageSchema,
     },
-    plasmidExperiments: {
-        select: selectPlasmidExperimentsSchema,
-        insert: insertPlasmidExperimentsSchema,
-        update: updatePlasmidExperimentsSchema,
+    // plasmidExperiments: {
+    //     select: selectPlasmidExperimentsSchema,
+    //     insert: insertPlasmidExperimentsSchema,
+    //     update: updatePlasmidExperimentsSchema,
+    // },
+    sgRnaCloningExperiments: {
+        select: selectSgRnaCloningExperimentsSchema,
+        insert: insertSgRnaCloningExperimentsSchema,
+        update: updateSgRnaCloningExperimentsSchema,
+    },
+    snvLibCloningExperiments: {
+        select: selectSnvLibCloningExperimentsSchema,
+        insert: insertSnvLibCloningExperimentsSchema,
+        update: updateSnvLibCloningExperimentsSchema,
     },
     pcrExperiments: {
         select: selectPcrExperimentsSchema,
@@ -261,10 +287,20 @@ export const schemas = {
         insert: insertExtractionLotUsageSchema,
         update: updateExtractionLotUsageSchema,
     },
-    plasmids: {
-        select: selectPlasmidsSchema,
-        insert: insertPlasmidsSchema,
-        update: updatePlasmidsSchema,
+    // plasmids: {
+    //     select: selectPlasmidsSchema,
+    //     insert: insertPlasmidsSchema,
+    //     update: updatePlasmidsSchema,
+    // },
+    sgRnaPlasmids: {
+        select: selectSgRnaPlasmidsSchema,
+        insert: insertSgRnaPlasmidsSchema,
+        update: updateSgRnaPlasmidsSchema,
+    },
+    snvLibPlasmids: {
+        select: selectSnvLibPlasmidsSchema,
+        insert: insertSnvLibPlasmidsSchema,
+        update: updateSnvLibPlasmidsSchema,
     },
     nucleicAcids: {
         select: selectNucleicAcidsSchema,

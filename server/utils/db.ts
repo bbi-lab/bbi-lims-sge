@@ -13,11 +13,11 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
-import {plasmids} from '../db/schema/sge/plasmid'
+import {sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
-import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
+import { sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
@@ -47,7 +47,9 @@ export const schema = {
   genes,
   regions,
   cycles,
-  plasmids,
+  // plasmids,
+  snvLibPlasmids,
+  sgRnaPlasmids,
   nucleicAcids,
   oligos,
   pellets,
@@ -56,7 +58,9 @@ export const schema = {
   transfectExperiments,
   transfectTargets,
   transfectLotUsage,
-  plasmidExperiments,
+  // plasmidExperiments,
+  sgRnaCloningExperiments,
+  snvLibCloningExperiments,
   extractionExperiments,
   extractionLotUsage,
   amplificationPrimers,
@@ -85,7 +89,9 @@ export const schema = {
   regionsRelations: sgeRelations.regionsRelations,
   genesRelations: sgeRelations.genesRelations,
   cyclesRelations: sgeRelations.cyclesRelations,
-  plasmidsRelations: sgeRelations.plasmidsRelations,
+  // plasmidsRelations: sgeRelations.plasmidsRelations,
+  snvLibPlasmidsRelations: sgeRelations.snvLibPlasmidsRelations,
+  sgRnaPlasmidsRelations: sgeRelations.sgRnaPlasmidsRelations,
   nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
   oligosRelations: sgeRelations.oligosRelations,
   pelletsRelations: sgeRelations.pelletsRelations,
@@ -93,7 +99,9 @@ export const schema = {
   transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
   transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
   transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
-  plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
+  // plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
+  sgRnaCloningExperimentsRelations: sgeRelations.sgRnaCloningExperimentsRelations,
+  snvLibCloningExperimentsRelations: sgeRelations.snvLibCloningExperimentsRelations,
   extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
   extractionLotUsageRelations: sgeRelations.extractionLotUsageRelations,
   amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,

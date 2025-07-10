@@ -8,7 +8,7 @@ import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPr
 import { nucleicAcids } from './nucleic-acid'
 import { pellets } from './pellet'
 import { users } from '../user'
-import { plasmids } from './plasmid'
+import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { oligos } from './oligos'
 
 export const wells = pgTable('wells', {
@@ -29,7 +29,9 @@ export const wellContents = pgTable('well_contents', {
   indexPrimerId: uuid('index_primer_id').references(() => indexPrimers.id),
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
-  plasmidId: uuid('plasmid_id').references(() => plasmids.id),
+  // plasmidId: uuid('plasmid_id').references(() => plasmids.id),
+  sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
+  snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   oligoId: uuid('oligo_id').references(() => oligos.id),
 }, (t) => [
   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.plasmidId}, ${t.oligoId}) = 1`),

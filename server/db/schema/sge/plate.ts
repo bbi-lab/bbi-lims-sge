@@ -9,14 +9,16 @@ import { wellContents, wellContentSources, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 import { targets } from './target'
-import { plasmidExperiments } from './plasmid-experiment'
+import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 
 export type PlateType = 'pellet-storage' | 'amp-storage' | 'lin-storage' | 'ha-storage' | 'guide-rna-storage' | 'guide-rna' | 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3' | 'seq-index'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
-  plasmidExperimentId: uuid('plasmid_experiment_id').references(() => plasmidExperiments.id),
+  //plasmidExperimentId: uuid('plasmid_experiment_id').references(() => plasmidExperiments.id),
+  sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
+  snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id),
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
@@ -34,7 +36,8 @@ const plateTypesCte = `with plate_types(plate_type_value, plate_type_label, plat
 export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   id: uuid('id'),
   pcrExperimentId: uuid('pcr_experiment_id'),
-  plasmidExperimentId: uuid('plasmid_experiment_id'),
+  sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id'),
+  snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id'),
   name: varchar('name', { length: 255 }),
   sizeX: smallint('size_x'),
   sizeY: smallint('size_y'),
@@ -51,7 +54,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
     ${plates.pcrExperimentId},
-    ${plates.plasmidExperimentId},
+    ${plates.sgRnaCloningExperimentId},
+    ${plates.snvLibCloningExperimentId},
     ${plates.name},
     ${plates.sizeX},
     ${plates.sizeY},
