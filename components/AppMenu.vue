@@ -21,14 +21,21 @@ const model = ref([
             { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
             { label: 'Genes', iconComponent: DnaIcon, to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
-            { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
+            { label: 'Plasmids', icon: 'pi pi-fw pi-spinner',
+                items: [
+                    { label: 'sgRNA' },
+                    { label: 'SNV Library' },
+                    { label: 'Homology arm' },
+                ]
+            },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
             { label: 'Oligos', iconComponent: FluentMolecule16Filled, to: '/sge/oligos' },
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
-                    { label: 'Plasmid', to: '/sge/plasmid-experiments' },
+                    { label: 'sgRNA Cloning' },
+                    { label: 'SNV Library Cloning' },
                     { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },
                     { label: 'PCR', to: '/sge/pcr-experiments' },

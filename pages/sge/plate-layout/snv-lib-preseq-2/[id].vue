@@ -17,22 +17,21 @@ const whereClause = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['plasmidId'],
-        selectionTableRecordIdPaths: ['plasmidId'],
+        colorBy: ['snvLibPlasmidId'],
+        selectionTableRecordIdPaths: ['snvLibPlasmidId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const plasmidName = _.get(well, ['wellContents', 0, 'plasmid', 'name'])
+            const plasmidName = _.get(well, ['wellContents', 0, 'snvLibPlasmid', 'name'])
             return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : plasmidName
         },
     }
     loadPlate()
-    whereClause.value = {'==': [{var: 'plasmidType'}, 'library']}
 })
 
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            plasmid: true,
+            snvLibPlasmid: true,
         },
     )
 
@@ -74,7 +73,7 @@ const displayWithClause = {
             name: true
         },
     },
-    plasmidExperiment: {
+    snvLibCloningExperiment: {
         columns: {
             name: true
         },
@@ -135,14 +134,15 @@ const columnDefs = {
         path: 'target.displayValue',
         index: 1,
     },
-    plasmidExperimentId: {
+    snvLibCloningExperimentId: {
         display: false,
     },
-    plasmidExperiment: {
+    snvLibCloningExperiment: {
+        header: 'SNV-lib Cloning Experiment',
         format: (x: any) => {
-            return x.plasmidExperiment ? x.plasmidExperiment.name : ''
+            return x.snvLibCloningExperiment ? x.snvLibCloningExperiment.name : ''
         },
-        path: 'plasmidExperiment.displayValue',
+        path: 'snvLibCloningExperiment.displayValue',
     },
 }
 const rowActions = {
@@ -156,7 +156,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'plasmidId')
+                await plateLayout.assignIdToSelectedWells(data.id, 'snvLibPlasmidId')
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
@@ -176,16 +176,14 @@ const frozenRecordIds = computed(() => {
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
-                v-if="whereClause"
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="plasmids"
+                tableName="snv-lib-plasmids"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"
                 :canEdit="false"
                 :canExport="false"
                 :withClause="displayWithClause"
-                :where="whereClause"
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"

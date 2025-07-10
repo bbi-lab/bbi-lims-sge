@@ -27,7 +27,7 @@ watch (selectedSourcePlate, async (newValue) => {
 
         if (newValue.plateType === 'snv-lib-preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['plasmidId'],
+                colorBy: ['snvLibPlasmidId'],
                 selectionTableRecordIdPaths: [(x: any) => {
                     return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
                         return _.get(wellContentSource, 'sourceWell.plate.id')
@@ -35,12 +35,12 @@ watch (selectedSourcePlate, async (newValue) => {
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const plasmidName = _.get(well, ['wellContents', 0, 'plasmid', 'name'])
-                    return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : wellCoordinate
+                    const plasmidName = _.get(well, ['wellContents', 0, 'snvLibPlasmid', 'name'])
+                    return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (SNV-lib)` : wellCoordinate
                 },
             }
             await sourcePlateLayout.loadPlate({
-                plasmid: true,
+                snvLibPlasmid: true,
                 wellContentSources: {
                     with: {
                         sourceWell: {
@@ -110,8 +110,8 @@ onMounted(() => {
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                if (wellContent.plasmid) {
-                    return `${wellContent.plasmid.name} (SNV-lib)`
+                if (wellContent.snvLibPlasmid) {
+                    return `${wellContent.snvLibPlasmid.name} (SNV-lib)`
                 } else if (wellContent.indexPrimer) {
                     return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
                 } else {
@@ -130,7 +130,7 @@ onMounted(() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            plasmid: true,
+            snvLibPlasmid: true,
             indexPrimer: true,
             wellContentSources: {
                 with: {
@@ -172,7 +172,7 @@ const transferSelectedWellsContents = async () => {
             const destinationWell = destinationWellsSorted[index]
             return _.map(wellContents, (wellContent) => {
                 return {
-                    ..._.pick(wellContent, ['plasmidId', 'indexPrimerId']),
+                    ..._.pick(wellContent, ['snvLibPlasmidId', 'indexPrimerId']),
                     wellId: destinationWell.id,
                     sourceWellIds: [well.id],
                     createdBy: (user.value as User)?.id,
@@ -190,7 +190,8 @@ const columnDefs = {
     cycleId: { display: false },
     targets: { display: false },
     pcrExperimentId: { display: false},
-    plasmidExperimentId: { display: false},
+    snvLibCloningExperimentId: { display: false },
+    sgRnaCloningExperimentId: { display: false },
     sizeX: { display: false },
     sizeY: { display: false },
     wellsCount: { display: false },

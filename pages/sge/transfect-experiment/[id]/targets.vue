@@ -190,12 +190,11 @@ editFormFieldDefs['snvLib'] = {
     label: 'SNV library',
     component: 'AutoCompleter',
     props: {
-        searchBaseUrl: `${config.public.apiBase}/plasmids`,
+        searchBaseUrl: `${config.public.apiBase}/snv-lib-plasmids`,
         searchFields: ['name'],
         valueField: 'id',
         displayFields: ['name'],
         dropdown: true,
-        searchWhereClause: {'==': [{'var': 'plasmidType'}, 'library']}
     },
     index: 5,
 }
@@ -203,12 +202,11 @@ editFormFieldDefs['sgRna'] = {
     label: 'sgRNA',
     component: 'AutoCompleter',
     props: {
-        searchBaseUrl: `${config.public.apiBase}/plasmids`,
+        searchBaseUrl: `${config.public.apiBase}/sg-rna-plasmids`,
         searchFields: ['name'],
         valueField: 'id',
         displayFields: ['name'],
         dropdown: true,
-        searchWhereClause: {'==': [{'var': 'plasmidType'}, 'guide']}
     },
     index: 8,
 }
