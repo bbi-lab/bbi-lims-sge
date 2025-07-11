@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import type { extractionLotUsage } from '~/server/db/schema/sge/extraction-experiment'
+import { nucleicAcids } from '~/server/db/schema/sge/nucleic-acid'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import Molecule from '~icons/mdi/molecule'
 
@@ -73,6 +75,12 @@ const rowActions = {
 const fieldDefs = {
     extractedOn: {
         type: 'date'
+    },
+    nucleicAcids: {
+        display: false,
+    },
+    extractionLotUsage: {
+        display: false,
     },
 }
 </script>
