@@ -60,7 +60,6 @@ const rowActions = {
         action: (data: any) => {
             router.push({path:'/sge/sg-rna-plasmids', query: {'targetId': data.id}})
         },
-        disabled: () => true,
         tooltip: 'sgRNA',
     },
     snvLibPlasmids: {

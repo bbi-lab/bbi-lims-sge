@@ -23,7 +23,7 @@ const model = ref([
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner',
                 items: [
-                    { label: 'sgRNA' },
+                    { label: 'sgRNA', to: '/sge/sg-rna-plasmids' },
                     { label: 'SNV Library' },
                     { label: 'Homology arm' },
                 ]

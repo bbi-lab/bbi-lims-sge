@@ -34,15 +34,15 @@ const columnDefs = {
         type: 'string',
         index: 2,
     },
-    plasmidExperiment: {
-        path: 'plasmidExperiment.name',
+    sgRnaCloningExperiment: {
+        path: 'sgRnaCloningExperiment.name',
         index: 3,
     },
     externalLink: {
         format: 'hyperlink',
         index: 4,
     },
-    plasmidExperimentId: {
+    sgRnaCloningExperimentId: {
         display: false
     },
     targetId: {
@@ -50,11 +50,11 @@ const columnDefs = {
     }
 }
 const fieldDefs: FieldDefinitions = {
-    plasmidExperimentId: {
+    sgRnaCloningExperimentId: {
         label: 'Experiment',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/plasmid-experiments`,
+            searchBaseUrl: `${config.public.apiBase}/sg-rna-cloning-experiments`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -89,7 +89,7 @@ const displayWithClause = {
             }
         }
     },
-    plasmidExperiment: {
+    sgRnaCloningExperiment: {
         columns: {name: true},
     }
 }
@@ -100,9 +100,9 @@ const displayWithClause = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="plasmids"
+                tableName="sg-rna-plasmids"
                 schemaName="select"
-                title="Plasmids"
+                title="sgRNA Plasmids"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :where="whereClauses"
@@ -116,10 +116,10 @@ const displayWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="plasmids"
+                tableName="sg-rna-plasmids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true}"
+                :withClause="{sgRnaCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -127,10 +127,10 @@ const displayWithClause = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="plasmids"
+                tableName="sg-rna-plasmids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="{plasmidExperiment: true}"
+                :withClause="{sgRnaCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
@@ -138,7 +138,7 @@ const displayWithClause = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="plasmids"
+                tableName="sg-rna-plasmids"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
