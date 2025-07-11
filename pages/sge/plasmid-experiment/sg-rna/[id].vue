@@ -83,6 +83,19 @@ const loadPlate = async () => {
     }
 }
 
+const transformOligos = async () => {
+    const plate = plateLayout.plateWithWellContents.value
+    if (!plate || !Array.isArray(plate.wells)) {
+        toast.add({severity: 'warn', summary: 'Plate data is not loaded', life: 3000})
+        return
+    }
+    for (const well of plate.wells) {
+        if (well.wellContents.length == 2) {
+            // TODO convert oligos to plasmid
+        }
+    }
+}
+
 const transferSelectedWellsContents = async () => {
     const sourceWells = sourcePlateLayout!.selectedWells.value
     const destinationWells = plateLayout.selectedWells.value
@@ -200,29 +213,40 @@ const whereClause ={
                     </div>
                 </SplitterPanel>
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
-                    <PlateDiagram
-                        :ref="plateLayout.setPlateDiagramRef"
-                        v-if="plateWithWellSpecs"
-                        v-model="plateWithWellSpecs"
-                        :plateType="plateWithWellSpecs.plateType"
-                        :sizeX="plateWithWellSpecs.sizeX"
-                        :sizeY="plateWithWellSpecs.sizeY"
-                        @well-range-selected="plateLayout.wellRangeSelected"
-                        @well-selection-cleared="plateLayout.wellSelectionCleared"
-                        @all-wells-selected="plateLayout.selectedAllWells"
-                        @well-contents-updated="plateLayout.updatedWellContents" >
-                        <template #header>
-                            {{ plateWithWellSpecs.name }}
-                        </template>
-                        <template #button1>
-                            <Button
-                                class="p-button-secondary"
-                                icon="pi pi-trash"
-                                v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                                :disabled="_.isEmpty(plateLayout.selectedWells.value)"
-                                @click="plateLayout.emptySelectedWells" />
-                        </template>
-                    </PlateDiagram>
+                    <div class="flex flex-col">
+                        <PlateDiagram
+                            :ref="plateLayout.setPlateDiagramRef"
+                            v-if="plateWithWellSpecs"
+                            v-model="plateWithWellSpecs"
+                            :plateType="plateWithWellSpecs.plateType"
+                            :sizeX="plateWithWellSpecs.sizeX"
+                            :sizeY="plateWithWellSpecs.sizeY"
+                            @well-range-selected="plateLayout.wellRangeSelected"
+                            @well-selection-cleared="plateLayout.wellSelectionCleared"
+                            @all-wells-selected="plateLayout.selectedAllWells"
+                            @well-contents-updated="plateLayout.updatedWellContents" >
+                            <template #header>
+                                {{ plateWithWellSpecs.name }}
+                            </template>
+                            <template #button1>
+                                <Button
+                                    class="p-button-secondary"
+                                    icon="pi pi-trash"
+                                    v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
+                                    :disabled="_.isEmpty(plateLayout.selectedWells.value)"
+                                    @click="plateLayout.emptySelectedWells" />
+                            </template>
+                        </PlateDiagram>
+                        <Button
+                            class="w-fit ml-auto mr-auto mt-4 p-4"
+                            icon="pi pi-play"
+                            iconPos="right"
+                            severity="primary"
+                            label="Transform"
+                            @click="transformOligos">
+                        </Button>
+                        <br/>
+                    </div>
                 </SplitterPanel>
             </Splitter>
         </SplitterPanel>
