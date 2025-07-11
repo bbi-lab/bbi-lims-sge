@@ -34,7 +34,7 @@ const model = ref([
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
-                    { label: 'sgRNA Cloning' },
+                    { label: 'sgRNA Cloning', to: '/sge/sg-rna-cloning-experiments' },
                     { label: 'SNV Library Cloning' },
                     { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },
