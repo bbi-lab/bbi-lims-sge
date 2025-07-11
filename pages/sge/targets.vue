@@ -46,20 +46,30 @@ const displayWithClause = Object.freeze({
             pellets: true
         }
     },
-    plasmids: {
+    sgRnaPlasmids: {
+        columns: {id: true}
+    },
+    snvLibPlasmids: {
         columns: {id: true}
     },
 })
 
 const rowActions = {
-    plasmids: {
-        label: (data: any) => { return `${data.plasmids?.length || 0}`},
+    sgRnaPlasmids: {
+        label: (data: any) => { return `${data.sgRnaPlasmids?.length || 0} sgRNA`},
         action: (data: any) => {
-            router.push({path:'/sge/plasmids', query: {'targetId': data.id}})
+            router.push({path:'/sge/sg-rna-plasmids', query: {'targetId': data.id}})
         },
-        icon: 'pi pi-fw pi-spinner',
-        iconPos: 'right',
-        tooltip: 'Plasmids',
+        disabled: () => true,
+        tooltip: 'sgRNA',
+    },
+    snvLibPlasmids: {
+        label: (data: any) => { return `${data.snvLibPlasmids?.length || 0} SNV-lib`},
+        action: (data: any) => {
+            router.push({path:'/sge/snv-lib-plasmids', query: {'targetId': data.id}})
+        },
+        disabled: () => true,
+        tooltip: 'SNV-lib',
     },
     pellets: {
         label: (data: any) => { return `${_.sumBy(data.transfectTargets, (x: any) => x.pellets.length)}`},
