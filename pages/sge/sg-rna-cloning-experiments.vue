@@ -1,9 +1,23 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
+import { RecordService } from '~/utils/service/RecordService'
 
 const crudTable = useCrudTable()
 const router = useRouter()
+const config = useRuntimeConfig()
+
+async function didAddRecord(event: any) {
+    // add corresponding plate
+    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
+        name: event.name,
+        sizeX: 12,
+        sizeY: 8,
+        plateType: 'guide-rna',
+        sgRnaCloningExperimentId: event.id,
+    })
+    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
+    crudTable.state.showAddForm = false
+}
 
 const rowActions = {
     plates: {
@@ -68,7 +82,7 @@ const withClause = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="crudTable.didAddRecord"
+                @recordAdd="didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
