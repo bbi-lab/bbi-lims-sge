@@ -4,7 +4,6 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { updateTargets } from '~/server/services/transfect-experiment-services'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { setRelatedPlates } from '~/server/services/sequencing-run-services'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -32,9 +31,6 @@ export default defineEventHandler(async (event) => {
                 }
             })
             await updateTargets(id, transfectionTargets)
-        } else if (_.camelCase(recordType) == 'sequencingRuns' && _.isArray(body.plates)) {
-            const plateIds = _.map(body.plates, 'id')
-            await setRelatedPlates(plateIds, id)
         }
 
         const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, parsedValues)
