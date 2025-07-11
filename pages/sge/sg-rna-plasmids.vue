@@ -35,6 +35,7 @@ const columnDefs = {
         index: 2,
     },
     sgRnaCloningExperiment: {
+        header: 'sgRNA Cloning Experiment',
         path: 'sgRnaCloningExperiment.name',
         index: 3,
     },

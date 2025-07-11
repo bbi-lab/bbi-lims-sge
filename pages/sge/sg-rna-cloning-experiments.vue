@@ -10,7 +10,7 @@ const rowActions = {
         label: (data: any) => {
             const plateCount = data.plates?.length || 0
             const sgRnaPlasmidCount = data.sgRnaPlasmids?.length || 0
-            return `${plateCount} plate${plateCount > 1 ? 's' : ''} ▪ ${sgRnaPlasmidCount} sgRNA plasmid${sgRnaPlasmidCount > 1 ? 's' : ''}`},  // for this to work, we need to expand plates
+            return `${plateCount} plate${plateCount == 0 || plateCount > 1 ? 's' : ''} ▪ ${sgRnaPlasmidCount} sgRNA plasmid${sgRnaPlasmidCount == 0 || sgRnaPlasmidCount > 1 ? 's' : ''}`},  // for this to work, we need to expand plates
         action: (data: any) => {
             router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
