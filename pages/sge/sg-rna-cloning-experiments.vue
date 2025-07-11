@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
+import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const crudTable = useCrudTable()
 const router = useRouter()
@@ -21,16 +22,16 @@ async function didAddRecord(event: any) {
 
 const rowActions = {
     plates: {
-        label: (data: any) => {
-            const plateCount = data.plates?.length || 0
-            const sgRnaPlasmidCount = data.sgRnaPlasmids?.length || 0
-            return `${plateCount} plate${plateCount == 0 || plateCount > 1 ? 's' : ''} ▪ ${sgRnaPlasmidCount} sgRNA plasmid${sgRnaPlasmidCount == 0 || sgRnaPlasmidCount > 1 ? 's' : ''}`},  // for this to work, we need to expand plates
+        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
         action: (data: any) => {
             router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
+        iconComponent: PhGridNineFill,
+        iconPos: 'right',
         tooltip: 'Plates',
     }
 }
+
 const columnDefs = {
     technician: {
         path: 'technician.name',
