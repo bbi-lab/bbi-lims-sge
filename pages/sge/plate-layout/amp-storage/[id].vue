@@ -25,13 +25,43 @@ onMounted(async() => {
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
+
+    plateLayout.setExportPlateLayoutConfig({
+        columns: [
+            { header: 'Well Position', data: (well: any) => {
+                return `${wellCoordinateToChar(well.y)}${well.x}`
+            }},
+            { header: 'Primer', data: (well: any) => {
+                return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'name']) || ''
+            }},
+            { header: 'Project', data: (well: any) => {
+                return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'project', 'name']) || ''
+            }},
+            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'name']) || '' },
+        ],
+        sortBy: (well: any) => {
+            return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'name'])
+        }
+    })
     loadPlate()
 })
 
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            amplificationPrimer: true,
+            amplificationPrimer: {
+                with: {
+                    target: {
+                        with: {
+                            project: {
+                                columns: {
+                                    name: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         },
     )
 
@@ -195,10 +225,12 @@ const frozenRecordIds = computed(() => {
                 :plateType="plateWithWellSpecs.plateType"
                 :sizeX="plateWithWellSpecs.sizeX"
                 :sizeY="plateWithWellSpecs.sizeY"
+                :showExportButton="true"
                 @well-range-selected="plateLayout.wellRangeSelected"
                 @well-selection-cleared="plateLayout.wellSelectionCleared"
                 @all-wells-selected="plateLayout.selectedAllWells"
-                @well-contents-updated="plateLayout.updatedWellContents" >
+                @well-contents-updated="plateLayout.updatedWellContents"
+                @did-click-export-plate-layout="plateLayout.exportPlateLayout" >
                 <template #header>
                     {{ plateWithWellSpecs.name }}
                 </template>
