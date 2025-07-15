@@ -6,6 +6,7 @@ import type { Well, WellContent } from "~/server/db/schema/sge/well"
 import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
+import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
 
 type WellSpecs = {
     [key: string]: {
@@ -30,6 +31,15 @@ interface wellContentDisplayConfig {
     tooltip?: Function | null
 }
 
+interface ExportPlateLayoutColumnConfig {
+    header: string,
+    data: Function | string,
+}
+interface ExportPlateLayoutConfig {
+    filename?: string,
+    columns: ExportPlateLayoutColumnConfig[],
+}
+
 export const usePlateLayout = () => {
     const plateWithWellContents = ref<PlateWithWellContents>()
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
@@ -43,6 +53,8 @@ export const usePlateLayout = () => {
     const { user } = useUserSession()
     const plateId = ref()
 
+    let exportPlateLayoutConifg: ExportPlateLayoutConfig
+
     const setPlateId = (id: string) => {
         plateId.value = id
     }
@@ -53,6 +65,11 @@ export const usePlateLayout = () => {
     const setPlateDiagramRef = (el: any) => {
         plateDiagramRef.value = el
     }
+
+    const setExportPlateLayoutConfig = (config: ExportPlateLayoutConfig) => {
+        exportPlateLayoutConifg = config
+    }
+
     const plateWithPlateDiagramWells = computed(() => {
         return {
             ...plateWithWellContents.value,
@@ -332,6 +349,34 @@ export const usePlateLayout = () => {
         selectedWells.value = []
     }
 
+    const exportPlateLayout = async () => {
+        if (plateWithWellContents.value && exportPlateLayoutConifg) {
+            const rows = []
+
+            // column headers row
+            rows.push(_.map(exportPlateLayoutConifg.columns, 'header'))
+
+            // data rows
+            for (const wellWithContents of plateWithWellContents.value.wells) {
+
+                const row = []
+                for (const column of exportPlateLayoutConifg.columns) {
+                    if (_.isFunction(column.data)) {
+                        row.push(column.data(wellWithContents))
+                    } else {
+                        row.push(_.get(wellWithContents, column.data as _.PropertyPath, ''))
+                    }
+                }
+                rows.push(row)
+            }
+            const wb = XlsxUtils.book_new()
+            const ws = XlsxUtils.aoa_to_sheet(rows)
+
+            XlsxUtils.book_append_sheet(wb, ws, 'Sheet1')
+            writeFileXLSX(wb, `${exportPlateLayoutConifg.filename ?? plateWithWellContents.value.name}.xlsx`)
+        }
+    }
+
     return {
         // data
         plateWithWellContents,
@@ -363,5 +408,9 @@ export const usePlateLayout = () => {
         assignIdToSelectedWells,
         addWellContents,
         poolPreSeq1PlateToSelectedWells,
+
+        // export plate layout
+        exportPlateLayout,
+        setExportPlateLayoutConfig,
     }
 }

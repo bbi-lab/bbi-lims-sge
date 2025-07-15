@@ -27,6 +27,9 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    showExportButton: {
+        type: Boolean,
+    },
     plateType: {
         type: String as PropType<PlateType>,
         required: true,
@@ -55,6 +58,7 @@ const emit = defineEmits([
     'well-selection-cleared',
     'all-wells-selected',
     'well-contents-updated',
+    'did-click-export-plate-layout',
 ])
 
 function wellRangeSelected(wells: PlateDiagramWell[]) {
@@ -135,6 +139,13 @@ defineExpose({
                         </span>
                     </template>
                 </Button>
+                <Button
+                    v-if="showExportButton"
+                    v-tooltip="{value: 'Export', showDelay: 500}"
+                    @click="emit('did-click-export-plate-layout')"
+                    severity="secondary"
+                    icon="pi pi-file-export"
+                />
                 <slot name="button1" />
                 <slot name="button2" />
                 <slot name="button3" />
