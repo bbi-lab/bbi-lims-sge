@@ -85,9 +85,7 @@ const submitSgRnaOligos = async (data: any[]) => {
                 summary: 'sgRNA oligos imported',
                 life: 3000,
             })
-            _.forEach(result as any[], (x) => {
-                plateLayout.selectionTableRef.value.addOrRefreshRecordId(x.id)
-            })
+            plateLayout.selectionTableRef.value.addOrRefreshRecordIds(_.map(result as any[], 'id'))
             await loadPlate()
             // force a re-render of the plate diagram
             plateDiagramKey.value += 1

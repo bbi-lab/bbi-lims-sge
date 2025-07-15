@@ -227,9 +227,7 @@ export const usePlateLayout = () => {
             ..._.flatten(_.map(oldValues || [], 'selectionTableRecordIds')),,
         ])))
 
-        selectionTableIdsToRefresh.forEach((id) => {
-            selectionTableRef.value.addOrRefreshRecordId(id)
-        })
+        selectionTableRef.value.addOrRefreshRecordIds(selectionTableIdsToRefresh)
     }
 
     interface WellContentsAndSources extends Partial<WellContent> {

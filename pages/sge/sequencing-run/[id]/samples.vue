@@ -121,9 +121,7 @@ const addToSequencingRun = async (selectedWells: any) => {
                     detail: `${sequencingRunSamplesToAdd.length} samples added to sequencing run.`,
                     life: 3000,
                 })
-                _.forEach(newRecords, (record) => {
-                    sequencingRunSamplesTable.value.addOrRefreshRecordId(record.id)
-                })
+                sequencingRunSamplesTable.value.addOrRefreshRecordIds(_.map(newRecords, 'id'))
             }
         }
     } catch (error: any) {

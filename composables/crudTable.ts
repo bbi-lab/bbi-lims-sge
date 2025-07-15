@@ -31,11 +31,11 @@ export const useCrudTable = () => {
     }
 
     const didAddRecord = (event: any) => {
-        tableRef.value.addOrRefreshRecordId(event.id)
+        tableRef.value.addOrRefreshRecordIds([event.id])
         state.showAddForm = false
     }
     const didUpdateRecord = (event: any) => {
-        tableRef.value.addOrRefreshRecordId(event.id)
+        tableRef.value.addOrRefreshRecordIds([event.id])
         state.showEditForm = false
     }
     const didDeleteRecord = (event: any) => {
@@ -53,9 +53,7 @@ export const useCrudTable = () => {
         state.showMultipleEditForm = false
     }
     const didUpdateMultipleRecords = (event: any) => {
-        event.forEach((e: any) => {
-            if (e.id) tableRef.value.addOrRefreshRecordId(e.id)
-        })
+        tableRef.value.addOrRefreshRecordIds(event.map((event: any) => event.id))
         state.showMultipleEditForm = false
     }
 

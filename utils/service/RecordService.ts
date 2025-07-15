@@ -25,14 +25,15 @@ export const RecordService = {
         return record.data as FetchType
     },
 
-    async getRecordsByIds(baseUrl: string, ids: string[], withClause?: Object): Promise<any[]> {
-        const whereClause = {"in": [{"var": "id"}, ids]}
-        const fetchOptions = withClause ? {query: {with: withClause, where: whereClause}} : { query: {where: whereClause}}
+    async getRecordsByIds(baseUrl: string, ids: string[], withClause?: Object, expandEnums: boolean = false) {
+        const fetchOptions = {query: {expandEnums, where: {"in": [{"var": "id"}, ids]}}}
+        if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
+        // const fetchOptions = withClause ? {query: {with: withClause, where: whereClause}} : { query: {where: whereClause}}
         const records = await $fetch(`${baseUrl}`, fetchOptions) as any[]
         return records
     },
 
-    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false): Promise<any[]> {
+    async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false) {
         const fetchOptions = {query: {expandEnums}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
         if (where) _.set(fetchOptions, ['query', 'where'], where)

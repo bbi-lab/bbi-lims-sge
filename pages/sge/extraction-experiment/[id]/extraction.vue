@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
-import { nucleicAcids, VALID_PROTOCOLS, type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import { type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { pellets } from '~/server/db/schema/sge/pellet'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -37,8 +36,9 @@ const extractFromSelectedPellets = async () => {
                 detail: `${_.size(nucleicAcidsAdded)} nucleic acids added`,
                 life: 3000,
             })
+            // add nucleic acids to nucleic acids table and remove from pellets table
+            nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(nucleicAcidsAdded, 'id'))
             _.forEach(nucleicAcidsAdded, (x) => {
-                nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordId(x.id)
                 pelletsCrudTable.tableRef.value.removeRecordId(x.pelletId)
             })
             pelletsCrudTable.tableRef.value.selectedRecords = []
@@ -61,10 +61,7 @@ const extractFromSelectedPellets = async () => {
 }
 
 const didDeleteMultipleNucleicAcids = (event: any[]) => {
-    console.log(event)
-    event.forEach(e => {
-        pelletsCrudTable.tableRef.value.addOrRefreshRecordId(e.pelletId)
-    })
+    pelletsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(event, 'pelletId'))
 }
 const pelletsWithClause = Object.freeze({
     transfectTarget: {

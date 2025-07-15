@@ -344,15 +344,33 @@ const exportXLSX = function() {
     writeFileXLSX(wb, `${exportFilename.value}.xlsx`)
 }
 
-const addOrRefreshRecordId = async (recordId: string) => {
-    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
-    const existingRecordIndex = _.findIndex(records.value, {id: recordId})
-    if (existingRecordIndex!=-1) {
-        records.value[existingRecordIndex] = currentRecord
-    } else if (currentRecord){
-        records.value = _.concat(records.value, currentRecord)
+// const addOrRefreshRecordId = async (recordId: string) => {
+//     const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
+//     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
+//     if (existingRecordIndex!=-1) {
+//         records.value[existingRecordIndex] = currentRecord
+//     } else if (currentRecord){
+//         records.value = _.concat(records.value, currentRecord)
+//     }
+//     refreshFormattedValues([recordId])
+// }
+
+const addOrRefreshRecordIds = async (recordIds: string[]) => {
+    const currentRecords = await RecordService.getRecordsByIds(apiBaseUrl.value, recordIds, props.withClause, props.expandEnums)
+
+    const newRecordIds: string[] = []
+    for (const recordId of recordIds) {
+        const existingRecordIndex = _.findIndex(records.value, {id: recordId})
+        if (existingRecordIndex!=-1) {
+            records.value[existingRecordIndex] = _.find(currentRecords, {id: recordId})
+        } else {
+            newRecordIds.push(recordId)
+        }
     }
-    refreshFormattedValues([recordId])
+    if (!_.isEmpty(newRecordIds)) {
+        records.value = _.concat(records.value, _.filter(currentRecords, (x) => newRecordIds.includes(x.id)))
+    }
+    refreshFormattedValues(recordIds)
 }
 
 const removeRecordId = (recordId: string) => {
@@ -379,7 +397,7 @@ const exportOptions = ref([
         command: () => exportCSV()
     }
 ])
-defineExpose({ addOrRefreshRecordId, removeRecordId, selectedRecords, records })
+defineExpose({ addOrRefreshRecordIds, removeRecordId, selectedRecords, records })
 
 function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)

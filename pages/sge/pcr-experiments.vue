@@ -19,7 +19,7 @@ async function didAddRecord(event: any) {
         plateType: event.pcrType,
         pcrExperimentId: event.id,
     })
-    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
+    crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
     crudTable.state.showAddForm = false
 }
 

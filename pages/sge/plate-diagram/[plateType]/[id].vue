@@ -436,9 +436,7 @@ const updatedWellContents = async function(newValues: PlateDiagramWell[], oldVal
         ..._.flatten(_.map(newValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
         ..._.flatten(_.map(oldValues || [], (well) => { return _.compact(_.map(well.data?.wellContents, (contents) => { return _.get(contents, [wellContentsRelationName, 'id']) })) })),
     ])
-    contentSelectionTableIdsToRefresh.forEach((id) => {
-        contentSelectionTable.value.addOrRefreshRecordId(id)
-    })
+    contentSelectionTable.value.addOrRefreshRecordIds(contentSelectionTableIdsToRefresh)
     // forces frozen records to be re-evaluated when the well contents are being cleared
     selectedWells.value = _.filter(plateWithPlateDiagramWells.value?.wells, (x) => {
         return _.includes(_.map(newValues, 'id'), x.id)
@@ -467,9 +465,7 @@ const emptySelectedWells = async () => {
 
         if (tableName == 'view-plates-with-well-counts') {
             const plateIds = _.uniq(_.flattenDeep(_.map(oldValues, (x) => _.map(x.data.wellContents, (wellContent) => _.uniq(_.map(wellContent.wellContentSources, 'sourceWell.plate.id'))))))
-            for (const plateId of plateIds) {
-                contentSelectionTable.value.addOrRefreshRecordId(plateId)
-            }
+            contentSelectionTable.value.addOrRefreshRecordIds(plateIds)
         }
         toast.add({
             severity: 'info',
@@ -517,7 +513,7 @@ const rowActions = {
                             [oldValues]
                         )
                     }
-                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
+                    contentSelectionTable.value.addOrRefreshRecordIds([data.id])
                     toast.add({
                         severity: 'info',
                         summary: 'Updated well',
@@ -547,7 +543,7 @@ const rowActions = {
                             oldValues
                         )
                     }
-                    contentSelectionTable.value.addOrRefreshRecordId(data.id)
+                    contentSelectionTable.value.addOrRefreshRecordIds([data.id])
                     toast.add({
                         severity: 'info',
                         summary: 'Updated well contents',
