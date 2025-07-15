@@ -79,12 +79,12 @@ export default defineEventHandler(async (event) => {
                 statusCode: 400,
                 statusMessage: `Missing names for some records`,
             })
-        } else if (_.countBy(recordsMapped, 'name').length > 1) {
+        } else if (_.some(_.values(_.countBy(recordsMapped, 'name')), (x) => x > 1)) {
             throw createError({
                 statusCode: 400,
-                statusMessage: `Multiple records found with the same name: ${_.uniq(_.map(recordsMapped, 'name')).join(', ')}`,
+                statusMessage: `Multiple records found with the same name: ${_.keys(_.pickBy(_.countBy(recordsMapped, 'name'), (count) => count > 1)).join(', ')}`,
             })
-        } else if (_.some(_.countBy(recordsMapped, (x) => `${x.yCoordinate}${x.xCoordinate}`), (count) => count > 2)) {
+        } else if (_.some(_.values(_.countBy(recordsMapped, (x) => `${x.yCoordinate}${x.xCoordinate}`)), (count) => count > 2)) {
             const overloadedWells = _.pickBy(_.countBy(recordsMapped, (x) => `${x.yCoordinate}${x.xCoordinate}`), (count) => count > 2)
             throw createError({
                 statusCode: 400,
