@@ -23,6 +23,21 @@ const selectedSourcePlate = computed(() => {
     return plateLayout.selectionTableRef.value?.selectedRecords
 })
 
+const sgRnaOligoExportColumns = [
+    {
+        header: 'Well Position',
+        data: (well: any) => `${wellCoordinateToChar(well.y)}${well.x}`,
+    },
+    {
+        header: 'Oligo 1',
+        data: (well: any) => _.get(well, 'wellContents.0.oligo.name')
+    },
+    {
+        header: 'Oligo 2',
+        data: (well: any) => _.get(well, 'wellContents.1.oligo.name')
+    },
+]
+
 watch (selectedSourcePlate, async (newValue) => {
     if (newValue?.id) {
         sourcePlateLayout.setPlateId(newValue.id)
@@ -62,7 +77,15 @@ onMounted(async() => {
             return oligos ? _.size(oligos) : ''
         },
     }
+
+    plateLayout.setExportPlateLayoutConfig({
+        columns: sgRnaOligoExportColumns,
+    })
+
     sourcePlateLayout.wellContentsDisplayConfig.value = _.clone(plateLayout.wellContentsDisplayConfig.value)
+    sourcePlateLayout.setExportPlateLayoutConfig({
+        columns: sgRnaOligoExportColumns,
+    })
 
     if (plateId) {
         plateLayout.setPlateId(plateId)
@@ -190,10 +213,12 @@ const whereClause ={
                         :plateType="sourcePlateWithWellSpecs.plateType"
                         :sizeX="sourcePlateWithWellSpecs.sizeX"
                         :sizeY="sourcePlateWithWellSpecs.sizeY"
+                        :showExportButton="true"
                         @well-range-selected="sourcePlateLayout?.wellRangeSelected"
                         @well-selection-cleared="sourcePlateLayout?.wellSelectionCleared"
                         @all-wells-selected="sourcePlateLayout?.selectedAllWells"
-                        @well-contents-updated="sourcePlateLayout?.updatedWellContents" >
+                        @well-contents-updated="sourcePlateLayout?.updatedWellContents"
+                        @did-click-export-plate-layout="sourcePlateLayout?.exportPlateLayout" >
                         <template #header>
                             {{ sourcePlateWithWellSpecs.name }}
                         </template>
@@ -222,10 +247,12 @@ const whereClause ={
                             :plateType="plateWithWellSpecs.plateType"
                             :sizeX="plateWithWellSpecs.sizeX"
                             :sizeY="plateWithWellSpecs.sizeY"
+                            :showExportButton="true"
                             @well-range-selected="plateLayout.wellRangeSelected"
                             @well-selection-cleared="plateLayout.wellSelectionCleared"
                             @all-wells-selected="plateLayout.selectedAllWells"
-                            @well-contents-updated="plateLayout.updatedWellContents" >
+                            @well-contents-updated="plateLayout.updatedWellContents"
+                            @did-click-export-plate-layout="plateLayout.exportPlateLayout" >
                             <template #header>
                                 {{ plateWithWellSpecs.name }}
                             </template>
