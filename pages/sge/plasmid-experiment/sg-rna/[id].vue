@@ -162,6 +162,7 @@ const whereClause ={
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel class="overflow-scroll" :size="60">
+            <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
                 :key="selectionTableKey"
                 :ref="plateLayout.setSelectionTableRef"

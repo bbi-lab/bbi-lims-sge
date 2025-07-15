@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
                 'C': 'reverse',
             }
             const yCoord = wellCharToCoordinate(x.wellPosition.charAt(0))
-            const xCoord = parseInt(x.wellPosition.charAt(1))
+            const xCoord = parseInt(x.wellPosition.slice(1))
             return {
                 id: uuid(),
                 targetId,
@@ -78,6 +78,17 @@ export default defineEventHandler(async (event) => {
             throw createError({
                 statusCode: 400,
                 statusMessage: `Missing names for some records`,
+            })
+        } else if (_.countBy(recordsMapped, 'name').length > 1) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: `Multiple records found with the same name: ${_.uniq(_.map(recordsMapped, 'name')).join(', ')}`,
+            })
+        } else if (_.some(_.countBy(recordsMapped, (x) => `${x.yCoordinate}${x.xCoordinate}`), (count) => count > 2)) {
+            const overloadedWells = _.pickBy(_.countBy(recordsMapped, (x) => `${x.yCoordinate}${x.xCoordinate}`), (count) => count > 2)
+            throw createError({
+                statusCode: 400,
+                statusMessage: `More than two oligos assigned to well(s): ${_.keys(overloadedWells).join(', ')}`,
             })
         }
 
