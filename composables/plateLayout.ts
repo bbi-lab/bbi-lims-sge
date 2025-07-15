@@ -38,6 +38,7 @@ interface ExportPlateLayoutColumnConfig {
 interface ExportPlateLayoutConfig {
     filename?: string,
     columns: ExportPlateLayoutColumnConfig[],
+    sortBy?: Function | string | string[],
 }
 
 export const usePlateLayout = () => {
@@ -357,8 +358,8 @@ export const usePlateLayout = () => {
             rows.push(_.map(exportPlateLayoutConifg.columns, 'header'))
 
             // data rows
-            for (const wellWithContents of plateWithWellContents.value.wells) {
-
+            const wellsSorted = exportPlateLayoutConifg.sortBy ? _.sortBy(plateWithWellContents.value.wells, exportPlateLayoutConifg.sortBy) : _.sortBy(plateWithWellContents.value.wells, ['y', 'x'])
+            for (const wellWithContents of wellsSorted) {
                 const row = []
                 for (const column of exportPlateLayoutConifg.columns) {
                     if (_.isFunction(column.data)) {
