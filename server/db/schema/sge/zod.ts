@@ -18,7 +18,7 @@ import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
-import { sequencingRuns, sequencingRunSamples } from './sequencing-run'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 // import { viewSequencingRunErrors, viewSequencingRunWellContents } from './views'
 import { oligos } from './oligos'
 
@@ -132,6 +132,10 @@ const updateSequencingRunsSchema = insertSequencingRunsSchema
 const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
 const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true}).partial()
 const updateSequencingRunSamples = insertSequencingRunSamples
+
+const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
+const insertSequencingRunExternalSamples = selectSequencingRunExternalSamples.omit({id: true}).partial()
+const updateSequencingRunExternalSamples = insertSequencingRunExternalSamples
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -276,6 +280,11 @@ export const schemas = {
         select: selectSequencingRunSamples,
         insert: insertSequencingRunSamples,
         update: updateSequencingRunSamples,
+    },
+    sequencingRunExternalSamples: {
+        select: selectSequencingRunExternalSamples,
+        insert: insertSequencingRunExternalSamples,
+        update: updateSequencingRunExternalSamples,
     },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,

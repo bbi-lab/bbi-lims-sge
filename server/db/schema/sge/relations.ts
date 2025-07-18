@@ -19,7 +19,7 @@ import { reagents } from './reagents'
 // import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
-import { sequencingRuns, sequencingRunSamples } from './sequencing-run'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { oligos } from './oligos'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
@@ -260,6 +260,17 @@ const sequencingRunSamplesRelationsConfig: RelationsConfig = {
     },
 }
 export const sequencingRunSamplesRelations = relationsConfigToRelations(sequencingRunSamples, sequencingRunSamplesRelationsConfig)
+
+const sequencingRunExternalSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        sequencingRun: {
+            fields: [sequencingRunSamples.id],
+            referenceTable: sequencingRuns,
+            references: [sequencingRuns.id],
+        },
+    },
+}
+export const sequencingRunExternalSamplesRelations = relationsConfigToRelations(sequencingRunExternalSamples, sequencingRunExternalSamplesRelationsConfig)
 
 const projectsRelationsConfig: RelationsConfig = {
     many: {
@@ -760,4 +771,5 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,
     sequencingRunSamples: sequencingRunSamplesRelationsConfig,
+    sequencingRunExternalSamples: sequencingRunExternalSamplesRelationsConfig,
 }
