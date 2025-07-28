@@ -129,7 +129,7 @@ const insertSequencingRunsSchema = selectSequencingRunsSchema.omit({id: true}).p
 const updateSequencingRunsSchema = insertSequencingRunsSchema
 
 const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
-const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true}).partial()
+const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, createdAt: true}).partial()
 const updateSequencingRunSamples = insertSequencingRunSamples
 
 const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
@@ -187,9 +187,6 @@ const updateIndexPrimerSchema = insertIndexPrimerSchema
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
 const selectViewSequencingRunAllSamples = createSelectSchema(viewSequencingRunAllSamples)
-
-// const selectViewSequencingRunWellContentsSchema = createSelectSchema(viewSequencingRunWellContents)
-// const selectViewSequencingRunErrorsSchema = createSelectSchema(viewSequencingRunErrors)
 
 export const schemas = {
     // tables

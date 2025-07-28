@@ -17,6 +17,11 @@ const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 const toast = useToast()
 const sequencingRunSamplesTable = ref()
+const editingRecords = ref<any[]>([])
+const editingRecordType = ref<'internal' | 'external' | null>(null)
+
+const showRecordEditForm = computed(() => _.size(editingRecords.value) == 1)
+const showMultipleRecordEditForm = computed(() => editingRecords.value?.length > 1)
 
 const frozenRecordIds = computed(() => {
     const selectedWellIds = _.map(plateLayout.selectedWells.value, 'id')
@@ -93,6 +98,44 @@ onMounted(async () => {
     sequencingRun.value = await RecordService.getRecord(`${config.public.apiBase}/sequencing-runs`, route.params.id as string, {})
 })
 
+const didClickCancelEdit = () => {
+    editingRecords.value = []
+    editingRecordType.value = null
+}
+const didClickRecordEdit = (record: any) => {
+    editingRecords.value = [record]
+    editingRecordType.value = record.sampleType
+}
+const didClickMultipleRecordEdit = (records: any[]) => {
+    // check to make sure all records are of the same type
+    const recordTypes = _.uniq(_.map(records, 'sampleType'))
+    if (recordTypes.length > 1) {
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Cannot edit internal and external records together, select only one type.',
+            life: 5000,
+        })
+        return
+    }
+    editingRecords.value = records
+    editingRecordType.value = recordTypes[0]
+}
+const didUpdateRecord = (record: any) => {
+    sequencingRunSamplesTable.value.addOrRefreshRecordIds([record.id])
+    editingRecords.value = []
+    editingRecordType.value = null
+}
+const didUpdateRecords = (records: any[]) => {
+    sequencingRunSamplesTable.value.addOrRefreshRecordIds(_.map(records, 'id'))
+    editingRecords.value = []
+    editingRecordType.value = null
+}
+const didDeleteRecord = (record: any) => {
+    sequencingRunSamplesTable.value.removeRecordId(record.id)
+    editingRecords.value = []
+    editingRecordType.value = null
+}
 const addToSequencingRun = async (selectedWells: any) => {
     try {
         const sequencingRunSamplesToAdd = _.compact(_.map(selectedWells, ({data}) => {
@@ -170,6 +213,15 @@ const columnDefs = {
         index: 5,
     },
 }
+const internalSampleFieldDefs = {
+    sequencingRunId: { display: false },
+    nucleicAcidId: { display: false },
+    indexPrimer1Id: { display: false },
+    indexPrimer2Id: { display: false },
+    sourceWellId: { display: false },
+    createdAt: { display: false },
+}
+const externalSampleFieldDefs = {}
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -180,12 +232,15 @@ const columnDefs = {
                 tableName="view-sequencing-run-all-samples"
                 schemaName="select"
                 :canAdd="false"
-                :canEdit="false"
+                :canEdit="true"
+                :canEditMultiple="true"
                 :canDelete="true"
                 :columnDefs="columnDefs"
                 :invalidRecords="invalidRecords"
                 :where="{'==': [{'var': 'sequencingRunId'}, sequencingRun.id]}"
                 v-model:frozenRecordIds="frozenRecordIds"
+                @clickedRecordEdit="didClickRecordEdit"
+                @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
             >
                 <template #title>
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
@@ -207,7 +262,7 @@ const columnDefs = {
             </QuickTable>
         </SplitterPanel>
 
-        <SplitterPanel v-if="showPlatePanel || showExternalSamples" :size="smallerThanLg ? 100 : 50">
+        <SplitterPanel v-if="showPlatePanel || showExternalSamples || showRecordEditForm || showMultipleRecordEditForm" :size="smallerThanLg ? 100 : 50">
             <div v-if="showPlatePanel">
                 <div class="flex justify-end m-2">
                     <Button
@@ -260,6 +315,40 @@ const columnDefs = {
                         size="small"
                         @click="showExternalSamples=false" />
                 </div>
+            </div>
+            <div v-if="showRecordEditForm">
+                <QuickForm
+                    :recordId="editingRecords[0]?.id"
+                    schemaName="update"
+                    :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
+                    :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
+                    @recordUpdate="didUpdateRecord"
+                    @recordDelete="didDeleteRecord"
+                    @cancel="didClickCancelEdit" >
+                    <template #form-element-header>
+                        <hr />
+                        <div><b>Sample name:</b> {{ editingRecords[0].sampleName }}</div>
+                        <div><b>Sample type:</b> {{ editingRecords[0].sampleType }}</div>
+                        <div><b>Index Primer 1:</b> {{ editingRecords[0].indexPrimer1Label }}</div>
+                        <div><b>Index Primer 2:</b> {{ editingRecords[0].indexPrimer2Label }}</div>
+                        <div><b>Plate/well:</b> {{ editingRecords[0].sourceWell?.displayValue || '' }}</div>
+                        <hr />
+                    </template>
+                </QuickForm>
+            </div>
+            <div v-if="showMultipleRecordEditForm">
+                <QuickFormMultiple
+                    :recordIds="_.map(editingRecords, 'id')"
+                    schemaName="update"
+                    :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
+                    :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
+                    @recordsUpdate="didUpdateRecords"
+                    @cancel="didClickCancelEdit" >
+                    <template #form-element-header>
+                        <div><b>Sample Names:</b></div>
+                        <div>{{ _.join(_.map(editingRecords, 'sampleName'), ', ') }}</div>
+                    </template>
+                </QuickFormMultiple>
             </div>
         </SplitterPanel>
     </Splitter>
