@@ -8,6 +8,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const sequencingRun = ref()
 const showPlatePanel = ref(false)
+const showExternalSamples = ref(false)
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
 const selectedPlateId = ref()
@@ -31,7 +32,7 @@ const invalidRecords = computed(() => {
     }).map((record) => ({id: record.id, count: nucleicAcidIdCounts[record.nucleicAcidId]}))
 
     return _.mapValues(_.keyBy(recordsWithRepeatedNucleicAcids, 'id'), (val, id) => {
-        return {messages: [`Repeated ${val?.count} times.`]}
+        return {messages: [`Repeated (${val?.count}x)`]}
     })
 })
 
@@ -134,57 +135,39 @@ const addToSequencingRun = async (selectedWells: any) => {
     }
 }
 
-const displayWithClause = {
-    nucleicAcid: {
-        columns: {id: true},
-        with: {
-            pellet: {
-                name: true,
-            },
-        },
-    },
-    indexPrimer1: {
-        columns: {id: true, name: true, indexSequence: true, primerType: true},
-    },
-    indexPrimer2: {
-        columns: {id: true, name: true, indexSequence: true, primerType: true},
-    },
-    sourceWell: {
-        columns: {id: true, x: true, y: true},
-        with: {
-            plate: {
-                columns: {id: true, name: true, plateType: true},
-            },
-        },
-    },
-}
 const columnDefs = {
     sequencingRunId: { display: false},
     createdAt: { display: false },
     nucleicAcidId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
+    indexPrimer1Label: { display: false },
+    indexPrimer2Label: { display: false },
+    customIndexSeq1: { display: false },
+    customIndexSeq2: { display: false },
     sourceWellId: { display: false },
-    nucleicAcid: {
-        path: 'nucleicAcid.pellet.name',
-    },
+    sourceWellX: { display: false },
+    sourceWellY: { display: false },
+    sourcePlateName: { display: false },
+    nucleicAcid: { display: false},
+    sampleName: { index: 1 },
+    sampleType: { index: 2 },
     indexPrimer1: {
-        format: (data: any) => {
-            return data.indexPrimer1 ? `${data.indexPrimer1.indexSequence} (${data.indexPrimer1.primerType})` : ''
-        },
+        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer1Label : data.customIndexSeq1,
         path: 'indexPrimer1.displayValue',
+        index: 3,
     },
     indexPrimer2: {
-        format: (data: any) => {
-            return data.indexPrimer2 ? `${data.indexPrimer2.indexSequence} (${data.indexPrimer2.primerType})` : ''
-        },
+        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer2Label : data.customIndexSeq2,
         path: 'indexPrimer2.displayValue',
+        index: 4,
     },
     sourceWell: {
         format: (data: any) => {
-            return data.sourceWell ? `${data.sourceWell.plate.name}: ${wellCoordinateToChar(data.sourceWell.y)}${data.sourceWell.x}` : ''
+            return data.sourceWellId ? `${data.sourcePlateName}: ${wellCoordinateToChar(data.sourceWellY)}${data.sourceWellX}` : ''
         },
         path: 'sourceWell.displayValue',
+        index: 5,
     },
 }
 </script>
@@ -194,9 +177,8 @@ const columnDefs = {
             <QuickTable
                 ref="sequencingRunSamplesTable"
                 v-if="sequencingRun"
-                tableName="sequencing-run-samples"
+                tableName="view-sequencing-run-all-samples"
                 schemaName="select"
-                :withClause="displayWithClause"
                 :canAdd="false"
                 :canEdit="false"
                 :canDelete="true"
@@ -209,56 +191,74 @@ const columnDefs = {
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
                 </template>
                 <template #header-buttons>
-                    <Button
-                        v-if="sequencingRun"
-                        label="Add from plate"
-                        class="btn btn-primary"
-                        @click="showPlatePanel=true" />
+                    <span>
+                        <Button
+                            v-if="sequencingRun"
+                            label="Add from plate"
+                            class="btn btn-primary mr-2"
+                            @click="() => {showExternalSamples=false; showPlatePanel=true}" />
+                        <Button
+                            v-if="sequencingRun"
+                            label="Add external samples"
+                            class="btn btn-primary"
+                            @click="() => {showExternalSamples=true; showPlatePanel=false}" />
+                    </span>
                 </template>
             </QuickTable>
         </SplitterPanel>
 
-        <SplitterPanel v-if="showPlatePanel">
-            <div class="flex justify-end m-2">
-                <Button
-                    icon="pi pi-times"
-                    severity="secondary"
-                    size="small"
-                    @click="showPlatePanel=false" />
-            </div>
-            <div class="overflow-scroll h-full">
-                <div class="flex justify-center m-2">
-                    <AutoCompleter
-                        v-model="selectedPlateId"
-                        :searchBaseUrl="`${config.public.apiBase}/plates`"
-                        :searchWhereClause="{'==': [{'var': 'plateType'}, 'preseq-3']}"
-                        iftaLabel="Plate"
-                        dropdown
-                        hideClearButton
-                    />
+        <SplitterPanel v-if="showPlatePanel || showExternalSamples" :size="smallerThanLg ? 100 : 50">
+            <div v-if="showPlatePanel">
+                <div class="flex justify-end m-2">
+                    <Button
+                        icon="pi pi-times"
+                        severity="secondary"
+                        size="small"
+                        @click="showPlatePanel=false" />
                 </div>
-                <div class="flex justify-center m-2 pb-20">
-                    <PlateDiagram
-                        :key="plateDiagramKey"
-                        v-if="plateWithWellSpecs"
-                        :ref="plateLayout.setPlateDiagramRef"
-                        v-model="plateWithWellSpecs"
-                        :plateType="plateWithWellSpecs.plateType"
-                        :sizeX="plateWithWellSpecs.sizeX"
-                        :sizeY="plateWithWellSpecs.sizeY"
-                        @well-range-selected="plateLayout.wellRangeSelected"
-                        @well-selection-cleared="plateLayout.wellSelectionCleared"
-                        @all-wells-selected="plateLayout.selectedAllWells"
-                    >
-                        <template #button1>
-                            <Button
-                                class="p-button-secondary"
-                                icon="pi pi-plus"
-                                v-tooltip="{value: 'Add to sequencing run', showDelay: 500}"
-                                :disabled="_.isEmpty(plateLayout.selectedWells.value)"
-                                @click="addToSequencingRun(plateLayout.selectedWells.value)" />
-                        </template>
-                    </PlateDiagram>
+                <div class="overflow-scroll h-full">
+                    <div class="flex justify-center m-2">
+                        <AutoCompleter
+                            v-model="selectedPlateId"
+                            :searchBaseUrl="`${config.public.apiBase}/plates`"
+                            :searchWhereClause="{'==': [{'var': 'plateType'}, 'preseq-3']}"
+                            iftaLabel="Plate"
+                            dropdown
+                            hideClearButton
+                        />
+                    </div>
+                    <div class="flex justify-center m-2 pb-20">
+                        <PlateDiagram
+                            :key="plateDiagramKey"
+                            v-if="plateWithWellSpecs"
+                            :ref="plateLayout.setPlateDiagramRef"
+                            v-model="plateWithWellSpecs"
+                            :plateType="plateWithWellSpecs.plateType"
+                            :sizeX="plateWithWellSpecs.sizeX"
+                            :sizeY="plateWithWellSpecs.sizeY"
+                            @well-range-selected="plateLayout.wellRangeSelected"
+                            @well-selection-cleared="plateLayout.wellSelectionCleared"
+                            @all-wells-selected="plateLayout.selectedAllWells"
+                        >
+                            <template #button1>
+                                <Button
+                                    class="p-button-secondary"
+                                    icon="pi pi-plus"
+                                    v-tooltip="{value: 'Add to sequencing run', showDelay: 500}"
+                                    :disabled="_.isEmpty(plateLayout.selectedWells.value)"
+                                    @click="addToSequencingRun(plateLayout.selectedWells.value)" />
+                            </template>
+                        </PlateDiagram>
+                    </div>
+                </div>
+            </div>
+            <div v-if="showExternalSamples">
+                <div class="flex justify-end m-2">
+                    <Button
+                        icon="pi pi-times"
+                        severity="secondary"
+                        size="small"
+                        @click="showExternalSamples=false" />
                 </div>
             </div>
         </SplitterPanel>

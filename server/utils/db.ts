@@ -25,7 +25,7 @@ import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
-import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
+import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
 import { oligos } from '../db/schema/sge/oligos'
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
@@ -72,6 +72,7 @@ export const schema = {
 
   //views
   viewPlatesWithWellCounts,
+  viewSequencingRunAllSamples,
 
   // relations
   usersRelations,
