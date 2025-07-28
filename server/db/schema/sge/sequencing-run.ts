@@ -29,10 +29,11 @@ export const sequencingRunSamples = pgTable('sequencing_run_samples', {
 
 export const sequencingRunExternalSamples = pgTable('sequencing_run_external_samples', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id).notNull(),
+  projectName: varchar('project_name', { length: 255 }),
+  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id),
   externalSampleId: varchar('external_sample_id', { length: 255 }).notNull(),
   customIndexSeq1: varchar('custom_index_seq_1', { length: 50 }).notNull(),
-  customIndexSeq2: varchar('custom_index_seq_2', { length: 50 }).notNull(),
+  customIndexSeq2: varchar('custom_index_seq_2', { length: 50 }),
   millionReadsRequired: doublePrecision('million_reads_required'),
   overrideCycles: varchar('override_cycles', { length: 10 }).array(),
   notes: text('notes'),

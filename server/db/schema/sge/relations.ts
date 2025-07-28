@@ -233,7 +233,7 @@ export const sequencingRunsRelations = relationsConfigToRelations(sequencingRuns
 const sequencingRunSamplesRelationsConfig: RelationsConfig = {
     one: {
         sequencingRun: {
-            fields: [sequencingRunSamples.id],
+            fields: [sequencingRunSamples.sequencingRunId],
             referenceTable: sequencingRuns,
             references: [sequencingRuns.id],
         },
@@ -264,7 +264,7 @@ export const sequencingRunSamplesRelations = relationsConfigToRelations(sequenci
 const sequencingRunExternalSamplesRelationsConfig: RelationsConfig = {
     one: {
         sequencingRun: {
-            fields: [sequencingRunSamples.id],
+            fields: [sequencingRunExternalSamples.sequencingRunId],
             referenceTable: sequencingRuns,
             references: [sequencingRuns.id],
         },
