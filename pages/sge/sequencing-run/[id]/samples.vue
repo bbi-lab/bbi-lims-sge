@@ -224,8 +224,8 @@ const internalSampleFieldDefs = {
 const externalSampleFieldDefs = {}
 </script>
 <template>
-    <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
-        <SplitterPanel :size="smallerThanLg ? 100 : 50">
+    <Splitter class="h-full overflow-y-hidden" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
+        <SplitterPanel :size="50">
             <QuickTable
                 ref="sequencingRunSamplesTable"
                 v-if="sequencingRun"
@@ -238,6 +238,7 @@ const externalSampleFieldDefs = {}
                 :columnDefs="columnDefs"
                 :invalidRecords="invalidRecords"
                 :where="{'==': [{'var': 'sequencingRunId'}, sequencingRun.id]}"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 v-model:frozenRecordIds="frozenRecordIds"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
@@ -262,8 +263,8 @@ const externalSampleFieldDefs = {}
             </QuickTable>
         </SplitterPanel>
 
-        <SplitterPanel v-if="showPlatePanel || showExternalSamples || showRecordEditForm || showMultipleRecordEditForm" :size="smallerThanLg ? 100 : 50">
-            <div v-if="showPlatePanel">
+        <SplitterPanel v-if="showPlatePanel || showExternalSamples || showRecordEditForm || showMultipleRecordEditForm">
+            <template v-if="showPlatePanel">
                 <div class="flex justify-end m-2">
                     <Button
                         icon="pi pi-times"
@@ -271,8 +272,9 @@ const externalSampleFieldDefs = {}
                         size="small"
                         @click="showPlatePanel=false" />
                 </div>
-                <div class="overflow-scroll h-full">
-                    <div class="flex justify-center m-2">
+                <br/>
+                <div class="h-full w-full overflow-y-scroll pb-24">
+                    <div class="mt-2 mx-auto max-w-fit">
                         <AutoCompleter
                             v-model="selectedPlateId"
                             :searchBaseUrl="`${config.public.apiBase}/plates`"
@@ -282,7 +284,7 @@ const externalSampleFieldDefs = {}
                             hideClearButton
                         />
                     </div>
-                    <div class="flex justify-center m-2 pb-20">
+                    <div class="mt-2 mx-auto max-w-md max-w-fit">
                         <PlateDiagram
                             :key="plateDiagramKey"
                             v-if="plateWithWellSpecs"
@@ -306,8 +308,8 @@ const externalSampleFieldDefs = {}
                         </PlateDiagram>
                     </div>
                 </div>
-            </div>
-            <div v-if="showExternalSamples">
+            </template>
+            <div v-if="showExternalSamples"  class="overflow-y-scroll">
                 <div class="flex justify-end m-2">
                     <Button
                         icon="pi pi-times"
@@ -316,40 +318,40 @@ const externalSampleFieldDefs = {}
                         @click="showExternalSamples=false" />
                 </div>
             </div>
-            <div v-if="showRecordEditForm">
-                <QuickForm
-                    :recordId="editingRecords[0]?.id"
-                    schemaName="update"
-                    :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
-                    :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
-                    @recordUpdate="didUpdateRecord"
-                    @recordDelete="didDeleteRecord"
-                    @cancel="didClickCancelEdit" >
-                    <template #form-element-header>
-                        <hr />
-                        <div><b>Sample name:</b> {{ editingRecords[0].sampleName }}</div>
-                        <div><b>Sample type:</b> {{ editingRecords[0].sampleType }}</div>
-                        <div><b>Index Primer 1:</b> {{ editingRecords[0].indexPrimer1Label }}</div>
-                        <div><b>Index Primer 2:</b> {{ editingRecords[0].indexPrimer2Label }}</div>
-                        <div><b>Plate/well:</b> {{ editingRecords[0].sourceWell?.displayValue || '' }}</div>
-                        <hr />
-                    </template>
-                </QuickForm>
-            </div>
-            <div v-if="showMultipleRecordEditForm">
-                <QuickFormMultiple
-                    :recordIds="_.map(editingRecords, 'id')"
-                    schemaName="update"
-                    :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
-                    :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
-                    @recordsUpdate="didUpdateRecords"
-                    @cancel="didClickCancelEdit" >
-                    <template #form-element-header>
-                        <div><b>Sample Names:</b></div>
-                        <div>{{ _.join(_.map(editingRecords, 'sampleName'), ', ') }}</div>
-                    </template>
-                </QuickFormMultiple>
-            </div>
+            <QuickForm
+                v-if="showRecordEditForm"
+                :recordId="editingRecords[0]?.id"
+                schemaName="update"
+                :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
+                :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
+                @recordUpdate="didUpdateRecord"
+                @recordDelete="didDeleteRecord"
+                @cancel="didClickCancelEdit" >
+                <template #form-element-header>
+                    <hr />
+                    <div><b>Sample name:</b> {{ editingRecords[0].sampleName }}</div>
+                    <div><b>Sample type:</b> {{ editingRecords[0].sampleType }}</div>
+                    <div><b>Index Primer 1:</b> {{ editingRecords[0].indexPrimer1Label }}</div>
+                    <div><b>Index Primer 2:</b> {{ editingRecords[0].indexPrimer2Label }}</div>
+                    <div><b>Plate/well:</b> {{ editingRecords[0].sourceWell?.displayValue || '' }}</div>
+                    <hr />
+                </template>
+            </QuickForm>
+            <QuickFormMultiple
+                v-if="showMultipleRecordEditForm"
+                :recordIds="_.map(editingRecords, 'id')"
+                schemaName="update"
+                :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
+                :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
+                @recordsUpdate="didUpdateRecords"
+                @cancel="didClickCancelEdit" >
+                <template #form-element-header>
+                    <hr />
+                    <div><b>Sample Names:</b></div>
+                    <div class="w-96">{{ _.join(_.map(editingRecords, 'sampleName'), ', ') }}</div>
+                    <hr />
+                </template>
+            </QuickFormMultiple>
         </SplitterPanel>
     </Splitter>
 
