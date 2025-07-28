@@ -42,8 +42,8 @@ export const useCrudTable = () => {
         tableRef.value.removeRecordId(event.id)
         state.showEditForm = false
     }
-    const didClickMultipleRecordEdit = (recordIds: string[]) => {
-        state.editingMultipleRecordsIds = recordIds
+    const didClickMultipleRecordEdit = (records: any[]) => {
+        state.editingMultipleRecordsIds = records.map((record: any) => record.id)
         state.showMultipleEditForm = true
         state.showEditForm = false
         state.showAddForm = false

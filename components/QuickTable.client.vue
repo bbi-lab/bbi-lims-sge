@@ -261,7 +261,7 @@ function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
 }
 function didClickEditMultipleRecords(event: MouseEvent) {
-    emit('clicked-multiple-record-edit', _.map(selectedRecords.value, (x) => x.id))
+    emit('clicked-multiple-record-edit', selectedRecords.value)
 }
 function didClickDeleteSelectedRecords(event: MouseEvent) {
     RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {

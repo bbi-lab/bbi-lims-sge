@@ -215,6 +215,7 @@ function getLabel(key: string) {
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save'}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
+        <slot name="form-element-header" />
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
             <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">

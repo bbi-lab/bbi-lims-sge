@@ -224,6 +224,7 @@ function isReadOnly(key: string) {
         <Button v-if="canDelete && recordId" class="ml-1" v-tooltip="{value: 'Delete'}" icon="pi pi-trash" size="small" severity="danger" style="width: auto" @click="showDeleteConfirmation" />
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
+        <slot name="form-element-header" />
         <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
             <template v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
                 <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
