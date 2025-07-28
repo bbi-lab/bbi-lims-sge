@@ -3,23 +3,10 @@
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import _ from 'lodash'
-import { RecordService } from '~/utils/service/RecordService'
 
 const crudTable = useCrudTable()
-const config = useRuntimeConfig()
 const router = useRouter()
 const invalidRecords = ref()
-
-// const updateInvalidRecords = async () => {
-//     const sequencingRunErrors = _.map(
-//         await RecordService.getRecords(`${config.public.apiBase}/view-sequencing-run-errors`, {}),
-//         (x) => { return {id: x.id, messages: x.errorMessages} }
-//     )
-//     invalidRecords.value = _.mapValues(_.keyBy(sequencingRunErrors, 'id'), (x) => _.omit(x, 'id'))
-// }
-// onMounted(async () => {
-//     updateInvalidRecords()
-// })
 
 const columnDefs: ColumnDefinitions = {
     startedOn: {
