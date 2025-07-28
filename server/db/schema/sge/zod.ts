@@ -18,8 +18,7 @@ import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
-import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-// import { viewSequencingRunErrors, viewSequencingRunWellContents } from './views'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { oligos } from './oligos'
 
 // tables
@@ -187,6 +186,8 @@ const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
+const selectViewSequencingRunAllSamples = createSelectSchema(viewSequencingRunAllSamples)
+
 // const selectViewSequencingRunWellContentsSchema = createSelectSchema(viewSequencingRunWellContents)
 // const selectViewSequencingRunErrorsSchema = createSelectSchema(viewSequencingRunErrors)
 
@@ -361,10 +362,7 @@ export const schemas = {
     viewPlatesWithWellCounts: {
         select: selectViewPlatesWithWellCountsSchema,
     },
-    // viewSequencingRunWellContents: {
-    //     select: selectViewSequencingRunWellContentsSchema
-    // },
-    // viewSequencingRunErrors: {
-    //     select: selectViewSequencingRunErrorsSchema
-    // },
+    viewSequencingRunAllSamples: {
+        select: selectViewSequencingRunAllSamples
+    }
 }
