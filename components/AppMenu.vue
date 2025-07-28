@@ -55,7 +55,12 @@ const model = ref([
                     { label: 'Index', to: '/sge/index-primers' },
                 ]
             },
-            { label: 'Sequencing runs', iconComponent: FluentRun16Filled, to: '/sge/sequencing-runs' },
+            { label: 'Sequencing', iconComponent: FluentRun16Filled,
+                items: [
+                    { label: 'External Samples', to: '/sge/external-samples' },
+                    { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
+                ]
+            },
         ]
     },
     {
