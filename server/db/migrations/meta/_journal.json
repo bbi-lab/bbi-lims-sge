@@ -617,6 +617,13 @@
       "when": 1753717803113,
       "tag": "0087_fresh_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1753724682861,
+      "tag": "0088_giant_deathbird",
+      "breakpoints": true
     }
   ]
 }

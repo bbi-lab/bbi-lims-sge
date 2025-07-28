@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text, integer } from "drizzle-orm/pg-core";
 import { wells } from "./well";
 import { nucleicAcids } from "./nucleic-acid";
 import { indexPrimers } from "./primer";
@@ -49,8 +49,12 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   nucleicAcidId: uuid('nucleic_acid_id'),
   indexPrimer1Id: uuid('index_primer_1_id'),
   indexPrimer2Id: uuid('index_primer_2_id'),
+  indexPrimer1Label: varchar('index_primer_1_label'),
+  indexPrimer2Label: varchar('index_primer_2_label'),
   sourceWellId: uuid('source_well_id'),
-  externalSampleId: varchar('external_sample_id'),
+  sourceWellX: integer('source_well_x'),
+  sourceWellY: integer('source_well_y'),
+  sourcePlateName: varchar('source_plate_name'),
   customIndexSeq1: varchar('custom_index_seq_1'),
   customIndexSeq2: varchar('custom_index_seq_2'),
   millionReadsRequired: doublePrecision('million_reads_required'),
@@ -65,7 +69,12 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   nucleic_acid_id,
   index_primer_1_id,
   index_primer_2_id,
+  primer1.index_sequence || ' (' || primer1.primer_type || ')' as index_primer_1_label,
+  primer2.index_sequence || ' (' || primer2.primer_type || ')' as index_primer_2_label,
   source_well_id,
+  wells.x as source_well_x,
+  wells.y as source_well_y,
+  plates.name as source_plate_name,
   NULL AS custom_index_seq_1,
   NULL AS custom_index_seq_2,
   million_reads_required,
@@ -77,6 +86,8 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   JOIN pellets ON nucleic_acids.pellet_id = pellets.id
   JOIN index_primers AS primer1 ON sequencing_run_samples.index_primer_1_id = primer1.id
   JOIN index_primers AS primer2 ON sequencing_run_samples.index_primer_2_id = primer2.id
+  JOIN wells ON sequencing_run_samples.source_well_id = wells.id
+  JOIN plates ON wells.plate_id = plates.id
   UNION
   SELECT
   id,
@@ -86,7 +97,12 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   NULL AS nucleic_acid_id,
   NULL AS index_primer_1_id,
   NULL AS index_primer_2_id,
+  NULL AS index_primer_1_label,
+  NULL AS index_primer_2_label,
   NULL AS source_well_id,
+  NULL as source_well_x,
+  NULL as source_well_y,
+  NULL as source_plate_name,
   custom_index_seq_1,
   custom_index_seq_2,
   million_reads_required,
