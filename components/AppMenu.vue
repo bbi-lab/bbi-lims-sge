@@ -57,6 +57,7 @@ const model = ref([
             },
             { label: 'Sequencing', iconComponent: FluentRun16Filled,
                 items: [
+                    { label: 'Internal Samples', to: '/sge/internal-samples' },
                     { label: 'External Samples', to: '/sge/external-samples' },
                     { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
                 ]
