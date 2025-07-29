@@ -16,23 +16,26 @@ const plateLayout = usePlateLayout()
 const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 const toast = useToast()
-const sequencingRunSamplesTable = ref()
+const sequencingRunAllSamplesTable = ref()
+const sequencingRunExternalSamplesTable = ref()
 const editingRecords = ref<any[]>([])
 const editingRecordType = ref<'internal' | 'external' | null>(null)
 
 const showRecordEditForm = computed(() => _.size(editingRecords.value) == 1)
 const showMultipleRecordEditForm = computed(() => editingRecords.value?.length > 1)
+const selectedExternalSampleRecords = computed(() => sequencingRunExternalSamplesTable?.value?.selectedRecords || [])
+const sequencingRunSelectedRecords = computed(() => sequencingRunAllSamplesTable?.value?.selectedRecords || [])
 
 const frozenRecordIds = computed(() => {
     const selectedWellIds = _.map(plateLayout.selectedWells.value, 'id')
-    return _.map(_.filter(sequencingRunSamplesTable.value?.records , (x) => {
+    return _.map(_.filter(sequencingRunAllSamplesTable.value?.records , (x) => {
         return _.includes(selectedWellIds, x.sourceWellId)
     }), 'id')
 })
 
 const invalidRecords = computed(() => {
-    const nucleicAcidIdCounts = _.countBy(sequencingRunSamplesTable.value?.records || [], 'nucleicAcidId')
-    const recordsWithRepeatedNucleicAcids = _.filter(sequencingRunSamplesTable.value?.records || [], (record) => {
+    const nucleicAcidIdCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'nucleicAcidId')
+    const recordsWithRepeatedNucleicAcids = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
         return _.get(nucleicAcidIdCounts, record.nucleicAcidId) > 1
     }).map((record) => ({id: record.id, count: nucleicAcidIdCounts[record.nucleicAcidId]}))
 
@@ -122,19 +125,73 @@ const didClickMultipleRecordEdit = (records: any[]) => {
     editingRecordType.value = recordTypes[0]
 }
 const didUpdateRecord = (record: any) => {
-    sequencingRunSamplesTable.value.addOrRefreshRecordIds([record.id])
+    sequencingRunAllSamplesTable.value.addOrRefreshRecordIds([record.id])
     editingRecords.value = []
     editingRecordType.value = null
 }
 const didUpdateRecords = (records: any[]) => {
-    sequencingRunSamplesTable.value.addOrRefreshRecordIds(_.map(records, 'id'))
+    sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(_.map(records, 'id'))
     editingRecords.value = []
     editingRecordType.value = null
 }
 const didDeleteRecord = (record: any) => {
-    sequencingRunSamplesTable.value.removeRecordId(record.id)
+    sequencingRunAllSamplesTable.value.removeRecordId(record.id)
     editingRecords.value = []
     editingRecordType.value = null
+}
+const removeSelectedSamplesFromRun = () => {
+    const sequencingRunInternalSamples = _.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'internal')
+
+    RecordService.deleteRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSamples)
+        .then((result: any[] | undefined) => {
+            for (const id of _.map(result, 'id')) {
+                sequencingRunAllSamplesTable.value.removeRecordId(id)
+            }
+            toast.add({ severity: 'success', summary: 'Successful', detail: `${result?.length} internal samples removed`, life: 3000 })
+        })
+        .catch((error: any) => {
+            console.log(error)
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.data?.statusMessage || error.data?.message,
+            })
+        })
+
+    const sequencingRunExternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'external'), 'id')
+    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds, {sequencingRunId: null})
+        .then((result: any) => {
+            sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(sequencingRunExternalSampleIds)
+            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
+            for (const id of sequencingRunExternalSampleIds) {
+                sequencingRunAllSamplesTable.value.removeRecordId(id)
+            }
+        })
+        .catch((error: any) => {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.data?.statusMessage || error.data?.message,
+            })
+        })
+
+}
+const addSelectedExternalSamples = async () => {
+    const sequencingRunSamplesToAdd = _.map(selectedExternalSampleRecords.value, 'id')
+
+    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunSamplesToAdd, {sequencingRunId: sequencingRun.value.id})
+        .then((result: any) => {
+            sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(_.map(result, 'id'))
+            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 })
+            showExternalSamples.value = false
+        })
+        .catch((error: any) => {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.data?.statusMessage || error.data?.message,
+            })
+        })
 }
 const addToSequencingRun = async (selectedWells: any) => {
     try {
@@ -165,7 +222,7 @@ const addToSequencingRun = async (selectedWells: any) => {
                     detail: `${sequencingRunSamplesToAdd.length} samples added to sequencing run.`,
                     life: 3000,
                 })
-                sequencingRunSamplesTable.value.addOrRefreshRecordIds(_.map(newRecords, 'id'))
+                sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(_.map(newRecords, 'id'))
             }
         }
     } catch (error: any) {
@@ -227,21 +284,21 @@ const externalSampleFieldDefs = {}
     <Splitter class="h-full overflow-y-hidden" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel :size="50">
             <QuickTable
-                ref="sequencingRunSamplesTable"
+                ref="sequencingRunAllSamplesTable"
                 v-if="sequencingRun"
                 tableName="view-sequencing-run-all-samples"
                 schemaName="select"
                 :canAdd="false"
                 :canEdit="true"
                 :canEditMultiple="true"
-                :canDelete="true"
+                :canDelete="false"
                 :columnDefs="columnDefs"
                 :invalidRecords="invalidRecords"
                 :where="{'==': [{'var': 'sequencingRunId'}, sequencingRun.id]}"
-                :rowsPerPageOptions="[10, 25, 50, 100]"
                 v-model:frozenRecordIds="frozenRecordIds"
                 @clickedRecordEdit="didClickRecordEdit"
                 @clickedMultipleRecordEdit="didClickMultipleRecordEdit"
+                @clickedRecordDelete="didDeleteRecord"
             >
                 <template #title>
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
@@ -249,14 +306,17 @@ const externalSampleFieldDefs = {}
                 <template #header-buttons>
                     <span>
                         <Button
-                            v-if="sequencingRun"
+                            label="Remove selected"
+                            class="mr-2"
+                            severity="danger"
+                            :disabled="_.isEmpty(sequencingRunSelectedRecords)"
+                            @click="removeSelectedSamplesFromRun" />
+                        <Button
                             label="Add from plate"
-                            class="btn btn-primary mr-2"
+                            class="mr-2"
                             @click="() => {showExternalSamples=false; showPlatePanel=true}" />
                         <Button
-                            v-if="sequencingRun"
                             label="Add external samples"
-                            class="btn btn-primary"
                             @click="() => {showExternalSamples=true; showPlatePanel=false}" />
                     </span>
                 </template>
@@ -317,11 +377,31 @@ const externalSampleFieldDefs = {}
                         size="small"
                         @click="showExternalSamples=false" />
                 </div>
+                <QuickTable
+                    ref="sequencingRunExternalSamplesTable"
+                    tableName="sequencing-run-external-samples"
+                    schemaName="select"
+                    :canAdd="false"
+                    :canEdit="false"
+                    :canEditMultiple="false"
+                    :canDelete="false"
+                >
+                <template #header-buttons>
+                    <span>
+                        <Button
+                            label="Add selected samples"
+                            severity="warn"
+                            :disabled="_.isEmpty(selectedExternalSampleRecords)"
+                            @click="addSelectedExternalSamples" />
+                    </span>
+                </template>
+            </QuickTable>
             </div>
             <QuickForm
                 v-if="showRecordEditForm"
                 :recordId="editingRecords[0]?.id"
                 schemaName="update"
+                :canDelete="false"
                 :tableName="editingRecordType == 'internal' ? 'sequencing-run-samples' : 'sequencing-run-external-samples'"
                 :fieldDefs="editingRecordType == 'internal' ? internalSampleFieldDefs : externalSampleFieldDefs"
                 @recordUpdate="didUpdateRecord"
