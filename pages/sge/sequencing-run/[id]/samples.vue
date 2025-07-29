@@ -140,17 +140,17 @@ const didDeleteRecord = (record: any) => {
     editingRecordType.value = null
 }
 const removeSelectedSamplesFromRun = () => {
-    const sequencingRunInternalSamples = _.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'internal')
+    const sequencingRunInternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'internal'), 'id')
 
-    RecordService.deleteRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSamples)
-        .then((result: any[] | undefined) => {
-            for (const id of _.map(result, 'id')) {
+    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSampleIds, {sequencingRunId: null})
+        .then((result: any) => {
+            if (_.isEmpty(result)) return
+            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} internal samples removed`, life: 3000 })
+            for (const id of sequencingRunInternalSampleIds) {
                 sequencingRunAllSamplesTable.value.removeRecordId(id)
             }
-            toast.add({ severity: 'success', summary: 'Successful', detail: `${result?.length} internal samples removed`, life: 3000 })
         })
         .catch((error: any) => {
-            console.log(error)
             toast.add({
                 severity: 'error',
                 summary: 'Error',
@@ -161,7 +161,7 @@ const removeSelectedSamplesFromRun = () => {
     const sequencingRunExternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'external'), 'id')
     RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds, {sequencingRunId: null})
         .then((result: any) => {
-            sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(sequencingRunExternalSampleIds)
+            if (_.isEmpty(result)) return
             toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
             for (const id of sequencingRunExternalSampleIds) {
                 sequencingRunAllSamplesTable.value.removeRecordId(id)
@@ -278,7 +278,12 @@ const internalSampleFieldDefs = {
     sourceWellId: { display: false },
     createdAt: { display: false },
 }
-const externalSampleFieldDefs = {}
+const externalSampleFieldDefs = {
+    sequencingRunId: { display: false },
+    customIndexSeq1: { label: 'Custom Index Sequence 1' },
+    customIndexSeq2: { label: 'Custom Index Sequence 2' },
+    createdAt: { display: false },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
