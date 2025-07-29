@@ -28,8 +28,8 @@ export const RecordService = {
     async getRecordsByIds(baseUrl: string, ids: string[], withClause?: Object, expandEnums: boolean = false) {
         const fetchOptions = {query: {expandEnums, where: {"in": [{"var": "id"}, ids]}}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
-        // const fetchOptions = withClause ? {query: {with: withClause, where: whereClause}} : { query: {where: whereClause}}
-        const records = await $fetch(`${baseUrl}`, fetchOptions) as any[]
+        // use search POST endpoint with request body to avoid URL length issues with large ids array
+        const records = await $fetch(`${baseUrl}/search`, {method: 'POST', body: fetchOptions}) as any[]
         return records
     },
 
