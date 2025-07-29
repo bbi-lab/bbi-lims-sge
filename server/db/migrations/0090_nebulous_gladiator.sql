@@ -1,0 +1,1 @@
+ALTER TABLE "sequencing_run_samples" ALTER COLUMN "sequencing_run_id" DROP NOT NULL;

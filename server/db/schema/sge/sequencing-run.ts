@@ -15,7 +15,7 @@ export const sequencingRuns = pgTable('sequencing_runs', {
 
 export const sequencingRunSamples = pgTable('sequencing_run_samples', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id).notNull(),
+  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id),
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id).notNull(),
   indexPrimer1Id: uuid('index_primer_1_id').references(() => indexPrimers.id).notNull(),
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id).notNull(),
