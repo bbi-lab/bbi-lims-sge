@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, varchar, } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, timestamp, uuid, varchar, } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 
 // export const plasmidExperiments = pgTable('plasmid_experiments', {
@@ -14,12 +14,14 @@ export const sgRnaCloningExperiments = pgTable('sg_rna_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
-  transformedOn: timestamp('transformed_on').defaultNow(),
+  transformed: boolean('transformed').default(false),
+  transformedOn: timestamp('transformed_on'),
 })
 
 export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
-  transformedOn: timestamp('transformed_on').defaultNow(),
+  transformed: boolean('transformed').default(false),
+  transformedOn: timestamp('transformed_on'),
 })
