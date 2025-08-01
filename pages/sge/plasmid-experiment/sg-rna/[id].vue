@@ -17,11 +17,36 @@ const config = useRuntimeConfig()
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 const selectionTableKey = ref(0)
+const experimentPlateDiagramKey = ref(0)
 const sgRnaCloningExperiment = ref()
 
 const selectedSourcePlate = computed(() => {
     return plateLayout.selectionTableRef.value?.selectedRecords
 })
+
+const plamidPlateDisplayConfig = {
+    colorBy: ['sgRnaPlasmid.targetId'],
+    selectionTableRecordIdPaths: ['sgRnaPlasmidId'],
+    tooltip: (well: any) => {
+        const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
+        const sgRnaPlasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
+        return sgRnaPlasmid ? `${wellCoordinate}:<br>` + _.get(sgRnaPlasmid, 'name') : wellCoordinate
+    },
+    symbol: () => ''
+}
+const oligoPlateDisplayConfig = {
+    colorBy: ['oligo.targetId'],
+    selectionTableRecordIdPaths: ['oligoId'],
+    tooltip: (well: any) => {
+        const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
+        const oligos = _.map(well.wellContents, 'oligo')
+        return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
+    },
+    symbol: (well: any) => {
+        const oligos = _.compact(_.map(well.wellContents, 'oligo'))
+        return oligos ? _.size(oligos) : ''
+    },
+}
 
 const sgRnaOligoExportColumns = [
     {
@@ -35,6 +60,16 @@ const sgRnaOligoExportColumns = [
     {
         header: 'Oligo 2',
         data: (well: any) => _.get(well, 'wellContents.1.oligo.name')
+    },
+]
+const sgRnaPlasmidExportColumns = [
+    {
+        header: 'Well Position',
+        data: (well: any) => `${wellCoordinateToChar(well.y)}${well.x}`,
+    },
+    {
+        header: 'sgRNA Plasmid',
+        data: (well: any) => _.get(well, 'wellContents.0.sgRnaPlasmid.name')
     },
 ]
 
@@ -64,25 +99,13 @@ onMounted(async() => {
 
     const plateId = _.get(sgRnaCloningExperiment.value, 'plates[0].id')
 
-    plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['oligo.targetId'],
-        selectionTableRecordIdPaths: ['oligoId'],
-        tooltip: (well: any) => {
-            const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const oligos = _.map(well.wellContents, 'oligo')
-            return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
-        },
-        symbol: (well: any) => {
-            const oligos = _.compact(_.map(well.wellContents, 'oligo'))
-            return oligos ? _.size(oligos) : ''
-        },
-    }
+    plateLayout.wellContentsDisplayConfig.value = sgRnaCloningExperiment.value?.transformed ? plamidPlateDisplayConfig : oligoPlateDisplayConfig
 
     plateLayout.setExportPlateLayoutConfig({
-        columns: sgRnaOligoExportColumns,
+        columns: sgRnaCloningExperiment.value?.transformed ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
     })
 
-    sourcePlateLayout.wellContentsDisplayConfig.value = _.clone(plateLayout.wellContentsDisplayConfig.value)
+    sourcePlateLayout.wellContentsDisplayConfig.value = oligoPlateDisplayConfig
     sourcePlateLayout.setExportPlateLayoutConfig({
         columns: sgRnaOligoExportColumns,
     })
@@ -97,6 +120,7 @@ const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
             oligo: true,
+            sgRnaPlasmid: true,
         },
     )
 
@@ -112,10 +136,21 @@ const transformOligos = async () => {
         toast.add({severity: 'warn', summary: 'Plate data is not loaded', life: 3000})
         return
     }
-    for (const well of plate.wells) {
-        if (well.wellContents.length == 2) {
-            // TODO convert oligos to plasmid
-        }
+    try {
+        const result = await $fetch(`${config.public.apiBase}/custom/plates/${plate.id}/transform-sg-rna-oligos`, {
+            method: 'POST',
+            body: {},
+        })
+        // refresh the plate if transformation was successful
+        plateLayout.wellContentsDisplayConfig.value = plamidPlateDisplayConfig
+
+        plateLayout.setExportPlateLayoutConfig({
+            columns: sgRnaPlasmidExportColumns,
+        })
+        await loadPlate()
+        experimentPlateDiagramKey.value += 1 // force re-render of the plate diagram
+    } catch (error: any) {
+        toast.add({severity: 'error', summary: 'Transformation failed', detail: error.statusMessage, life: 3000})
     }
 }
 
@@ -241,6 +276,7 @@ const whereClause ={
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <div class="flex flex-col">
                         <PlateDiagram
+                            :key="experimentPlateDiagramKey"
                             :ref="plateLayout.setPlateDiagramRef"
                             v-if="plateWithWellSpecs"
                             v-model="plateWithWellSpecs"
@@ -271,6 +307,7 @@ const whereClause ={
                             iconPos="right"
                             severity="primary"
                             label="Transform"
+                            :disabled="sgRnaCloningExperiment?.transformed"
                             @click="transformOligos">
                         </Button>
                         <br/>

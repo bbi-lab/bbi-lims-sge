@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import _ from 'lodash'
+import _, { transform } from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
@@ -52,6 +52,9 @@ const fieldDefs = {
     },
     sgRnaPlasmids: {
         display: false,
+    },
+    transformed: {
+        readOnly: true,
     },
 }
 const withClause = {

@@ -25,30 +25,23 @@ const columnDefs = {
     name: {
         index: 0,
     },
-    plasmidType: {
-        header: 'Type',
-        index: 1,
-    },
     target: {
         path: 'target.name',
         type: 'string',
-        index: 2,
+        index: 1,
     },
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
         path: 'sgRnaCloningExperiment.name',
-        index: 3,
+        index: 2,
     },
     externalLink: {
         format: 'hyperlink',
-        index: 4,
+        index: 3,
     },
-    sgRnaCloningExperimentId: {
-        display: false
-    },
-    targetId: {
-        display: false
-    }
+    sgRnaCloningExperimentId: { display: false},
+    targetId: { display: false},
+    wellContents: { display: false },
 }
 const fieldDefs: FieldDefinitions = {
     sgRnaCloningExperimentId: {
