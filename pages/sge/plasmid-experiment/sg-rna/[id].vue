@@ -16,10 +16,16 @@ const config = useRuntimeConfig()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
+const splitter = ref()
 const selectionTableKey = ref(0)
 const experimentPlateDiagramKey = ref(0)
 const sgRnaCloningExperiment = ref()
+const sgRnaPlasmidsEditingRecordIds = ref<string[]>([])
+const crudTable = useCrudTable()
 
+const showSgRnaPlasmidEditDialog = computed(() => {
+    return crudTable.state.showEditForm || crudTable.state.showMultipleEditForm
+})
 const selectedSourcePlate = computed(() => {
     return plateLayout.selectionTableRef.value?.selectedRecords
 })
@@ -32,7 +38,16 @@ const plamidPlateDisplayConfig = {
         const sgRnaPlasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
         return sgRnaPlasmid ? `${wellCoordinate}:<br>` + _.get(sgRnaPlasmid, 'name') : wellCoordinate
     },
-    symbol: () => ''
+    symbol: (well: any) => {
+        const sgRnaPlasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
+        if (sgRnaPlasmid?.verificationStatus == 'passed') {
+            return '✓'
+        } else if (sgRnaPlasmid?.verificationStatus == 'failed') {
+            return 'x'
+        } else {
+            return ''
+        }
+    },
 }
 const oligoPlateDisplayConfig = {
     colorBy: ['oligo.targetId'],
@@ -114,6 +129,12 @@ onMounted(async() => {
         plateLayout.setPlateId(plateId)
         loadPlate()
     }
+
+    // resets splitter panel sizes after content has been rendered
+    nextTick(() => {
+        splitter.value.resetState()
+    })
+
 })
 
 const loadPlate = async () => {
@@ -182,7 +203,7 @@ const transferSelectedWellsContents = async () => {
     }
 }
 
-const columnDefs = {
+const plateTableColumnDefs = {
     plateType: { display: false },
     snvLibCloningExperimentId: { display: false },
     sgRnaCloningExperimentId: { display: false },
@@ -216,10 +237,97 @@ const whereClause ={
         {"==": [{"var": "sgRnaCloningExperimentId"}, null]},
     ]
 }
+const sgRnaPlasmidTableFrozenRecordIds = computed(() => {
+    return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
+})
+const sgRnaPlasmidDisplayWithClause = {
+    target: {
+        columns: {
+            id: true,
+            name: true,
+        },
+    },
+    wellContents: {
+        columns: {
+            id: true,
+        },
+        with: {
+            well: {
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                    plateId: true,
+                },
+                with: {
+                    plate: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            plateType: true,
+                        }
+                    }
+                }
+            },
+        },
+    },
+}
+const sgRnaPlasmidTableColumnDefs = {
+    targetId: { display: false },
+    target: {
+        format: (data: any) => {
+            return data.target?.name || '-'
+        },
+        path: 'target.displayValue',
+    },
+    wellContents: { display: false },
+    wellCoordinates: {
+        format: (data: any) => {
+            return data.wellContents?.map((wellContent: any) => {
+                return `${wellContent.well?.plate?.name}: ${wellCoordinateToChar(wellContent.well?.y)}${wellContent.well?.x}`
+            }).join(', ') || '-'
+        },
+        path: 'wellCoordinates.displayValue',
+    },
+}
+const didClickRecordEdit = (recordId: string) => {
+    sgRnaPlasmidsEditingRecordIds.value = [recordId]
+}
+const didClickMultipleRecordEdit = (recordIds: string[]) => {
+    sgRnaPlasmidsEditingRecordIds.value = recordIds
+}
+const setCrudAndPlateLayoutTableRefs = (el: any) => {
+    plateLayout.setSelectionTableRef(el)
+    crudTable.setTableRef(el)
+}
+const sgRnaPlasmidFieldDefs = {
+    targetId: {
+        label: 'Target',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/targets`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        readOnly: true,
+    },
+}
+const didUpdateRecord = async (record: any) => {
+    crudTable.didUpdateRecord(record)
+    await loadPlate()
+    experimentPlateDiagramKey.value += 1 // force re-render of the plate diagram
+}
+const didUpdateMultipleRecords = async (record: any) => {
+    crudTable.didUpdateMultipleRecords(record)
+    await loadPlate()
+    experimentPlateDiagramKey.value += 1 // force re-render of the plate diagram
+}
 </script>
 <template>
-    <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
-        <SplitterPanel class="overflow-scroll" :size="60">
+    <Splitter ref="splitter" class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
+        <SplitterPanel v-if="sgRnaCloningExperiment?.transformed != true" class="overflow-scroll" :size="60">
             <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
                 :key="selectionTableKey"
@@ -231,7 +339,7 @@ const whereClause ={
                 :canEdit="false"
                 :canExport="false"
                 :where="whereClause"
-                :columnDefs="columnDefs"
+                :columnDefs="plateTableColumnDefs"
                 :sortBy="['name']"
                 selectionMode="single"
                 :showColumnFilters="true"
@@ -240,7 +348,7 @@ const whereClause ={
         </SplitterPanel>
         <SplitterPanel :size="40" :minSize="25">
             <Splitter layout="vertical">
-                <SplitterPanel class="flex justify-center overflow-scroll mt-10">
+                <SplitterPanel v-if="sgRnaCloningExperiment?.transformed != true" class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
                         v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
@@ -303,11 +411,11 @@ const whereClause ={
                         </PlateDiagram>
                         <Button
                             class="w-fit ml-auto mr-auto mt-4 p-4"
+                            v-if="sgRnaCloningExperiment?.transformed != true"
                             icon="pi pi-play"
                             iconPos="right"
                             severity="primary"
                             label="Transform"
-                            :disabled="sgRnaCloningExperiment?.transformed"
                             @click="transformOligos">
                         </Button>
                         <br/>
@@ -315,5 +423,47 @@ const whereClause ={
                 </SplitterPanel>
             </Splitter>
         </SplitterPanel>
+        <SplitterPanel v-if="sgRnaCloningExperiment?.transformed && sgRnaCloningExperiment?.plates?.[0]?.id" class="overflow-scroll" :size="60" :minSize="25">
+            <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
+            <QuickTable
+                :key="selectionTableKey"
+                :ref="setCrudAndPlateLayoutTableRefs"
+                tableName="sg-rna-plasmids"
+                schemaName="select"
+                :canAdd="false"
+                :canDelete="false"
+                :canExport="false"
+                :canEditMultiple="true"
+                :columnDefs="sgRnaPlasmidTableColumnDefs"
+                :sortBy="['name']"
+                :withClause="sgRnaPlasmidDisplayWithClause"
+                :where="{'==': [{'var': 'wellContents.0.well.plateId'}, sgRnaCloningExperiment?.plates?.[0]?.id]}"
+                :showColumnFilters="true"
+                emptyMessage=""
+                v-model:frozenRecordIds="sgRnaPlasmidTableFrozenRecordIds"
+                @clickedRecordEdit="crudTable.didClickRecordEdit"
+                @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit" />
+        </SplitterPanel>
     </Splitter>
+    <Dialog v-model:visible="showSgRnaPlasmidEditDialog" modal header="Edit" :style="{ width: 'auto' }" :closable="false">
+        <QuickForm
+            v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
+            :recordId="crudTable.state.editingRecordId"
+            tableName="sg-rna-plasmids"
+            schemaName="update"
+            :canDelete="false"
+            :fieldDefs="sgRnaPlasmidFieldDefs"
+            @cancel="crudTable.didClickCancelEditForm"
+            @recordUpdate="didUpdateRecord"
+        />
+        <QuickFormMultiple
+            v-if="crudTable.state.showMultipleEditForm"
+            tableName="sg-rna-plasmids"
+            :recordIds="crudTable.state.editingMultipleRecordsIds"
+            schemaName="update"
+            :fieldDefs="sgRnaPlasmidFieldDefs"
+            @cancel="crudTable.didClickCancelMultipleEditForm"
+            @records-update="didUpdateMultipleRecords"
+        />
+    </Dialog>
 </template>
