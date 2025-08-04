@@ -24,7 +24,7 @@ export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   volume: doublePrecision('volume'),
   quant: doublePrecision('quant'),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
-  sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
+  // sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
   verificationStatus: varchar('verification_status', {enum: ['passed', 'failed']}),
   externalLink: text('external_link'),
   notes: text('notes'),

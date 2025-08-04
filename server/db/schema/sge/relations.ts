@@ -459,11 +459,11 @@ const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
         },
     },
     many: {
-        sgRnaPlasmids: {
-            table: sgRnaPlasmids,
-            schema: createSelectSchema(sgRnaPlasmids),
-            fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
-        },
+        // sgRnaPlasmids: {
+        //     table: sgRnaPlasmids,
+        //     schema: createSelectSchema(sgRnaPlasmids),
+        //     fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
+        // },
         plates: {
             table: plates,
             schema: createSelectSchema(plates),
@@ -600,11 +600,11 @@ const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
-        sgRnaCloningExperiment: {
-            fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
-            referenceTable: sgRnaCloningExperiments,
-            references: [sgRnaCloningExperiments.id],
-        },
+        // sgRnaCloningExperiment: {
+        //     fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
+        //     referenceTable: sgRnaCloningExperiments,
+        //     references: [sgRnaCloningExperiments.id],
+        // },
     },
     many: {
         wellContents: {
