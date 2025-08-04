@@ -39,21 +39,21 @@ const columnDefs = {
         format: 'hyperlink',
         index: 3,
     },
-    sgRnaCloningExperimentId: { display: false},
+    // sgRnaCloningExperimentId: { display: false},
     targetId: { display: false},
     wellContents: { display: false },
 }
 const fieldDefs: FieldDefinitions = {
-    sgRnaCloningExperimentId: {
-        label: 'Experiment',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/sg-rna-cloning-experiments`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-        }
-    },
+    // sgRnaCloningExperimentId: {
+    //     label: 'Experiment',
+    //     component: 'AutoCompleter',
+    //     props: {
+    //         searchBaseUrl: `${config.public.apiBase}/sg-rna-cloning-experiments`,
+    //         searchFields: ['name'],
+    //         valueField: 'id',
+    //         displayFields: ['name'],
+    //     }
+    // },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
