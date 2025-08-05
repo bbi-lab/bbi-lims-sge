@@ -39,18 +39,12 @@ const columnDefs = {
     plates: {
         display: false,
     },
-    sgRnaPlasmids: {
-        display: false,
-    },
     name: {
         index: 1,
     },
 }
 const fieldDefs = {
     plates: {
-        display: false,
-    },
-    sgRnaPlasmids: {
         display: false,
     },
     transformed: {
@@ -60,7 +54,6 @@ const fieldDefs = {
 const withClause = {
     technician: { columns: { name: true } },
     plates: { columns: { id: true } },
-    sgRnaPlasmids: { columns: { id: true } },
 }
 
 </script>
