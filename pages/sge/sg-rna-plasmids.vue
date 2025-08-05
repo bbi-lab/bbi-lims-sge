@@ -32,7 +32,10 @@ const columnDefs = {
     },
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
-        path: 'sgRnaCloningExperiment.name',
+        format: (data: any) => {
+            return data.wellContents?.[0]?.well.plate?.sgRnaCloningExperiment?.name || ''
+        },
+        path: 'sgRnaCloningExperiment.displayValue',
         index: 2,
     },
     externalLink: {
@@ -83,9 +86,22 @@ const displayWithClause = {
             }
         }
     },
-    sgRnaCloningExperiment: {
-        columns: {name: true},
-    }
+    wellContents: {
+        columns: {id: true, name: true},
+        with: {
+            well: {
+                columns: {id: true, name: true},
+                with: {
+                    plate: {
+                        columns: {id: true, name: true},
+                        with: {
+                            sgRnaCloningExperiment: {columns: {id: true, name: true}}
+                        }
+                    }
+                }
+            }
+        }
+    },
 }
 
 </script>
@@ -124,7 +140,6 @@ const displayWithClause = {
                 tableName="sg-rna-plasmids"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="{sgRnaCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
