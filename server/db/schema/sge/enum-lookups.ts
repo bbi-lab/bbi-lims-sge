@@ -29,12 +29,12 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'HA primer storage',
             },
             'guide-rna-storage': {
-                desc: 'Guide RNA storage',
-                label: 'Guide RNA storage',
+                desc: 'sgRNA oligo storage',
+                label: 'sgRNA oligo storage',
             },
             'guide-rna': {
-                desc: 'Guide RNA',
-                label: 'Guide RNA',
+                desc: 'sgRNA oligo',
+                label: 'sgRNA oligo',
             },
             'sg-rna-plasmid': {
                 desc: 'sgRNA plasmid',
