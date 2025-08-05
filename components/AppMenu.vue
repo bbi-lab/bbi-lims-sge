@@ -6,7 +6,7 @@ import Molecule from '~icons/mdi/molecule'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import DnaIcon from '~icons/mdi/dna'
-import IcBaselineStraighten from '~icons/ic/baseline-straighten'
+// import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 import FluentRun16Filled from '~icons/fluent/run-16-filled'
@@ -30,7 +30,15 @@ const model = ref([
             },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
-            { label: 'Oligos', iconComponent: FluentMolecule16Filled, to: '/sge/oligos' },
+            { label: 'Oligos', iconComponent: FluentMolecule16Filled,
+                items: [
+                    { label: 'sgRNA', to: '/sge/oligos' },
+                    { label: 'Amplification primers', to: '/sge/amplification-primers' },
+                    { label: 'Linearization primers', to: '/sge/linearization-primers' },
+                    { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
+                    { label: 'Index primers', to: '/sge/index-primers' },
+                ]
+             },
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
@@ -45,14 +53,6 @@ const model = ref([
                 items: [
                     { label: 'Lots', to: '/sge/lots' },
                     { label: 'Reagent List', to: '/sge/reagents' },
-                ]
-            },
-            { label: 'Primers', iconComponent: IcBaselineStraighten, style: 'transform: scale(1, -1)',
-                items: [
-                    { label: 'Amplification', to: '/sge/amplification-primers' },
-                    { label: 'Linearization', to: '/sge/linearization-primers' },
-                    { label: 'Homology Arm', to: '/sge/homology-arm-primers' },
-                    { label: 'Index', to: '/sge/index-primers' },
                 ]
             },
             { label: 'Sequencing', iconComponent: FluentRun16Filled,
