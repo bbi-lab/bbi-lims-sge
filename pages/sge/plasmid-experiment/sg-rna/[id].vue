@@ -5,7 +5,7 @@ import type { User } from '~/server/db/schema/user';
 import { RecordService } from '~/utils/service/RecordService'
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
 
-const { breakpoints } = useLayout()
+const { breakpoints, showLoginModal } = useLayout()
 const route = useRoute()
 const plateLayout = usePlateLayout()
 const sourcePlateLayout = usePlateLayout()
@@ -157,11 +157,26 @@ const transformOligos = async () => {
         toast.add({severity: 'warn', summary: 'Plate data is not loaded', life: 3000})
         return
     }
-    try {
-        const result = await $fetch(`${config.public.apiBase}/custom/plates/${plate.id}/transform-sg-rna-oligos`, {
-            method: 'POST',
-            body: {},
-        })
+    const { data, error } = await useFetch(`${config.public.apiBase}/custom/plates/${plate.id}/transform-sg-rna-oligos`, {
+        method: 'POST',
+        body: {},
+    })
+
+    if (error.value) {
+        if (error.value.data?.statusCode == 401 && error.value.data?.statusMessage == 'TOKEN EXPIRED') {
+            showLoginModal()
+        } else {
+            toast.add({severity: 'error', summary: 'Transformation failed', detail: error.value.data?.message || error.value.message, life: 3000})
+        }
+    } else {
+        // refresh the cloning experiment to reflect updated transformation status
+        sgRnaCloningExperiment.value = await RecordService.getRecord(
+        `${config.public.apiBase}/sg-rna-cloning-experiments`,
+            route.params.id as string,
+            {
+                plates: true
+            },
+        )
         // refresh the plate if transformation was successful
         plateLayout.wellContentsDisplayConfig.value = plamidPlateDisplayConfig
 
@@ -170,8 +185,12 @@ const transformOligos = async () => {
         })
         await loadPlate()
         experimentPlateDiagramKey.value += 1 // force re-render of the plate diagram
-    } catch (error: any) {
-        toast.add({severity: 'error', summary: 'Transformation failed', detail: error.statusMessage, life: 3000})
+
+        // resets splitter panel sizes after content has been rendered
+        nextTick(() => {
+            splitter.value.resetState()
+        })
+        toast.add({severity: 'success', summary: 'Transformation successful', life: 3000})
     }
 }
 
@@ -290,12 +309,6 @@ const sgRnaPlasmidTableColumnDefs = {
         path: 'wellCoordinates.displayValue',
     },
 }
-const didClickRecordEdit = (recordId: string) => {
-    sgRnaPlasmidsEditingRecordIds.value = [recordId]
-}
-const didClickMultipleRecordEdit = (recordIds: string[]) => {
-    sgRnaPlasmidsEditingRecordIds.value = recordIds
-}
 const setCrudAndPlateLayoutTableRefs = (el: any) => {
     plateLayout.setSelectionTableRef(el)
     crudTable.setTableRef(el)
@@ -326,7 +339,7 @@ const didUpdateMultipleRecords = async (record: any) => {
 }
 </script>
 <template>
-    <Splitter ref="splitter" class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
+    <Splitter ref="splitter" :class="smallerThanLg ? 'h-fit mb-8' : 'h-full mb-8'" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
         <SplitterPanel v-if="sgRnaCloningExperiment?.transformed != true" class="overflow-scroll" :size="60">
             <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
@@ -445,7 +458,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit" />
         </SplitterPanel>
     </Splitter>
-    <Dialog v-model:visible="showSgRnaPlasmidEditDialog" modal header="Edit" :style="{ width: 'auto' }" :closable="false">
+    <Dialog v-model:visible="showSgRnaPlasmidEditDialog" modal header="Edit" class="w-auto" :closable="false">
         <QuickForm
             v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
             :recordId="crudTable.state.editingRecordId"

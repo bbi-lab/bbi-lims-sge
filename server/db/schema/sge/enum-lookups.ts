@@ -36,6 +36,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Guide RNA',
                 label: 'Guide RNA',
             },
+            'sg-rna-plasmid': {
+                desc: 'sgRNA plasmid',
+                label: 'sgRNA plasmid',
+            },
             'lin-pcr': {
                 desc: 'Linearization primer PCR',
                 label: 'LIN PCR',
