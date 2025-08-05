@@ -14,7 +14,6 @@ export const sgRnaCloningExperiments = pgTable('sg_rna_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
-  transformed: boolean('transformed').default(false),
   transformedOn: timestamp('transformed_on'),
 })
 
@@ -22,6 +21,5 @@ export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
-  transformed: boolean('transformed').default(false),
   transformedOn: timestamp('transformed_on'),
 })

@@ -82,14 +82,11 @@ export default defineEventHandler(async (event) => {
                         wellId: plasmid.wellId,
                         sgRnaPlasmidId: newPlasmid[0].id,
                     })
-                    await tx.update(plates).set({ plateType: 'sg-rna-plasmid' }).where(eq(plates.id, plateId))
                 } catch (error: any) {
                     throw new Error(`Failed to create plasmid ${plasmid.name}: ${error.message}`)
                 }
             }
-            await tx.update(sgRnaCloningExperiments)
-                .set({ transformed: true })
-                .where(eq(sgRnaCloningExperiments.id, plate?.sgRnaCloningExperimentId as string))
+            await tx.update(plates).set({ plateType: 'sg-rna-plasmid' }).where(eq(plates.id, plateId))
         })
         return result
     } catch (error: any) {

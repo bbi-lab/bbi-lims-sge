@@ -47,9 +47,6 @@ const fieldDefs = {
     plates: {
         display: false,
     },
-    transformed: {
-        readOnly: true,
-    },
 }
 const withClause = {
     technician: { columns: { name: true } },

@@ -20,9 +20,11 @@ const splitter = ref()
 const selectionTableKey = ref(0)
 const experimentPlateDiagramKey = ref(0)
 const sgRnaCloningExperiment = ref()
-const sgRnaPlasmidsEditingRecordIds = ref<string[]>([])
 const crudTable = useCrudTable()
 
+const transformed = computed(() => {
+    return sgRnaCloningExperiment.value?.plates?.[0]?.plateType == 'sg-rna-plasmid'
+})
 const showSgRnaPlasmidEditDialog = computed(() => {
     return crudTable.state.showEditForm || crudTable.state.showMultipleEditForm
 })
@@ -114,10 +116,10 @@ onMounted(async() => {
 
     const plateId = _.get(sgRnaCloningExperiment.value, 'plates[0].id')
 
-    plateLayout.wellContentsDisplayConfig.value = sgRnaCloningExperiment.value?.transformed ? plamidPlateDisplayConfig : oligoPlateDisplayConfig
+    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : oligoPlateDisplayConfig
 
     plateLayout.setExportPlateLayoutConfig({
-        columns: sgRnaCloningExperiment.value?.transformed ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
+        columns: transformed.value ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
     })
 
     sourcePlateLayout.wellContentsDisplayConfig.value = oligoPlateDisplayConfig
@@ -340,7 +342,7 @@ const didUpdateMultipleRecords = async (record: any) => {
 </script>
 <template>
     <Splitter ref="splitter" :class="smallerThanLg ? 'h-fit mb-8' : 'h-full mb-8'" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
-        <SplitterPanel v-if="sgRnaCloningExperiment?.transformed != true" class="overflow-scroll" :size="60">
+        <SplitterPanel v-if="!transformed" class="overflow-scroll" :size="60">
             <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
                 :key="selectionTableKey"
@@ -361,7 +363,7 @@ const didUpdateMultipleRecords = async (record: any) => {
         </SplitterPanel>
         <SplitterPanel :size="40" :minSize="25">
             <Splitter layout="vertical">
-                <SplitterPanel v-if="sgRnaCloningExperiment?.transformed != true" class="flex justify-center overflow-scroll mt-10">
+                <SplitterPanel v-if="!transformed" class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
                         v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
@@ -424,7 +426,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                         </PlateDiagram>
                         <Button
                             class="w-fit ml-auto mr-auto mt-4 p-4"
-                            v-if="sgRnaCloningExperiment?.transformed != true"
+                            v-if="!transformed"
                             icon="pi pi-play"
                             iconPos="right"
                             severity="primary"
@@ -436,7 +438,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 </SplitterPanel>
             </Splitter>
         </SplitterPanel>
-        <SplitterPanel v-if="sgRnaCloningExperiment?.transformed && sgRnaCloningExperiment?.plates?.[0]?.id" class="overflow-scroll" :size="60" :minSize="25">
+        <SplitterPanel v-if="transformed && sgRnaCloningExperiment?.plates?.[0]?.id" class="overflow-scroll" :size="60" :minSize="25">
             <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
                 :key="selectionTableKey"
