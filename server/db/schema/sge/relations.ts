@@ -225,7 +225,12 @@ const sequencingRunsRelationsConfig: RelationsConfig = {
             table: sequencingRunSamples,
             schema: createSelectSchema(sequencingRunSamples),
             fields: [sequencingRunSamples.sequencingRunId],
-        }
+        },
+        externalSamples: {
+            table: sequencingRunExternalSamples,
+            schema: createSelectSchema(sequencingRunExternalSamples),
+            fields: [sequencingRunExternalSamples.sequencingRunId],
+        },
     }
 }
 export const sequencingRunsRelations = relationsConfigToRelations(sequencingRuns, sequencingRunsRelationsConfig)

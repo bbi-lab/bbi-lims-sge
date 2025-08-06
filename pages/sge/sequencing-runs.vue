@@ -21,6 +21,9 @@ const columnDefs: ColumnDefinitions = {
     samples: {
         display: false,
     },
+    externalSamples: {
+        display: false,
+    },
 }
 const fieldDefs: FieldDefinitions = {
     createdOn: {
@@ -38,7 +41,7 @@ const fieldDefs: FieldDefinitions = {
 }
 const rowActions = {
     samples: {
-        label: '',
+        label: (data: any) => { return `${_.size(data.samples) + _.size(data.externalSamples)}`},
         action: (data: any) => {
             router.push({path:`/sge/sequencing-run/${data.id}/samples`})
         },
@@ -59,6 +62,18 @@ const didDeleteRecord = async (record: any) => {
     // await updateInvalidRecords()
     crudTable.didDeleteRecord(record)
 }
+const displayWithClause = {
+    samples: {
+        columns: {
+            id: true,
+        },
+    },
+    externalSamples: {
+        columns: {
+            id: true,
+        },
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -72,6 +87,7 @@ const didDeleteRecord = async (record: any) => {
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
                 :rowActions="rowActions"
+                :withClause="displayWithClause"
                 :invalidRecords="invalidRecords"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
