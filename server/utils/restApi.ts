@@ -1,7 +1,7 @@
 import { type JsonLogicAll } from "json-logic-js"
 import _ from 'lodash'
 import jsonLogic, { type JsonLogicFilter } from 'json-logic-js'
-import { eq } from "drizzle-orm"
+import { and, or, eq, not, inArray, ilike } from 'drizzle-orm'
 import { wellContents } from "../db/schema/sge/well"
 
 export interface QueryParams {
@@ -128,5 +128,51 @@ export async function parseDeleteError(error: any, recordId: string) {
         } else {
             error.message = `Cannot delete due to related records in ${_.startCase(relatedTable)} table.`
         }
+    }
+}
+
+/**
+ * Converts a JSONLogic conditional to a Drizzle ORM where clause.
+ * Supports basic operators: "==", "and", "or", "!", "in".
+ */
+export function jsonLogicToDrizzleWhere(logic: any, queryBuilder: any, db: any): any {
+    if (!logic || typeof logic !== 'object') return undefined
+    const op = Object.keys(logic)[0]
+    const args = logic[op]
+
+    const fieldCheck = (field: string | undefined) => {
+      if (!field) {
+        throw new Error(`Field "${field}" is not defined.`)
+      } else if (field.includes('.')) {
+        throw new Error(`Field "${field}" cannot contain a dot (.) character.`)
+      } else if (!_.has(queryBuilder.table, field)) {
+        throw new Error(`Field "${field}" does not exist on the table.`)
+      }
+    }
+    switch (op) {
+        case '==':
+            // { "==": [ { "var": "field" }, value ] }
+            const field = args[0].var
+            fieldCheck(field)
+            return eq(queryBuilder.table[field], args[1])
+        case 'and':
+            return and(...args.map((cond: any) => jsonLogicToDrizzleWhere(cond, queryBuilder, db)))
+        case 'or':
+            return or(...args.map((cond: any) => jsonLogicToDrizzleWhere(cond, queryBuilder, db)))
+        case '!':
+            return not(jsonLogicToDrizzleWhere(args, queryBuilder, db))
+        case 'in':
+            // { "in": [ { "var": "field" }, [values] ] }
+            const inField = args[0].var
+            fieldCheck(inField)
+            return inArray(queryBuilder[inField], args[1])
+        case 'startsWith':
+            // { "startsWith": [ { "var": "field" }, value ] }
+            const startsWithField = args[0].var
+            fieldCheck(startsWithField)
+            return ilike(queryBuilder.table[startsWithField], `${args[1]}%`  )
+        // Add more operators as needed
+        default:
+            throw new Error(`Unsupported JSONLogic operator: ${op}`)
     }
 }

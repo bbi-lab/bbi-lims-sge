@@ -1,6 +1,6 @@
 
 import _ from 'lodash'
-import {SelectParams} from '../utils/restApi'
+import {jsonLogicToDrizzleWhere, SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { PgViewWithSelection, type PgTable } from 'drizzle-orm/pg-core'
@@ -43,9 +43,18 @@ function trimObjectValues(records: RecordValues[]): RecordValues[] {
 }
 
 export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, any>, selectParams: SelectParams, expandEnums: boolean = false) {
+    let drizzleWhereClause
+    try {
+        drizzleWhereClause = selectParams.where ? jsonLogicToDrizzleWhere(selectParams.where, queryBuilder, db) : undefined
+        // remove where clause from selectParams as it has been converted to Drizzle ORM format
+        _.unset(selectParams, 'where')
+    } catch (error) {
+        console.warn('Could not convert JSONLogic to Drizzle ORM where clause:', error)
+    }
     const records = await queryBuilder.findMany({
         columns: selectParams.columns,
-        with: selectParams.with
+        with: selectParams.with,
+        where: drizzleWhereClause,
     })
     const result = applySelectParamsToRecords(selectParams, records)
     if (expandEnums) expandEnumValues(result, _.get(queryBuilder, 'tableConfig.dbName', ''))
