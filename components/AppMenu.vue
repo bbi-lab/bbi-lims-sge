@@ -36,6 +36,8 @@ const model = ref([
                     { label: 'Amplification primers', to: '/sge/amplification-primers' },
                     { label: 'Linearization primers', to: '/sge/linearization-primers' },
                     { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
+                    { label: 'PCR 1 primers', to: '/sge/pcr-1-primers' },
+                    { label: 'PCR 2 primers', to: '/sge/pcr-2-primers' },
                     { label: 'Index primers', to: '/sge/index-primers' },
                 ]
              },
