@@ -687,6 +687,13 @@
       "when": 1754686295403,
       "tag": "0097_bright_frank_castle",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1754691951221,
+      "tag": "0098_early_captain_britain",
+      "breakpoints": true
     }
   ]
 }

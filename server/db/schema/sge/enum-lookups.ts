@@ -76,6 +76,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Sequencing index plate',
                 label: 'Seq index',
             },
+            'pcr1-primer-storage': {
+                desc: 'PCR 1 primer storage',
+                label: 'PCR 1 primer storage',
+            },
+            'pcr2-primer-storage': {
+                desc: 'PCR 2 primer storage',
+                label: 'PCR 2 primer storage',
+            },
         },
     },
     'pcrExperiments': {
