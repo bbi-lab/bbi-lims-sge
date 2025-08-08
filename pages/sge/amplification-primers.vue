@@ -21,59 +21,6 @@ watch(() => route.query, async (newValue, oldValue) => {
     tableKey.value = uuidv4()
 }, { immediate: true })
 
-// const showAddForm = ref(false)
-// const showEditForm = ref(false)
-// const editingRecordId = ref<string | null>(null)
-// const amplificationPrimersTable = ref()
-// const showMultipleEditForm = ref(false)
-// const editingMultipleRecordsIds = ref<string[]>([])
-
-// function didClickRecordEdit(event: any) {
-//     editingRecordId.value = event.id
-//     showEditForm.value = true
-//     showAddForm.value = false
-// }
-
-// function didClickRecordAdd() {
-//     showAddForm.value = true
-//     showEditForm.value = false
-// }
-// function didClickCancelAddForm() {
-//     showAddForm.value = false
-// }
-// function didClickCancelEditForm() {
-//     editingRecordId.value = null
-//     showEditForm.value = false
-// }
-
-// function didAddRecord(event: any) {
-//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-//     showAddForm.value = false
-// }
-// function didUpdateRecord(event: any) {
-//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-//     showEditForm.value = false
-// }
-// function didDeleteRecord(event: any) {
-//     amplificationPrimersTable.value.removeRecordId(event.id)
-//     showEditForm.value = false
-// }
-// function didClickMultipleRecordEdit(recordIds: string[]) {
-//     editingMultipleRecordsIds.value = recordIds
-//     showMultipleEditForm.value = true
-//     showEditForm.value = false
-//     showAddForm.value = false
-// }
-// function didClickCancelMultipleEditForm() {
-//     editingMultipleRecordsIds.value = []
-//     showMultipleEditForm.value = false
-// }
-// function didUpdateMultipleRecords(event: any) {
-//     event.forEach((e: any) => {
-//         if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
-//     })
-//     showMultipleEditForm.value = false
-// }
 const displayWithClause = Object.freeze({
     target: {
         columns: {

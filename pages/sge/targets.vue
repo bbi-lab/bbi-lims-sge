@@ -261,6 +261,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="targets"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
+                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"
