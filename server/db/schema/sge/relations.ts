@@ -2,7 +2,6 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
-// import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
 import { wellContents, wellContentSources, wells } from './well'
@@ -16,7 +15,6 @@ import { pellets } from './pellet'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
-// import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
@@ -95,11 +93,6 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: pellets,
             references: [pellets.id],
         },
-        // plasmid: {
-        //     fields: [wellContents.plasmidId],
-        //     referenceTable: plasmids,
-        //     references: [plasmids.id],
-        // },
         sgRnaPlasmid: {
             fields: [wellContents.sgRnaPlasmidId],
             referenceTable: sgRnaPlasmids,
@@ -147,27 +140,6 @@ const wellContentSourcesRelationsConfig: RelationsConfig = {
 }
 export const wellContentSourcesRelations = relationsConfigToRelations(wellContentSources, wellContentSourcesRelationsConfig)
 
-// const wellSourcesRelationsConfig: RelationsConfig = {
-//     one: {
-//         sourceWell: {
-//             fields: [wellSources.sourceWellId],
-//             referenceTable: wells,
-//             references: [wells.id],
-//         },
-//         destWell: {
-//             fields: [wellSources.destWellId],
-//             referenceTable: wells,
-//             references: [wells.id],
-//         },
-//         createdBy: {
-//             fields: [wellSources.createdBy],
-//             referenceTable: users,
-//             references: [users.id],
-//         },
-//     },
-// }
-// export const wellSourcesRelations = relationsConfigToRelations(wellSources, wellSourcesRelationsConfig)
-
 const wellsRelationsConfig: RelationsConfig = {
     one:{
         plate: {
@@ -193,11 +165,6 @@ const platesRelationsConfig: RelationsConfig = {
             referenceTable: pcrExperiments,
             references: [pcrExperiments.id],
         },
-        // plasmidExperiment: {
-        //     fields: [plates.plasmidExperimentId],
-        //     referenceTable: plasmidExperiments,
-        //     references: [plasmidExperiments.id],
-        // },
         sgRnaCloningExperiment: {
             fields: [plates.sgRnaCloningExperimentId],
             referenceTable: sgRnaCloningExperiments,
@@ -307,11 +274,21 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(transfectTargets),
             fields: [transfectTargets.targetId],
         },
-        // plasmids: {
-        //     table: plasmids,
-        //     schema: createSelectSchema(plasmids),
-        //     fields: [plasmids.targetId],
-        // }
+        amplificationPrimers: {
+            table: amplificationPrimers,
+            schema: createSelectSchema(amplificationPrimers),
+            fields: [amplificationPrimers.targetId],
+        },
+        linearizationPrimers: {
+            table: linearizationPrimers,
+            schema: createSelectSchema(linearizationPrimers),
+            fields: [linearizationPrimers.targetId],
+        },
+        homologyArmPrimers: {
+            table: homologyArmPrimers,
+            schema: createSelectSchema(homologyArmPrimers),
+            fields: [homologyArmPrimers.targetId],
+        },
         sgRnaPlasmids: {
             table: sgRnaPlasmids,
             schema: createSelectSchema(sgRnaPlasmids),
@@ -432,29 +409,6 @@ const transfectLotUsageRelationsConfig: RelationsConfig = {
 }
 export const transfectLotUsageRelations = relationsConfigToRelations(transfectLotUsage, transfectLotUsageRelationsConfig)
 
-// const plasmidExperimentsRelationsConfig: RelationsConfig = {
-//     one:{
-//         technician: {
-//             fields: [plasmidExperiments.technician],
-//             referenceTable: users,
-//             references: [users.id],
-//         },
-//     },
-//     many: {
-//         plates: {
-//             table: plates,
-//             schema: createSelectSchema(plates),
-//             fields: [plates.plasmidExperimentId],
-//         },
-//         snvLibs: {
-//             table: plasmids,
-//             schema: createSelectSchema(plasmids),
-//             fields: [plasmids.plasmidExperimentId],
-//         },
-//     },
-// }
-// export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
-
 const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
@@ -464,11 +418,6 @@ const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
         },
     },
     many: {
-        // sgRnaPlasmids: {
-        //     table: sgRnaPlasmids,
-        //     schema: createSelectSchema(sgRnaPlasmids),
-        //     fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
-        // },
         plates: {
             table: plates,
             schema: createSelectSchema(plates),
@@ -575,29 +524,6 @@ const lotsRelationsConfig: RelationsConfig = {
 }
 export const lotsRelations = relationsConfigToRelations(lots, lotsRelationsConfig)
 
-// const plasmidsRelationsConfig: RelationsConfig = {
-//     one: {
-//         target: {
-//             fields: [plasmids.targetId],
-//             referenceTable: targets,
-//             references: [targets.id],
-//         },
-//         plasmidExperiment: {
-//             fields: [plasmids.plasmidExperimentId],
-//             referenceTable: plasmidExperiments,
-//             references: [plasmidExperiments.id],
-//         },
-//     },
-//     many: {
-//         wellContents: {
-//             table: wellContents,
-//             schema: createSelectSchema(wellContents),
-//             fields: [wellContents.plasmidId],
-//         }
-//     },
-// }
-// export const plasmidsRelations = relationsConfigToRelations(plasmids, plasmidsRelationsConfig)
-
 const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
     one: {
         target: {
@@ -605,11 +531,6 @@ const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
-        // sgRnaCloningExperiment: {
-        //     fields: [sgRnaPlasmids.sgRnaCloningExperimentId],
-        //     referenceTable: sgRnaCloningExperiments,
-        //     references: [sgRnaCloningExperiments.id],
-        // },
     },
     many: {
         wellContents: {
@@ -747,21 +668,18 @@ export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, in
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
     wellContentSources: wellContentSourcesRelationsConfig,
-    // wellSources: wellSourcesRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
     projects: projectsRelationsConfig,
     targets: targetsRelationsConfig,
     regions: regionsRelationsConfig,
     genes: genesRelationsConfig,
-    // plasmids: plasmidsRelationsConfig,
     sgRnaPlasmids: sgRnaPlasmidsRelationsConfig,
     snvLibPlasmids: snvLibPlasmidsRelationsConfig,
     nucleicAcids: nucleicAcidsRelationsConfig,
     oligos: oligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
-    // plasmidExperiments: plasmidExperimentsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
     snvLibCloningExperiments: snvLibCloningExperimentsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
