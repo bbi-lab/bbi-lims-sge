@@ -52,6 +52,9 @@ const displayWithClause = Object.freeze({
     snvLibPlasmids: {
         columns: {id: true}
     },
+    amplificationPrimers: {
+        columns: {id: true, name: true, sequence: true, sequenceType: true},
+    }
 })
 
 const rowActions = {
@@ -137,6 +140,29 @@ const columnDefs: ColumnDefinitions = {
         display: false,
     },
     plasmids: {
+        display: false,
+    },
+    amplificationPrimers: {
+        format: (x) => _.isArray(x.amplificationPrimers) ? _.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
+        type: 'element',
+        element: (x: any) => {
+            const value = _.isArray(x.amplificationPrimers) ? _.join(_.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : ''
+            const href = `/sge/amplification-primers?targetId=${x.id}`
+            return value ? `${value}<a href="${href}" class="text-blue-500 hover:underline"><span class="iconify mdi--link-variant" /></a>` : ''
+        },
+        path: 'amplificationPrimers.displayValue',
+        exportValue: (x) => _.isArray(x.amplificationPrimers) ? _.join(_.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
+    },
+    linearizationPrimers: {
+        display: false,
+    },
+    homologyArmPrimers: {
+        display: false,
+    },
+    sgRnaPlasmids: {
+        display: false,
+    },
+    snvLibPlasmids: {
         display: false,
     },
 }
