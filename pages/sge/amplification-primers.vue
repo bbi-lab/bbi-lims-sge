@@ -2,9 +2,24 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
+const route = useRoute()
+
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 // const showAddForm = ref(false)
 // const showEditForm = ref(false)
@@ -153,11 +168,13 @@ const fieldDefs: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="amplification-primers"
                 schemaName="select"
                 title="Amplification Primers"
                 :withClause="displayWithClause"
+                :where="whereClauses"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
@@ -172,6 +189,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="amplification-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -181,6 +199,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="amplification-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
@@ -191,6 +210,7 @@ const fieldDefs: FieldDefinitions = {
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"
             />
