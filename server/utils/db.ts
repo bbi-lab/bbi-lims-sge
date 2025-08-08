@@ -24,9 +24,12 @@ import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, pcr1Primers, pcr2Primers } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
 import { oligos } from '../db/schema/sge/oligos'
+
+// Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
+const { relationsConfigs, ...sgeRelationships } = sgeRelations
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -65,6 +68,8 @@ export const schema = {
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
+  pcr1Primers,
+  pcr2Primers,
   indexPrimers,
   sequencingRuns,
   sequencingRunSamples,
@@ -78,38 +83,7 @@ export const schema = {
   usersRelations,
   userGroupsRelations,
   userGroupMembershipsRelations,
-  platesRelations: sgeRelations.platesRelations,
-  pcrExperimentsRelations: sgeRelations.pcrExperimentsRelations,
-  wellsRelations: sgeRelations.wellsRelations,
-  wellContentsRelations: sgeRelations.wellContentsRelations,
-  wellContentSourcesRelations: sgeRelations.wellContentSourcesRelations,
-  projectsRelations: sgeRelations.projectsRelations,
-  targetsRelations: sgeRelations.targetsRelations,
-  regionsRelations: sgeRelations.regionsRelations,
-  genesRelations: sgeRelations.genesRelations,
-  cyclesRelations: sgeRelations.cyclesRelations,
-  // plasmidsRelations: sgeRelations.plasmidsRelations,
-  snvLibPlasmidsRelations: sgeRelations.snvLibPlasmidsRelations,
-  sgRnaPlasmidsRelations: sgeRelations.sgRnaPlasmidsRelations,
-  nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
-  oligosRelations: sgeRelations.oligosRelations,
-  pelletsRelations: sgeRelations.pelletsRelations,
-  lotsRelations: sgeRelations.lotsRelations,
-  transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
-  transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
-  transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
-  // plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
-  sgRnaCloningExperimentsRelations: sgeRelations.sgRnaCloningExperimentsRelations,
-  snvLibCloningExperimentsRelations: sgeRelations.snvLibCloningExperimentsRelations,
-  extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
-  extractionLotUsageRelations: sgeRelations.extractionLotUsageRelations,
-  amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
-  linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
-  homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
-  indexPrimersRelations: sgeRelations.indexPrimersRelations,
-  sequencingRunsRelations: sgeRelations.sequencingRunsRelations,
-  sequencingRunSamplesRelations: sgeRelations.sequencingRunSamplesRelations,
-  sequencingRunExternalSamplesRelations: sgeRelations.sequencingRunExternalSamplesRelations,
+  ...sgeRelationships,
 }
 
 const ssl = config?.ssl != null ? config.ssl
