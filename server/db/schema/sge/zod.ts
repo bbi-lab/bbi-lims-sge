@@ -16,7 +16,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, pcr1Primers, pcr2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { oligos } from './oligos'
@@ -148,10 +148,6 @@ const selectReagentsSchema = createSelectSchema(reagents)
 const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
-// const selectPlasmidsSchema = createSelectSchema(plasmids)
-// const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true}).partial()
-// const updatePlasmidsSchema = insertPlasmidsSchema
-
 const selectSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids)
 const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids).omit({id: true})
 const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
@@ -183,6 +179,14 @@ const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
 const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
 const updateIndexPrimerSchema = insertIndexPrimerSchema
+
+const selectPcr1PrimerSchema = createSelectSchema(pcr1Primers)
+const insertPcr1PrimerSchema = createSelectSchema(pcr1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatePcr1PrimerSchema = insertPcr1PrimerSchema
+
+const selectPcr2PrimerSchema = createSelectSchema(pcr2Primers)
+const insertPcr2PrimerSchema = createSelectSchema(pcr2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatePcr2PrimerSchema = insertPcr2PrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
@@ -229,11 +233,6 @@ export const schemas = {
         insert: insertTransfectLotUsageSchema,
         update: updateTransfectLotUsageSchema,
     },
-    // plasmidExperiments: {
-    //     select: selectPlasmidExperimentsSchema,
-    //     insert: insertPlasmidExperimentsSchema,
-    //     update: updatePlasmidExperimentsSchema,
-    // },
     sgRnaCloningExperiments: {
         select: selectSgRnaCloningExperimentsSchema,
         insert: insertSgRnaCloningExperimentsSchema,
@@ -294,11 +293,6 @@ export const schemas = {
         insert: insertExtractionLotUsageSchema,
         update: updateExtractionLotUsageSchema,
     },
-    // plasmids: {
-    //     select: selectPlasmidsSchema,
-    //     insert: insertPlasmidsSchema,
-    //     update: updatePlasmidsSchema,
-    // },
     sgRnaPlasmids: {
         select: selectSgRnaPlasmidsSchema,
         insert: insertSgRnaPlasmidsSchema,
@@ -354,7 +348,16 @@ export const schemas = {
         insert: insertIndexPrimerSchema,
         update: updateIndexPrimerSchema,
     },
-
+    pcr1Primers: {
+        select: selectPcr1PrimerSchema,
+        insert: insertPcr1PrimerSchema,
+        update: updatePcr1PrimerSchema,
+    },
+    pcr2Primers: {
+        select: selectPcr2PrimerSchema,
+        insert: insertPcr2PrimerSchema,
+        update: updatePcr2PrimerSchema,
+    },
     // views
     viewPlatesWithWellCounts: {
         select: selectViewPlatesWithWellCountsSchema,

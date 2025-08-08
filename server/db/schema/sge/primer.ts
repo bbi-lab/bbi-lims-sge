@@ -77,3 +77,5 @@ export type AmplificationPrimer = InferSelectModel<typeof amplificationPrimers>
 export type LinearizationPrimer = InferSelectModel<typeof linearizationPrimers>
 export type HomologyArmPrimer = InferSelectModel<typeof homologyArmPrimers>
 export type IndexPrimer = InferSelectModel<typeof indexPrimers>
+export type Pcr1Primer = InferSelectModel<typeof pcr1Primers>
+export type Pcr2Primer = InferSelectModel<typeof pcr2Primers>
