@@ -1,4 +1,3 @@
-import type { PlateWithWellContents, WellWithContents } from "~/utils/sge/plateUtils"
 import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
@@ -7,6 +6,25 @@ import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
+import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer, Pcr1Primer, Pcr2Primer } from "~/server/db/schema/sge/primer"
+import type { Plate } from "~/server/db/schema/sge/plate"
+
+type WellWithContents = Well & {
+    wellContents: WellContent & {
+        amplificationPrimer: AmplificationPrimer
+        linearizationPrimer: LinearizationPrimer
+        homologyArmPrimer: HomologyArmPrimer
+        pcr1Primer: Pcr1Primer
+        pcr2Primer: Pcr2Primer
+        nucleicAcid: NucleicAcid & {
+            pellet: Pellet
+        }
+    }[]
+}
+
+type PlateWithWellContents = Plate & {
+    wells: WellWithContents[]
+}
 
 type WellSpecs = {
     [key: string]: {
@@ -259,7 +277,7 @@ export const usePlateLayout = () => {
         return newRecords
     }
 
-    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId' | 'sgRnaPlasmidId' | 'snvLibPlasmidId') => {
+    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'pcr1PrimerId' | 'pcr2PrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId' | 'sgRnaPlasmidId' | 'snvLibPlasmidId') => {
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const recordsToAdd = _.map(selectedWells.value, (well) => {
             return {
