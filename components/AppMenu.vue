@@ -6,7 +6,6 @@ import Molecule from '~icons/mdi/molecule'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import DnaIcon from '~icons/mdi/dna'
-// import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 import FluentRun16Filled from '~icons/fluent/run-16-filled'
@@ -65,10 +64,28 @@ const model = ref([
                     { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
                 ]
             },
-
             { label: 'Beta Features', iconComponent: MdiBeta,
                 items: [
                     { label: 'JBrowse', to: '/sge/experimental/jbrowse' },
+                ]
+             },
+            { label: 'External', icon: 'pi pi-fw pi-external-link',
+                items: [
+                    {
+                        label: 'UCSC In-silico PCR',
+                        url: 'https://genome.ucsc.edu/cgi-bin/hgPcr',
+                        target: '_blank'
+                    },
+                    {
+                        label: 'UCSC Blat',
+                        url: 'https://genome.ucsc.edu/cgi-bin/hgBlat',
+                        target: '_blank',
+                    },
+                    {
+                        label: 'Primer3',
+                        url: 'https://primer3.ut.ee',
+                        target: '_blank',
+                    },
                 ]
              },
         ]
