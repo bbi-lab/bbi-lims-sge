@@ -159,6 +159,7 @@ interface ColumnDefinition {
     searchable?: boolean,
     exportable?: boolean,
     exportValue?: (record: any) => string,
+    bodyClass?: string,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -553,7 +554,7 @@ function filteringComplete() {
         </Column>
         <template v-for="columnDef of filterByColumnVisibility(sortedColumnDefs)">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -561,7 +562,7 @@ function filteringComplete() {
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -569,7 +570,7 @@ function filteringComplete() {
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -581,7 +582,7 @@ function filteringComplete() {
                         </a>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -591,7 +592,7 @@ function filteringComplete() {
                         <span v-else>err</span>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
