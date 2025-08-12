@@ -1,7 +1,7 @@
 <template>
     <Dropdown v-model="selectedGene" :options="targetGenes" optionLabel="symbol" placeholder="Select a Gene" class="ml-5 mr-5" />
     <Dropdown v-model="selectedTarget" :options="filteredTargets" optionLabel="name" placeholder="Select a Target" class="ml-5 mr-5" />
-
+    <Button class="pi pi-search" severity="secondary" v-if="selectedTarget" v-tooltip="'Zoom to target'" @click="zoomToSelectedTarget"></Button>
     <div id="jbrowse_linear_genome_view"></div>
 
     <button class="p-button m-2" id="showviewstate">Show view state</button>
@@ -197,10 +197,79 @@ const navTo = (chr, start, end) => {
     }
 }
 
+const zoomToSelectedTarget = () => {
+    if (selectedTarget.value) {
+        const target = selectedTarget.value
+        navTo(target.region.gene.chromosome, target.editStart, target.editStop)
+    }
+}
+
+watch(() => selectedGene.value, (newValue, oldValue) => {
+    if (newValue !== oldValue) selectedTarget.value = null
+})
+
 watch(() => selectedTarget.value, (newValue, oldValue) => {
-    if (newValue !== oldValue) {
-        console.log(newValue)
+    if (newValue !== oldValue && newValue) {
         navTo(newValue.region.gene.chromosome, newValue.editStart, newValue.editStop)
+
+        // Dynamically add a new track for the selected target's sequence
+        const trackId = `target-sequence-${newValue.id}`
+        // Check if track already exists
+        const existingTrack = state.session.view.tracks.find(t => t.trackId === trackId)
+        if (!existingTrack) {
+            const newTrack = {
+                type: 'FeatureTrack',
+                trackId,
+                name: `Target: ${newValue.name}`,
+                assemblyNames: ['hg38'],
+                category: ['Target'],
+                adapter: {
+                    type: 'FromConfigAdapter',
+                    features: [
+                        // Main target feature
+                        {
+                            refName: newValue.region.gene.chromosome,
+                            start: newValue.editStart - 1,
+                            end: newValue.editStop,
+                            name: newValue.name || `Target ${newValue.id}`,
+                            uniqueId: `target-${newValue.id}`,
+                            type: 'gene',
+                        },
+                        // Add fixedEdits as additional features
+                        ...(newValue.fixedEdits || []).map((hgvsString, index) => {
+                            // Parse HGVS string to extract coordinates and edit info (Example: g.100A>T)
+                            const hgvsFixedEditMatch = hgvsString.match(/g\.(\d+)([acgt])>([acgt])/i)
+                            if (hgvsFixedEditMatch) {
+                                const [, pos, editFrom, editTo] = hgvsFixedEditMatch
+                                const position = parseInt(pos)
+
+                                return {
+                                    refName: newValue.region.gene.chromosome,
+                                    start: position - 1,
+                                    end: position,
+                                    uniqueId: `target-${newValue.id}-edit-${index}`,
+                                    type: 'sequence_alteration',
+                                    description: `Fixed Edit: ${editFrom}>${editTo}`,
+                                }
+                            } else {
+                                // Fallback for invalid format of HGVS string
+                                return {
+                                    refName: newValue.region.gene.chromosome,
+                                    start: newValue.editStart,
+                                    end: newValue.editStop,
+                                    uniqueId: `target-${newValue.id}-edit-${index}`,
+                                    type: 'sequence_alteration',
+                                    description: `ERROR: ${hgvsString}`,
+                                }
+                            }
+                        })
+                    ],
+                },
+            }
+
+            state.session.addTrackConf(newTrack)
+            state.session.view.showTrack(trackId)
+        }
     }
 })
 
