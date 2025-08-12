@@ -165,6 +165,9 @@ const columnDefs: ColumnDefinitions = {
     snvLibPlasmids: {
         display: false,
     },
+    sequence: {
+        bodyClass: 'break-all min-w-64',
+    }
 }
 
 const fieldDefs: FieldDefinitions = {
