@@ -27,7 +27,7 @@ const targets = ref([])
 const targetGenes = ref([])
 const selectedGene = ref(null)
 const selectedTarget = ref(null)
-const state = ref(null)
+let state = null
 
 const filteredTargets = computed(() => {
     if (!selectedGene?.value) return []
@@ -44,7 +44,7 @@ useHead({
 
             const updates = document.getElementById('update')
 
-            state.value = new createViewState({
+            state = new createViewState({
                 assembly: {
                     name: 'hg38',
                     sequence: {
@@ -161,8 +161,8 @@ useHead({
                             tracks: [
                             'GRCh38-ReferenceSequenceTrack',
                             'genes',
-                            'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-                            'hg38.100way.phyloP100way',
+                            'repeats_hg38',
+                            // 'hg38.100way.phyloP100way',
                             'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
                             ],
                         },
@@ -175,7 +175,7 @@ useHead({
 
             const textArea = document.getElementById('viewstate')
             document.getElementById('showviewstate').addEventListener('click', () => {
-                    textArea.innerHTML = JSON.stringify(state.value.session.view, undefined, 2)
+                    textArea.innerHTML = JSON.stringify(state.session.view, undefined, 2)
             })
 
             const root = createRoot(
@@ -183,7 +183,7 @@ useHead({
             )
             root.render(
                 React.createElement(JBrowseLinearGenomeView, {
-                    viewState: state.value,
+                    viewState: state,
                 }),
             )
         }
@@ -192,8 +192,8 @@ useHead({
 })
 
 const navTo = (chr, start, end) => {
-    if (state.value?.session?.view) {
-         state.value.session.view.navToLocString(`${chr}:${start}..${end}`)
+    if (state.session?.view) {
+         state.session.view.navToLocString(`${chr}:${start}..${end}`)
     }
 }
 
