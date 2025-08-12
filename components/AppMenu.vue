@@ -11,6 +11,7 @@ import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 import FluentRun16Filled from '~icons/fluent/run-16-filled'
 import FluentMolecule16Filled from '~icons/fluent/molecule-16-filled'
+import MdiBeta from '~icons/mdi/beta'
 
 const model = ref([
     {
@@ -64,6 +65,12 @@ const model = ref([
                     { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
                 ]
             },
+
+            { label: 'Beta Features', iconComponent: MdiBeta,
+                items: [
+                    { label: 'JBrowse', to: '/sge/experimental/jbrowse' },
+                ]
+             },
         ]
     },
     {
