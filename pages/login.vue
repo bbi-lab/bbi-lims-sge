@@ -20,7 +20,7 @@ async function onDidClickSignIn(event) {
             // fetching session from server, otherwise loggedIn value may still be false
             await fetch()
             if (loggedIn.value) {
-                await navigateTo(router.currentRoute?.value?.query?.from || '/')
+                await navigateTo(router.currentRoute?.value?.query?.redirect || '/')
             }
         } else {
             toast.add({severity: 'error', summary: response.errorMessage})
