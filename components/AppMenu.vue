@@ -10,7 +10,7 @@ import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 import FluentRun16Filled from '~icons/fluent/run-16-filled'
 import FluentMolecule16Filled from '~icons/fluent/molecule-16-filled'
-import MdiBeta from '~icons/mdi/beta'
+import MdiMagic from '~icons/mdi/magic'
 
 const model = ref([
     {
@@ -64,11 +64,6 @@ const model = ref([
                     { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
                 ]
             },
-            { label: 'Beta Features', iconComponent: MdiBeta,
-                items: [
-                    { label: 'JBrowse', to: '/sge/experimental/jbrowse' },
-                ]
-             },
             { label: 'External', icon: 'pi pi-fw pi-external-link',
                 items: [
                     {
@@ -86,6 +81,11 @@ const model = ref([
                         url: 'https://primer3.ut.ee',
                         target: '_blank',
                     },
+                ]
+             },
+            { label: 'Experimental', class: 'italic', iconComponent: MdiMagic,
+                items: [
+                    { label: 'JBrowse', to: '/sge/experimental/jbrowse' },
                 ]
              },
         ]
