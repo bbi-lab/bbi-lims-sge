@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text, integer, check } from "drizzle-orm/pg-core";
 import { wells } from "./well";
 import { nucleicAcids } from "./nucleic-acid";
 import { indexPrimers } from "./primer";
@@ -26,7 +26,7 @@ export const sequencingRunSamples = pgTable('sequencing_run_samples', {
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => [
   uniqueIndex('unique_index_primers_per_sequencing_run').on(t.sequencingRunId, sql`least(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`, sql`greatest(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`),
-  sql`CHECK (${t.indexPrimer1Id} IS NOT NULL AND ${t.indexPrimer2Id} IS NOT NULL)`
+  check("internal_sample_primer_check", sql`${t.indexPrimer1Id} IS NOT NULL AND ${t.indexPrimer2Id} IS NOT NULL`)
 ])
 
 export const sequencingRunExternalSamples = pgTable('sequencing_run_external_samples', {
@@ -45,11 +45,10 @@ export const sequencingRunExternalSamples = pgTable('sequencing_run_external_sam
 }, (t) => [
   uniqueIndex('unique_custom_index_seqs_per_sequencing_run').on(t.sequencingRunId, sql`least(${t.customIndexSeq1}, ${t.customIndexSeq2})`, sql`greatest(${t.customIndexSeq1}, ${t.customIndexSeq2})`),
   // check that either two internal index primers are present, or at least one custom index sequences is present, but not both types
-  sql`CHECK (
-    ((COALESCE(TRIM(${t.customIndexSeq1}), '') <> '' OR COALESCE(TRIM(${t.customIndexSeq2}), '') <> '')) AND (${t.indexPrimer1Id} IS NULL AND ${t.indexPrimer2Id} IS NULL)) OR
-    (${t.indexPrimer1Id} IS NOT NULL AND ${t.indexPrimer2Id} IS NOT NULL)
-  )`
-])
+  check("external_sample_primer_check", sql`
+    ((COALESCE(TRIM(${t.customIndexSeq1}), '') <> '' OR COALESCE(TRIM(${t.customIndexSeq2}), '') <> '') AND ${t.indexPrimer1Id} IS NULL AND ${t.indexPrimer2Id} IS NULL) OR
+    (${t.indexPrimer1Id} IS NOT NULL AND ${t.indexPrimer2Id} IS NOT NULL)`)
+  ])
 
 export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_samples', {
   id: uuid('id'),
@@ -68,7 +67,7 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   customIndexSeq1: varchar('custom_index_seq_1'),
   customIndexSeq2: varchar('custom_index_seq_2'),
   millionReadsRequired: doublePrecision('million_reads_required'),
-  overrideCycles: varchar('override_cycles').array(),
+  overrideCycles: varchar('override_cycles'),
   notes: text('notes'),
   createdAt: timestamp('created_at'),
 }).as(sql`SELECT
