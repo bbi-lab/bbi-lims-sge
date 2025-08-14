@@ -16,7 +16,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, pcr1Primers, pcr2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { oligos } from './oligos'
@@ -180,13 +180,13 @@ const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
 const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
 const updateIndexPrimerSchema = insertIndexPrimerSchema
 
-const selectPcr1PrimerSchema = createSelectSchema(pcr1Primers)
-const insertPcr1PrimerSchema = createSelectSchema(pcr1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
-const updatePcr1PrimerSchema = insertPcr1PrimerSchema
+const selectpreseq1PrimerSchema = createSelectSchema(preseq1Primers)
+const insertpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatepreseq1PrimerSchema = insertpreseq1PrimerSchema
 
-const selectPcr2PrimerSchema = createSelectSchema(pcr2Primers)
-const insertPcr2PrimerSchema = createSelectSchema(pcr2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
-const updatePcr2PrimerSchema = insertPcr2PrimerSchema
+const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers)
+const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
@@ -348,15 +348,15 @@ export const schemas = {
         insert: insertIndexPrimerSchema,
         update: updateIndexPrimerSchema,
     },
-    pcr1Primers: {
-        select: selectPcr1PrimerSchema,
-        insert: insertPcr1PrimerSchema,
-        update: updatePcr1PrimerSchema,
+    preseq1Primers: {
+        select: selectpreseq1PrimerSchema,
+        insert: insertpreseq1PrimerSchema,
+        update: updatepreseq1PrimerSchema,
     },
-    pcr2Primers: {
-        select: selectPcr2PrimerSchema,
-        insert: insertPcr2PrimerSchema,
-        update: updatePcr2PrimerSchema,
+    preseq2Primers: {
+        select: selectpreseq2PrimerSchema,
+        insert: insertpreseq2PrimerSchema,
+        update: updatepreseq2PrimerSchema,
     },
     // views
     viewPlatesWithWellCounts: {

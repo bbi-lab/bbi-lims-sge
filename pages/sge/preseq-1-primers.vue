@@ -117,9 +117,9 @@ const fieldDefs: FieldDefinitions = {
             <QuickTable
                 :key="tableKey"
                 :ref="crudTable.setTableRef"
-                tableName="pcr-1-primers"
+                tableName="preseq-1-primers"
                 schemaName="select"
-                title="PCR 1 Primers"
+                title="PreSeq 1 Primers"
                 :withClause="displayWithClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"
@@ -133,7 +133,7 @@ const fieldDefs: FieldDefinitions = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="pcr-1-primers"
+                tableName="preseq-1-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -143,7 +143,7 @@ const fieldDefs: FieldDefinitions = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="pcr-1-primers"
+                tableName="preseq-1-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -153,7 +153,7 @@ const fieldDefs: FieldDefinitions = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="pcr-1-primers"
+                tableName="preseq-1-primers"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"

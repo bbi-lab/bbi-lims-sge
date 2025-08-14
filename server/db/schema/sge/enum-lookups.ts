@@ -77,12 +77,12 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'Seq index',
             },
             'pcr1-primer-storage': {
-                desc: 'PCR 1 primer storage',
-                label: 'PCR 1 primer storage',
+                desc: 'PreSeq 1 primer storage',
+                label: 'PreSeq 1 primer storage',
             },
             'pcr2-primer-storage': {
-                desc: 'PCR 2 primer storage',
-                label: 'PCR 2 primer storage',
+                desc: 'PreSeq 2 primer storage',
+                label: 'PreSeq 2 primer storage',
             },
         },
     },

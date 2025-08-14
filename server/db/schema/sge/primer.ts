@@ -38,7 +38,7 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
 
-export const pcr1Primers = pgTable('pcr_1_primers', {
+export const preseq1Primers = pgTable('preseq_1_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull(),
@@ -49,7 +49,7 @@ export const pcr1Primers = pgTable('pcr_1_primers', {
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
 
-export const pcr2Primers = pgTable('pcr_2_primers', {
+export const preseq2Primers = pgTable('preseq_2_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull(),
@@ -77,5 +77,5 @@ export type AmplificationPrimer = InferSelectModel<typeof amplificationPrimers>
 export type LinearizationPrimer = InferSelectModel<typeof linearizationPrimers>
 export type HomologyArmPrimer = InferSelectModel<typeof homologyArmPrimers>
 export type IndexPrimer = InferSelectModel<typeof indexPrimers>
-export type Pcr1Primer = InferSelectModel<typeof pcr1Primers>
-export type Pcr2Primer = InferSelectModel<typeof pcr2Primers>
+export type preseq1Primer = InferSelectModel<typeof preseq1Primers>
+export type preseq2Primer = InferSelectModel<typeof preseq2Primers>

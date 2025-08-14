@@ -4,7 +4,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { plates } from './plate'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, pcr1Primers, pcr2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { nucleicAcids } from './nucleic-acid'
 import { pellets } from './pellet'
 import { users } from '../user'
@@ -26,8 +26,8 @@ export const wellContents = pgTable('well_contents', {
   amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id).unique(),
   linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id).unique(),
   homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id).unique(),
-  pcr1PrimerId: uuid('pcr_1_primer_id').references(() => pcr1Primers.id),
-  pcr2PrimerId: uuid('pcr_2_primer_id').references(() => pcr2Primers.id),
+  preseq1PrimerId: uuid('preseq_1_primer_id').references(() => preseq1Primers.id),
+  preseq2PrimerId: uuid('preseq_2_primer_id').references(() => preseq2Primers.id),
   indexPrimerId: uuid('index_primer_id').references(() => indexPrimers.id),
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
@@ -35,7 +35,7 @@ export const wellContents = pgTable('well_contents', {
   snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   oligoId: uuid('oligo_id').references(() => oligos.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.pcr1PrimerId}, ${t.pcr2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.oligoId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.oligoId}) = 1`),
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {

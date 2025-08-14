@@ -708,6 +708,13 @@
       "when": 1755208180032,
       "tag": "0100_faulty_the_liberteens",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1755210412715,
+      "tag": "0101_safe_leper_queen",
+      "breakpoints": true
     }
   ]
 }

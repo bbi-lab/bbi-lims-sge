@@ -16,7 +16,7 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, pcr1Primers, pcr2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { oligos } from './oligos'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
@@ -78,15 +78,15 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: homologyArmPrimers,
             references: [homologyArmPrimers.id],
         },
-        pcr1Primer: {
-            fields: [wellContents.pcr1PrimerId],
-            referenceTable: pcr1Primers,
-            references: [pcr1Primers.id],
+        preseq1Primer: {
+            fields: [wellContents.preseq1PrimerId],
+            referenceTable: preseq1Primers,
+            references: [preseq1Primers.id],
         },
-        pcr2Primer: {
-            fields: [wellContents.pcr2PrimerId],
-            referenceTable: pcr2Primers,
-            references: [pcr2Primers.id],
+        preseq2Primer: {
+            fields: [wellContents.preseq2PrimerId],
+            referenceTable: preseq2Primers,
+            references: [preseq2Primers.id],
         },
         indexPrimer: {
             fields: [wellContents.indexPrimerId],
@@ -294,15 +294,15 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(linearizationPrimers),
             fields: [linearizationPrimers.targetId],
         },
-        pcr1Primers: {
-            table: pcr1Primers,
-            schema: createSelectSchema(pcr1Primers),
-            fields: [pcr1Primers.targetId],
+        preseq1Primers: {
+            table: preseq1Primers,
+            schema: createSelectSchema(preseq1Primers),
+            fields: [preseq1Primers.targetId],
         },
-        pcr2Primers: {
-            table: pcr2Primers,
-            schema: createSelectSchema(pcr2Primers),
-            fields: [pcr2Primers.targetId],
+        preseq2Primers: {
+            table: preseq2Primers,
+            schema: createSelectSchema(preseq2Primers),
+            fields: [preseq2Primers.targetId],
         },
         homologyArmPrimers: {
             table: homologyArmPrimers,
@@ -685,10 +685,10 @@ const indexPrimersRelationsConfig: RelationsConfig = {
 }
 export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
 
-const pcr1PrimersRelationsConfig: RelationsConfig = {
+const preseq1PrimersRelationsConfig: RelationsConfig = {
     one: {
         target: {
-            fields: [pcr1Primers.targetId],
+            fields: [preseq1Primers.targetId],
             referenceTable: targets,
             references: [targets.id],
         },
@@ -699,12 +699,12 @@ const pcr1PrimersRelationsConfig: RelationsConfig = {
         }
     },
 }
-export const pcr1PrimersRelations = relationsConfigToRelations(pcr1Primers, pcr1PrimersRelationsConfig)
+export const preseq1PrimersRelations = relationsConfigToRelations(preseq1Primers, preseq1PrimersRelationsConfig)
 
-const pcr2PrimersRelationsConfig: RelationsConfig = {
+const preseq2PrimersRelationsConfig: RelationsConfig = {
     one: {
         target: {
-            fields: [pcr2Primers.targetId],
+            fields: [preseq2Primers.targetId],
             referenceTable: targets,
             references: [targets.id],
         },
@@ -715,7 +715,7 @@ const pcr2PrimersRelationsConfig: RelationsConfig = {
         }
     },
 }
-export const pcr2PrimersRelations = relationsConfigToRelations(pcr2Primers, pcr2PrimersRelationsConfig)
+export const preseq2PrimersRelations = relationsConfigToRelations(preseq2Primers, preseq2PrimersRelationsConfig)
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
@@ -743,8 +743,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     amplificationPrimers: amplificationPrimersRelationsConfig,
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
-    pcr1Primers: pcr1PrimersRelationsConfig,
-    pcr2Primers: pcr2PrimersRelationsConfig,
+    preseq1Primers: preseq1PrimersRelationsConfig,
+    preseq2Primers: preseq2PrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,
     sequencingRunSamples: sequencingRunSamplesRelationsConfig,

@@ -24,7 +24,7 @@ import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from
 import {ZodObject} from 'zod'
 import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, pcr1Primers, pcr2Primers } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
 import { oligos } from '../db/schema/sge/oligos'
 
@@ -68,8 +68,8 @@ export const schema = {
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
-  pcr1Primers,
-  pcr2Primers,
+  preseq1Primers,
+  preseq2Primers,
   indexPrimers,
   sequencingRuns,
   sequencingRunSamples,
