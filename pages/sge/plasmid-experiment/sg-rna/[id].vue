@@ -255,7 +255,7 @@ const plateTableColumnDefs = {
 // for source plates table, only select guide RNA plates that are not associated with an experiment
 const whereClause ={
     "and": [
-        {"in": [{"var": "plateType"}, ["guide-rna"]]},
+        {"in": [{"var": "plateType"}, ["sg-rna-oligo"]]},
         {"==": [{"var": "sgRnaCloningExperimentId"}, null]},
     ]
 }

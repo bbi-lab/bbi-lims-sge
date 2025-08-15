@@ -28,11 +28,11 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Homology arm primer storage',
                 label: 'HA primer storage',
             },
-            'guide-rna-storage': {
+            'sg-rna-oligo-storage': {
                 desc: 'sgRNA oligo storage',
                 label: 'sgRNA oligo storage',
             },
-            'guide-rna': {
+            'sg-rna-oligo': {
                 desc: 'sgRNA oligo',
                 label: 'sgRNA oligo',
             },

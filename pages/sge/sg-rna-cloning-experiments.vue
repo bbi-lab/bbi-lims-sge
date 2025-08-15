@@ -13,7 +13,7 @@ async function didAddRecord(event: any) {
         name: event.name,
         sizeX: 12,
         sizeY: 8,
-        plateType: 'guide-rna',
+        plateType: 'sg-rna-oligo',
         sgRnaCloningExperimentId: event.id,
     })
     crudTable.tableRef.value.addOrRefreshRecordIds([event.id])

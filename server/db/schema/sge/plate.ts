@@ -15,8 +15,8 @@ export type PlateType = 'pellet-storage' |
  'amp-storage' |
  'lin-storage' |
  'ha-storage' |
- 'guide-rna-storage' |
- 'guide-rna' |
+ 'sg-rna-oligo-storage' |
+ 'sg-rna-oligo' |
  'sg-rna-plasmid' |
  'amp-pcr' |
  'lin-pcr' |
