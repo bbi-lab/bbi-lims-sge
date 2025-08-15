@@ -1,0 +1,1 @@
+ALTER TABLE "sequencing_run_external_samples" ALTER COLUMN "custom_index_seq_1" DROP NOT NULL;

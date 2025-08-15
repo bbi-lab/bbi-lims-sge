@@ -250,6 +250,21 @@ const sequencingRunExternalSamplesRelationsConfig: RelationsConfig = {
             referenceTable: sequencingRuns,
             references: [sequencingRuns.id],
         },
+        indexPrimer1: {
+            fields: [sequencingRunExternalSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [sequencingRunExternalSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        sourceWell: {
+            fields: [sequencingRunExternalSamples.sourceWellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
     },
 }
 export const sequencingRunExternalSamplesRelations = relationsConfigToRelations(sequencingRunExternalSamples, sequencingRunExternalSamplesRelationsConfig)

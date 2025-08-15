@@ -36,7 +36,7 @@ export const sequencingRunExternalSamples = pgTable('sequencing_run_external_sam
   externalSampleId: varchar('external_sample_id', { length: 255 }).notNull(),
   indexPrimer1Id: uuid('index_primer_1_id').references(() => indexPrimers.id),
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id),
-  customIndexSeq1: varchar('custom_index_seq_1', { length: 50 }).notNull(),
+  customIndexSeq1: varchar('custom_index_seq_1', { length: 50 }),
   customIndexSeq2: varchar('custom_index_seq_2', { length: 50 }),
   sourceWellId: uuid('source_well_id').references(() => wells.id),
   millionReadsRequired: doublePrecision('million_reads_required').default(5),

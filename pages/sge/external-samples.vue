@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { index } from 'd3'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
@@ -7,7 +8,7 @@ const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
 const columnDefs: ColumnDefinitions = {
-    projectName: { header: 'Project', index: 1 },
+    projectName: { index: 1 },
     sequencingRun: {
         format: (data: any) => {
             return data.sequencingRun?.name || ''
@@ -18,9 +19,27 @@ const columnDefs: ColumnDefinitions = {
     createdAt: { display: false },
     sequencingRunId: { display: false },
     externalSampleId: { header: 'Sample ID', index: 2},
-    customIndexSeq1: { header: 'Custom Index Sequence 1' },
-    customIndexSeq2: { header: 'Custom Index Sequence 2' },
+    customIndexSeq1: { display: false },
+    customIndexSeq2: { display: false },
+    indexPrimer1Id: { display: false},
+    indexPrimer2Id: { display: false},
+    sourceWellId: { display: false },
+    indexPrimer1: {
+        format: (data: any) => {
+            return data.indexPrimer1?.name || data.customIndexSeq1 || ''
+        },
+        path: 'indexPrimer1.displayValue',
+        index: 4,
+    },
+    indexPrimer2: {
+        format: (data: any) => {
+            return data.indexPrimer2?.name || data.customIndexSeq2 || ''
+        },
+        path: 'indexPrimer2.displayValue',
+        index: 5,
+    }
 }
+
 const fieldDefs: FieldDefinitions = {
     sequencingRunId: {
         label: 'Sequencing Run',
@@ -35,10 +54,40 @@ const fieldDefs: FieldDefinitions = {
         index: 3,
     },
     createdAt: { display: false },
-    projectName: { label: 'Project', index: 1},
+    projectName: { label: 'Project Name (sequencing)', index: 1},
     externalSampleId: { label: 'Sample ID', index: 2},
     customIndexSeq1: { label: 'Custom Index Sequence 1' },
     customIndexSeq2: { label: 'Custom Index Sequence 2' },
+    indexPrimer1Id: {
+        label: 'Index Primer 1',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/index-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 4,
+    },
+    indexPrimer2Id: {
+        label: 'Index Primer 2',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/index-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 5,
+    },
+    sourceWellId: { display: false },
+    millionReadsRequired: {
+        props: {
+            defaultValue: 5,
+        },
+    },
 }
 </script>
 <template>
@@ -49,7 +98,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="sequencing-run-external-samples"
                 schemaName="select"
                 title="External samples"
-                :withClause="{sequencingRun: true}"
+                :withClause="{sequencingRun: true, indexPrimer1: true, indexPrimer2: true}"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"

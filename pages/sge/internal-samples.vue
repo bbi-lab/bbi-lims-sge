@@ -77,6 +77,11 @@ const fieldDefs: FieldDefinitions = {
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     sourceWellId: { display: false },
+    millionReadsRequired: {
+        props: {
+            defaultValue: 5,
+        },
+    },
 }
 
 const withClause = {
