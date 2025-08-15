@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { usePlateLayout } from '#imports'
 import _ from 'lodash'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
-import type { User } from '~/server/db/schema/user';
+import type { User } from '~/server/db/schema/user'
 import { RecordService } from '~/utils/service/RecordService'
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
 
@@ -51,16 +52,16 @@ const plamidPlateDisplayConfig = {
         }
     },
 }
-const oligoPlateDisplayConfig = {
-    colorBy: ['oligo.targetId'],
-    selectionTableRecordIdPaths: ['oligoId'],
+const sgRnaOligoPlateDisplayConfig = {
+    colorBy: ['sgRnaOligo.targetId'],
+    selectionTableRecordIdPaths: ['sgRnaOligoId'],
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-        const oligos = _.map(well.wellContents, 'oligo')
+        const oligos = _.map(well.wellContents, 'sgRnaOligo')
         return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
     },
     symbol: (well: any) => {
-        const oligos = _.compact(_.map(well.wellContents, 'oligo'))
+        const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))
         return oligos ? _.size(oligos) : ''
     },
 }
@@ -71,12 +72,12 @@ const sgRnaOligoExportColumns = [
         data: (well: any) => `${wellCoordinateToChar(well.y)}${well.x}`,
     },
     {
-        header: 'Oligo 1',
-        data: (well: any) => _.get(well, 'wellContents.0.oligo.name')
+        header: 'sgRNA Oligo 1',
+        data: (well: any) => _.get(well, 'wellContents.0.sgRnaOligo.name')
     },
     {
-        header: 'Oligo 2',
-        data: (well: any) => _.get(well, 'wellContents.1.oligo.name')
+        header: 'sgRNA Oligo 2',
+        data: (well: any) => _.get(well, 'wellContents.1.sgRnaOligo.name')
     },
 ]
 const sgRnaPlasmidExportColumns = [
@@ -94,7 +95,7 @@ watch (selectedSourcePlate, async (newValue) => {
     if (newValue?.id) {
         sourcePlateLayout.setPlateId(newValue.id)
         await sourcePlateLayout.loadPlate({
-            oligo: true,
+            sgRnaOligo: true,
         })
         sourcePlateWithWellSpecs.value = {
             ...sourcePlateLayout.plateWithWellContents.value,
@@ -116,13 +117,13 @@ onMounted(async() => {
 
     const plateId = _.get(sgRnaCloningExperiment.value, 'plates[0].id')
 
-    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : oligoPlateDisplayConfig
+    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : sgRnaOligoPlateDisplayConfig
 
     plateLayout.setExportPlateLayoutConfig({
         columns: transformed.value ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
     })
 
-    sourcePlateLayout.wellContentsDisplayConfig.value = oligoPlateDisplayConfig
+    sourcePlateLayout.wellContentsDisplayConfig.value = sgRnaOligoPlateDisplayConfig
     sourcePlateLayout.setExportPlateLayoutConfig({
         columns: sgRnaOligoExportColumns,
     })
@@ -142,7 +143,7 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            oligo: true,
+            sgRnaOligo: true,
             sgRnaPlasmid: true,
         },
     )
@@ -213,7 +214,7 @@ const transferSelectedWellsContents = async () => {
             const destinationWell = destinationWellsSorted[index]
             return _.map(wellContents, (wellContent) => {
                 return {
-                    ..._.pick(wellContent, ['oligoId']),
+                    ..._.pick(wellContent, ['sgRnaOligoId']),
                     wellId: destinationWell.id,
                     sourceWellIds: [well.id],
                     createdBy: (user.value as User)?.id,

@@ -9,7 +9,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { pellets } from './pellet'
 import { users } from '../user'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { oligos } from './oligos'
+import { sgRnaOligos } from './oligos'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -33,9 +33,9 @@ export const wellContents = pgTable('well_contents', {
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
   sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
   snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
-  oligoId: uuid('oligo_id').references(() => oligos.id),
+  sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.oligoId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}) = 1`),
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {

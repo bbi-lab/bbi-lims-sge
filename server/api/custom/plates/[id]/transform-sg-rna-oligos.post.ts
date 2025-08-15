@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
             with: {
                 wellContents: {
                    with: {
-                        oligo: true,
+                        sgRnaOligo: true,
                    }
                }
             },
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
 
         const plasmidsToCreate: plasmidsToCreate[] = _.compact(_.map(_.filter(wellsWithOligoContents, (x) => !_.isEmpty(x.wellContents)), (well) => {
-            const oligos = _.compact(_.map(well.wellContents, 'oligo'))
+            const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))
             const wellCoordinates = `${wellCoordinateToChar(well.y)}${well.x}`
 
             if (oligos.length === 0) {

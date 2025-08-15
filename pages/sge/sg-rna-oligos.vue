@@ -85,9 +85,9 @@ const displayWithClause = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="oligos"
+                tableName="sg-rna-oligos"
                 schemaName="select"
-                title="Oligos"
+                title="sgRNA Oligos"
                 :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
@@ -99,7 +99,7 @@ const displayWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="oligos"
+                tableName="sg-rna-oligos"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
@@ -107,7 +107,7 @@ const displayWithClause = {
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
-                tableName="oligos"
+                tableName="sg-rna-oligos"
                 schemaName="update"
                 :recordId="crudTable.state.editingRecordId"
                 :fieldDefs="fieldDefs"

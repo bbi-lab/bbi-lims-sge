@@ -2,6 +2,7 @@
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { read as readXlsx, utils as XlsxUtils } from 'xlsx'
+import { usePlateLayout } from '~/composables/plateLayout'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -17,15 +18,15 @@ const plateDiagramKey = ref(0)
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['oligo.targetId'],
-        selectionTableRecordIdPaths: ['oligoId'],
+        colorBy: ['sgRnaOligo.targetId'],
+        selectionTableRecordIdPaths: ['sgRnaOligoId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const oligos = _.map(well.wellContents, 'oligo')
+            const oligos = _.map(well.wellContents, 'sgRnaOligo')
             return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
         },
         symbol: (well: any) => {
-            const oligos = _.compact(_.map(well.wellContents, 'oligo'))
+            const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))
             return oligos ? _.size(oligos) : ''
         },
     }
@@ -35,7 +36,7 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            oligo: true,
+            sgRnaOligo: true,
         },
     )
 
@@ -182,7 +183,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="oligos"
+                tableName="sg-rna-oligos"
                 schemaName="select"
                 :canAdd="false"
                 :canEdit="false"

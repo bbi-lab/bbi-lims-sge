@@ -32,7 +32,7 @@ const model = ref([
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
             { label: 'Oligos', iconComponent: FluentMolecule16Filled,
                 items: [
-                    { label: 'sgRNA', to: '/sge/oligos' },
+                    { label: 'sgRNA', to: '/sge/sg-rna-oligos' },
                     { label: 'Amplification primers', to: '/sge/amplification-primers' },
                     { label: 'Linearization primers', to: '/sge/linearization-primers' },
                     { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },

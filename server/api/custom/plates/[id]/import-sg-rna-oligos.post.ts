@@ -4,7 +4,7 @@ import { inArray, eq } from 'drizzle-orm'
 import _ from 'lodash'
 import { ZodObject } from 'zod'
 import { wellCharToCoordinate } from '~/lib/plate-diagram'
-import { oligos } from '~/server/db/schema/sge/oligos'
+import { sgRnaOligos } from '~/server/db/schema/sge/oligos'
 import { targets } from '~/server/db/schema/sge/target'
 import { wellContents, wells } from '~/server/db/schema/sge/well'
 import { schemas } from '~/server/db/schema/sge/zod'
@@ -51,7 +51,6 @@ export default defineEventHandler(async (event) => {
                 xCoordinate: _.inRange(xCoord, 1, 13) ? xCoord : null,
                 yCoordinate: _.inRange(yCoord, 1, 9) ? yCoord : null,
                 direction: _.get(directionMap, _.last(_.split(x.sequenceName, '_')) || ''),
-                oligoType: 'sgRNA',
             }
         })
         if (_.some(recordsMapped, (x) => !x.targetId)) {
@@ -92,7 +91,7 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const newOligoRecords = await insertRecords(oligos, recordsMapped)
+        const newOligoRecords = await insertRecords(sgRnaOligos, recordsMapped)
 
         const plateWells = await db.query.wells.findMany({
             columns: {
@@ -116,7 +115,7 @@ export default defineEventHandler(async (event) => {
             }
             return {
                 wellId: wellRecord.id,
-                oligoId: x.id,
+                sgRnaOligoId: x.id,
             }
         })
 
@@ -124,7 +123,7 @@ export default defineEventHandler(async (event) => {
         try {
             await insertRecords(wellContents, oligoWells)
         } catch (e: any) {
-            await db.delete(oligos).where(inArray(oligos.id, _.map(newOligoRecords, 'id')))
+            await db.delete(sgRnaOligos).where(inArray(sgRnaOligos.id, _.map(newOligoRecords, 'id')))
             throw createError({
                 statusCode: 400,
                 statusMessage: `Failed to insert well contents for oligos: ${e.message}`,
@@ -134,7 +133,7 @@ export default defineEventHandler(async (event) => {
         return newOligoRecords
 
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, 'oligos')
+        const { error, data } = parsePutPostError(e, 'sgRnaOligos')
 
         throw createError({
             statusCode: 400,

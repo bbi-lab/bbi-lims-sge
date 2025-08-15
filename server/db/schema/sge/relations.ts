@@ -18,7 +18,7 @@ import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { oligos } from './oligos'
+import { sgRnaOligos } from './oligos'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 
@@ -113,10 +113,10 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: snvLibPlasmids,
             references: [snvLibPlasmids.id],
         },
-        oligo: {
-            fields: [wellContents.oligoId],
-            referenceTable: oligos,
-            references: [oligos.id],
+        sgRnaOligo: {
+            fields: [wellContents.sgRnaOligoId],
+            referenceTable: sgRnaOligos,
+            references: [sgRnaOligos.id],
         },
     },
     many: {
@@ -608,10 +608,10 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
-const oligosRelationsConfig: RelationsConfig = {
+const sgRnaOligosRelationsConfig: RelationsConfig = {
     one: {
         target: {
-            fields: [oligos.targetId],
+            fields: [sgRnaOligos.targetId],
             referenceTable: targets,
             references: [targets.id],
         },
@@ -620,11 +620,11 @@ const oligosRelationsConfig: RelationsConfig = {
         wellContents: {
             table: wellContents,
             schema: createSelectSchema(wellContents),
-            fields: [wellContents.oligoId],
+            fields: [wellContents.sgRnaOligoId],
         }
     },
 }
-export const oligosRelations = relationsConfigToRelations(oligos, oligosRelationsConfig)
+export const sgRnaOligosRelations = relationsConfigToRelations(sgRnaOligos, sgRnaOligosRelationsConfig)
 
 const amplificationPrimersRelationsConfig: RelationsConfig = {
     one: {
@@ -729,7 +729,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     sgRnaPlasmids: sgRnaPlasmidsRelationsConfig,
     snvLibPlasmids: snvLibPlasmidsRelationsConfig,
     nucleicAcids: nucleicAcidsRelationsConfig,
-    oligos: oligosRelationsConfig,
+    sgRnaOligos: sgRnaOligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,

@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { oligos } from './oligos'
+import { sgRnaOligos } from './oligos'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -156,9 +156,9 @@ const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)
 const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids).omit({id: true})
 const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
 
-const selectOligosSchema = createSelectSchema(oligos)
-const insertOligosSchema = createSelectSchema(oligos).omit({id: true})
-const updateOligosSchema = insertOligosSchema
+const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
+const insertSgRnaOligosSchema = createSelectSchema(sgRnaOligos).omit({id: true})
+const updateSgRnaOligosSchema = insertSgRnaOligosSchema
 
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
@@ -308,10 +308,10 @@ export const schemas = {
         insert: insertNucleicAcidsSchema,
         update: updateNucleicAcidsSchema,
     },
-    oligos: {
-        select: selectOligosSchema,
-        insert: insertOligosSchema,
-        update: updateOligosSchema,
+    sgRnaOligos: {
+        select: selectSgRnaOligosSchema,
+        insert: insertSgRnaOligosSchema,
+        update: updateSgRnaOligosSchema,
     },
     pellets: {
         select: selectPelletsSchema,

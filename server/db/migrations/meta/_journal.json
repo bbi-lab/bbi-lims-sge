@@ -715,6 +715,13 @@
       "when": 1755210412715,
       "tag": "0101_safe_leper_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1755290882818,
+      "tag": "0102_high_power_pack",
+      "breakpoints": true
     }
   ]
 }
