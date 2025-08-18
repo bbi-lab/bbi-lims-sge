@@ -236,6 +236,7 @@ const addToSequencingRun = async (selectedWells: any) => {
 }
 
 const columnDefs = {
+    projectName: {index: 0, header: 'Project name (sequencing)'},
     sequencingRunId: { display: false},
     createdAt: { display: false },
     nucleicAcidId: { display: false },

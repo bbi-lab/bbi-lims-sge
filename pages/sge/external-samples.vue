@@ -2,19 +2,20 @@
 import { index } from 'd3'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const router = useRouter()
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
 const columnDefs: ColumnDefinitions = {
-    projectName: { index: 1 },
+    projectName: { index: 4 },
     sequencingRun: {
         format: (data: any) => {
             return data.sequencingRun?.name || ''
         },
         path: 'sequencingRun.displayValue',
-        index: 3,
+        index: 1,
     },
     createdAt: { display: false },
     sequencingRunId: { display: false },
@@ -24,19 +25,32 @@ const columnDefs: ColumnDefinitions = {
     indexPrimer1Id: { display: false},
     indexPrimer2Id: { display: false},
     sourceWellId: { display: false },
+    sourcePlate: {
+        header: 'Source Plate',
+        path: 'sourceWell.plate.name',
+        index: 3,
+    },
+    sourceWell: {
+        header: 'Source Well',
+        format: (data: any) => {
+            return data.sourceWell?.x ? wellCoordinateToChar(data.sourceWell?.y) + data.sourceWell?.x : ''
+        },
+        path: 'sourceWell.displayValue',
+        index: 3,
+    },
     indexPrimer1: {
         format: (data: any) => {
             return data.indexPrimer1?.name || data.customIndexSeq1 || ''
         },
         path: 'indexPrimer1.displayValue',
-        index: 4,
+        index: 5,
     },
     indexPrimer2: {
         format: (data: any) => {
             return data.indexPrimer2?.name || data.customIndexSeq2 || ''
         },
         path: 'indexPrimer2.displayValue',
-        index: 5,
+        index: 6,
     }
 }
 
@@ -89,6 +103,16 @@ const fieldDefs: FieldDefinitions = {
         },
     },
 }
+const withClause = {
+    sequencingRun: true,
+    sourceWell: {
+        with: {
+            plate: true
+        }
+    },
+    indexPrimer1: true,
+    indexPrimer2: true
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -98,7 +122,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="sequencing-run-external-samples"
                 schemaName="select"
                 title="External samples"
-                :withClause="{sequencingRun: true, indexPrimer1: true, indexPrimer2: true}"
+                :withClause="withClause"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
