@@ -118,6 +118,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: sgRnaOligos,
             references: [sgRnaOligos.id],
         },
+        sequencingRunExternalSample: {
+            fields: [wellContents.sequencingRunExternalSampleId],
+            referenceTable: sequencingRunExternalSamples,
+            references: [sequencingRunExternalSamples.id],
+        },
     },
     many: {
         wellContentSources: {

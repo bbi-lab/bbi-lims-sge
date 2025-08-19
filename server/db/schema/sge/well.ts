@@ -10,6 +10,7 @@ import { pellets } from './pellet'
 import { users } from '../user'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaOligos } from './oligos'
+import { sequencingRunExternalSamples } from './sequencing-run'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -34,8 +35,9 @@ export const wellContents = pgTable('well_contents', {
   sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
   snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
+  sequencingRunExternalSampleId: uuid('sequencing_run_external_sample_id').references(() => sequencingRunExternalSamples.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.sequencingRunExternalSampleId}) = 1`),
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {
@@ -48,16 +50,6 @@ export const wellContentSources = pgTable('well_content_sources', {
   unique('unique_well_content_id_source_well_id').on(t.wellContentId, t.sourceWellId),
 ])
 
-// export const wellSources = pgTable('well_sources', {
-//   id: uuid('id').notNull().primaryKey().defaultRandom(),
-//   sourceWellId: uuid('source_well_id').references(() => wells.id).notNull(),
-//   destWellId: uuid('dest_well_id').references(() => wells.id).notNull(),
-//   createdAt: timestamp('created_at').notNull().defaultNow(),
-//   createdBy: uuid('created_by').references(() => users.id),
-// }, (t) => [
-//   unique('unique_well_source_dest').on(t.sourceWellId, t.destWellId),
-// ])
-
 const selectWellSchema = createSelectSchema(wells)
 const insertWellSchema = z.object({})
 
@@ -66,13 +58,8 @@ export const schemas: Record<string, ZodObject<any>> = {
     insertWellSchema
 }
 
-const selectWellContentSchema = createSelectSchema(wellContents)
-const insertWellContentSchema = selectWellContentSchema.omit({id: true}).partial()
+const insertWellContentSchema =  createSelectSchema(wellContents).omit({id: true}).partial()
 
-export const wellContentSchemas: Record<string, ZodObject<any>> = {
-    selectWellContentSchema,
-    insertWellContentSchema
-}
 export type Well = InferSelectModel<typeof wells>
 export type NewWell = z.infer<typeof insertWellSchema>
 
