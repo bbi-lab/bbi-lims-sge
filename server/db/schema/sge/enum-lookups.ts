@@ -84,6 +84,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'PreSeq 2 primer storage',
                 label: 'PreSeq 2 primer storage',
             },
+            'external-sample-indexing': {
+                desc: 'External sample indexing',
+                label: 'External sample indexing',
+            },
         },
     },
     'pcrExperiments': {

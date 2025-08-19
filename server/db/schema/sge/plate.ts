@@ -28,7 +28,8 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-preseq-3' |
  'seq-index' |
  'pcr1-primer-storage' |
- 'pcr2-primer-storage'
+ 'pcr2-primer-storage' |
+ 'external-sample-indexing'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
