@@ -20,6 +20,8 @@ import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPr
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { sgRnaOligos } from './oligos'
+import { externalSamples } from './external-samples'
+import { update } from 'lodash'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -131,6 +133,10 @@ const updateSequencingRunsSchema = insertSequencingRunsSchema
 const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
 const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, createdAt: true}).partial()
 const updateSequencingRunSamples = insertSequencingRunSamples
+
+const selectExternalSamples = createSelectSchema(externalSamples)
+const insertExternalSamples = selectExternalSamples.omit({id: true, createdAt: true}).partial()
+const updateExternalSamples = insertExternalSamples
 
 const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
 const insertSequencingRunExternalSamples = selectSequencingRunExternalSamples.omit({id: true}).partial()
@@ -277,6 +283,11 @@ export const schemas = {
         select: selectSequencingRunSamples,
         insert: insertSequencingRunSamples,
         update: updateSequencingRunSamples,
+    },
+    externalSamples: {
+        select: selectExternalSamples,
+        insert: insertExternalSamples,
+        update: updateExternalSamples,
     },
     sequencingRunExternalSamples: {
         select: selectSequencingRunExternalSamples,

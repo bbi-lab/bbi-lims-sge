@@ -27,6 +27,7 @@ import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
 import { sgRnaOligos } from '../db/schema/sge/oligos'
+import { externalSamples } from '../db/schema/sge/external-samples'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
 const { relationsConfigs, ...sgeRelationships } = sgeRelations
@@ -73,6 +74,7 @@ export const schema = {
   indexPrimers,
   sequencingRuns,
   sequencingRunSamples,
+  externalSamples,
   sequencingRunExternalSamples,
 
   //views

@@ -21,6 +21,7 @@ import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } fr
 import { sgRnaOligos } from './oligos'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
+import { externalSamples } from './external-samples'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -118,10 +119,10 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: sgRnaOligos,
             references: [sgRnaOligos.id],
         },
-        sequencingRunExternalSample: {
-            fields: [wellContents.sequencingRunExternalSampleId],
-            referenceTable: sequencingRunExternalSamples,
-            references: [sequencingRunExternalSamples.id],
+        externalSample: {
+            fields: [wellContents.externalSampleId],
+            referenceTable: externalSamples,
+            references: [externalSamples.id],
         },
     },
     many: {
@@ -248,8 +249,29 @@ const sequencingRunSamplesRelationsConfig: RelationsConfig = {
 }
 export const sequencingRunSamplesRelations = relationsConfigToRelations(sequencingRunSamples, sequencingRunSamplesRelationsConfig)
 
+const externalSamplesRelationsConfig: RelationsConfig = {
+    many: {
+        sequencingRuns: {
+            table: sequencingRunExternalSamples,
+            schema: createSelectSchema(sequencingRunExternalSamples),
+            fields: [sequencingRunExternalSamples.externalSampleId],
+        },
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.externalSampleId],
+        },
+    }
+}
+export const externalSamplesRelations = relationsConfigToRelations(externalSamples, externalSamplesRelationsConfig)
+
 const sequencingRunExternalSamplesRelationsConfig: RelationsConfig = {
     one: {
+        externalSample: {
+            fields: [sequencingRunExternalSamples.externalSampleId],
+            referenceTable: externalSamples,
+            references: [externalSamples.id],
+        },
         sequencingRun: {
             fields: [sequencingRunExternalSamples.sequencingRunId],
             referenceTable: sequencingRuns,
@@ -768,5 +790,6 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,
     sequencingRunSamples: sequencingRunSamplesRelationsConfig,
+    externalSamples: externalSamplesRelationsConfig,
     sequencingRunExternalSamples: sequencingRunExternalSamplesRelationsConfig,
 }

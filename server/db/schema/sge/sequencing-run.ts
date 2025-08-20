@@ -3,6 +3,7 @@ import { wells } from "./well";
 import { nucleicAcids } from "./nucleic-acid";
 import { indexPrimers } from "./primer";
 import { sql } from "drizzle-orm";
+import { externalSamples } from "./external-samples";
 
 export const sequencingRuns = pgTable('sequencing_runs', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -16,7 +17,7 @@ export const sequencingRuns = pgTable('sequencing_runs', {
 export const sequencingRunSamples = pgTable('sequencing_run_samples', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   projectName: varchar('project_name', { length: 255 }),
-  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id),
+  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id).notNull(),
   nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id).notNull(),
   indexPrimer1Id: uuid('index_primer_1_id').references(() => indexPrimers.id).notNull(),
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id).notNull(),
@@ -32,8 +33,8 @@ export const sequencingRunSamples = pgTable('sequencing_run_samples', {
 export const sequencingRunExternalSamples = pgTable('sequencing_run_external_samples', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   projectName: varchar('project_name', { length: 255 }),
-  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id),
-  externalSampleId: varchar('external_sample_id', { length: 255 }).notNull(),
+  sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id).notNull(),
+  externalSampleId: uuid('external_sample_id').references(() => externalSamples.id).notNull(),
   indexPrimer1Id: uuid('index_primer_1_id').references(() => indexPrimers.id),
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id),
   customIndexSeq1: varchar('custom_index_seq_1', { length: 50 }),
@@ -76,14 +77,15 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   sequencing_run_id,
   'internal' AS sample_type,
   nucleic_acid_id,
+  NULL AS external_sample_id,
   index_primer_1_id,
   index_primer_2_id,
-  primer1.index_sequence || ' (' || primer1.primer_type || ')' as index_primer_1_label,
-  primer2.index_sequence || ' (' || primer2.primer_type || ')' as index_primer_2_label,
+  primer1.index_sequence || ' (' || primer1.primer_type || ')' AS index_primer_1_label,
+  primer2.index_sequence || ' (' || primer2.primer_type || ')' AS index_primer_2_label,
   source_well_id,
-  wells.x as source_well_x,
-  wells.y as source_well_y,
-  plates.name as source_plate_name,
+  wells.x AS source_well_x,
+  wells.y AS source_well_y,
+  plates.name AS source_plate_name,
   NULL AS custom_index_seq_1,
   NULL AS custom_index_seq_2,
   million_reads_required,
@@ -105,19 +107,20 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   JOIN plates ON wells.plate_id = plates.id
   UNION
   SELECT
-  sequencing_run_external_samples.id as id,
-  external_sample_id as sample_name,
+  sequencing_run_external_samples.id AS id,
+  external_samples.name AS sample_name,
   sequencing_run_id,
   'external' AS sample_type,
   NULL AS nucleic_acid_id,
+  external_sample_id,
   index_primer_1_id,
   index_primer_2_id,
-  primer1.index_sequence || ' (' || primer1.primer_type || ')' as index_primer_1_label,
-  primer2.index_sequence || ' (' || primer2.primer_type || ')' as index_primer_2_label,
+  primer1.index_sequence || ' (' || primer1.primer_type || ')' AS index_primer_1_label,
+  primer2.index_sequence || ' (' || primer2.primer_type || ')' AS index_primer_2_label,
   source_well_id,
-  wells.x as source_well_x,
-  wells.y as source_well_y,
-  plates.name as source_plate_name,
+  wells.x AS source_well_x,
+  wells.y AS source_well_y,
+  plates.name AS source_plate_name,
   custom_index_seq_1,
   custom_index_seq_2,
   million_reads_required,
@@ -129,8 +132,9 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
     NULL
   END AS override_cycles,
   notes,
-  created_at
+  sequencing_run_external_samples.created_at AS created_at
   FROM sequencing_run_external_samples
+  JOIN external_samples ON sequencing_run_external_samples.external_sample_id = external_samples.id
   LEFT JOIN index_primers AS primer1 ON sequencing_run_external_samples.index_primer_1_id = primer1.id
   LEFT JOIN index_primers AS primer2 ON sequencing_run_external_samples.index_primer_2_id = primer2.id
   LEFT JOIN wells ON sequencing_run_external_samples.source_well_id = wells.id

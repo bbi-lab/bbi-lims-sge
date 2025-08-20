@@ -10,7 +10,7 @@ import { pellets } from './pellet'
 import { users } from '../user'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaOligos } from './oligos'
-import { sequencingRunExternalSamples } from './sequencing-run'
+import { externalSamples } from './external-samples'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -35,9 +35,9 @@ export const wellContents = pgTable('well_contents', {
   sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
   snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
-  sequencingRunExternalSampleId: uuid('sequencing_run_external_sample_id').references(() => sequencingRunExternalSamples.id),
+  externalSampleId: uuid('external_sample_id').references(() => externalSamples.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.sequencingRunExternalSampleId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) = 1`),
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {
