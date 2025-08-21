@@ -17,13 +17,13 @@ const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 const toast = useToast()
 const sequencingRunAllSamplesTable = ref()
-const sequencingRunExternalSamplesTable = ref()
+const externalSamplesTable = ref()
 const editingRecords = ref<any[]>([])
 const editingRecordType = ref<'internal' | 'external' | null>(null)
 
 const showRecordEditForm = computed(() => _.size(editingRecords.value) == 1)
 const showMultipleRecordEditForm = computed(() => editingRecords.value?.length > 1)
-const selectedExternalSampleRecords = computed(() => sequencingRunExternalSamplesTable?.value?.selectedRecords || [])
+const selectedExternalSampleRecords = computed(() => externalSamplesTable?.value?.selectedRecords || [])
 const sequencingRunSelectedRecords = computed(() => sequencingRunAllSamplesTable?.value?.selectedRecords || [])
 
 const frozenRecordIds = computed(() => {
@@ -177,9 +177,16 @@ const removeSelectedSamplesFromRun = () => {
 
 }
 const addSelectedExternalSamples = async () => {
-    const sequencingRunSamplesToAdd = _.map(selectedExternalSampleRecords.value, 'id')
+    const sequencingRunSamplesToAdd = _.map(selectedExternalSampleRecords.value, (selectedSample) => {
+        return {
+            externalSampleId: selectedSample.id,
+            sequencingRunId: sequencingRun.value.id,
+            customIndexSeq1: selectedSample.customIndexSeq1,
+            customIndexSeq2: selectedSample.customIndexSeq2,
+        }
+    })
 
-    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunSamplesToAdd, {sequencingRunId: sequencingRun.value.id})
+    RecordService.addRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunSamplesToAdd)
         .then((result: any) => {
             sequencingRunAllSamplesTable.value.addOrRefreshRecordIds(_.map(result, 'id'))
             toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 })
@@ -285,6 +292,10 @@ const externalSampleFieldDefs = {
     customIndexSeq2: { label: 'Custom Index Sequence 2' },
     createdAt: { display: false },
 }
+const externalSamplesColumnDefs = {
+    sequencingRuns: { display: false },
+    wellContents: { display: false }
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -384,9 +395,10 @@ const externalSampleFieldDefs = {
                         @click="showExternalSamples=false" />
                 </div>
                 <QuickTable
-                    ref="sequencingRunExternalSamplesTable"
-                    tableName="sequencing-run-external-samples"
+                    ref="externalSamplesTable"
+                    tableName="external-samples"
                     schemaName="select"
+                    :columnDefs="externalSamplesColumnDefs"
                     :canAdd="false"
                     :canEdit="false"
                     :canEditMultiple="false"
