@@ -135,11 +135,17 @@ const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, cr
 const updateSequencingRunSamples = insertSequencingRunSamples
 
 const selectExternalSamples = createSelectSchema(externalSamples)
-const insertExternalSamples = selectExternalSamples.omit({id: true, createdAt: true}).partial()
+const insertExternalSamples = createSelectSchema(externalSamples, {
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+}).omit({id: true, createdAt: true}).partial()
 const updateExternalSamples = insertExternalSamples
 
 const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
-const insertSequencingRunExternalSamples = selectSequencingRunExternalSamples.omit({id: true}).partial()
+const insertSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+}).omit({id: true}).partial()
 const updateSequencingRunExternalSamples = insertSequencingRunExternalSamples
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
