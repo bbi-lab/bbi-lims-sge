@@ -1,5 +1,5 @@
 import { sql, type InferSelectModel } from 'drizzle-orm'
-import { pgTable, uuid, smallint, primaryKey, unique, check, timestamp} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, smallint, varchar, unique, check, timestamp} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
@@ -36,8 +36,53 @@ export const wellContents = pgTable('well_contents', {
   snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
   sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
   externalSampleId: uuid('external_sample_id').references(() => externalSamples.id),
+  wellableId: uuid('wellable_id').references(() => wellables.id),
 }, (t) => [
   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) = 1`),
+])
+
+// "wellables" table contains PKs and table name for all records that can be stored in wells.
+// Each table listed in the "wellable_table_name" check constraint below should have a BEFORE INSERT and BEFORE DELETE
+// trigger to automatically update this table. These need to be defined independently of drizzle.
+//
+// Function to call BEFORE INSERT on each sample table:
+//    CREATE OR REPLACE FUNCTION "wellables_insert"()
+//      RETURNS TRIGGER AS $$
+//      BEGIN
+//          INSERT INTO "wellables" (id, table_name) VALUES (NEW.id, TG_TABLE_NAME::regclass::text);
+//          RETURN NEW;
+//      END;
+//    $$ LANGUAGE plpgsql;--> statement-breakpoint
+//
+// Function to call BEFORE DELETE on each sample table:
+//    CREATE OR REPLACE FUNCTION "wellables_delete"()
+//      RETURNS TRIGGER AS $$
+//      BEGIN
+//          DELETE FROM "wellables" WHERE id = OLD.id AND table_name = TG_TABLE_NAME::regclass::text;
+//          RETURN OLD;
+//      END;
+//    $$ LANGUAGE plpgsql;--> statement-breakpoint
+
+export const wellables = pgTable('wellables', {
+  id: uuid('id').notNull().primaryKey(),
+  tableName: varchar('table_name').notNull()
+}, (t) => [
+   check('wellable_table_name',
+    sql`${t.tableName} IN (
+      'amplification_primers',
+      'linearization_primers',
+      'homology_arm_primers',
+      'preseq_1_primers',
+      'preseq_2_primers',
+      'index_primers',
+      'nucleic_acids',
+      'pellets',
+      'sg_rna_plasmids',
+      'snv_lib_plasmids',
+      'sg_rna_oligos',
+      'external_samples'
+    )`
+  )
 ])
 
 export const wellContentSources = pgTable('well_content_sources', {
