@@ -4,7 +4,7 @@ import { pcrExperiments } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
-import { wellContents, wellContentSources, wells } from './well'
+import { wellables, wellContents, wellContentSources, wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
@@ -124,6 +124,11 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: externalSamples,
             references: [externalSamples.id],
         },
+        wellable: {
+            fields: [wellContents.wellableId],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     many: {
         wellContentSources: {
@@ -134,6 +139,79 @@ const wellContentsRelationsConfig: RelationsConfig = {
     },
 }
 export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
+
+const wellablesRelationsConfig: RelationsConfig = {
+    one: {
+        amplificationPrimer: {
+            fields: [wellables.id],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        linearizationPrimer: {
+            fields: [wellables.id],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        homologyArmPrimer: {
+            fields: [wellables.id],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        preseq1Primer: {
+            fields: [wellables.id],
+            referenceTable: preseq1Primers,
+            references: [preseq1Primers.id],
+        },
+        preseq2Primer: {
+            fields: [wellables.id],
+            referenceTable: preseq2Primers,
+            references: [preseq2Primers.id],
+        },
+        indexPrimer: {
+            fields: [wellables.id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        nucleicAcid: {
+            fields: [wellables.id],
+            referenceTable: nucleicAcids,
+            references: [nucleicAcids.id],
+        },
+        pellet: {
+            fields: [wellables.id],
+            referenceTable: pellets,
+            references: [pellets.id],
+        },
+        sgRnaPlasmid: {
+            fields: [wellables.id],
+            referenceTable: sgRnaPlasmids,
+            references: [sgRnaPlasmids.id],
+        },
+        snvLibPlasmid: {
+            fields: [wellables.id],
+            referenceTable: snvLibPlasmids,
+            references: [snvLibPlasmids.id],
+        },
+        sgRnaOligo: {
+            fields: [wellables.id],
+            referenceTable: sgRnaOligos,
+            references: [sgRnaOligos.id],
+        },
+        externalSample: {
+            fields: [wellables.id],
+            referenceTable: externalSamples,
+            references: [externalSamples.id],
+        },
+    },
+    many: {
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.wellableId],
+        },
+    }
+}
+export const wellablesRelations = relationsConfigToRelations(wellables, wellablesRelationsConfig)
 
 const wellContentSourcesRelationsConfig: RelationsConfig = {
     one: {
@@ -250,6 +328,13 @@ const sequencingRunSamplesRelationsConfig: RelationsConfig = {
 export const sequencingRunSamplesRelations = relationsConfigToRelations(sequencingRunSamples, sequencingRunSamplesRelationsConfig)
 
 const externalSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [externalSamples.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        }
+    },
     many: {
         sequencingRuns: {
             table: sequencingRunExternalSamples,
@@ -563,6 +648,11 @@ const pelletsRelationsConfig: RelationsConfig = {
             referenceTable: transfectTargets,
             references: [transfectTargets.id],
         },
+        wellable: {
+            fields: [pellets.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         nucleicAcid: {
@@ -593,6 +683,11 @@ const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [sgRnaPlasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     many: {
         wellContents: {
@@ -615,6 +710,11 @@ const snvLibPlasmidsRelationsConfig: RelationsConfig = {
             fields: [snvLibPlasmids.snvLibCloningExperimentId],
             referenceTable: snvLibCloningExperiments,
             references: [snvLibCloningExperiments.id],
+        },
+        wellable: {
+            fields: [snvLibPlasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
     many: {
@@ -639,6 +739,11 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             referenceTable: pellets,
             references: [pellets.id],
         },
+        wellable: {
+            fields: [nucleicAcids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     many: {
         wellContents: {
@@ -656,6 +761,11 @@ const sgRnaOligosRelationsConfig: RelationsConfig = {
             fields: [sgRnaOligos.targetId],
             referenceTable: targets,
             references: [targets.id],
+        },
+        wellable: {
+            fields: [sgRnaOligos.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
     many: {
@@ -675,6 +785,11 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [amplificationPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         wellContents: {
@@ -690,6 +805,11 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             fields: [linearizationPrimers.targetId],
             referenceTable: targets,
             references: [targets.id],
+        },
+        wellable: {
+            fields: [linearizationPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
     oneToOne: {
@@ -707,6 +827,11 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [homologyArmPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         wellContents: {
@@ -717,6 +842,13 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
 const indexPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [indexPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
     many: {
         wellContents: {
             table: wellContents,
@@ -734,6 +866,11 @@ const preseq1PrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [preseq1Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         wellContents: {
@@ -750,6 +887,11 @@ const preseq2PrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [preseq2Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         wellContents: {
@@ -761,6 +903,7 @@ export const preseq2PrimersRelations = relationsConfigToRelations(preseq2Primers
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
+    wellables: wellablesRelationsConfig,
     wellContentSources: wellContentSourcesRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,

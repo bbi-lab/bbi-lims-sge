@@ -6,7 +6,7 @@ import {users, userGroups, userGroupMemberships} from '../db/schema/user'
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
 import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
-import {wellContents, wells, wellContentSources} from '../db/schema/sge/well'
+import {wellContents, wells, wellContentSources, wellables} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
@@ -44,6 +44,7 @@ export const schema = {
   plates,
   wells,
   wellContents,
+  wellables,
   wellContentSources,
   projects,
   targets,

@@ -38,7 +38,7 @@ export const wellContents = pgTable('well_contents', {
   externalSampleId: uuid('external_sample_id').references(() => externalSamples.id),
   wellableId: uuid('wellable_id').references(() => wellables.id),
 }, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) = 1`),
+  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) <= 1`),
 ])
 
 // "wellables" table contains PKs and table name for all records that can be stored in wells.
