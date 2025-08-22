@@ -169,4 +169,6 @@ EXECUTE FUNCTION "wellables_delete"();--> statement-breakpoint
 CREATE OR REPLACE TRIGGER "external_samples_wellables_delete"
 BEFORE DELETE ON "external_samples"
 FOR EACH ROW
-EXECUTE FUNCTION "wellables_delete"();
+EXECUTE FUNCTION "wellables_delete"();--> statement-breakpoint
+
+UPDATE "well_contents" SET "wellable_id" = COALESCE("amplification_primer_id", "linearization_primer_id", "homology_arm_primer_id", "preseq_1_primer_id", "preseq_2_primer_id", "index_primer_id", "nucleic_acid_id", "pellet_id", "sg_rna_plasmid_id", "snv_lib_plasmid_id", "sg_rna_oligo_id", "external_sample_id");
