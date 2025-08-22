@@ -11,13 +11,15 @@ import type { Plate } from "~/server/db/schema/sge/plate"
 
 type WellWithContents = Well & {
     wellContents: WellContent & {
-        amplificationPrimer: AmplificationPrimer
-        linearizationPrimer: LinearizationPrimer
-        homologyArmPrimer: HomologyArmPrimer
-        preseq1Primer: preseq1Primer
-        preseq2Primer: preseq2Primer
-        nucleicAcid: NucleicAcid & {
-            pellet: Pellet
+        wellable: {
+            amplificationPrimer: AmplificationPrimer
+            linearizationPrimer: LinearizationPrimer
+            homologyArmPrimer: HomologyArmPrimer
+            preseq1Primer: preseq1Primer
+            preseq2Primer: preseq2Primer
+            nucleicAcid: NucleicAcid & {
+                pellet: Pellet
+            },
         }
     }[]
 }
@@ -118,7 +120,11 @@ export const usePlateLayout = () => {
                     },
                     with: {
                         wellContents: {
-                            with: wellContentsWithClause.value,
+                            with: {
+                                wellable: {
+                                    with: wellContentsWithClause.value,
+                                },
+                            },
                         },
                     },
                 },
@@ -160,11 +166,11 @@ export const usePlateLayout = () => {
                 _.unset(wellSpecs.value, well.id)
             }
             const contentsToColorBy = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
+                return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent?.wellable) : _.get(wellContent?.wellable, x as _.PropertyPath))
             }))).sort()
 
             const selectionTableRecordIds = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
+                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.isFunction(x) ? x(wellContent?.wellable) : _.get(wellContent?.wellable, x as _.PropertyPath))
             }))).sort()
 
             const existingWellSpec = _.get(wellSpecs.value, well.id)
@@ -277,12 +283,12 @@ export const usePlateLayout = () => {
         return newRecords
     }
 
-    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'preseq1PrimerId' | 'preseq2PrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId' | 'sgRnaPlasmidId' | 'snvLibPlasmidId' | 'externalSampleId' ) => {
+    const assignIdToSelectedWells = async (id: string) => {
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const recordsToAdd = _.map(selectedWells.value, (well) => {
             return {
                 wellId: well.id,
-                [column]: id,
+                wellableId: id,
             }
         })
         const newRecords = await addWellContents(recordsToAdd)
@@ -306,11 +312,13 @@ export const usePlateLayout = () => {
                     wellContents: {
                         columns: {id: true},
                         with: {
-                            nucleicAcid: {
-                                columns: {id: true},
-                                with: {
-                                    pellet: {
-                                        columns: {id: true, name: true, isBackup: true},
+                            wellable: {
+                                nucleicAcid: {
+                                    columns: {id: true},
+                                    with: {
+                                        pellet: {
+                                            columns: {id: true, name: true, isBackup: true},
+                                        },
                                     },
                                 },
                             },
@@ -324,7 +332,7 @@ export const usePlateLayout = () => {
         type NucleicAcidWithPelletAndWellIds = NucleicAcidWithPellet & {wellIds: String[]}
 
         const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
-            const nucleicAcid = _.get(well, ['wellContents', 0, 'nucleicAcid'])
+            const nucleicAcid = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid'])
             if (nucleicAcid?.id) {
                 const existingWellIds = _.get(acc, [nucleicAcid.id, 'wellIds'], [])
                 _.set(acc, nucleicAcid.id, {...nucleicAcid, wellIds: [...existingWellIds, well.id]})

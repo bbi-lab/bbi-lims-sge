@@ -73,7 +73,7 @@ const sgRnaOligoExportColumns = [
     },
     {
         header: 'sgRNA Oligo 1',
-        data: (well: any) => _.get(well, 'wellContents.0.sgRnaOligo.name')
+        data: (well: any) => _.get(well, 'wellContents.0.wellable.sgRnaOligo.name')
     },
     {
         header: 'sgRNA Oligo 2',
@@ -87,7 +87,7 @@ const sgRnaPlasmidExportColumns = [
     },
     {
         header: 'sgRNA Plasmid',
-        data: (well: any) => _.get(well, 'wellContents.0.sgRnaPlasmid.name')
+        data: (well: any) => _.get(well, 'wellContents.0.wellable.sgRnaPlasmid.name')
     },
 ]
 

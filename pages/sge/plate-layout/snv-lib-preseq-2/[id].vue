@@ -21,7 +21,7 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['snvLibPlasmidId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const plasmidName = _.get(well, ['wellContents', 0, 'snvLibPlasmid', 'name'])
+            const plasmidName = _.get(well, ['wellContents', 0, 'wellable', 'snvLibPlasmid', 'name'])
             return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : plasmidName
         },
     }

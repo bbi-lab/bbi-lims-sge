@@ -17,11 +17,11 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['linearizationPrimerId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'linearizationPrimer', 'name'])
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'linearizationPrimer', 'name'])
             return primerName ? `${wellCoordinate}:<br>${primerName} (LIN)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'linearizationPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'linearizationPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -48,23 +48,27 @@ const whereClause = {
     ]
 }
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
         },
     },
@@ -131,7 +135,16 @@ const columnDefs = {
     },
     wellContents: {
         header: 'Location',
-        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        format: (x: any) => {
+            //return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+            if (!_.isEmpty(x?.wellable?.wellContents)) {
+                return _.map(x.wellable.wellContents, (wellContent) => {
+                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
+                }).join(', ')
+            } else {
+                return ''
+            }
+        },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 2,

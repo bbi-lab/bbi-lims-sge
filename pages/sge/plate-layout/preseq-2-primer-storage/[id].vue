@@ -17,11 +17,11 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['preseq2PrimerId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'preseq2Primer', 'name'])
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name'])
             return primerName ? `${wellCoordinate}:<br>${primerName} (PCR2)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'preseq2Primer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -32,15 +32,15 @@ onMounted(async() => {
                 return `${wellCoordinateToChar(well.y)}${well.x}`
             }},
             { header: 'Primer', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'preseq2Primer', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name']) || ''
             }},
             { header: 'Project', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'preseq2Primer', 'target', 'project', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'project', 'name']) || ''
             }},
-            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'preseq2Primer', 'target', 'name']) || '' },
+            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name']) || '' },
         ],
         sortBy: (well: any) => {
-            return _.get(well, ['wellContents', 0, 'preseq2Primer', 'target', 'name'])
+            return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name'])
         }
     })
     loadPlate()

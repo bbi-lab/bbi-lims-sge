@@ -17,11 +17,11 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['homologyArmPrimerId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'homologyArmPrimer', 'name'])
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'name'])
             return primerName ? `${wellCoordinate}:<br>${primerName} (HA)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'homologyArmPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }

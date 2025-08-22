@@ -17,11 +17,11 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['amplificationPrimerId'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'amplificationPrimer', 'name'])
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'name'])
             return primerName ? `${wellCoordinate}:<br>${primerName} (AMP)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'amplificationPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -32,15 +32,15 @@ onMounted(async() => {
                 return `${wellCoordinateToChar(well.y)}${well.x}`
             }},
             { header: 'Primer', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'name']) || ''
             }},
             { header: 'Project', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'project', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'target', 'project', 'name']) || ''
             }},
-            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'name']) || '' },
+            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'target', 'name']) || '' },
         ],
         sortBy: (well: any) => {
-            return _.get(well, ['wellContents', 0, 'amplificationPrimer', 'target', 'name'])
+            return _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'target', 'name'])
         }
     })
     loadPlate()

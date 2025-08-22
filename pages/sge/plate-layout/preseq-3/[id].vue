@@ -35,7 +35,7 @@ watch (selectedSourcePlate, async (newValue) => {
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const nucleicAcidName = _.get(well, ['wellContents', 0, 'nucleicAcid', 'pellet', 'name'])
+                    const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
                     return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
                 },
             }
@@ -70,7 +70,7 @@ watch (selectedSourcePlate, async (newValue) => {
                     return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
                 },
                 symbol: (well: any) => {
-                    const primerDirection = _.get(well, ['wellContents', 0, 'indexPrimer', 'sequenceType'])
+                    const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'indexPrimer', 'sequenceType'])
                     return primerDirection ? _.upperCase(primerDirection[0]) : ''
                 },
             }
