@@ -14,7 +14,7 @@ onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['amplificationPrimer.targetId'],
-        selectionTableRecordIdPaths: ['amplificationPrimerId'],
+        selectionTableRecordIdPaths: ['amplificationPrimer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const primerName = _.get(well, ['wellContents', 0, 'wellable', 'amplificationPrimer', 'name'])
@@ -181,7 +181,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a primer.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'amplificationPrimerId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',

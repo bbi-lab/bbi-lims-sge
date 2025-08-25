@@ -18,12 +18,10 @@ const selectionTableKey = ref(0)
 watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
         if (newValue === 'nucleic-acids') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcidId']
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
         } else if (newValue === 'view-plates-with-well-counts') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(x: any) => {
-                return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                    return _.get(wellContentSource, 'sourceWell.plate.id')
-                }))
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
+                return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
             }]
         }
     }
@@ -33,17 +31,19 @@ watch(selectionTableName, async (newValue) => {
 onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['nucleicAcidId'],
-        selectionTableRecordIdPaths: [(x: any) => {
-            return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                return _.get(wellContentSource, 'sourceWell.plate.id')
-            }))
-        }],
+        colorBy: ['nucleicAcid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
             return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
         },
+    }
+    if (selectionTableName.value === 'nucleic-acids') {
+        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
+    } else if (selectionTableName.value === 'view-plates-with-well-counts') {
+        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
+            return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
+        }]
     }
     loadPlate()
 })
@@ -56,17 +56,21 @@ const loadPlate = async () => {
                     pellet: true
                 }
             },
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
-                                }
-                            }
-                        }
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -259,7 +263,7 @@ const rowActions = {
                 return
             } else {
                 if (selectionTableName.value === 'nucleic-acids') {
-                    await plateLayout.assignIdToSelectedWells(data.id, 'nucleicAcidId')
+                    await plateLayout.assignIdToSelectedWells(data.id)
                 } else if (selectionTableName.value === 'view-plates-with-well-counts') {
                     await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
                 }

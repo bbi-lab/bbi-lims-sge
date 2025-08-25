@@ -19,7 +19,7 @@ const selectionTableKey = ref(0)
 watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
         if (newValue === 'external-samples') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['externalSampleId']
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['externalSample.id']
         } else if (newValue === 'view-plates-with-well-counts') {
             plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(x: any) => {
                 return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
@@ -41,11 +41,9 @@ watch (selectedSourcePlate, async (newValue) => {
 
         if (newValue.plateType === 'preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['nucleicAcidId'],
-                selectionTableRecordIdPaths: [(x: any) => {
-                    return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                        return _.get(wellContentSource, 'sourceWell.plate.id')
-                    }))
+                colorBy: ['nucleicAcid.id'],
+                selectionTableRecordIdPaths: [(wellable: any) => {
+                    return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
@@ -59,28 +57,32 @@ watch (selectedSourcePlate, async (newValue) => {
                         pellet: true
                     }
                 },
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
+                    }
                 },
             })
         } else if (newValue.plateType === 'seq-index') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
-                selectionTableRecordIdPaths: ['indexPrimerId'],
+                selectionTableRecordIdPaths: ['indexPrimer.id'],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+                    const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
                     return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
                 },
                 symbol: (well: any) => {
@@ -90,19 +92,23 @@ watch (selectedSourcePlate, async (newValue) => {
             }
             await sourcePlateLayout.loadPlate({
                 indexPrimer: true,
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
+                    }
                 },
             })
         }
@@ -128,11 +134,11 @@ onMounted(() => {
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                const externalSample = wellContent.externalSample
+                const externalSample = wellContent?.wellable?.externalSample
                 if (externalSample) {
                     return externalSample.name ? `${externalSample.name} (External)` : '?? (External)'
-                } else if (wellContent.indexPrimer) {
-                    return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                } else if (wellContent?.wellable?.indexPrimer) {
+                    return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                 } else {
                     return ''
                 }
@@ -151,19 +157,23 @@ const loadPlate = async () => {
         {
             externalSample: true,
             indexPrimer: true,
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
+                }
             },
         },
     )
@@ -177,26 +187,30 @@ const loadPlate = async () => {
 const displayWithClause = computed(() => {
     if (selectionTableName.value === 'external-samples') {
         return {
-            wellContents: {
+            wellable: {
                 with: {
-                    well: {
-                        columns: {
-                            id: true,
-                            x: true,
-                            y: true,
-                        },
+                    wellContents: {
                         with: {
-                            plate: {
+                            well: {
                                 columns: {
                                     id: true,
-                                    name: true,
-                                    plateType: true,
+                                    x: true,
+                                    y: true,
+                                },
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                            name: true,
+                                            plateType: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
-            },
+                }
+            }
         }
     } else {
         return {}
@@ -299,7 +313,7 @@ const rowActions = {
                 return
             } else {
                 if (selectionTableName.value === 'external-samples') {
-                    await plateLayout.assignIdToSelectedWells(data.id, 'externalSampleId')
+                    await plateLayout.assignIdToSelectedWells(data.id)
                 }
             }
         },

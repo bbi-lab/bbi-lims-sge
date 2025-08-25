@@ -52,11 +52,11 @@ watch (selectedPlateId, async (newValue) => {
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                    const nucleicAcid = wellContent.nucleicAcid
+                    const nucleicAcid = wellContent?.wellable?.nucleicAcid
                     if (nucleicAcid) {
                         return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
-                    } else if (wellContent.indexPrimer) {
-                        return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                    } else if (wellContent?.wellable?.indexPrimer) {
+                        return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                     } else {
                         return ''
                     }
@@ -74,19 +74,23 @@ watch (selectedPlateId, async (newValue) => {
                 }
             },
             indexPrimer: true,
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
+                }
             },
         })
         plateWithWellSpecs.value = {

@@ -28,10 +28,8 @@ watch (selectedSourcePlate, async (newValue) => {
         if (newValue.plateType === 'snv-lib-preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: ['snvLibPlasmidId'],
-                selectionTableRecordIdPaths: [(x: any) => {
-                    return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                        return _.get(wellContentSource, 'sourceWell.plate.id')
-                    }))
+                selectionTableRecordIdPaths: [(wellable: any) => {
+                    return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
@@ -41,25 +39,29 @@ watch (selectedSourcePlate, async (newValue) => {
             }
             await sourcePlateLayout.loadPlate({
                 snvLibPlasmid: true,
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
                     },
-                },
+                }
             })
         } else if (newValue.plateType === 'seq-index') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
-                selectionTableRecordIdPaths: ['indexPrimerId'],
+                selectionTableRecordIdPaths: ['indexPrimer.id'],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const indexPrimers = _.map(well.wellContents, 'indexPrimer')
@@ -72,20 +74,24 @@ watch (selectedSourcePlate, async (newValue) => {
             }
             await sourcePlateLayout.loadPlate({
                 indexPrimer: true,
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
-                },
+                    }
+                }
             })
         }
         sourcePlateWithWellSpecs.value = {
@@ -102,18 +108,16 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
-        selectionTableRecordIdPaths: [(x: any) => {
-            return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                return _.get(wellContentSource, 'sourceWell.plate.id')
-            }))
+        selectionTableRecordIdPaths: [(wellable: any) => {
+            return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
         }],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                if (wellContent.snvLibPlasmid) {
-                    return `${wellContent.snvLibPlasmid.name} (SNV-lib)`
-                } else if (wellContent.indexPrimer) {
-                    return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                if (wellContent?.wellable?.snvLibPlasmid) {
+                    return `${wellContent.wellable.snvLibPlasmid.name} (SNV-lib)`
+                } else if (wellContent?.wellable?.indexPrimer) {
+                    return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                 } else {
                     return ''
                 }

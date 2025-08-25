@@ -14,7 +14,7 @@ onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['pellet.transfectTarget.target.name'],
-        selectionTableRecordIdPaths: ['pelletId'],
+        selectionTableRecordIdPaths: ['pellet.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'transfectTarget', 'target', 'name'])
@@ -157,7 +157,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a pellet.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'pelletId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',

@@ -27,11 +27,9 @@ watch (selectedSourcePlate, async (newValue) => {
 
         if (newValue.plateType === 'preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['nucleicAcidId'],
-                selectionTableRecordIdPaths: [(x: any) => {
-                    return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                        return _.get(wellContentSource, 'sourceWell.plate.id')
-                    }))
+                colorBy: ['nucleicAcid.id'],
+                selectionTableRecordIdPaths: [(wellable: any) => {
+                    return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
@@ -45,28 +43,32 @@ watch (selectedSourcePlate, async (newValue) => {
                         pellet: true
                     }
                 },
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
-                },
+                    }
+                }
             })
         } else if (newValue.plateType === 'seq-index') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
-                selectionTableRecordIdPaths: ['indexPrimerId'],
+                selectionTableRecordIdPaths: ['wellContents.0.well.plateId'],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+                    const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
                     return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
                 },
                 symbol: (well: any) => {
@@ -76,20 +78,24 @@ watch (selectedSourcePlate, async (newValue) => {
             }
             await sourcePlateLayout.loadPlate({
                 indexPrimer: true,
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
-                },
+                    }
+                }
             })
         }
         sourcePlateWithWellSpecs.value = {
@@ -106,19 +112,17 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
-        selectionTableRecordIdPaths: [(x: any) => {
-            return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                return _.get(wellContentSource, 'sourceWell.plate.id')
-            }))
+        selectionTableRecordIdPaths: [(wellable: any) => {
+            return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
         }],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                const nucleicAcid = wellContent.nucleicAcid
+                const nucleicAcid = wellContent?.wellable?.nucleicAcid
                 if (nucleicAcid) {
                     return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
-                } else if (wellContent.indexPrimer) {
-                    return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                } else if (wellContent?.wellable?.indexPrimer) {
+                    return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                 } else {
                     return ''
                 }
@@ -141,19 +145,23 @@ const loadPlate = async () => {
                 }
             },
             indexPrimer: true,
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
+                }
             },
         },
     )
@@ -227,6 +235,9 @@ const columnDefs = {
 const whereClause ={
     "in": [{"var": "plateType"}, ["preseq-2", "seq-index"]]
 }
+const frozenRecordIds = computed(() => {
+    return _.compact(_.concat(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')), selectedSourcePlate.value?.id))
+})
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -245,7 +256,8 @@ const whereClause ={
                 :sortBy="['plateTypeLabel', 'name']"
                 selectionMode="single"
                 :showColumnFilters="true"
-                emptyMessage="">
+                emptyMessage=""
+                v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel :size="40" :minSize="25">

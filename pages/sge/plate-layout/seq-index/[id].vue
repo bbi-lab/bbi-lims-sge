@@ -13,10 +13,10 @@ onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
-        selectionTableRecordIdPaths: ['indexPrimerId'],
+        selectionTableRecordIdPaths: ['indexPrimer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+            const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
             return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
         },
         symbol: (well: any) => {

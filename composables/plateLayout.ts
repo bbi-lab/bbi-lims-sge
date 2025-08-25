@@ -170,7 +170,13 @@ export const usePlateLayout = () => {
             }))).sort()
 
             const selectionTableRecordIds = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.isFunction(x) ? x(wellContent?.wellable) : _.get(wellContent?.wellable, x as _.PropertyPath))
+                return _.flatten(_.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => {
+                    if (_.isFunction(x)) {
+                        return x(wellContent?.wellable)
+                    } else {
+                        return _.get(wellContent?.wellable, x as _.PropertyPath)
+                    }
+                }))
             }))).sort()
 
             const existingWellSpec = _.get(wellSpecs.value, well.id)

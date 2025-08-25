@@ -13,11 +13,11 @@ const plateDiagramKey = ref(0)
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['sgRnaPlasmidId'],
-        selectionTableRecordIdPaths: ['sgRnaPlasmidId'],
+        colorBy: ['sgRnaPlasmid.id'],
+        selectionTableRecordIdPaths: ['sgRnaPlasmid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const plasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
+            const plasmid = _.get(well, 'wellContents.0.wellable.sgRnaPlasmid')
             return plasmid ? `${wellCoordinate}: ${plasmid.name}` : wellCoordinate
         },
     }
@@ -37,25 +37,29 @@ const loadPlate = async () => {
     }
 }
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
+        }
     },
     target: {
         columns: {
@@ -97,7 +101,7 @@ const columnDefs = {
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x.wellContents, (x) => x.well.plate.id == route.params.id)
+            const wellContents = _.find(x.wellable?.wellContents, (x) => x.well.plate.id == route.params.id)
             return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
         },
         path: 'wellContents.displayValue',

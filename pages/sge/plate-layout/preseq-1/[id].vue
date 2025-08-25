@@ -17,8 +17,8 @@ const whereClause = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['nucleicAcidId'],
-        selectionTableRecordIdPaths: ['nucleicAcidId'],
+        colorBy: ['nucleicAcid.id'],
+        selectionTableRecordIdPaths: ['nucleicAcid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
@@ -181,7 +181,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'nucleicAcidId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',

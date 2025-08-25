@@ -17,8 +17,8 @@ const whereClause = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['snvLibPlasmidId'],
-        selectionTableRecordIdPaths: ['snvLibPlasmidId'],
+        colorBy: ['snvLibPlasmid.id'],
+        selectionTableRecordIdPaths: ['snvLibPlasmid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const plasmidName = _.get(well, ['wellContents', 0, 'wellable', 'snvLibPlasmid', 'name'])
@@ -48,25 +48,29 @@ const loadPlate = async () => {
 }
 
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
+        }
     },
     target: {
         columns: {
@@ -156,7 +160,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'snvLibPlasmidId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',

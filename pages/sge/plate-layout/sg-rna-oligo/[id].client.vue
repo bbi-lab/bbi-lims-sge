@@ -19,10 +19,10 @@ onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['sgRnaOligo.targetId'],
-        selectionTableRecordIdPaths: ['sgRnaOligoId'],
+        selectionTableRecordIdPaths: ['sgRnaOligo.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const oligos = _.map(well.wellContents, 'sgRnaOligo')
+            const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
             return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
         },
         symbol: (well: any) => {
@@ -106,25 +106,29 @@ const submitSgRnaOligos = async (data: any[]) => {
     }
 }
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
+        }
     },
     target: {
         columns: {
