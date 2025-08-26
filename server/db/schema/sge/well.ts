@@ -24,22 +24,23 @@ export const wells = pgTable('wells', {
 export const wellContents = pgTable('well_contents', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   wellId: uuid('well_id').references(() => wells.id).notNull(),
-  amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id).unique(),
-  linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id).unique(),
-  homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id).unique(),
-  preseq1PrimerId: uuid('preseq_1_primer_id').references(() => preseq1Primers.id),
-  preseq2PrimerId: uuid('preseq_2_primer_id').references(() => preseq2Primers.id),
-  indexPrimerId: uuid('index_primer_id').references(() => indexPrimers.id),
-  nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
-  pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
-  sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
-  snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
-  sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
-  externalSampleId: uuid('external_sample_id').references(() => externalSamples.id),
-  wellableId: uuid('wellable_id').references(() => wellables.id),
-}, (t) => [
-  check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) <= 1`),
-])
+  // amplificationPrimerId: uuid('amplification_primer_id').references(() => amplificationPrimers.id).unique(),
+  // linearizationPrimerId: uuid('linearization_primer_id').references(() => linearizationPrimers.id).unique(),
+  // homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id).unique(),
+  // preseq1PrimerId: uuid('preseq_1_primer_id').references(() => preseq1Primers.id),
+  // preseq2PrimerId: uuid('preseq_2_primer_id').references(() => preseq2Primers.id),
+  // indexPrimerId: uuid('index_primer_id').references(() => indexPrimers.id),
+  // nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id),
+  // pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
+  // sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id),
+  // snvLibPlasmidId: uuid('snv_lib_plasmid_id').references(() => snvLibPlasmids.id),
+  // sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
+  // externalSampleId: uuid('external_sample_id').references(() => externalSamples.id),
+  wellableId: uuid('wellable_id').references(() => wellables.id).notNull(),
+})
+// , (t) => [
+//   check('one_item_per_well_content', sql`num_nonnulls(${t.amplificationPrimerId}, ${t.linearizationPrimerId}, ${t.homologyArmPrimerId}, ${t.preseq1PrimerId}, ${t.preseq2PrimerId}, ${t.indexPrimerId}, ${t.nucleicAcidId}, ${t.pelletId}, ${t.sgRnaPlasmidId}, ${t.snvLibPlasmidId}, ${t.sgRnaOligoId}, ${t.externalSampleId}) <= 1`),
+// ])
 
 // "wellables" table contains PKs and table name for all records that can be stored in wells.
 // Each table listed in the "wellable_table_name" check constraint below should have a BEFORE INSERT and BEFORE DELETE

@@ -64,66 +64,66 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: wells,
             references: [wells.id],
         },
-        amplificationPrimer: {
-            fields: [wellContents.amplificationPrimerId],
-            referenceTable: amplificationPrimers,
-            references: [amplificationPrimers.id],
-        },
-        linearizationPrimer: {
-            fields: [wellContents.linearizationPrimerId],
-            referenceTable: linearizationPrimers,
-            references: [linearizationPrimers.id],
-        },
-        homologyArmPrimer: {
-            fields: [wellContents.homologyArmPrimerId],
-            referenceTable: homologyArmPrimers,
-            references: [homologyArmPrimers.id],
-        },
-        preseq1Primer: {
-            fields: [wellContents.preseq1PrimerId],
-            referenceTable: preseq1Primers,
-            references: [preseq1Primers.id],
-        },
-        preseq2Primer: {
-            fields: [wellContents.preseq2PrimerId],
-            referenceTable: preseq2Primers,
-            references: [preseq2Primers.id],
-        },
-        indexPrimer: {
-            fields: [wellContents.indexPrimerId],
-            referenceTable: indexPrimers,
-            references: [indexPrimers.id],
-        },
-        nucleicAcid: {
-            fields: [wellContents.nucleicAcidId],
-            referenceTable: nucleicAcids,
-            references: [nucleicAcids.id],
-        },
-        pellet: {
-            fields: [wellContents.pelletId],
-            referenceTable: pellets,
-            references: [pellets.id],
-        },
-        sgRnaPlasmid: {
-            fields: [wellContents.sgRnaPlasmidId],
-            referenceTable: sgRnaPlasmids,
-            references: [sgRnaPlasmids.id],
-        },
-        snvLibPlasmid: {
-            fields: [wellContents.snvLibPlasmidId],
-            referenceTable: snvLibPlasmids,
-            references: [snvLibPlasmids.id],
-        },
-        sgRnaOligo: {
-            fields: [wellContents.sgRnaOligoId],
-            referenceTable: sgRnaOligos,
-            references: [sgRnaOligos.id],
-        },
-        externalSample: {
-            fields: [wellContents.externalSampleId],
-            referenceTable: externalSamples,
-            references: [externalSamples.id],
-        },
+        // amplificationPrimer: {
+        //     fields: [wellContents.amplificationPrimerId],
+        //     referenceTable: amplificationPrimers,
+        //     references: [amplificationPrimers.id],
+        // },
+        // linearizationPrimer: {
+        //     fields: [wellContents.linearizationPrimerId],
+        //     referenceTable: linearizationPrimers,
+        //     references: [linearizationPrimers.id],
+        // },
+        // homologyArmPrimer: {
+        //     fields: [wellContents.homologyArmPrimerId],
+        //     referenceTable: homologyArmPrimers,
+        //     references: [homologyArmPrimers.id],
+        // },
+        // preseq1Primer: {
+        //     fields: [wellContents.preseq1PrimerId],
+        //     referenceTable: preseq1Primers,
+        //     references: [preseq1Primers.id],
+        // },
+        // preseq2Primer: {
+        //     fields: [wellContents.preseq2PrimerId],
+        //     referenceTable: preseq2Primers,
+        //     references: [preseq2Primers.id],
+        // },
+        // indexPrimer: {
+        //     fields: [wellContents.indexPrimerId],
+        //     referenceTable: indexPrimers,
+        //     references: [indexPrimers.id],
+        // },
+        // nucleicAcid: {
+        //     fields: [wellContents.nucleicAcidId],
+        //     referenceTable: nucleicAcids,
+        //     references: [nucleicAcids.id],
+        // },
+        // pellet: {
+        //     fields: [wellContents.pelletId],
+        //     referenceTable: pellets,
+        //     references: [pellets.id],
+        // },
+        // sgRnaPlasmid: {
+        //     fields: [wellContents.sgRnaPlasmidId],
+        //     referenceTable: sgRnaPlasmids,
+        //     references: [sgRnaPlasmids.id],
+        // },
+        // snvLibPlasmid: {
+        //     fields: [wellContents.snvLibPlasmidId],
+        //     referenceTable: snvLibPlasmids,
+        //     references: [snvLibPlasmids.id],
+        // },
+        // sgRnaOligo: {
+        //     fields: [wellContents.sgRnaOligoId],
+        //     referenceTable: sgRnaOligos,
+        //     references: [sgRnaOligos.id],
+        // },
+        // externalSample: {
+        //     fields: [wellContents.externalSampleId],
+        //     referenceTable: externalSamples,
+        //     references: [externalSamples.id],
+        // },
         wellable: {
             fields: [wellContents.wellableId],
             referenceTable: wellables,
@@ -341,11 +341,11 @@ const externalSamplesRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(sequencingRunExternalSamples),
             fields: [sequencingRunExternalSamples.externalSampleId],
         },
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.externalSampleId],
-        },
+        // wellContents: {
+        //     table: wellContents,
+        //     schema: createSelectSchema(wellContents),
+        //     fields: [wellContents.externalSampleId],
+        // },
     }
 }
 export const externalSamplesRelations = relationsConfigToRelations(externalSamples, externalSamplesRelationsConfig)
@@ -658,9 +658,9 @@ const pelletsRelationsConfig: RelationsConfig = {
         nucleicAcid: {
             table: nucleicAcids
         },
-        wellContents: {
-            table: wellContents
-        },
+        // wellContents: {
+        //     table: wellContents
+        // },
     },
 }
 export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
@@ -689,13 +689,13 @@ const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.sgRnaPlasmidId],
-        }
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.sgRnaPlasmidId],
+    //     }
+    // },
 }
 export const sgRnaPlasmidsRelations = relationsConfigToRelations(sgRnaPlasmids, sgRnaPlasmidsRelationsConfig)
 
@@ -717,13 +717,13 @@ const snvLibPlasmidsRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.snvLibPlasmidId],
-        }
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.snvLibPlasmidId],
+    //     }
+    // },
 }
 export const snvLibPlasmidsRelations = relationsConfigToRelations(snvLibPlasmids, snvLibPlasmidsRelationsConfig)
 
@@ -745,13 +745,13 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.nucleicAcidId],
-        }
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.nucleicAcidId],
+    //     }
+    // },
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
@@ -768,13 +768,13 @@ const sgRnaOligosRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.sgRnaOligoId],
-        }
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.sgRnaOligoId],
+    //     }
+    // },
 }
 export const sgRnaOligosRelations = relationsConfigToRelations(sgRnaOligos, sgRnaOligosRelationsConfig)
 
@@ -791,11 +791,11 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const amplificationPrimersRelations = relationsConfigToRelations(amplificationPrimers, amplificationPrimersRelationsConfig)
 
@@ -812,11 +812,11 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const linearizationPrimersRelations = relationsConfigToRelations(linearizationPrimers, linearizationPrimersRelationsConfig)
 
@@ -833,11 +833,11 @@ const homologyArmPrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
@@ -849,13 +849,13 @@ const indexPrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.indexPrimerId],
-        },
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.indexPrimerId],
+    //     },
+    // },
 }
 export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
 
@@ -872,11 +872,11 @@ const preseq1PrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const preseq1PrimersRelations = relationsConfigToRelations(preseq1Primers, preseq1PrimersRelationsConfig)
 
@@ -893,11 +893,11 @@ const preseq2PrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const preseq2PrimersRelations = relationsConfigToRelations(preseq2Primers, preseq2PrimersRelationsConfig)
 
