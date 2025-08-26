@@ -21,7 +21,6 @@ import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { sgRnaOligos } from './oligos'
 import { externalSamples } from './external-samples'
-import { update } from 'lodash'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})

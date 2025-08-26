@@ -1,7 +1,8 @@
-import { InferSelectModel, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm/sql'
 import { pgTable, uuid, varchar, text, check, smallint} from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { targets } from './target'
+import { type InferSelectModel } from 'drizzle-orm/table'
 
 export const linearizationPrimers = pgTable('linearization_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),

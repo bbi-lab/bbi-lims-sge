@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, text, doublePrecision, check } from 'drizzle-orm/pg-core'
 import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { targets } from './target'
-import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm/sql'
 
 // export const plasmids = pgTable('plasmids', {
 //   id: uuid('id').notNull().primaryKey().defaultRandom(),

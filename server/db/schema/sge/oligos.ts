@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm/sql'
 import { pgTable, uuid, varchar, text, check} from 'drizzle-orm/pg-core'
 import { targets } from './target'
 

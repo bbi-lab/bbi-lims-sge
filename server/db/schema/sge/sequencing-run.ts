@@ -1,9 +1,9 @@
-import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text, integer, check } from "drizzle-orm/pg-core";
-import { wells } from "./well";
-import { nucleicAcids } from "./nucleic-acid";
-import { indexPrimers } from "./primer";
-import { sql } from "drizzle-orm";
-import { externalSamples } from "./external-samples";
+import { pgTable, timestamp, uuid, varchar, uniqueIndex, pgView, doublePrecision, text, integer, check } from "drizzle-orm/pg-core"
+import { wells } from "./well"
+import { nucleicAcids } from "./nucleic-acid"
+import { indexPrimers } from "./primer"
+import { sql } from "drizzle-orm/sql"
+import { externalSamples } from "./external-samples"
 
 export const sequencingRuns = pgTable('sequencing_runs', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

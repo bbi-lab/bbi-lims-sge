@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { users } from '../user'
 import { ENUM_LOOKUPS } from './enum-lookups'
 import { transfectTargets } from './transfect-experiment'
-import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm/sql'
 
 export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
 

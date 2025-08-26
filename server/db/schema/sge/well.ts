@@ -1,5 +1,6 @@
-import { sql, type InferSelectModel } from 'drizzle-orm'
-import { pgTable, uuid, smallint, varchar, unique, check, timestamp} from 'drizzle-orm/pg-core'
+import { type InferSelectModel } from 'drizzle-orm/table'
+import { sql } from 'drizzle-orm/sql'
+import { pgTable, uuid, smallint, varchar, unique, check, timestamp, pgView} from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'

@@ -51,7 +51,7 @@
         "argon2": "^0.41.1",
         "chart.js": "^4.4.6",
         "d3": "^7.9.0",
-        "drizzle-orm": "^0.40.0",
+        "drizzle-orm": "^0.44.5",
         "drizzle-zod": "^0.7.0",
         "json-logic-js": "^2.0.5",
         "jsonwebtoken": "^9.0.2",

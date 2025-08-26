@@ -3,7 +3,7 @@ import _ from 'lodash'
 import {projects} from './project'
 import {regions} from './region'
 import {cycles} from './cycle'
-import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm/sql'
 
 export const targets = pgTable('targets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

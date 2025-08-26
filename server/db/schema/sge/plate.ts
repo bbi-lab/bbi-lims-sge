@@ -1,15 +1,17 @@
-import { type InferSelectModel, eq, sql } from 'drizzle-orm'
+// import { type InferSelectModel, eq, sql } from 'drizzle-orm'
 import { pgTable, pgView, smallint, uuid, varchar, boolean } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { pcrExperiments } from './pcr-experiment'
 import { ENUM_LOOKUPS } from './enum-lookups'
-import { wellContents, wellContentSources, wells } from './well'
+import { wellables, wellContents, wellContentSources, wells } from './well'
 import { transfectExperiments, transfectTargets } from './transfect-experiment'
 import { cycles } from './cycle'
 import { targets } from './target'
 import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
+import { eq, sql } from 'drizzle-orm/sql'
+import { type InferSelectModel } from 'drizzle-orm/table'
 
 export type PlateType = 'pellet-storage' |
  'amp-storage' |
@@ -97,6 +99,33 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
     left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)}
     group by ${plates.id}, ${cycles.id}`
+)
+
+
+export const viewWellableLocations = pgView('view_wellable_locations', {
+  id: uuid('id'),
+  plateId: uuid('plate_id'),
+  plateName: varchar('plate_name'),
+  plateType: varchar('plate_type'),
+  wellId: uuid('well_id'),
+  x: smallint('x'),
+  y: smallint('y'),
+  wellRowLabel: varchar('well_row_label'),
+  wellLabel: varchar('well_label'),
+}).as(sql`SELECT
+  ${wellables.id} as id,
+  ${plates.id} as plate_id,
+  ${plates.name} as plate_name,
+  ${plates.plateType} as plate_type,
+  ${wells.id} as well_id,
+  ${wells.x} as x,
+  ${wells.y} as y,
+  CHR(64 + ${wells.y}) as well_row_label,
+  CHR(64 + ${wells.y}) || ${wells.x}::text as well_label
+  from ${wellables}
+  join ${wellContents} on wellable_id = wellables.id
+  join ${wells} on well_id = wells.id
+  join ${plates} on plate_id = plates.id`
 )
 
 const selectPlateSchema = createSelectSchema(plates)

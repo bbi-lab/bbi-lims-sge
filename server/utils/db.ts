@@ -22,7 +22,6 @@ import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extr
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
-import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
@@ -51,7 +50,6 @@ export const schema = {
   genes,
   regions,
   cycles,
-  // plasmids,
   snvLibPlasmids,
   sgRnaPlasmids,
   nucleicAcids,
@@ -62,7 +60,6 @@ export const schema = {
   transfectExperiments,
   transfectTargets,
   transfectLotUsage,
-  // plasmidExperiments,
   sgRnaCloningExperiments,
   snvLibCloningExperiments,
   extractionExperiments,

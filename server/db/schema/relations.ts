@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { users, userGroups, userGroupMemberships } from './user'
 import { type PgTable } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm/relations'
 
 // relations config
 // defines M:M between users and groups
