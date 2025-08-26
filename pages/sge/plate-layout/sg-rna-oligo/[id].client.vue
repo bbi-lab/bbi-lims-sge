@@ -170,7 +170,7 @@ const columnDefs = {
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x.wellContents, (x) => x.well.plate.id == route.params.id)
+            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
             return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
         },
         path: 'wellContents.displayValue',

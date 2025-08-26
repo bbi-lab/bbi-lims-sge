@@ -304,7 +304,7 @@ export const usePlateLayout = () => {
     const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
         let recordsToAdd: {
             wellId: string;
-            nucleicAcidId: string;
+            wellableId: string;
             sourceWellIds: String[];
             createdBy: string | null;
         }[]
@@ -355,7 +355,7 @@ export const usePlateLayout = () => {
                 const userId = (user.value as User)?.id || null
                 return {
                     wellId: sortedWellIds[index],
-                    nucleicAcidId: value.id,
+                    wellableId: value.id,
                     sourceWellIds: value.wellIds,
                     createdBy: userId,
                 }

@@ -58,25 +58,29 @@ const displayWithClause = {
             },
         },
     },
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
+        }
     },
 }
 </script>

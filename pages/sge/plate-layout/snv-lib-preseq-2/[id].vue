@@ -104,7 +104,7 @@ const columnDefs = {
     wellContents: {
         header: 'Wells',
         format: (x: any) => {
-            const wellCoordinates = _.map(_.filter(x.wellContents, (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
+            const wellCoordinates = _.map(_.filter(x?.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
                 return {x: wellContent.well.x, y: wellContent.well.y,}
             })
             const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')

@@ -86,20 +86,24 @@ const displayWithClause = {
             }
         }
     },
-    wellContents: {
-        columns: {id: true, name: true},
+    wellable: {
         with: {
-            well: {
+            wellContents: {
                 columns: {id: true, name: true},
                 with: {
-                    plate: {
+                    well: {
                         columns: {id: true, name: true},
                         with: {
-                            sgRnaCloningExperiment: {columns: {id: true, name: true}}
+                            plate: {
+                                columns: {id: true, name: true},
+                                with: {
+                                    sgRnaCloningExperiment: {columns: {id: true, name: true}}
+                                }
+                            }
                         }
                     }
                 }
-            }
+            },
         }
     },
 }

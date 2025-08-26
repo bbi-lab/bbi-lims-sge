@@ -344,7 +344,7 @@ const transferSelectedWellsContents = async () => {
             const destinationWell = destinationWellsSorted[index]
             return _.map(wellContents, (wellContent) => {
                 return {
-                    ..._.pick(wellContent, ['nucleicAcidId', 'indexPrimerId']),
+                    wellableId: wellContent.wellableId,
                     wellId: destinationWell.id,
                     sourceWellIds: [well.id],
                     createdBy: (user.value as User)?.id,

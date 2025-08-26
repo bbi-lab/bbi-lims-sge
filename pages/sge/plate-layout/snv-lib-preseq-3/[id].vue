@@ -136,20 +136,24 @@ const loadPlate = async () => {
         {
             snvLibPlasmid: true,
             indexPrimer: true,
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
-            },
+                }
+            }
         },
     )
 
