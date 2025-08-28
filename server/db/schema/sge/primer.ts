@@ -39,6 +39,16 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
 
+export const homologyArmPuc19Primers = pgTable('homology_arm_puc19_primers', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id),
+    name: varchar('name', { length: 255 }).notNull(),
+    sequence: varchar('sequence', { length: 255 }),
+    notes: text('notes'),
+}, (table) => [
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
 export const preseq1Primers = pgTable('preseq_1_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     targetId: uuid('target_id').references(() => targets.id),
