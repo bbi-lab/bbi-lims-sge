@@ -17,8 +17,8 @@ onMounted(async() => {
         selectionTableRecordIdPaths: ['pellet.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'transfectTarget', 'target', 'name'])
-            return pelletName ? `${wellCoordinate}:<br>${pelletName} (pellet)` : wellCoordinate
+            const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'name'])
+            return pelletName ? `${wellCoordinate}:<br>${pelletName}` : wellCoordinate
         },
     }
     loadPlate()
