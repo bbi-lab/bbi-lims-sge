@@ -3,21 +3,29 @@ import moment from 'moment'
 import _ from 'lodash'
 import  {
     TransfectionExperiment,
-    // VALID_REPLICATES,
     VALID_TRANSFECTIONS,
     type TranfectionExperimentPellet,
 } from '~/shared/sge/transfection-experiment'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { RecordService } from '~/utils/service/RecordService'
+import type { WellContent } from '~/server/db/schema/sge/well'
 
 const { user } = useUserSession()
 const config = useRuntimeConfig()
 const route = useRoute()
-const router = useRouter()
 const toast = useToast()
+const { breakpoints } = useLayout()
 const experimentId = route.params.id as string
 const loaded = ref(false)
 const displayDeleteConfirmation = ref(false)
 const selectedExistingPellets = ref()
 const experiment =  ref<TransfectionExperiment>()
+const harvestDateTime = ref()
+const selectedPlate = ref()
+const pelletPlateKey = ref(0) // used to force re-render of PlateDiagram
+const plateWithWellSpecs = ref()
+const plateLayout = usePlateLayout()
+const smallerThanLg = breakpoints.smaller('lg')
 
 const allTargets = computed(() => {
     return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: `${x.target.name} (${x.transfectionCount} transfections per replicate)`, code: x.id}})
@@ -48,9 +56,46 @@ const experimentStartedOn = computed(() => {
     return experiment.value?.data?.startedOn ? `${experiment.value?.data?.startedOn.toLocaleDateString('fr-CA')}` : '' // @ ${experiment.value?.data?.startedOn.toLocaleTimeString('en-GB')}` : ''
 })
 
-const harvestDateTime = ref()
 const currentHarvestDay = computed(() => {
     return harvestDateTime.value ? moment(harvestDateTime.value).diff(moment(experiment.value?.data?.startedOn).set( {hour: 0, minute: 0}), 'days') : null
+})
+
+const loadPlate = async () => {
+    await plateLayout.loadPlate(
+        {
+            pellet: {
+                with: {
+                    transfectTarget: {
+                        with: {
+                            target: {
+                                with: {
+                                    region: {
+                                        with: {
+                                            gene: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+    plateWithWellSpecs.value = {
+        ...plateLayout.plateWithWellContents.value,
+        wells: _.values(plateLayout.wellSpecs.value),
+    }
+}
+watch(selectedPlate, async (newValue, oldValue) => {
+    if (newValue && newValue != oldValue) {
+        plateLayout.setPlateId(newValue)
+        await loadPlate()
+        pelletPlateKey.value++
+    } else {
+        plateWithWellSpecs.value = null
+    }
 })
 
 interface FormFields {
@@ -81,7 +126,6 @@ const harvestBy = ref()
 const harvestProtocol = ref()
 const now = ref(new Date())
 
-// const validTransfectionsLimited = computed(() => experiment.value?.data?.replicateCount ? _.filter(VALID_TRANSFECTIONS, (x) => !_.startsWith(x, 'T') || parseInt(x.slice(-1)) <= (experiment.value?.data?.transfectionCount ?? 0)) : VALID_TRANSFECTIONS)
 const validTransfectionsLimited = computed(() => {
     const transfectionList: string[] = []
 
@@ -98,12 +142,12 @@ const validTransfectionsLimited = computed(() => {
     return transfectionList
 })
 
-// set min date to Day 5, max to Day 17
+// set min date to Day 5, max to Day 21
 const minDate = computed(() => experiment.value?.data?.startedOn ? moment(experiment.value?.data?.startedOn).set({ hour: 0, minute: 0 }).add(5, 'days').toDate() : new Date())
-const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(12, 'days').toDate())
+const maxDate = computed(() => moment(minDate?.value).set({ hour: 23, minute: 59 }).add(16, 'days').toDate())
 
-// disable all dates in min/max range except Day 5, 9, 13, and 17
-const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11], (x) => moment(minDate?.value).add(x, 'days').toDate()))
+// disable all dates in min/max range except Day 5, 9, 13, 17, and 21
+const disabledDates = computed (() => _.map([1,2,3,5,6,7,9,10,11,13,14,15], (x) => moment(minDate?.value).add(x, 'days').toDate()))
 
 const targetOrPelletsSelected = computed (() => {return selectedTarget.value || !_.isEmpty(selectedPellets.value)})
 
@@ -120,6 +164,16 @@ onMounted(async() => {
     onUnmounted(() => {
         clearInterval(intervalId)
     })
+
+    plateLayout.wellContentsDisplayConfig.value = {
+        colorBy: ['pellet.transfectTarget.target.name'],
+        selectionTableRecordIdPaths: ['pellet.id'],
+        tooltip: (well: any) => {
+            const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
+            const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'name'])
+            return pelletName ? `${wellCoordinate}:<br>${pelletName}` : wellCoordinate
+        },
+    }
 })
 
 async function refreshExperiment() {
@@ -155,7 +209,6 @@ async function addPellets() {
     const pellets: DraftPellet[] = []
 
     if (currentHarvestDay.value == 5) {
-        // for (const selectedTarget of selectedTargets.value) {
         let newPelletName = ''
         // check to make sure no pellets exist with any of same transfections
         const pelletWithSameTransfections = _.find(experiment.value?.pellets, (x) => {
@@ -188,16 +241,14 @@ async function addPellets() {
             }
             pellets.push({
                 name: newPelletName,
-                transfectTargetId: selectedTransfectionTarget.value?.id,
+                transfectTargetId: selectedTransfectionTarget.value?.id as string,
                 harvestDay: currentHarvestDay.value,
                 transfections,
                 ..._.omit(_.cloneDeep(formData.value), ['selectedTransfections', 'selectedTarget'])
             })
         }
-        // }
     } else {
         for (const selectedPellet of selectedPellets.value) {
-            // const zeroPaddedDay = _.padStart(_.toString(currentHarvestDay.value), 2, '0')
             const target = _.find(experiment.value?.transfectTargets, (x) => x.id == selectedPellet.code.transfectTargetId)
             const newPelletName = selectedPellet.label
 
@@ -246,8 +297,39 @@ async function submitPellets(pellets: DraftPellet[]) {
         }
     })
     const response = await experiment.value?.addPellets(newPellets)
+
+
     if (response?.success) {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records added`, life: 3000 })
+
+        // Add pellets to empty wells if storage box is selected
+        if (plateWithWellSpecs.value) {
+            const wells = plateWithWellSpecs.value.wells
+            const emptyWells = _.orderBy(_.filter(wells, (x) => _.isEmpty(x.data?.wellContents)), ['y', 'x'])
+
+            if (emptyWells.length == 0) {
+                toast.add({ severity: 'warn', summary: 'Warning', detail: `No empty wells available`, life: 3000 })
+                return
+            }
+            const wellContentsToAdd = _.map(response?.data, (pellet, index) => {
+                return {
+                    wellId: emptyWells?.[index]?.id,
+                    wellableId: pellet.id,
+                }
+            })
+            const wellContentsAdded = await RecordService.addRecords(
+                `${config.public.apiBase}/well-contents`,
+                wellContentsToAdd
+            ) as WellContent[]
+
+            if (!_.isEmpty(wellContentsAdded) && wellContentsAdded?.length == response.data?.length) {
+                toast.add({ severity: 'success', summary: 'Successful', detail: `${wellContentsAdded?.length} wells populated`, life: 3000 })
+                await loadPlate()
+                pelletPlateKey.value++
+            } else {
+                toast.add({ severity: 'error', summary: 'Error adding well contents', life: 3000 })
+            }
+        }
         await refreshExperiment()
     } else {
         toast.add({ severity: 'error', summary: 'Error adding pellets', life: 3000 })
@@ -286,6 +368,19 @@ async function submitPellets(pellets: DraftPellet[]) {
                 <label for="harvestByInput" class="block font-bold">Harvested by</label>
                 <div>
                     <AutoCompleter v-model="harvestBy" :searchBaseUrl="`${config.public.apiBase}/users`" dropdown hideClearButton />
+                </div>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3 space-y-2">
+                <label for="plateSelector" class="block font-bold">
+                    Storage box
+                </label>
+                <div>
+                    <AutoCompleter
+                        id="plateSelector"
+                        v-model="selectedPlate"
+                        :searchBaseUrl="`${config.public.apiBase}/plates`"
+                        :searchWhereClause="{'==':[{'var': 'plateType'}, 'pellet-storage']}"
+                        dropdown />
                 </div>
             </div>
             <hr class="col-span-12">
@@ -347,41 +442,66 @@ async function submitPellets(pellets: DraftPellet[]) {
                 </div>
             </template>
             <div class="col-span-12 space-y-5 mb-5">
-                <DataTable
-                    :value="experiment?.pellets"
-                    v-model:selection="selectedExistingPellets"
-                    tableStyle="min-width: 50rem"
-                    selectionMode="multiple">
-                    <template #header>
-                        <span class="text-xl font-bold">Existing pellets</span>
-                        <Button
-                            class="ml-2"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            label="Delete"
-                            outlined
-                            @click="displayDeleteConfirmation = true"
-                            :disabled="!selectedExistingPellets || selectedExistingPellets.length == 0" />
-                    </template>
-                    <template #empty> No data </template>
-                    <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" selectionMode="multiple" :exportable="false" frozen />
-                    <Column field="name" header="Name" sortable></Column>
-                    <Column field="isBackup" header="Is Backup" sortable>
-                        <template #body="slotProps">
-                            {{ slotProps.data.isBackup ? '✓' : '' }}
-                        </template>
-                    </Column>
-                    <Column field="transfections" header="Transfections" sortable>
-                        <template #body="slotProps">
-                            {{ _.join(slotProps.data.transfections, ', ') }}
-                        </template>
-                    </Column>
-                    <Column field="harvestDay" header="Day" sortable></Column>
-                    <Column field="pctPassaged" header="% passaged" sortable></Column>
-                    <Column field="pctHarvested" header="% harvested" sortable></Column>
-                    <Column field="d3Confluency" header="% D3 confluency" sortable></Column>
-                    <Column field="harvestNotes" header="Notes" sortable></Column>
-                </DataTable>
+                <Splitter class="h-full overflow-y-hidden" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
+                    <SplitterPanel class="overflow-scroll" :size="60">
+                        <DataTable
+                            :value="experiment?.pellets"
+                            v-model:selection="selectedExistingPellets"
+                            tableStyle="min-width: 50rem"
+                            selectionMode="multiple">
+                            <template #header>
+                                <span class="text-xl font-bold">Existing pellets</span>
+                                <Button
+                                    class="ml-2"
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    label="Delete"
+                                    outlined
+                                    @click="displayDeleteConfirmation = true"
+                                    :disabled="!selectedExistingPellets || selectedExistingPellets.length == 0" />
+                            </template>
+                            <template #empty> No data </template>
+                            <Column columnKey="selectBox" :reorderableColumn="false" class="w-0 !pl-6" selectionMode="multiple" :exportable="false" frozen />
+                            <Column field="name" header="Name" sortable></Column>
+                            <Column field="isBackup" header="Is Backup" sortable>
+                                <template #body="slotProps">
+                                    {{ slotProps.data.isBackup ? '✓' : '' }}
+                                </template>
+                            </Column>
+                            <Column field="transfections" header="Transfections" sortable>
+                                <template #body="slotProps">
+                                    {{ _.join(slotProps.data.transfections, ', ') }}
+                                </template>
+                            </Column>
+                            <Column field="harvestDay" header="Day" sortable></Column>
+                            <Column field="pctPassaged" header="% passaged" sortable></Column>
+                            <Column field="pctHarvested" header="% harvested" sortable></Column>
+                            <Column field="d3Confluency" header="% D3 confluency" sortable></Column>
+                            <Column field="harvestNotes" header="Notes" sortable></Column>
+                        </DataTable>
+                    </SplitterPanel>
+                    <SplitterPanel class="flex flex-col overflow-scroll mt-10" :size="40" :minSize="25" v-if="plateWithWellSpecs">
+                        <div class="flex justify-end mr-10 mb-5">
+                            <Button class="ml-1" v-tooltip="{value: 'Close'}" severity="info" icon="pi pi-times" size="small" @click="selectedPlate = null" />
+                        </div>
+                        <div class="ml-auto mr-auto">
+                            <PlateDiagram
+                                :key="pelletPlateKey"
+                                :ref="plateLayout.setPlateDiagramRef"
+                                v-if="plateWithWellSpecs"
+                                v-model="plateWithWellSpecs"
+                                :plateType="plateWithWellSpecs.plateType"
+                                :sizeX="plateWithWellSpecs.sizeX"
+                                :sizeY="plateWithWellSpecs.sizeY"
+                                @well-range-selected="plateLayout.wellRangeSelected"
+                                @well-selection-cleared="plateLayout.wellSelectionCleared"
+                                @all-wells-selected="plateLayout.selectedAllWells"
+                                @well-contents-updated="plateLayout.updatedWellContents"
+                            >
+                            </PlateDiagram>
+                        </div>
+                    </SplitterPanel>
+                </Splitter>
                 <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
                     <div class="flex items-center justify-center">
                         <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
