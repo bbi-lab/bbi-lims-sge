@@ -102,31 +102,31 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
 )
 
 
-export const viewWellableLocations = pgView('view_wellable_locations', {
-  id: uuid('id'),
-  plateId: uuid('plate_id'),
-  plateName: varchar('plate_name'),
-  plateType: varchar('plate_type'),
-  wellId: uuid('well_id'),
-  x: smallint('x'),
-  y: smallint('y'),
-  wellRowLabel: varchar('well_row_label'),
-  wellLabel: varchar('well_label'),
-}).as(sql`SELECT
-  ${wellables.id} as id,
-  ${plates.id} as plate_id,
-  ${plates.name} as plate_name,
-  ${plates.plateType} as plate_type,
-  ${wells.id} as well_id,
-  ${wells.x} as x,
-  ${wells.y} as y,
-  CHR(64 + ${wells.y}) as well_row_label,
-  CHR(64 + ${wells.y}) || ${wells.x}::text as well_label
-  from ${wellables}
-  join ${wellContents} on wellable_id = wellables.id
-  join ${wells} on well_id = wells.id
-  join ${plates} on plate_id = plates.id`
-)
+// export const viewWellableLocations = pgView('view_wellable_locations', {
+//   id: uuid('id'),
+//   plateId: uuid('plate_id'),
+//   plateName: varchar('plate_name'),
+//   plateType: varchar('plate_type'),
+//   wellId: uuid('well_id'),
+//   x: smallint('x'),
+//   y: smallint('y'),
+//   wellRowLabel: varchar('well_row_label'),
+//   wellLabel: varchar('well_label'),
+// }).as(sql`SELECT
+//   ${wellables.id} as id,
+//   ${plates.id} as plate_id,
+//   ${plates.name} as plate_name,
+//   ${plates.plateType} as plate_type,
+//   ${wells.id} as well_id,
+//   ${wells.x} as x,
+//   ${wells.y} as y,
+//   CHR(64 + ${wells.y}) as well_row_label,
+//   CHR(64 + ${wells.y}) || ${wells.x}::text as well_label
+//   from ${wellables}
+//   join ${wellContents} on wellable_id = wellables.id
+//   join ${wells} on well_id = wells.id
+//   join ${plates} on plate_id = plates.id`
+// )
 
 const selectPlateSchema = createSelectSchema(plates)
 const insertPlateSchema = selectPlateSchema.omit({id: true}).partial()
