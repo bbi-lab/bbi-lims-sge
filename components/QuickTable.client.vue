@@ -77,6 +77,7 @@ watch(isLoginModalVisible, (newValue, oldValue) => {
     }
 })
 
+
 onMounted(async() => {
     if (!loggedIn.value) {
         showLoginModal()
@@ -116,6 +117,11 @@ watch(() => props.invalidRecords, (newValue) => {
     }
 }, { immediate: true })
 
+watch(() => props.where, (newValue, oldValue) => {
+    if (!_.isEqual(newValue, oldValue)) {
+        loadTableData()
+    }
+})
 const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
 
 const emit = defineEmits([

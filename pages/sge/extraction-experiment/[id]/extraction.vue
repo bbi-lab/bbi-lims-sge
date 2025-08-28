@@ -9,7 +9,17 @@ const config = useRuntimeConfig()
 const toast = useToast()
 const pelletsCrudTable = useCrudTable()
 const nucleicAcidsCrudTable = useCrudTable()
+const showPelletsFromAllDays = ref(false)
 
+const pelletsWhereClause = computed(() => {
+    return showPelletsFromAllDays.value ? {'==':[{'var': 'nucleicAcid'}, null]} :
+    {
+        'and':[
+            {'==':[{'var': 'nucleicAcid'}, null]},
+            {'in':[{'var': 'harvestDay'}, [5, 13]]},
+        ]
+    }
+})
 const extractionExperiment = ref()
 const showNucleicAcidEditDialog = computed(() => {
     return nucleicAcidsCrudTable.state.showEditForm || nucleicAcidsCrudTable.state.showMultipleEditForm
@@ -209,7 +219,7 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                     schemaName="select"
                     :columnDefs="pelletsColumnDefs"
                     :withClause="pelletsWithClause"
-                    :where="{'==':[{'var': 'nucleicAcid'}, null]}"
+                    :where="pelletsWhereClause"
                     :canAdd="false"
                     :canDelete="false"
                     :canEdit="false"
@@ -226,6 +236,12 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                             label="Extract"
                             :disabled="_.isEmpty(pelletsCrudTable.tableRef.value?.selectedRecords)"
                             @click="extractFromSelectedPellets" />
+                            <span class="flex items-center space-x-2">
+                                <ToggleSwitch id="showPelletsFromAllDaysToggle" v-model="showPelletsFromAllDays" />
+                                <label for="showPelletsFromAllDaysToggle">
+                                    All days
+                                </label>
+                            </span>
                     </template>
                 </QuickTable>
             </SplitterPanel>
