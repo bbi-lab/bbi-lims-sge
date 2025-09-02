@@ -16,10 +16,10 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { sgRnaOligos } from './oligos'
-import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
+import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
 
@@ -201,6 +201,26 @@ const wellablesRelationsConfig: RelationsConfig = {
             fields: [wellables.id],
             referenceTable: externalSamples,
             references: [externalSamples.id],
+        },
+        haPcrProduct: {
+            fields: [wellables.id],
+            referenceTable: haPcrProducts,
+            references: [haPcrProducts.id],
+        },
+        haPuc19PcrProduct: {
+            fields: [wellables.id],
+            referenceTable: haPuc19PcrProducts,
+            references: [haPuc19PcrProducts.id],
+        },
+        haPuc19GibsonProduct: {
+            fields: [wellables.id],
+            referenceTable: haPuc19GibsonProducts,
+            references: [haPuc19GibsonProducts.id],
+        },
+        haPuc19Plasmid: {
+            fields: [wellables.id],
+            referenceTable: haPuc19Plasmids,
+            references: [haPuc19Plasmids.id],
         },
     },
     many: {
@@ -600,6 +620,68 @@ const haCloningExperimentTargetsRelationsConfig: RelationsConfig = {
     }
 }
 export const haCloningExperimentTargetsRelations = relationsConfigToRelations(haCloningExperimentTargets, haCloningExperimentTargetsRelationsConfig)
+
+const haPcrProductsRelationsConfig: RelationsConfig = {
+    one: {
+        performedBy: {
+            fields: [haPcrProducts.performedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haCloningExperiment: {
+            fields: [haPcrProducts.haCloningExperimentId],
+            referenceTable: haCloningExperiments,
+            references: [haCloningExperiments.id],
+        },
+        haPrimerForward: {
+            fields: [haPcrProducts.haPrimerForwardId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        haPrimerReverse: {
+            fields: [haPcrProducts.haPrimerReverseId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        wellable: {
+            fields: [haPcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const haPcrProductsRelations = relationsConfigToRelations(haPcrProducts, haPcrProductsRelationsConfig)
+
+const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
+    one: {
+        cleanedBy: {
+            fields: [haPuc19PcrProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPcrProduct: {
+            fields: [haPuc19PcrProducts.haPcrProductId],
+            referenceTable: haPcrProducts,
+            references: [haPcrProducts.id],
+        },
+        haPrimerForward: {
+            fields: [haPuc19PcrProducts.haPuc19PrimerForwardId],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
+        },
+        haPrimerReverse: {
+            fields: [haPuc19PcrProducts.haPuc19PrimerReverseId],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
+        },
+        wellable: {
+            fields: [haPuc19PcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    }
+}
+export const haPuc19PcrProductsRelations = relationsConfigToRelations(haPuc19PcrProducts, haPuc19PcrProductsRelationsConfig)
 
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{

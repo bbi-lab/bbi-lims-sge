@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { sgRnaOligos } from './oligos'
+import { haPcrProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
 import { externalSamples } from './external-samples'
 
 // tables
@@ -76,6 +76,14 @@ const updateSgRnaCloningExperimentsSchema = insertSgRnaCloningExperimentsSchema
 const selectHaCloningExperimentsSchema = createSelectSchema(haCloningExperiments, {startedOn: nullableDateSchema})
 const insertHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true})
 const updateHaCloningExperimentsSchema = insertHaCloningExperimentsSchema
+
+const selectHaPcrProductsSchema = createSelectSchema(haPcrProducts, {performedOn: nullableDateSchema})
+const insertHaPcrProductsSchema = selectHaPcrProductsSchema.omit({id: true})
+const updateHaPcrProductsSchema = insertHaPcrProductsSchema
+
+const selectHaPuc19PcrProductsSchema = createSelectSchema(haPuc19PcrProducts, {cleanedOn: nullableDateSchema})
+const insertHaPuc19PcrProductsSchema = selectHaPuc19PcrProductsSchema.omit({id: true})
+const updateHaPuc19PcrProductsSchema = insertHaPuc19PcrProductsSchema
 
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {transformedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
@@ -253,6 +261,16 @@ export const schemas = {
         select: selectHaCloningExperimentsSchema,
         insert: insertHaCloningExperimentsSchema,
         update: updateHaCloningExperimentsSchema,
+    },
+    haPcrProducts: {
+        select: selectHaPcrProductsSchema,
+        insert: insertHaPcrProductsSchema,
+        update: updateHaPcrProductsSchema,
+    },
+    haPuc19PcrProducts: {
+        select: selectHaPuc19PcrProductsSchema,
+        insert: insertHaPuc19PcrProductsSchema,
+        update: updateHaPuc19PcrProductsSchema,
     },
     snvLibCloningExperiments: {
         select: selectSnvLibCloningExperimentsSchema,
