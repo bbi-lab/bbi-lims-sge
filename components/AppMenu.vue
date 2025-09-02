@@ -33,12 +33,19 @@ const model = ref([
             { label: 'Oligos', iconComponent: FluentMolecule16Filled,
                 items: [
                     { label: 'sgRNA', to: '/sge/sg-rna-oligos' },
-                    { label: 'Amplification primers', to: '/sge/amplification-primers' },
-                    { label: 'Linearization primers', to: '/sge/linearization-primers' },
-                    { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
-                    { label: 'PreSeq 1 primers', to: '/sge/preseq-1-primers' },
-                    { label: 'PreSeq 2 primers', to: '/sge/preseq-2-primers' },
-                    { label: 'Index primers', to: '/sge/index-primers' },
+                    { label: 'HA products', items: [
+                        { label: 'HA PCR products', to: '/sge/ha-pcr-products' },
+                        { label: 'HA pUC19 PCR products', to: '/sge/ha-puc19-pcr-products' },
+                        { label: 'HA pUC19 Gibson products', to: '/sge/ha-puc19-gibson-products' },
+                    ]},
+                    { label: 'Primers', items: [
+                        { label: 'Amplification primers', to: '/sge/amplification-primers' },
+                        { label: 'Linearization primers', to: '/sge/linearization-primers' },
+                        { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
+                        { label: 'PreSeq 1 primers', to: '/sge/preseq-1-primers' },
+                        { label: 'PreSeq 2 primers', to: '/sge/preseq-2-primers' },
+                        { label: 'Index primers', to: '/sge/index-primers' },
+                    ]},
                 ]
              },
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },

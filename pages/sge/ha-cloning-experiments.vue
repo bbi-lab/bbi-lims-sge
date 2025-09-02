@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { haCloningExperimentTargets } from '~/server/db/schema/sge/plasmid-experiment'
-import { RecordService } from '~/utils/service/RecordService'
-import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const crudTable = useCrudTable()
 const router = useRouter()
@@ -18,9 +15,25 @@ const columnDefs = {
             return _.map(data.haCloningExperimentTargets, 'target.name')
         },
         path: 'haCloningExperimentTargets.displayValue'
+    },
+    haPcrProducts: {
+        header: 'HA PCR Product',
+        type: 'element',
+        element: (data: any) => {
+            const haPcrProduct = _.get(data.haPcrProducts, '0')
+            const href = `/sge/ha-pcr-products?id=${haPcrProduct.id}`
+            return _.has(data.haPcrProducts, '0.id') ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
+        },
+        elementSearchText: (x: any) => {
+            return _.has(x.haPcrProducts, '0.id') ? '✓' : ''
+        },
+        exportValue: (x: any) => {
+            return _.has(x.haPcrProducts, '0.id') ? 'true' : 'false'
+        },
     }
 }
 const fieldDefs = {
+    haPcrProducts: { display: false },
     'haCloningExperimentTargets.*': {
         label: 'Targets',
         component: 'InputArray',
@@ -50,9 +63,10 @@ const fieldDefs = {
 const withClause = {
     haCloningExperimentTargets: {
         with: {
-            target: true
+            target: true,
         }
-    }
+    },
+    haPcrProducts: true,
 }
 
 </script>
