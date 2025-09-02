@@ -4,6 +4,7 @@ import { parseDeleteError } from '~/server/utils/restApi'
 import { haCloningExperiments, haCloningExperimentTargets } from '~/server/db/schema/sge/plasmid-experiment'
 import { eq } from 'drizzle-orm/sql'
 import { tsv } from 'd3'
+import { haPcrProducts } from '~/server/db/schema/sge/oligos'
 
 export default defineEventHandler(async (event) => {
     const { id } = event.context.params as { id: string }
@@ -11,6 +12,7 @@ export default defineEventHandler(async (event) => {
     try {
         const result = await db.transaction(async (tx) => {
             await tx.delete(haCloningExperimentTargets).where(eq(haCloningExperimentTargets.haCloningExperimentId, id))
+            await tx.delete(haPcrProducts).where(eq(haPcrProducts.haCloningExperimentId, id))
             const deletedRecord = await tx.delete(haCloningExperiments).where(eq(haCloningExperiments.id, id)).returning()
 
             if (deletedRecord.length !== 1) {

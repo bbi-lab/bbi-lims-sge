@@ -19,7 +19,7 @@ export const sgRnaOligos = pgTable('sg_rna_oligos', {
 export const haPcrProducts = pgTable('ha_pcr_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    haCloningExperimentId: uuid('ha_cloning_experiment_id').references(() => haCloningExperiments.id),
+    haCloningExperimentId: uuid('ha_cloning_experiment_id').references(() => haCloningExperiments.id).unique(),
     startPosition: integer('start_position'),
     stopPosition: integer('stop_position'),
     haPrimerForwardId: uuid('ha_primer_forward_id').references(() => homologyArmPrimers.id),

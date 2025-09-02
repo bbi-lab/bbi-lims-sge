@@ -601,7 +601,12 @@ const haCloningExperimentsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(haCloningExperimentTargets),
             fields: [haCloningExperimentTargets.haCloningExperimentId],
         },
-    }
+        haPcrProducts: {
+            table: haPcrProducts,
+            schema: createSelectSchema(haPcrProducts),
+            fields: [haPcrProducts.haCloningExperimentId],
+        },
+    },
 }
 export const haCloningExperimentsRelations = relationsConfigToRelations(haCloningExperiments, haCloningExperimentsRelationsConfig)
 

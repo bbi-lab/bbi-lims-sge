@@ -18,7 +18,7 @@ export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
 
 export const haCloningExperiments = pgTable('ha_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }),
+  name: varchar('name', { length: 255 }).notNull(),
   startedOn: timestamp('started_on').defaultNow(),
   endedOn: timestamp('ended_on'),
 })
