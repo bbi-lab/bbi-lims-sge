@@ -20,7 +20,7 @@ import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPr
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { sgRnaOligos } from './oligos'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
+import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
 
 const genesRelationsConfig: RelationsConfig = {
@@ -574,6 +574,33 @@ const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
 }
 export const sgRnaCloningExperimentsRelations = relationsConfigToRelations(sgRnaCloningExperiments, sgRnaCloningExperimentsRelationsConfig)
 
+const haCloningExperimentsRelationsConfig: RelationsConfig = {
+    many: {
+        haCloningExperimentTargets: {
+            table: haCloningExperimentTargets,
+            schema: createSelectSchema(haCloningExperimentTargets),
+            fields: [haCloningExperimentTargets.haCloningExperimentId],
+        },
+    }
+}
+export const haCloningExperimentsRelations = relationsConfigToRelations(haCloningExperiments, haCloningExperimentsRelationsConfig)
+
+const haCloningExperimentTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [haCloningExperimentTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        haCloningExperiment: {
+            fields: [haCloningExperimentTargets.haCloningExperimentId],
+            referenceTable: haCloningExperiments,
+            references: [haCloningExperiments.id],
+        }
+    }
+}
+export const haCloningExperimentTargetsRelations = relationsConfigToRelations(haCloningExperimentTargets, haCloningExperimentTargetsRelationsConfig)
+
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
@@ -918,6 +945,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
+    haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
+    haCloningExperiments: haCloningExperimentsRelationsConfig,
     snvLibCloningExperiments: snvLibCloningExperimentsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,

@@ -13,11 +13,11 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
-import {sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
+import {haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
-import { sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
+import { haCloningExperiments, haCloningExperimentTargets, sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
@@ -25,7 +25,7 @@ import {ZodObject} from 'zod'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
-import { sgRnaOligos } from '../db/schema/sge/oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
@@ -61,6 +61,14 @@ export const schema = {
   transfectTargets,
   transfectLotUsage,
   sgRnaCloningExperiments,
+
+  haCloningExperiments,
+  haCloningExperimentTargets,
+  haPcrProducts,
+  haPuc19PcrProducts,
+  haPuc19Plasmids,
+  haPuc19GibsonProducts,
+
   snvLibCloningExperiments,
   extractionExperiments,
   extractionLotUsage,

@@ -45,6 +45,7 @@ const model = ref([
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
                     { label: 'sgRNA Cloning', to: '/sge/sg-rna-cloning-experiments' },
+                    { label: 'HA Cloning', to: '/sge/ha-cloning-experiments' },
                     { label: 'SNV Library Cloning' },
                     { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },

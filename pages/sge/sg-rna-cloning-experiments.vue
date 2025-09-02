@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import _, { transform } from 'lodash'
+import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 

@@ -5,7 +5,7 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
-import { sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
+import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
 import { plates, viewPlatesWithWellCounts } from './plate'
@@ -69,13 +69,13 @@ const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usa
 const insertTransfectLotUsageSchema = selectTransfectLotUsageSchema.omit({id: true}).partial()
 const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
-// const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema})
-// const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: true})
-// const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
-
 const selectSgRnaCloningExperimentsSchema = createSelectSchema(sgRnaCloningExperiments, {transformedOn: nullableDateSchema})
 const insertSgRnaCloningExperimentsSchema = selectSgRnaCloningExperimentsSchema.omit({id: true})
 const updateSgRnaCloningExperimentsSchema = insertSgRnaCloningExperimentsSchema
+
+const selectHaCloningExperimentsSchema = createSelectSchema(haCloningExperiments, {startedOn: nullableDateSchema})
+const insertHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true})
+const updateHaCloningExperimentsSchema = insertHaCloningExperimentsSchema
 
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {transformedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
@@ -248,6 +248,11 @@ export const schemas = {
         select: selectSgRnaCloningExperimentsSchema,
         insert: insertSgRnaCloningExperimentsSchema,
         update: updateSgRnaCloningExperimentsSchema,
+    },
+    haCloningExperiments: {
+        select: selectHaCloningExperimentsSchema,
+        insert: insertHaCloningExperimentsSchema,
+        update: updateHaCloningExperimentsSchema,
     },
     snvLibCloningExperiments: {
         select: selectSnvLibCloningExperimentsSchema,
