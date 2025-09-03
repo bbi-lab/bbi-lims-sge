@@ -162,6 +162,7 @@ interface ColumnDefinition {
     sortable?: boolean,
     element?: string | ((data: any) => string),
     elementSearchText?: (data: any) => string,
+    elementClick?: (event: any) => void,
     searchable?: boolean,
     exportable?: boolean,
     exportValue?: (record: any) => string,
@@ -593,8 +594,8 @@ function filteringComplete() {
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
-                        <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)"></span>
-                        <span v-else-if="_.isString(columnDef.element)" v-html="columnDef.element"></span>
+                        <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)" v-on:click="columnDef.elementClick ? columnDef.elementClick(slotProps.data) : null"></span>
+                        <span v-else-if="_.isString(columnDef.element)" v-html="columnDef.element" v-on:click="columnDef.elementClick ? columnDef.elementClick(slotProps.data) : null"></span>
                         <span v-else>err</span>
                     </template>
                 </Column>
