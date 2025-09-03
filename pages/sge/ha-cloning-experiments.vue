@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
 const crudTable = useCrudTable()
-const router = useRouter()
 const config = useRuntimeConfig()
+
+const showAddDialog = ref(false)
+const addFormTableName: Ref<string | undefined> = ref()
+const addFormHeader: Ref<string | undefined> = ref()
+const addFormFieldDefs: Ref<FieldDefinitions> = ref({})
+const addFormReadOnlyValues = ref()
 
 const columnDefs = {
     name: {
@@ -20,19 +26,60 @@ const columnDefs = {
         header: 'HA PCR Product',
         type: 'element',
         element: (data: any) => {
-            const haPcrProduct = _.get(data.haPcrProducts, '0')
-            const href = `/sge/ha-pcr-products?id=${haPcrProduct.id}`
-            return _.has(data.haPcrProducts, '0.id') ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
+            const haPcrProduct = _.get(data, 'haPcrProducts.0')
+            const href = haPcrProduct?.id ? `/sge/ha-pcr-products?id=${haPcrProduct?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
-        elementSearchText: (x: any) => {
-            return _.has(x.haPcrProducts, '0.id') ? '✓' : ''
+        elementClick: (data: any) => {
+            if (_.isEmpty(data.haPcrProducts)) {
+                addFormReadOnlyValues.value = {
+                    name: _.get(data, 'name'),
+                    haCloningExperimentId: _.get(data, 'id'),
+                }
+                addFormTableName.value = 'ha-pcr-products'
+                addFormHeader.value = 'Add HA PCR Product'
+                addFormFieldDefs.value = haPcrProductFieldDefinitions
+                showAddDialog.value = true
+            }
+        },
+        exportValue: (x: any) => {
+            return _.has(x.haPcrProducts, '0.id') ? 'true' : 'false'
+        },
+    },
+    haPuc19PcrProducts: {
+        header: 'HA pUC19 PCR Product',
+        type: 'element',
+        element: (data: any) => {
+            const haPuc19PcrProduct = _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0')
+            const href = haPuc19PcrProduct?.id ? `/sge/ha-puc19-pcr-products?id=${haPuc19PcrProduct?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` :
+                 _.get(data, 'haPcrProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
+        },
+        elementClick: (data: any) => {
+            if (_.isEmpty(_.get(data, 'haPcrProducts.0.haPuc19PcrProducts'))) {
+                addFormReadOnlyValues.value = {
+                    name: _.get(data, 'haPcrProducts.0.name'),
+                    haPcrProductId: _.get(data, 'haPcrProducts.0.id'),
+                }
+                addFormTableName.value = 'ha-puc-19-pcr-products'
+                addFormHeader.value = 'Add HA pUC19 PCR Product'
+                addFormFieldDefs.value = haPuc19PcrProductFieldDefinitions
+                showAddDialog.value = true
+            }
         },
         exportValue: (x: any) => {
             return _.has(x.haPcrProducts, '0.id') ? 'true' : 'false'
         },
     }
 }
-const fieldDefs = {
+const didAddRecord = (event: any) => {
+    console.log(event)
+    showAddDialog.value = false
+    if (event?.haCloningExperimentId) {
+        crudTable.tableRef.value.addOrRefreshRecordIds([event.haCloningExperimentId])
+    }
+}
+const fieldDefs: FieldDefinitions = {
     haPcrProducts: { display: false },
     'haCloningExperimentTargets.*': {
         label: 'Targets',
@@ -66,9 +113,124 @@ const withClause = {
             target: true,
         }
     },
-    haPcrProducts: true,
+    haPcrProducts: {
+        with: {
+            haPuc19PcrProducts: true,
+        }
+    },
 }
-
+const haPcrProductFieldDefinitions: FieldDefinitions = {
+    name: { index: 0 },
+    haCloningExperimentId: {
+        label: 'HA Cloning Experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/ha-cloning-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    haPrimerForwardId: {
+        label: 'HA Primer Forward',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
+        },
+        index: 2,
+    },
+    haPrimerReverseId: {
+        label: 'HA Primer Reverse',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
+        },
+        index: 3,
+    },
+    wtHap1DnaConcentration: {
+        label: 'WT HAP1 DNA Concentration (ng/µL)',
+    },
+    temperatureChosen: {
+        label: 'Temperature Chosen (°C)',
+    },
+    performedBy: {
+        label: 'Performed By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+}
+const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
+    name: { index: 0 },
+    haPcrProductId: {
+        label: 'HA PCR Product',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/ha-pcr-products`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    haPuc19PrimerForwardId: {
+        label: 'HA pUC19 Primer Forward',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc19-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
+        },
+        index: 2,
+    },
+    haPuc19PrimerReverseId: {
+        label: 'HA pUC19 Primer Reverse',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc19-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
+        },
+        index: 3,
+    },
+    temperatureUsed: {
+        label: 'Temperature Used (°C)',
+    },
+    cleanedBy: {
+        label: 'Cleaned By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+    quant: {
+        label: 'Quant (ng/µL)',
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -107,4 +269,14 @@ const withClause = {
             />
         </SplitterPanel>
     </Splitter>
+    <Dialog v-model:visible="showAddDialog" modal :header="addFormTableName" :style="{ width: 'auto' }" :closable="false">
+        <QuickForm
+            :tableName="addFormTableName"
+            schemaName="insert"
+            :readonlyValues="addFormReadOnlyValues"
+            :fieldDefs="addFormFieldDefs"
+            @cancel="showAddDialog = false"
+            @recordAdd="didAddRecord"
+        />
+    </Dialog>
 </template>
