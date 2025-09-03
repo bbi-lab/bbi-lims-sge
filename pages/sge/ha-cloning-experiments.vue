@@ -1,15 +1,30 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { v4 as uuidv4 } from 'uuid'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
+const route = useRoute()
 
 const showAddDialog = ref(false)
 const addFormTableName: Ref<string | undefined> = ref()
 const addFormHeader: Ref<string | undefined> = ref()
 const addFormFieldDefs: Ref<FieldDefinitions> = ref({})
 const addFormReadOnlyValues = ref()
+
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
+
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
 const columnDefs = {
     name: {
@@ -51,7 +66,7 @@ const columnDefs = {
         type: 'element',
         element: (data: any) => {
             const haPuc19PcrProduct = _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0')
-            const href = haPuc19PcrProduct?.id ? `/sge/ha-puc19-pcr-products?id=${haPuc19PcrProduct?.id}` : null
+            const href = haPuc19PcrProduct?.id ? `/sge/ha-puc-19-pcr-products?id=${haPuc19PcrProduct?.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` :
                  _.get(data, 'haPcrProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
         },
@@ -193,7 +208,7 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
         label: 'HA pUC19 Primer Forward',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc19-primers`,
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc-19-primers`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -205,7 +220,7 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
         label: 'HA pUC19 Primer Reverse',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc19-primers`,
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc-19-primers`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -236,11 +251,13 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="ha-cloning-experiments"
                 schemaName="select"
                 title="Homology Arm Cloning"
                 :withClause="withClause"
+                :where="whereClauses"
                 :columnDefs="columnDefs"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"

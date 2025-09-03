@@ -3,20 +3,25 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { RecordService } from '~/utils/service/RecordService'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 
 const withClause = Object.freeze({
-    targets: {
+    homologyArmPrimer: {
         with: {
-            target: {
-                columns: {
-                    id: true,
-                    name: true,
-                }
+            targets: {
+                with: {
+                    target: {
+                        columns: {
+                            id: true,
+                            name: true,
+                        }
+                    },
+                },
             },
-        }
+        },
     },
     wellable: {
         with: {
@@ -48,17 +53,9 @@ const columnDefs: ColumnDefinitions = {
     name: {
         index: 1
     },
-    targets: {
-        format: (data: any) => {
-            return _.map(data.targets, 'target.name')
-        },
-        path: 'targets.displayValue',
-        index: 2,
-    },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            //.return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''
             if (!_.isEmpty(x?.wellable?.wellContents)) {
                 return _.map(x.wellable.wellContents, (wellContent) => {
                     return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
@@ -74,30 +71,28 @@ const columnDefs: ColumnDefinitions = {
 }
 
 const fieldDefs: FieldDefinitions = {
-    'targets.*': {
-        label: 'Targets',
-        component: 'InputArray',
-        canDelete: false,
-        canUpdate: false,
+    homologyArmPrimerId: {
+        label: 'Homology Arm Primer',
+        component: 'AutoCompleter',
         props: {
-            components: [
-                {
-                    variableField: 'targetId',
-                    label: 'Target',
-                    component: 'AutoCompleter',
-                    componentProps: {
-                        searchBaseUrl: `${config.public.apiBase}/targets`,
-                        searchFields: ['region.gene.symbol', 'region.name', 'name'],
-                        valueField: 'id',
-                        inputClass: 'w-64',
-                        displayFormat: (x: any) => {
-                            return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
-                        },
-                        searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
-                    },
-                },
-            ]
-        }
+            searchBaseUrl: `${config.public.apiBase}/homology-arm-primers`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+        },
+        events: {
+            change: async (record: any) => {
+                // auto-calculate name if homologyArmPrimerId changes
+                if (record?.homologyArmPrimerId && _.isEmpty(record?.name)) {
+                    const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
+                    record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
+                }
+            },
+        },
+        index: 0,
+    },
+    name: {
+        index: 2,
     },
 }
 </script>
@@ -106,9 +101,9 @@ const fieldDefs: FieldDefinitions = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="homology-arm-primers"
+                tableName="homology-arm-puc-19-primers"
                 schemaName="select"
-                title="Homology Arm Primers"
+                title="Homology Arm PUC 19 Primers"
                 :with-clause="withClause"
                 :column-defs="columnDefs"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
@@ -118,20 +113,18 @@ const fieldDefs: FieldDefinitions = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="homology-arm-primers"
+                tableName="homology-arm-puc-19-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="withClause"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="homology-arm-primers"
+                tableName="homology-arm-puc-19-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
-                :withClause="withClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
