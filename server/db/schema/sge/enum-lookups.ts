@@ -16,15 +16,15 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Pellet storage',
                 label: 'Pellet storage',
             },
-            'lin-storage': {
+            'lin-primer-storage': {
                 desc: 'Linearization primer storage',
                 label: 'LIN primer storage',
             },
-            'amp-storage': {
+            'amp-primer-storage': {
                 desc: 'Amplification primer storage',
                 label: 'AMP primer storage',
             },
-            'ha-storage': {
+            'ha-primer-storage': {
                 desc: 'Homology arm primer storage',
                 label: 'HA primer storage',
             },

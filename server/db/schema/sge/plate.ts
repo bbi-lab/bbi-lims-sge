@@ -14,9 +14,9 @@ import { eq, sql } from 'drizzle-orm/sql'
 import { type InferSelectModel } from 'drizzle-orm/table'
 
 export type PlateType = 'pellet-storage' |
- 'amp-storage' |
- 'lin-storage' |
- 'ha-storage' |
+ 'amp-primer-storage' |
+ 'lin-primer-storage' |
+ 'ha-primer-storage' |
  'sg-rna-oligo-storage' |
  'sg-rna-oligo' |
  'sg-rna-plasmid' |

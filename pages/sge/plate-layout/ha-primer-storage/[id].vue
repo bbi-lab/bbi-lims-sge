@@ -72,29 +72,33 @@ const displayWithClause = {
             },
         }
     },
-    target: {
-        columns: {
-            name: true
-        },
+    targets: {
         with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
+            target: {
                 columns: {
                     name: true
                 },
                 with: {
-                    gene: {
+                    project: {
                         columns: {
-                            symbol: true
+                            name: true
                         }
-                    }
-                }
+                    },
+                    region: {
+                        columns: {
+                            name: true
+                        },
+                        with: {
+                            gene: {
+                                columns: {
+                                    symbol: true
+                                }
+                            }
+                        }
+                    },
+                },
             },
-        },
+        }
     },
 }
 const columnDefs = {
@@ -117,13 +121,11 @@ const columnDefs = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
-        format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+    targets: {
+        format: (data: any) => {
+            return _.map(data.targets, 'target.name')
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'targets.displayValue',
         index: 2,
     },
     project: {
