@@ -2,8 +2,9 @@ import { updateRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
-import { updateTargets } from '~/server/services/transfect-experiment-services'
+import { updateTargets as updateTranfectExperimentTargets} from '~/server/services/transfect-experiment-services'
 import { parsePutPostError } from '~/server/utils/restApi'
+import { updateHomologyArmPrimerTargets } from '~/server/utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -30,7 +31,10 @@ export default defineEventHandler(async (event) => {
                     negativeControl: x.negativeControl
                 }
             })
-            await updateTargets(id, transfectionTargets)
+            await updateTranfectExperimentTargets(id, transfectionTargets)
+        } else if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body.targets)) {
+            const haPrimerTargetIds = _.map(body.targets, 'targetId')
+            await updateHomologyArmPrimerTargets(id, haPrimerTargetIds)
         }
 
         const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, parsedValues)
