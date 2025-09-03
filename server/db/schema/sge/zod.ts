@@ -16,7 +16,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
@@ -190,6 +190,10 @@ const updateAmplificationPrimerSchema = insertAmplificationPrimerSchema
 const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
 const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
+
+const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers)
+const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
+const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
 
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
@@ -376,6 +380,11 @@ export const schemas = {
         select: selectHomologyArmPrimerSchema,
         insert: insertHomologyArmPrimerSchema,
         update: updateHomologyArmPrimerSchema,
+    },
+    homologyArmPuc19Primers: {
+        select: selectHomologyArmPuc19PrimerSchema,
+        insert: insertHomologyArmPuc19PrimerSchema,
+        update: updateHomologyArmPuc19PrimerSchema,
     },
     linearizationPrimers: {
         select: selectLinearizationPrimerSchema,

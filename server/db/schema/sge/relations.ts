@@ -16,7 +16,7 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, homologyArmPuc19PrimerTargets, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
@@ -451,11 +451,6 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(preseq2Primers),
             fields: [preseq2Primers.targetId],
         },
-        homologyArmPrimers: {
-            table: homologyArmPrimers,
-            schema: createSelectSchema(homologyArmPrimers),
-            fields: [homologyArmPrimers.targetId],
-        },
         sgRnaPlasmids: {
             table: sgRnaPlasmids,
             schema: createSelectSchema(sgRnaPlasmids),
@@ -676,12 +671,12 @@ const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
             referenceTable: haPcrProducts,
             references: [haPcrProducts.id],
         },
-        haPrimerForward: {
+        haPuc19PrimerForward: {
             fields: [haPuc19PcrProducts.haPuc19PrimerForwardId],
             referenceTable: homologyArmPuc19Primers,
             references: [homologyArmPuc19Primers.id],
         },
-        haPrimerReverse: {
+        haPuc19PrimerReverse: {
             fields: [haPuc19PcrProducts.haPuc19PrimerReverseId],
             referenceTable: homologyArmPuc19Primers,
             references: [homologyArmPuc19Primers.id],
@@ -691,7 +686,7 @@ const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
             referenceTable: wellables,
             references: [wellables.id],
         },
-    }
+    },
 }
 export const haPuc19PcrProductsRelations = relationsConfigToRelations(haPuc19PcrProducts, haPuc19PcrProductsRelationsConfig)
 
@@ -943,24 +938,53 @@ export const linearizationPrimersRelations = relationsConfigToRelations(lineariz
 
 const homologyArmPrimersRelationsConfig: RelationsConfig = {
     one: {
-        target: {
-            fields: [homologyArmPrimers.targetId],
-            referenceTable: targets,
-            references: [targets.id],
-        },
         wellable: {
             fields: [homologyArmPrimers.id],
             referenceTable: wellables,
             references: [wellables.id],
         },
     },
-    // oneToOne: {
-    //     wellContents: {
-    //         table: wellContents
-    //     }
-    // },
+    many: {
+        targets: {
+            table: homologyArmPrimerTargets,
+            schema: createSelectSchema(homologyArmPrimerTargets),
+            fields: [homologyArmPrimerTargets.homologyArmPrimerId],
+        }
+    },
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
+
+const homologyArmPrimerTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [homologyArmPrimerTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        homologyArmPrimer: {
+            fields: [homologyArmPrimerTargets.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        }
+    }
+}
+export const homologyArmPrimerTargetsRelations = relationsConfigToRelations(homologyArmPrimerTargets, homologyArmPrimerTargetsRelationsConfig)
+
+const homologyArmPuc19PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        homologyArmPrimer: {
+            fields: [homologyArmPuc19Primers.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        wellable: {
+            fields: [homologyArmPuc19Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const homologyArmPuc19PrimersRelations = relationsConfigToRelations(homologyArmPuc19Primers, homologyArmPuc19PrimersRelationsConfig)
 
 const indexPrimersRelationsConfig: RelationsConfig = {
     one: {
