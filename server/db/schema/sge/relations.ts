@@ -16,7 +16,7 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, homologyArmPuc19PrimerTargets, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
@@ -156,6 +156,11 @@ const wellablesRelationsConfig: RelationsConfig = {
             fields: [wellables.id],
             referenceTable: homologyArmPrimers,
             references: [homologyArmPrimers.id],
+        },
+        homologyArmPuc19Primer: {
+            fields: [wellables.id],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
         },
         preseq1Primer: {
             fields: [wellables.id],

@@ -66,13 +66,27 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 5,
+        index: 4,
+    },
+    homologyArmPrimerId: { display: false },
+    homologyArmPrimer: {
+        path: 'homologyArmPrimer.name',
+        index: 2,
+    },
+    sequence: {
+        index: 3,
     },
 }
+
+const homologyArmPrimerSequence = ref<string>('')
 
 const fieldDefs: FieldDefinitions = {
     homologyArmPrimerId: {
         label: 'Homology Arm Primer',
+        subtext: (_data, relatedData) => {
+            const haPrimerSequence = _.has(relatedData, 'homologyArmPrimerId') ? _.get(relatedData, 'homologyArmPrimerId.sequence') : _.get(_data, 'homologyArmPrimer.sequence')
+            return `Sequence: ${haPrimerSequence || ''}`
+        },
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/homology-arm-primers`,
@@ -81,11 +95,22 @@ const fieldDefs: FieldDefinitions = {
             displayFields: ['name'],
         },
         events: {
-            change: async (record: any) => {
+            change: async (record: any, recordOld: any) => {
                 // auto-calculate name if homologyArmPrimerId changes
-                if (record?.homologyArmPrimerId && _.isEmpty(record?.name)) {
-                    const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
-                    record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
+                if (record?.homologyArmPrimerId != recordOld?.homologyArmPrimerId) {
+                    if (!record?.homologyArmPrimerId) {
+                        record.name = ''
+                        record.sequence = ''
+                    } else {
+                        const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
+                        record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
+                        homologyArmPrimerSequence.value = haPrimer.sequence
+                        if (haPrimer.sequenceType == 'forward') {
+                            record.sequence = `GTTTTCCCAGTCACGACGTTGTAAAACGACGGCCAGT${haPrimer.sequence}`
+                        } else if (haPrimer.sequenceType == 'reverse') {
+                            record.sequence = `GATTACGCCAAGCTTGCATGCCTGCAGGT${haPrimer.sequence}`
+                        }
+                    }
                 }
             },
         },
@@ -125,6 +150,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="homology-arm-puc-19-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :withClause="{homologyArmPrimer: true}"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

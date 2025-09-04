@@ -13,15 +13,15 @@ const plateWithWellSpecs = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPrimer.name'), /(_F|_R)$/g, '')],
-        selectionTableRecordIdPaths: ['homologyArmPrimer.id'],
+        colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPuc19Primer.name'), /(_F|_R)$/g, '')],
+        selectionTableRecordIdPaths: ['homologyArmPuc19Primer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'name'])
-            return primerName ? `${wellCoordinate}:<br>${primerName} (HA)` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPuc19Primer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (HA PUC19)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPuc19Primer', 'homologyArmPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -31,7 +31,11 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            homologyArmPrimer: true,
+            homologyArmPuc19Primer: {
+                with: {
+                    homologyArmPrimer: true
+                }
+            },
         },
     )
 
@@ -72,34 +76,7 @@ const displayWithClause = {
             },
         }
     },
-    targets: {
-        with: {
-            target: {
-                columns: {
-                    name: true
-                },
-                with: {
-                    project: {
-                        columns: {
-                            name: true
-                        }
-                    },
-                    region: {
-                        columns: {
-                            name: true
-                        },
-                        with: {
-                            gene: {
-                                columns: {
-                                    symbol: true
-                                }
-                            }
-                        }
-                    },
-                },
-            },
-        }
-    },
+    homologyArmPrimer: true,
 }
 const columnDefs = {
     colorTile:{
@@ -120,13 +97,6 @@ const columnDefs = {
     },
     name: {
         index: 1
-    },
-    targets: {
-        format: (data: any) => {
-            return _.map(data.targets, 'target.name')
-        },
-        path: 'targets.displayValue',
-        index: 2,
     },
     wellContents: {
         header: 'Location',
@@ -179,7 +149,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="homology-arm-primers"
+                tableName="homology-arm-puc-19-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"

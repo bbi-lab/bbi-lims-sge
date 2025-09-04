@@ -286,7 +286,7 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             />
         </SplitterPanel>
     </Splitter>
-    <Dialog v-model:visible="showAddDialog" modal :header="addFormTableName" :style="{ width: 'auto' }" :closable="false">
+    <Dialog v-model:visible="showAddDialog" modal :header="addFormHeader" :style="{ width: 'auto' }" :closable="false">
         <QuickForm
             :tableName="addFormTableName"
             schemaName="insert"
