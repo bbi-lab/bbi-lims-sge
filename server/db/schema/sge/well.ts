@@ -5,13 +5,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { plates } from './plate'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
-import { nucleicAcids } from './nucleic-acid'
-import { pellets } from './pellet'
 import { users } from '../user'
-import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { sgRnaOligos } from './oligos'
-import { externalSamples } from './external-samples'
 
 export const wells = pgTable('wells', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -74,6 +68,7 @@ export const wellables = pgTable('wellables', {
       'amplification_primers',
       'linearization_primers',
       'homology_arm_primers',
+      'homology_arm_puc19_primers',
       'preseq_1_primers',
       'preseq_2_primers',
       'index_primers',
@@ -82,7 +77,11 @@ export const wellables = pgTable('wellables', {
       'sg_rna_plasmids',
       'snv_lib_plasmids',
       'sg_rna_oligos',
-      'external_samples'
+      'external_samples',
+      'ha_pcr_products',
+      'ha_puc19_pcr_products',
+      'ha_puc19_gibson_products',
+      'ha_puc19_plasmids',
     )`
   )
 ])
