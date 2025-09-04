@@ -17,6 +17,7 @@ const formSchemPropertiesComputedSorted = computed(() =>  _.sortBy(_.entries(for
 
 interface FieldDefinition {
     label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
+    subtext?: string | ((record: any, relatedRecords: Record<string, any>) => string),
     component?: string,
     props?: Record<string, any>,
     display?: boolean | ((record: any) => boolean),
@@ -182,6 +183,18 @@ function getLabel(key: string) {
         return _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key))
     }
 }
+
+function getSubtext(key: string) {
+    const subtext = _.get(props.fieldDefs, [key, 'subtext'])
+    if (_.isFunction(subtext)) {
+        return subtext(_.cloneDeep(record.value), _.cloneDeep(relatedRecords.value))
+    } else if (_.isString(subtext)) {
+        return subtext
+    } else {
+        return ''
+    }
+}
+
 async function saveRecord() {
     if (props.readOnly) return
 
@@ -227,9 +240,9 @@ function isReadOnly(key: string) {
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
         <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
-            <template v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
-                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+            <div class="mb-5" v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
+                <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <AutoCompleter
                         :input-id="key"
                         v-model="record[key]"
@@ -238,9 +251,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
@@ -248,9 +260,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
                     <Select
                         :id="key"
                         v-model="record[key]"
@@ -258,9 +269,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
@@ -268,9 +278,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <DatePicker
                         class="w-80"
                         :id="key"
@@ -282,9 +291,8 @@ function isReadOnly(key: string) {
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <DatePicker
                         class="w-80"
                         :id="key"
@@ -298,9 +306,8 @@ function isReadOnly(key: string) {
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
-                </div>
-                <div class="mb-5" v-else-if="val?.enum">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="val?.enum">
                     <Select
                         :id="key"
                         v-model="record[key]"
@@ -308,9 +315,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="val?.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }} {{_.get(fieldDefs, [key, 'valueChanged'])}}</label>
+                </template>
+                <template v-else-if="val?.oneOf">
                     <Select
                         :id="key"
                         v-model="record[key]"
@@ -319,10 +325,9 @@ function isReadOnly(key: string) {
                         optionValue="const"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
-                />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                    />
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <Checkbox
                         :id="key"
                         v-model="record[key]"
@@ -330,9 +335,8 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
@@ -342,9 +346,8 @@ function isReadOnly(key: string) {
                         :maxFractionDigits="0"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
@@ -354,8 +357,8 @@ function isReadOnly(key: string) {
                         :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                     <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                     <!-- Iterate over array items -->
@@ -399,9 +402,8 @@ function isReadOnly(key: string) {
                             <InputText class="w-80" disabled v-model="record[key][arrayIndex]" />
                         </template>
                     </div>
-                </div>
-                <div class="mb-5" v-else>
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else>
                     <InputText
                         :id="key"
                         v-model="record[key]"
@@ -412,8 +414,9 @@ function isReadOnly(key: string) {
                     <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
                         <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
                     </a>
-                </div>
-            </template>
+                </template>
+                <div v-if="_.has(fieldDefs, [key, 'subtext'])" class="italic mt-3mb-3">{{ getSubtext(key) }}</div>
+            </div>
         </div>
     </div>
     <Dialog header="Unsaved changes" v-model:visible="displayDiscardConfirmation" :style="{ width: '350px' }" :modal="true">

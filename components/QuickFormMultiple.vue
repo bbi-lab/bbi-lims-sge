@@ -5,6 +5,7 @@ import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } fr
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
 import { useActiveElement } from '@vueuse/core'
 import moment from 'moment'
+import type { FieldDefinitions} from '~/components/QuickForm.vue'
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
@@ -24,8 +25,8 @@ const props = defineProps({
   schemaName: {type: String, required: true},
   readOnly: {type: Boolean, default: false},
   withClause: {type: Object},
-  fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  readonlyValues: {type: Object},             // to hide fields on form
+  fieldDefs: {type: Object as PropType<FieldDefinitions>},   // to override widgets/labels for individual fields
+  readonlyValues: {type: Object},                           // to hide fields on form
 })
 const emit = defineEmits([
     'records-update',
@@ -217,9 +218,9 @@ function getLabel(key: string) {
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
-            <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
-                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+            <div class="mb-5" v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
+                <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <div class="flex items-start">
                         <AutoCompleter
                             :input-id="key"
@@ -238,9 +239,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <div class="flex items-start">
                         <NestedSelect
                             :key="key"
@@ -260,9 +260,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
                     <Select
                         :id="key"
                         :class="inputClasses[key]"
@@ -272,9 +271,8 @@ function getLabel(key: string) {
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputText
                             v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'])"
@@ -305,9 +303,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
@@ -328,9 +325,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
@@ -353,9 +349,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="val?.enum">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="val?.enum">
                     <Select
                         :id="key"
                         :class="inputClasses[key]"
@@ -364,9 +359,8 @@ function getLabel(key: string) {
                         :placeholder="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
-                </div>
-                <div class="mb-5" v-else-if="val?.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="val?.oneOf">
                     <div class="flex items-start quickform-input-wrapper">
                         <Select
                             :id="key"
@@ -385,9 +379,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <Checkbox
                         :id="key"
                         :pt="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null ? { box: { class: 'bg-surface-200 dark:bg-gray-800' } } : {}"
@@ -402,9 +395,8 @@ function getLabel(key: string) {
                         </template>
                     </Button>
                     <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} values`}}</span>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
@@ -425,9 +417,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
@@ -447,8 +438,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <div class="flex items-start quickform-input-wrapper">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                         <Button v-if="(_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount'])" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
@@ -506,9 +497,8 @@ function getLabel(key: string) {
                             <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
                         </template>
                     </div>
-                </div>
-                <div class="mb-5" v-else>
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else>
                     <!-- <InputText v-if="_.has(combinedRecord[key].val, '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key].val['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
                     <div class="flex items-start quickform-input-wrapper">
                         <InputText
@@ -531,8 +521,9 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-            </template>
+                </template>
+                <div v-if="_.has(fieldDefs, [key, 'subtext'])" class="italic mt-3mb-3">{{ getSubtext(key) }}</div>
+            </div>
         </div>
     </div>
     <ConfirmPopup></ConfirmPopup>
