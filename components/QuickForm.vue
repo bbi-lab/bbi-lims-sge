@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '@/utils/service/RecordService'
-import { TransfectionExperiment } from '~/shared/sge/transfection-experiment'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import moment from 'moment'
 
@@ -85,6 +84,7 @@ const emit = defineEmits([
 const formSchema = ref<FormSchema>()
 const formElement = ref<HTMLElement | null>(null)
 const record = ref()
+const recordOld = ref()
 const relatedRecords = ref<Record<string, any>>({})
 const dataChanged = ref(false)
 const discardConfirmed = ref(false)
@@ -130,6 +130,7 @@ watch(() => recordClone.value, (newValue, oldValue) => {
                 dataChanged.value = true
             }
         })
+        recordOld.value = oldValue
     }
 }, { deep: true })
 
@@ -235,7 +236,7 @@ function isReadOnly(key: string) {
                         v-model:obj="relatedRecords[key]"
                         v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
@@ -245,7 +246,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
@@ -255,7 +256,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
@@ -265,7 +266,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
@@ -278,7 +279,7 @@ function isReadOnly(key: string) {
                         dateFormat="yy-mm-dd"
                         autofocus
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
@@ -294,7 +295,7 @@ function isReadOnly(key: string) {
                         hourFormat="24"
                         autofocus
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="record[key]=null" />
                 </div>
@@ -305,7 +306,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         :options="val.enum"
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="val?.oneOf">
@@ -317,7 +318,7 @@ function isReadOnly(key: string) {
                         optionLabel="title"
                         optionValue="const"
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                 />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
@@ -327,7 +328,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         :binary="true"
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
@@ -339,7 +340,7 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         :minFractionDigits="0"
                         :maxFractionDigits="0"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
@@ -351,7 +352,7 @@ function isReadOnly(key: string) {
                         :disabled="isReadOnly(key)"
                         :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
                         :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </div>
                 <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
@@ -406,7 +407,7 @@ function isReadOnly(key: string) {
                         v-model="record[key]"
                         class="w-80"
                         :disabled="isReadOnly(key)"
-                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record))"
+                        v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
                         <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />

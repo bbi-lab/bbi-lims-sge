@@ -91,7 +91,8 @@ const fieldDefs = {
             optionDisabled: 'disabled',
         },
         events: {
-            change: (record: any) => {
+            change: (record: any, recordOld: any) => {
+                if (record?.plateType == recordOld?.plateType) return
                 if (_.endsWith(record.plateType, '-storage')) {
                     record.sizeX = 9
                     record.sizeY = 9
