@@ -17,6 +17,7 @@ export type PlateType = 'pellet-storage' |
  'amp-primer-storage' |
  'lin-primer-storage' |
  'ha-primer-storage' |
+ 'ha-puc19-primer-storage' |
  'sg-rna-oligo-storage' |
  'sg-rna-oligo' |
  'sg-rna-plasmid' |

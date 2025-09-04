@@ -827,6 +827,13 @@
       "when": 1756942079415,
       "tag": "0117_flawless_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1756944131894,
+      "tag": "0118_reflective_metal_master",
+      "breakpoints": true
     }
   ]
 }
