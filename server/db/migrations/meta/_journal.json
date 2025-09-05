@@ -848,6 +848,13 @@
       "when": 1757099456304,
       "tag": "0120_new_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 121,
+      "version": "7",
+      "when": 1757106548177,
+      "tag": "0121_green_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

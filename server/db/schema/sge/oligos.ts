@@ -34,7 +34,7 @@ export const haPcrProducts = pgTable('ha_pcr_products', {
 export const haPuc19PcrProducts = pgTable('ha_puc19_pcr_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    haPcrProductId: uuid('ha_pcr_product_id').references(() => haPcrProducts.id).notNull(),
+    haPcrProductId: uuid('ha_pcr_product_id').references(() => haPcrProducts.id).notNull().unique(),
     haPuc19PrimerForwardId: uuid('ha_puc19_primer_forward_id').references(() => homologyArmPuc19Primers.id).notNull(),
     haPuc19PrimerReverseId: uuid('ha_puc19_primer_reverse_id').references(() => homologyArmPuc19Primers.id).notNull(),
     temperatureUsed: doublePrecision('temperature_used'),
@@ -47,7 +47,7 @@ export const haPuc19PcrProducts = pgTable('ha_puc19_pcr_products', {
 export const haPuc19GibsonProducts = pgTable('ha_puc19_gibson_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    haPuc19PcrProductId: uuid('ha_puc19_pcr_product_id').references(() => haPuc19PcrProducts.id).notNull(),
+    haPuc19PcrProductId: uuid('ha_puc19_pcr_product_id').references(() => haPuc19PcrProducts.id).notNull().unique(),
     puc19VectorConcentration: doublePrecision('puc19_vector_concentration'),
     puc19VectorAmount: doublePrecision('puc19_vector_amount').default(50),
     preppedOn: timestamp('prepped_on'),

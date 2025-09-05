@@ -36,7 +36,7 @@ export const snvLibPlasmids = pgTable('snv_lib_plasmids', {
 export const haPuc19Plasmids = pgTable('ha_puc19_plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull().unique(),
-  haPuc19GibsonProductId: uuid('ha_puc19_gibson_product_id').references(() => haPuc19GibsonProducts.id),
+  haPuc19GibsonProductId: uuid('ha_puc19_gibson_product_id').references(() => haPuc19GibsonProducts.id).notNull().unique(),
   eColiStellarVolume: doublePrecision('e_coli_stellar_volume').default(20),
   transformedOn: timestamp('transformed_on'),
   transformedBy: uuid('transformed_by').references(() => users.id),
