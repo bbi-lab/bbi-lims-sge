@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import _ from 'lodash'
+import _, { drop } from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -17,6 +17,8 @@ const tableKey = ref<string>(uuidv4())
 const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
+const currentHaCloningExperimentId = ref<string>()
+
 watch(() => route.query, async (newValue, oldValue) => {
     const queryParamFilters = _.map(newValue, (val, key) => {
         return {"==": [{"var": key}, val] }
@@ -25,6 +27,27 @@ watch(() => route.query, async (newValue, oldValue) => {
     readonlyValues.value = newValue
     tableKey.value = uuidv4()
 }, { immediate: true })
+
+const updateCurrentHaCloningExperiment = (data: any) => {
+    currentHaCloningExperimentId.value = data?.id
+
+    // update related AutoCompleter searchWhereClauses
+    const targetIds = _.map(data?.haCloningExperimentTargets, 'targetId')
+    _.set(haPcrProductFieldDefinitions, 'haPrimerForwardId.props.searchWhereClause', {"and": [
+        {"==": [{"var": "sequenceType"}, "forward"]},
+        {"all" : [ {"var":"targets"}, {"in":[{"var":"targetId"}, targetIds]} ]},
+    ]})
+    _.set(haPcrProductFieldDefinitions, 'haPrimerReverseId.props.searchWhereClause', {"and": [
+        {"==": [{"var": "sequenceType"}, "reverse"]},
+        {"all" : [ {"var":"targets"}, {"in":[{"var":"targetId"}, targetIds]} ]},
+    ]})
+
+    const haPcrProduct = _.get(data, 'haPcrProducts.0')
+    if (haPcrProduct) {
+        _.set(haPuc19PcrProductFieldDefinitions, 'haPuc19PrimerForwardId.props.searchWhereClause', {"==": [{"var": "homologyArmPrimerId"}, haPcrProduct?.haPrimerForwardId]})
+        _.set(haPuc19PcrProductFieldDefinitions, 'haPuc19PrimerReverseId.props.searchWhereClause', {"==": [{"var": "homologyArmPrimerId"}, haPcrProduct?.haPrimerReverseId]})
+    }
+}
 
 const columnDefs = {
     name: {
@@ -54,6 +77,7 @@ const columnDefs = {
                 addFormTableName.value = 'ha-pcr-products'
                 addFormHeader.value = 'Add HA PCR Product'
                 addFormFieldDefs.value = haPcrProductFieldDefinitions
+                updateCurrentHaCloningExperiment(data)
                 showAddDialog.value = true
             }
         },
@@ -79,6 +103,33 @@ const columnDefs = {
                 addFormTableName.value = 'ha-puc-19-pcr-products'
                 addFormHeader.value = 'Add HA pUC19 PCR Product'
                 addFormFieldDefs.value = haPuc19PcrProductFieldDefinitions
+                updateCurrentHaCloningExperiment(data)
+                showAddDialog.value = true
+            }
+        },
+        exportValue: (x: any) => {
+            return _.has(x.haPcrProducts, '0.id') ? 'true' : 'false'
+        },
+    },
+    haPuc19GibsonProducts: {
+        header: 'HA pUC19 Gibson Product',
+        type: 'element',
+        element: (data: any) => {
+            const haPuc19GibsonProduct = _.get(data, 'haPcrProducts.0.haPuc19GibsonProducts.0')
+            const href = haPuc19GibsonProduct?.id ? `/sge/ha-puc-19-gibson-products?id=${haPuc19GibsonProduct?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` :
+                 _.get(data, 'haPcrProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
+        },
+        elementClick: (data: any) => {
+            if (_.isEmpty(_.get(data, 'haPcrProducts.0.haPuc19PcrProducts'))) {
+                addFormReadOnlyValues.value = {
+                    name: _.get(data, 'haPcrProducts.0.name'),
+                    haPcrProductId: _.get(data, 'haPcrProducts.0.id'),
+                }
+                addFormTableName.value = 'ha-puc-19-pcr-products'
+                addFormHeader.value = 'Add HA pUC19 PCR Product'
+                addFormFieldDefs.value = haPuc19PcrProductFieldDefinitions
+                updateCurrentHaCloningExperiment(data)
                 showAddDialog.value = true
             }
         },
@@ -87,13 +138,15 @@ const columnDefs = {
         },
     }
 }
-const didAddRecord = (event: any) => {
-    console.log(event)
-    showAddDialog.value = false
-    if (event?.haCloningExperimentId) {
-        crudTable.tableRef.value.addOrRefreshRecordIds([event.haCloningExperimentId])
-    }
+const didAddChildRecord = () => {
+    crudTable.tableRef.value.addOrRefreshRecordIds([currentHaCloningExperimentId.value])
+    hideAddDialog()
 }
+const hideAddDialog = () => {
+    showAddDialog.value = false
+    updateCurrentHaCloningExperiment(null)
+}
+
 const fieldDefs: FieldDefinitions = {
     haPcrProducts: { display: false },
     'haCloningExperimentTargets.*': {
@@ -156,7 +209,8 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
+            dropdown: true,
+            searchWithClause: {targets: true},
         },
         index: 2,
     },
@@ -168,7 +222,8 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
+            dropdown: true,
+            searchWithClause: {targets: true},
         },
         index: 3,
     },
@@ -212,7 +267,8 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
+            dropdown: true,
+            searchWithClause: {homologyArmPrimer: true},
         },
         index: 2,
     },
@@ -224,7 +280,8 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
+            dropdown: true,
+            searchWithClause: {homologyArmPrimer: true},
         },
         index: 3,
     },
@@ -292,8 +349,8 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             schemaName="insert"
             :readonlyValues="addFormReadOnlyValues"
             :fieldDefs="addFormFieldDefs"
-            @cancel="showAddDialog = false"
-            @recordAdd="didAddRecord"
+            @cancel="hideAddDialog"
+            @recordAdd="didAddChildRecord"
         />
     </Dialog>
 </template>

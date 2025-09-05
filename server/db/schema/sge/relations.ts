@@ -695,6 +695,27 @@ const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
 }
 export const haPuc19PcrProductsRelations = relationsConfigToRelations(haPuc19PcrProducts, haPuc19PcrProductsRelationsConfig)
 
+const haPuc19GibsonProductsRelationsConfig: RelationsConfig = {
+    one: {
+        preppedBy: {
+            fields: [haPuc19GibsonProducts.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPuc19PcrProduct: {
+            fields: [haPuc19GibsonProducts.haPuc19PcrProductId],
+            referenceTable: haPuc19PcrProducts,
+            references: [haPuc19PcrProducts.id],
+        },
+        wellable: {
+            fields: [haPuc19PcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const haPuc19GibsonProductsRelations = relationsConfigToRelations(haPuc19GibsonProducts, haPuc19GibsonProductsRelationsConfig)
+
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {

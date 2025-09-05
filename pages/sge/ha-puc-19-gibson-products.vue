@@ -29,41 +29,25 @@ const columnDefs = {
         header: 'HA Cloning Experiment',
         type: 'element',
         element: (data: any) => {
-            const href = data.haPcrProduct?.haCloningExperiment?.id ? `/sge/ha-cloning-experiments?id=${data.haPcrProduct.haCloningExperiment.id}` : null
+            const href = data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.id ? `/sge/ha-cloning-experiments?id=${data.haPcrProduct.haCloningExperiment.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haPcrProduct?.haCloningExperiment?.name}</a>` : null
         },
         exportValue: (data: any) => {
-            return _.get(data, 'haPcrProduct.haCloningExperiment.name', '')
+            return _.get(data, 'haPuc19PcrProduct.haPcrProduct.haCloningExperiment.name', '')
         },
         index: 1,
     },
-    haPuc19Primers: {
-        header: 'HA pUC19 Primers',
-        format: (data: any) => {
-            return _.compact([data.haPuc19PrimerForward?.name, data.haPuc19PrimerReverse?.name ]).join(', ')
-        },
-        path: 'haPuc19Primers.displayValue',
-        index: 2,
-    },
-    haPcrProductId: { display: false },
-    haPuc19PrimerForwardId: { display: false },
-    haPuc19PrimerReverseId: { display: false },
-    temperatureUsed: {
-        header: 'Temp. Used (°C)',
-    },
-    cleanedBy: {
-        path: 'performedBy.name'
-    },
+    haPuc19PcrProductId: { display: false },
 }
 const fieldDefs: FieldDefinitions = {
     name: {
         index: 0,
     },
-    haPcrProductId: {
-        label: 'HA PCR Product',
+    haPuc19PcrProductId: {
+        label: 'HA pUC19 PCR Product',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/ha-pcr-products`,
+            searchBaseUrl: `${config.public.apiBase}/ha-puc-19-pcr-products`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -71,34 +55,10 @@ const fieldDefs: FieldDefinitions = {
         },
         index: 1,
     },
-    haPuc19PrimerForwardId: {
-        label: 'HA pUC19 Primer Forward',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc-19-primers`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
-        },
-        index: 2,
-    },
-    haPuc19PrimerReverseId: {
-        label: 'HA pUC19 Primer Reverse',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/homology-arm-puc-19-primers`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
-        },
-        index: 3,
-    },
     wtHap1DnaConcentration: {
         label: 'WT HAP1 DNA Concentration (ng/µL)',
     },
-    performedBy: {
+    preppedBy: {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/users`,
@@ -110,25 +70,23 @@ const fieldDefs: FieldDefinitions = {
     },
 }
 const displayWithClause = {
-    cleanedBy: {
+    preppedBy: {
         columns: {id: true, name: true},
     },
-    haPcrProduct: {
-        columns: {
-            id: true,
-            name: true
-        },
+    haPuc19PcrProduct: {
         with: {
-            haCloningExperiment: {
-                columns: {id: true, name: true},
-            },
-        },
-    },
-    haPuc19PrimerForward: {
-        columns: {id: true, name: true},
-    },
-    haPuc19PrimerReverse: {
-        columns: {id: true, name: true},
+            haPcrProduct: {
+                columns: {
+                    id: true,
+                    name: true
+                },
+                with: {
+                    haCloningExperiment: {
+                        columns: {id: true, name: true},
+                    },
+                },
+            }
+        }
     },
     wellable: {
         with: {
@@ -155,9 +113,9 @@ const displayWithClause = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="ha-puc-19-pcr-products"
+                tableName="ha-puc-19-gibson-products"
                 schemaName="select"
-                title="HA pUC19 PCR products"
+                title="HA pUC19 Gibson products"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :where="whereClauses"
@@ -171,7 +129,7 @@ const displayWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="ha-puc-19-pcr-products"
+                tableName="ha-puc-19-gibson-products"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :withClause="{haCloningExperiment: true}"
@@ -182,7 +140,7 @@ const displayWithClause = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="ha-puc-19-pcr-products"
+                tableName="ha-puc-19-gibson-products"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -192,7 +150,7 @@ const displayWithClause = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="ha-puc-19-pcr-products"
+                tableName="ha-puc-19-gibson-products"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"

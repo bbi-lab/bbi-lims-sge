@@ -36,7 +36,7 @@ const model = ref([
                     { label: 'HA products', items: [
                         { label: 'HA PCR products', to: '/sge/ha-pcr-products' },
                         { label: 'HA pUC19 PCR products', to: '/sge/ha-puc-19-pcr-products' },
-                        { label: 'HA pUC19 Gibson products', to: '/sge/ha-puc19-gibson-products' },
+                        { label: 'HA pUC19 Gibson products', to: '/sge/ha-puc-19-gibson-products' },
                     ]},
                     { label: 'Primers', items: [
                         { label: 'Amplification primers', to: '/sge/amplification-primers' },
