@@ -16,7 +16,7 @@ ALTER TABLE "wellables" ADD CONSTRAINT "wellable_table_name" CHECK ("wellables".
       'ha_pcr_products',
       'ha_puc19_pcr_products',
       'ha_puc19_gibson_products',
-      'ha_puc19_plasmids',
+      'ha_puc19_plasmids'
     ));-->statement-breakpoint
 
 CREATE OR REPLACE TRIGGER "homology_arm_puc19_primers_wellables_insert"
