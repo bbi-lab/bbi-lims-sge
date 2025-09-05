@@ -692,6 +692,13 @@ const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
+    many: {
+        haPuc19GibsonProducts: {
+            table: haPuc19GibsonProducts,
+            schema: createSelectSchema(haPuc19GibsonProducts),
+            fields: [haPuc19GibsonProducts.haPuc19PcrProductId],
+        },
+    }
 }
 export const haPuc19PcrProductsRelations = relationsConfigToRelations(haPuc19PcrProducts, haPuc19PcrProductsRelationsConfig)
 

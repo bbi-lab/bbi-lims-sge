@@ -7,6 +7,7 @@ import _ from 'lodash'
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 const route = useRoute()
+const {user} = useUserSession()
 
 const tableKey = ref<string>(uuidv4())
 const whereClauses = ref()
@@ -29,8 +30,8 @@ const columnDefs = {
         header: 'HA Cloning Experiment',
         type: 'element',
         element: (data: any) => {
-            const href = data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.id ? `/sge/ha-cloning-experiments?id=${data.haPcrProduct.haCloningExperiment.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haPcrProduct?.haCloningExperiment?.name}</a>` : null
+            const href = data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.id ? `/sge/ha-cloning-experiments?id=${data.haPuc19PcrProduct.haPcrProduct.haCloningExperiment.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.name}</a>` : null
         },
         exportValue: (data: any) => {
             return _.get(data, 'haPuc19PcrProduct.haPcrProduct.haCloningExperiment.name', '')
@@ -38,6 +39,22 @@ const columnDefs = {
         index: 1,
     },
     haPuc19PcrProductId: { display: false },
+    puc19VectorConcentration: {
+        header: 'pUC19 Vector Conc. (ng/µL)',
+        index: 2,
+    },
+    puc19VectorAmount: {
+        header: 'pUC19 Vector Amount (ng)',
+        index: 3,
+    },
+    quant: {
+        header: 'Quant (ng/µL)',
+        index: 4,
+    },
+    preppedBy: {
+        path: 'preppedBy.name',
+    }
+
 }
 const fieldDefs: FieldDefinitions = {
     name: {
@@ -55,9 +72,6 @@ const fieldDefs: FieldDefinitions = {
         },
         index: 1,
     },
-    wtHap1DnaConcentration: {
-        label: 'WT HAP1 DNA Concentration (ng/µL)',
-    },
     preppedBy: {
         component: 'AutoCompleter',
         props: {
@@ -67,6 +81,16 @@ const fieldDefs: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         }
+    },
+    puc19VectorConcentration: {
+        label: 'pUC19 Vector Concentration (ng/µL)',
+    },
+    puc19VectorAmount: {
+        label: 'pUC19 Vector Amount (ng)',
+        subtext: 'Vector Size (bp): 2649',
+    },
+    quant: {
+        label: 'Quant (ng/µL)',
     },
 }
 const displayWithClause = {
@@ -132,8 +156,12 @@ const displayWithClause = {
                 tableName="ha-puc-19-gibson-products"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{haCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
+                :values="{
+                    preppedOn: new Date(),
+                    preppedBy: _.get(user, 'id'),
+                    puc19VectorAmount: 50,
+                }"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
