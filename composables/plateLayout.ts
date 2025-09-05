@@ -414,6 +414,7 @@ export const usePlateLayout = () => {
         plateWithPlateDiagramWells,
         setPlateId,
         loadPlate,
+        reloadPlate,
 
         // well specs
         wellSpecs,

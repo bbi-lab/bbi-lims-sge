@@ -78,8 +78,6 @@ const columnDefs: ColumnDefinitions = {
     },
 }
 
-const homologyArmPrimerSequence = ref<string>('')
-
 const fieldDefs: FieldDefinitions = {
     homologyArmPrimerId: {
         label: 'Homology Arm Primer',
@@ -104,7 +102,6 @@ const fieldDefs: FieldDefinitions = {
                     } else {
                         const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
                         record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
-                        homologyArmPrimerSequence.value = haPrimer.sequence
                         if (haPrimer.sequenceType == 'forward') {
                             record.sequence = `GTTTTCCCAGTCACGACGTTGTAAAACGACGGCCAGT${haPrimer.sequence}`
                         } else if (haPrimer.sequenceType == 'reverse') {

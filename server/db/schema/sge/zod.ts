@@ -192,7 +192,7 @@ const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {se
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
 const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers)
-const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
+const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true}).partial()
 const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
 
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
