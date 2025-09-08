@@ -12,6 +12,7 @@ const {user} = useUserSession()
 const tableKey = ref<string>(uuidv4())
 const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
+const showCalcsInfo = ref(false)
 
 watch(() => route.query, async (newValue, oldValue) => {
     const queryParamFilters = _.map(newValue, (val, key) => {
@@ -30,15 +31,20 @@ const columnDefs = {
         header: 'HA Cloning Experiment',
         type: 'element',
         element: (data: any) => {
-            const href = data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.id ? `/sge/ha-cloning-experiments?id=${data.haPuc19PcrProduct.haPcrProduct.haCloningExperiment.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haPuc19PcrProduct?.haPcrProduct?.haCloningExperiment?.name}</a>` : null
+            const href = data.haCloningExperimentId ? `/sge/ha-cloning-experiments?id=${data.haCloningExperimentId}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haCloningExperimentName}</a>` : null
         },
         exportValue: (data: any) => {
-            return _.get(data, 'haPuc19PcrProduct.haPcrProduct.haCloningExperiment.name', '')
+            return _.get(data, 'haCloningExperimentId', '')
         },
         index: 1,
     },
+    haCloningExperimentId: { display: false },
+    haCloningExperimentName: { display: false },
     haPuc19PcrProductId: { display: false },
+    haPuc19PcrProductName: { display: false },
+    haPcrProductId: { display: false },
+    haPcrProductName: { display: false },
     puc19VectorConcentration: {
         header: 'pUC19 Vector Conc. (ng/µL)',
         index: 2,
@@ -51,10 +57,47 @@ const columnDefs = {
         header: 'Quant (ng/µL)',
         index: 4,
     },
-    preppedBy: {
-        path: 'preppedBy.name',
-    }
-
+    haPcrProductLength: {
+        header: 'Insert DNA Length (bp)',
+        index: 5,
+        bodyClass: 'italic font-bold',
+    },
+    insertDnaMass: {
+        header: 'Insert DNA - 2:1 (ng)',
+        index: 6,
+        format: (data: any) => _.round(data.insertDnaMass, 1),
+        path: 'insertDnaMass.displayValue',
+        bodyClass: 'italic font-bold',
+    },
+    insertVolumeRounded: {
+        header: 'Insert volume (µL)',
+        index: 6,
+        format: (data: any) => _.round(data.insertVolume, 1),
+        path: 'insertVolumeRounded.displayValue',
+        bodyClass: 'italic font-bold',
+    },
+    vectorVolumeRounded: {
+        header: 'Vector volume (µL)',
+        index: 7,
+        format: (data: any) => _.round(data.vectorVolume, 1),
+        path: 'vectorVolumeRounded.displayValue',
+        bodyClass: 'italic font-bold',
+    },
+    vectorVolume: { display: false },
+    insertVolume: { display: false },
+    vectorPlusInsertVolume: {
+        header: 'Insert + Vector Volume (µL)',
+        index: 7,
+        format: (data: any) => {
+            if (data.vectorVolume && data.insertVolume) {
+                const totalVolume = data.vectorVolume + data.insertVolume
+                return _.round(totalVolume, 1)
+            }
+            return null
+        },
+        path: 'vectorPlusInsertVolume.displayValue',
+        bodyClass: 'italic font-bold',
+    },
 }
 const fieldDefs: FieldDefinitions = {
     name: {
@@ -100,10 +143,6 @@ const displayWithClause = {
     haPuc19PcrProduct: {
         with: {
             haPcrProduct: {
-                columns: {
-                    id: true,
-                    name: true
-                },
                 with: {
                     haCloningExperiment: {
                         columns: {id: true, name: true},
@@ -137,7 +176,7 @@ const displayWithClause = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="ha-puc-19-gibson-products"
+                tableName="view-ha-puc-19-gibson-products-with-calcs"
                 schemaName="select"
                 title="HA pUC19 Gibson products"
                 :columnDefs="columnDefs"
@@ -148,7 +187,16 @@ const displayWithClause = {
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
-            />
+            >
+                <template #header-buttons>
+                    <Button
+                        icon="pi pi-info-circle"
+                        severity="info"
+                        label="Calcs"
+                        @click="showCalcsInfo = true"
+                    />
+                </template>
+            </QuickTable>
         </SplitterPanel>
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
@@ -188,4 +236,27 @@ const displayWithClause = {
             />
         </SplitterPanel>
     </Splitter>
+    <Dialog
+        v-model:visible="showCalcsInfo"
+        header="HA pUC19 Gibson product calculations"
+        :modal="true"
+        :closable="true"
+        :style="{width: '50vw'}"
+    >
+        <template #closebutton>
+            <Button icon="pi pi-times" class="p-button-text" severity="secondary" @click="showCalcsInfo = false" />
+        </template>
+        <div class="mb-4">
+            The following calculations are used for HA pUC19 Gibson products:
+        </div>
+        <ul class="list-disc list-inside mb-4">
+            <li>Insert DNA length = HA PCR product stop position - HA PCR product start position + 1</li>
+            <li>Insert DNA mass (ng) = Insert length (bp) / pUC19 Vector length (bp) * Vector amount (ng) * 2 </li>
+            <li>Insert volume (µL) = Insert DNA mass (ng) / Quant (ng/µL)</li>
+            <li>Vector volume (µL) = pUC19 Vector amount (ng) / pUC19 Vector Concentration (ng/µL)</li>
+            <li>Total volume (µL) = Insert volume (µL) + Vector volume (µL)</li>
+        </ul>
+        <div>Precise values are used for calculations, and rounded to 1 decimal place for display.</div>
+        <div>For reference, the pUC19 vector length is <i><b>2649</b></i> bp.</div>
+    </Dialog>
 </template>

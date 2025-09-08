@@ -45,6 +45,23 @@ const columnDefs = {
         path: 'haPrimers.displayValue',
         index: 2,
     },
+    startPosition: {
+        index: 3,
+    },
+    stopPosition: {
+        index: 4,
+    },
+    length: {
+        header: 'Length (bp)',
+        format: (data: any) => {
+            if (data.startPosition && data.stopPosition) {
+                return Math.abs(data.stopPosition - data.startPosition) + 1
+            }
+            return null
+        },
+        path: 'length.displayValue',
+        index: 5,
+    },
     haCloningExperimentId: { display: false },
     haPrimerForwardId: { display: false },
     haPrimerReverseId: { display: false },
