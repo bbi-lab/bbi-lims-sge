@@ -440,62 +440,64 @@ function getLabel(key: string) {
                     </div>
                 </template>
                 <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
-                    <div class="flex items-start quickform-input-wrapper">
-                        <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button v-if="(_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount'])" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
-                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
-                            <template #icon>
-                                <GrommetIconsRevert />
-                            </template>
-                        </Button>
-                        </div>
-                    <div class="group">
-                        <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} sets of values`}}</span>
-                        <span v-else-if="_.isEmpty(combinedRecord[key].val)" class="pl-3">No values</span>
+                    <div :id="key">
+                        <div class="flex items-start quickform-input-wrapper">
+                            <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
+                            <Button v-if="(_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount'])" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
+                            <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
+                                <template #icon>
+                                    <GrommetIconsRevert />
+                                </template>
+                            </Button>
+                            </div>
+                        <div class="group">
+                            <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} sets of values`}}</span>
+                            <span v-else-if="_.isEmpty(combinedRecord[key].val)" class="pl-3">No values</span>
 
-                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
-                    </div>
+                            <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
+                        </div>
 
-                    <!-- Iterate over array items -->
-                    <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
-                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
-                            <InputArray
-                                v-model="combinedRecord[key].val[arrayIndex]"
-                                v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
-                                :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
-                                @did-click-delete="combinedRecord[key].val.splice(arrayIndex, 1)"
-                            />
-                        </div>
-                        <!-- Check that all array item properties are covered by JSON schema -->
-                        <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
-                            <template v-for="itemKey in Object.keys(arrayItem)" >
-                                <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                    <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
-                                </span>
-                                <!-- don't display UUID fields, values should not change -->
-                                <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                    <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" />
-                                </span>
-                            </template>
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
-                        </div>
-                        <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <div class="flex items-start quickform-input-wrapper">
-                                <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" />
+                        <!-- Iterate over array items -->
+                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
+                            <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
+                                <InputArray
+                                    v-model="combinedRecord[key].val[arrayIndex]"
+                                    v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
+                                    :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
+                                    :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
+                                    @did-click-delete="combinedRecord[key].val.splice(arrayIndex, 1)"
+                                />
+                            </div>
+                            <!-- Check that all array item properties are covered by JSON schema -->
+                            <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                                <template v-for="itemKey in Object.keys(arrayItem)" >
+                                    <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
+                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                    </span>
+                                    <!-- don't display UUID fields, values should not change -->
+                                    <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
+                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" />
+                                    </span>
+                                </template>
                                 <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                             </div>
-                        </div>
-                        <div class="mt-2" v-else-if="val.items.type=='integer'">
-                            <div class="flex items-start quickform-input-wrapper">
-                                <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                            <div class="mt-2" v-else-if="val.items.type=='string'">
+                                <div class="flex items-start quickform-input-wrapper">
+                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" />
+                                    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                </div>
                             </div>
+                            <div class="mt-2" v-else-if="val.items.type=='integer'">
+                                <div class="flex items-start quickform-input-wrapper">
+                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
+                                    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                </div>
+                            </div>
+                            <!-- Array properties not covered by JSON schema -->
+                            <template v-else=>
+                                <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
+                            </template>
                         </div>
-                        <!-- Array properties not covered by JSON schema -->
-                        <template v-else=>
-                            <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
-                        </template>
                     </div>
                 </template>
                 <template v-else>
