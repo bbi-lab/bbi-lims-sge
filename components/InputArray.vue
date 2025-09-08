@@ -38,7 +38,8 @@ onMounted(() => {
                 <br>
                 <Checkbox
                     v-model="modelValue![c.variableField]"
-                    :binary="true" />
+                    :binary="true"
+                    :disabled="disabled" />
             </span>
 
             <IftaLabel v-else class="mr-2 mb-2">
@@ -62,6 +63,6 @@ onMounted(() => {
                 </label>
             </IftaLabel>
         </template>
-        <Button v-if="props.canDelete" class="mb-2 ml-2 mt-auto mb-auto h-fit" icon="pi pi-times" severity="danger" size="small" outlined @click="didClickDelete" />
+        <Button v-if="!disabled && props.canDelete" class="mb-2 ml-2 mt-auto mb-auto h-fit" icon="pi pi-times" severity="danger" size="small" outlined @click="didClickDelete" />
     </div>
 </template>

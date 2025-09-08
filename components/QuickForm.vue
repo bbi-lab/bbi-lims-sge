@@ -230,6 +230,12 @@ async function saveRecord() {
 function isReadOnly(key: string) {
     return props.readOnly ? true : _.has(props.readonlyValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
+function isArrayInputDisabled(key: string, arrayIndex: number) {
+    console.log(props)
+    // check if array item has id property and is explicitly null, if so it's a new/unsaved value and can be edited regardless of canUpdate being false
+    const nullArrayItemId = _.get(record.value, [key, arrayIndex, 'id']) === null
+    return isReadOnly(key) || isReadOnly(`${key}.*`) || (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && !nullArrayItemId)
+}
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
@@ -361,14 +367,14 @@ function isReadOnly(key: string) {
                 <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <div :id="key">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
+                        <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && !recordId)" icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                         <!-- Iterate over array items -->
                         <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]">
                             <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
                                 <InputArray
                                     v-model="record[key][arrayIndex]"
                                     v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                    :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
+                                    :disabled="isArrayInputDisabled(key, arrayIndex)"
                                     :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
                                     @did-click-delete="record[key].splice(arrayIndex, 1)"
                                 />
@@ -377,25 +383,25 @@ function isReadOnly(key: string) {
                             <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                                 <template v-for="itemKey in Object.keys(arrayItem)" >
                                     <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                     </span>
                                     <!-- don't display UUID fields, values should not change -->
                                     <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" />
+                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
                                     </span>
                                 </template>
                                 <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='string'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" />
-                                    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
+                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='integer'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                                    <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex)" :showButtons="!isArrayInputDisabled(key, arrayIndex)" :minFractionDigits="0" :maxFractionDigits="0" />
+                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <!-- Array properties not covered by JSON schema -->
