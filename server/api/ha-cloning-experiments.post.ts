@@ -3,7 +3,6 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { parsePutPostError } from '../utils/restApi'
 import { haCloningExperiments, haCloningExperimentTargets } from '../db/schema/sge/plasmid-experiment'
-import { haPcrProducts } from '../db/schema/sge/oligos'
 
 export default defineEventHandler(async (event) => {
     try {
@@ -46,19 +45,9 @@ export default defineEventHandler(async (event) => {
                 })
             }
 
-            // add PCR product with same name as experiment
-            const newHaPcrProducts = await tx.insert(haPcrProducts).values({
-                name: newHaCloningExperiments[0].name,
-                haCloningExperimentId: newHaCloningExperiments[0].id,
-            }).returning({
-                id: haPcrProducts.id,
-                name: haPcrProducts.name,
-                haCloningExperimentId: haPcrProducts.haCloningExperimentId,
-            })
             return {
                 ...newHaCloningExperiments[0],
                 haCloningExperimentTargets: newHaCloningExperimentTargets,
-                haPcrProducts: newHaPcrProducts,
             }
         })
         return [result]
