@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
 import { externalSamples } from './external-samples'
 
 // tables
@@ -217,8 +217,10 @@ const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
-const selectViewSequencingRunAllSamples = createSelectSchema(viewSequencingRunAllSamples)
+const selectViewSequencingRunAllSamplesSchema = createSelectSchema(viewSequencingRunAllSamples)
+const selectViewHaPuc19GibsonProductsWithCalcsSchema = createSelectSchema(viewHaPuc19GibsonProductsWithCalcs)
 
+// export all schemas
 export const schemas = {
     // tables
     projects: {
@@ -420,6 +422,9 @@ export const schemas = {
         select: selectViewPlatesWithWellCountsSchema,
     },
     viewSequencingRunAllSamples: {
-        select: selectViewSequencingRunAllSamples
-    }
+        select: selectViewSequencingRunAllSamplesSchema
+    },
+    viewHaPuc19GibsonProductsWithCalcs: {
+        select: selectViewHaPuc19GibsonProductsWithCalcsSchema
+    },
 }

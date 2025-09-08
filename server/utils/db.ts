@@ -25,7 +25,7 @@ import {ZodObject} from 'zod'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples, viewSequencingRunAllSamples } from '../db/schema/sge/sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from '../db/schema/sge/oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, viewHaPuc19GibsonProductsWithCalcs } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
@@ -88,6 +88,7 @@ export const schema = {
   //views
   viewPlatesWithWellCounts,
   viewSequencingRunAllSamples,
+  viewHaPuc19GibsonProductsWithCalcs,
 
   // relations
   usersRelations,
