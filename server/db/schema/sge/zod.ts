@@ -74,8 +74,12 @@ const insertSgRnaCloningExperimentsSchema = selectSgRnaCloningExperimentsSchema.
 const updateSgRnaCloningExperimentsSchema = insertSgRnaCloningExperimentsSchema
 
 const selectHaCloningExperimentsSchema = createSelectSchema(haCloningExperiments, {startedOn: nullableDateSchema})
-const insertHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true})
-const updateHaCloningExperimentsSchema = insertHaCloningExperimentsSchema
+const insertHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true}).merge(
+    z.object({
+        haCloningExperimentTargets: z.object({ targetId: z.string() }).array().nonempty("Target(s) required"),
+    }
+))
+const updateHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true})
 
 const selectHaPcrProductsSchema = createSelectSchema(haPcrProducts, {performedOn: nullableDateSchema})
 const insertHaPcrProductsSchema = selectHaPcrProductsSchema.omit({id: true})
