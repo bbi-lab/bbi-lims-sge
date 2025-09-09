@@ -720,8 +720,46 @@ const haPuc19GibsonProductsRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
+    many: {
+        haPuc19Plasmids: {
+            table: haPuc19Plasmids,
+            schema: createSelectSchema(haPuc19Plasmids),
+            fields: [haPuc19Plasmids.haPuc19GibsonProductId],
+        },
+    }
 }
 export const haPuc19GibsonProductsRelations = relationsConfigToRelations(haPuc19GibsonProducts, haPuc19GibsonProductsRelationsConfig)
+
+const haPuc19PlasmidsRelationsConfig: RelationsConfig = {
+    one: {
+        preppedBy: {
+            fields: [haPuc19Plasmids.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        colonyPickedBy: {
+            fields: [haPuc19Plasmids.colonyPickedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        transformedBy: {
+            fields: [haPuc19Plasmids.transformedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPuc19GibsonProduct: {
+            fields: [haPuc19Plasmids.haPuc19GibsonProductId],
+            referenceTable: haPuc19GibsonProducts,
+            references: [haPuc19GibsonProducts.id],
+        },
+        wellable: {
+            fields: [haPuc19Plasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const haPuc19PlasmidsRelations = relationsConfigToRelations(haPuc19Plasmids, haPuc19PlasmidsRelationsConfig)
 
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{

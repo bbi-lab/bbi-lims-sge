@@ -14,7 +14,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { sgRnaPlasmids, snvLibPlasmids } from './plasmid'
+import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
@@ -92,6 +92,10 @@ const updateHaPuc19PcrProductsSchema = insertHaPuc19PcrProductsSchema
 const selectHaPuc19GibsonProductsSchema = createSelectSchema(haPuc19GibsonProducts, {preppedOn: nullableDateSchema})
 const insertHaPuc19GibsonProductsSchema = selectHaPuc19GibsonProductsSchema.omit({id: true})
 const updateHaPuc19GibsonProductsSchema = insertHaPuc19GibsonProductsSchema
+
+const selectHaPuc19PlasmidsSchema = createSelectSchema(haPuc19Plasmids, {transformedOn: nullableDateSchema, colonyPickedOn: nullableDateSchema, preppedOn: nullableDateSchema})
+const insertHaPuc19PlasmidsSchema = selectHaPuc19PlasmidsSchema.omit({id: true})
+const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
 
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {transformedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
@@ -290,6 +294,11 @@ export const schemas = {
         select: selectHaPuc19GibsonProductsSchema,
         insert: insertHaPuc19GibsonProductsSchema,
         update: updateHaPuc19GibsonProductsSchema,
+    },
+    haPuc19Plasmids: {
+        select: selectHaPuc19PlasmidsSchema,
+        insert: insertHaPuc19PlasmidsSchema,
+        update: updateHaPuc19PlasmidsSchema,
     },
     snvLibCloningExperiments: {
         select: selectSnvLibCloningExperimentsSchema,

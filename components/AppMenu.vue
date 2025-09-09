@@ -25,7 +25,7 @@ const model = ref([
                 items: [
                     { label: 'sgRNA', to: '/sge/sg-rna-plasmids' },
                     { label: 'SNV Library' },
-                    { label: 'Homology arm' },
+                    { label: 'HA pUC19', to: '/sge/ha-puc-19-plasmids' },
                 ]
             },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },

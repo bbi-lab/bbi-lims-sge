@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import _, { drop } from 'lodash'
+import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -128,7 +128,7 @@ const columnDefs = {
             const haPuc19GibsonProduct = _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0')
             const href = haPuc19GibsonProduct?.id ? `/sge/ha-puc-19-gibson-products?id=${haPuc19GibsonProduct?.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">${haPuc19GibsonProduct.name}</a>` :
-                 _.get(data, 'haPcrProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
+                 _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
         },
         elementClick: (data: any) => {
             if (_.isEmpty(_.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts'))) {
@@ -150,6 +150,37 @@ const columnDefs = {
         },
         exportValue: (x: any) => {
             return _.get(x, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.name')
+        },
+    },
+    haPuc19Plasmids: {
+        header: 'HA pUC19 Plasmid',
+        type: 'element',
+        element: (data: any) => {
+            const haPuc19Plasmid = _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.haPuc19Plasmids.0')
+            const href = haPuc19Plasmid?.id ? `/sge/ha-puc-19-plasmids?id=${haPuc19Plasmid?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${haPuc19Plasmid.name}</a>` :
+                 _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.id') ? '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>' : null
+        },
+        elementClick: (data: any) => {
+            if (_.isEmpty(_.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.haPuc19Plasmids'))) {
+                addFormReadOnlyValues.value = {
+                    name: `${_.get(data, 'haPcrProducts.0.name')}_pUC19_plasmid`,
+                    haPuc19GibsonProductId: _.get(data, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.id'),
+                }
+                addFormValues.value = {
+                    transformedOn: new Date(),
+                    transformedBy: _.get(user.value, 'id'),
+                    eColiStellarVolume: 20,
+                }
+                addFormTableName.value = 'ha-puc-19-plasmids'
+                addFormHeader.value = 'Add HA pUC19 Plasmid'
+                addFormFieldDefs.value = haPuc19PlasmidFieldDefinitions
+                updateCurrentHaCloningExperiment(data)
+                showAddDialog.value = true
+            }
+        },
+        exportValue: (x: any) => {
+            return _.get(x, 'haPcrProducts.0.haPuc19PcrProducts.0.haPuc19GibsonProducts.0.haPuc19Plasmids.0.name')
         },
     }
 }
@@ -200,10 +231,14 @@ const withClause = {
         with: {
             haPuc19PcrProducts: {
                 with: {
-                    haPuc19GibsonProducts: true,
+                    haPuc19GibsonProducts: {
+                        with: {
+                            haPuc19Plasmids: true,
+                        },
+                    },
                 },
             },
-        }
+        },
     },
 }
 const haPcrProductFieldDefinitions: FieldDefinitions = {
@@ -357,6 +392,70 @@ const haPuc19GibsonProductFieldDefinitions: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+}
+const haPuc19PlasmidFieldDefinitions: FieldDefinitions = {
+    haPuc19GibsonProductId: {
+        label: 'HA pUC19 Gibson Product',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/ha-puc-19-gibson-products`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+        events: {
+            change: async (record: any, recordOld: any) => {
+                // auto-calculate name if homologyArmPrimerId changes
+                if (record?.haPuc19GibsonProductId != recordOld?.haPuc19GibsonProductId) {
+                    if (!record?.haPuc19GibsonProductId) {
+                        record.name = ''
+                        record.sequence = ''
+                    } else {
+                        const haPuc19GibsonProduct = await RecordService.getRecord(`${config.public.apiBase}/ha-puc-19-gibson-products`, record.haPuc19GibsonProductId as string, {})
+                        record.name = _.replace(haPuc19GibsonProduct.name, /_gibson$/gi , '_plasmid')
+                    }
+                }
+            },
+        },
+    },
+    eColiStellarVolume: {
+        label: 'E. coli Stellar Volume (µL)',
+        props: {
+            defaultValue: 20,
+        }
+    },
+    transformedBy: {
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
+    preppedBy: {
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
+    },
+    colonyPickedBy: {
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        }
     },
 }
 </script>
