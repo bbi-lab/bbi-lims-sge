@@ -198,7 +198,7 @@ const columnDefs = {
     cycleId: { display: false },
     targets: { display: false },
     pcrExperimentId: { display: false},
-    snvLibCloningExperimentId: { display: false },
+    // snvLibCloningExperimentId: { display: false },
     sgRnaCloningExperimentId: { display: false },
     sizeX: { display: false },
     sizeY: { display: false },

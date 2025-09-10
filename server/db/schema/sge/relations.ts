@@ -289,11 +289,11 @@ const platesRelationsConfig: RelationsConfig = {
             referenceTable: sgRnaCloningExperiments,
             references: [sgRnaCloningExperiments.id],
         },
-        snvLibCloningExperiment: {
-            fields: [plates.snvLibCloningExperimentId],
-            referenceTable: snvLibCloningExperiments,
-            references: [snvLibCloningExperiments.id],
-        },
+        // snvLibCloningExperiment: {
+        //     fields: [plates.snvLibCloningExperimentId],
+        //     referenceTable: snvLibCloningExperiments,
+        //     references: [snvLibCloningExperiments.id],
+        // },
     },
     many: {
         wells: {
@@ -763,24 +763,24 @@ export const haPuc19PlasmidsRelations = relationsConfigToRelations(haPuc19Plasmi
 
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
-        technician: {
-            fields: [snvLibCloningExperiments.technician],
-            referenceTable: users,
-            references: [users.id],
+        target: {
+            fields: [snvLibCloningExperiments.targetId],
+            referenceTable: targets,
+            references: [targets.id],
         },
     },
-    many: {
-        snvLibPlasmids: {
-            table: snvLibPlasmids,
-            schema: createSelectSchema(snvLibPlasmids),
-            fields: [snvLibPlasmids.snvLibCloningExperimentId],
-        },
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.snvLibCloningExperimentId],
-        },
-    }
+    // many: {
+    //     snvLibPlasmids: {
+    //         table: snvLibPlasmids,
+    //         schema: createSelectSchema(snvLibPlasmids),
+    //         fields: [snvLibPlasmids.snvLibCloningExperimentId],
+    //     },
+    //     plates: {
+    //         table: plates,
+    //         schema: createSelectSchema(plates),
+    //         fields: [plates.snvLibCloningExperimentId],
+    //     },
+    // }
 }
 export const snvLibCloningExperimentsRelations = relationsConfigToRelations(snvLibCloningExperiments, snvLibCloningExperimentsRelationsConfig)
 

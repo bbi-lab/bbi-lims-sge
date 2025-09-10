@@ -138,16 +138,16 @@ const columnDefs = {
         path: 'target.displayValue',
         index: 1,
     },
-    snvLibCloningExperimentId: {
-        display: false,
-    },
-    snvLibCloningExperiment: {
-        header: 'SNV-lib Cloning Experiment',
-        format: (x: any) => {
-            return x.snvLibCloningExperiment ? x.snvLibCloningExperiment.name : ''
-        },
-        path: 'snvLibCloningExperiment.displayValue',
-    },
+    // snvLibCloningExperimentId: {
+    //     display: false,
+    // },
+    // snvLibCloningExperiment: {
+    //     header: 'SNV-lib Cloning Experiment',
+    //     format: (x: any) => {
+    //         return x.snvLibCloningExperiment ? x.snvLibCloningExperiment.name : ''
+    //     },
+    //     path: 'snvLibCloningExperiment.displayValue',
+    // },
 }
 const rowActions = {
     assign: {

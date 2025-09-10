@@ -225,7 +225,7 @@ const columnDefs = computed(() => {
             cycleId: { display: false },
             pcrExperimentId: { display: false },
             sgRnaCloningExperimentId: { display: false },
-            snvLibCloningExperimentId: { display: false },
+            // snvLibCloningExperimentId: { display: false },
             sizeX: { display: false },
             sizeY: { display: false },
             wellsCount: { display: false },

@@ -97,7 +97,7 @@ const selectHaPuc19PlasmidsSchema = createSelectSchema(haPuc19Plasmids, {transfo
 const insertHaPuc19PlasmidsSchema = selectHaPuc19PlasmidsSchema.omit({id: true})
 const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
 
-const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {transformedOn: nullableDateSchema})
+const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
 const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
 

@@ -226,7 +226,7 @@ const transferSelectedWellsContents = async () => {
 
 const plateTableColumnDefs = {
     plateType: { display: false },
-    snvLibCloningExperimentId: { display: false },
+    // snvLibCloningExperimentId: { display: false },
     sgRnaCloningExperimentId: { display: false },
     plateTypeLabel: { header: 'Type' },
     cycleName: { display: false },
