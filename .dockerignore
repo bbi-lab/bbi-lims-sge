@@ -3,5 +3,8 @@
 /.output
 /node_modules
 
+.env
+.env.*
+
 .gitignore
 README.md

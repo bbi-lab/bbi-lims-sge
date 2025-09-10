@@ -1,7 +1,7 @@
-diff --git a/node_modules/.pnpm/drizzle-orm@0.44.5_@types+pg@8.11.11_gel@2.0.1_pg@8.14.1/node_modules/drizzle-orm/pg-core/dialect.js b/node_modules/.pnpm/drizzle-orm@0.44.5_@types+pg@8.11.11_gel@2.0.1_pg@8.14.1/node_modules/drizzle-orm/pg-core/dialect.js
-index d7985c8..43a1e62 100644
---- a/node_modules/.pnpm/drizzle-orm@0.44.5_@types+pg@8.11.11_gel@2.0.1_pg@8.14.1/node_modules/drizzle-orm/pg-core/dialect.js
-+++ b/node_modules/.pnpm/drizzle-orm@0.44.5_@types+pg@8.11.11_gel@2.0.1_pg@8.14.1/node_modules/drizzle-orm/pg-core/dialect.js
+diff --git a/pg-core/dialect.js b/pg-core/dialect.js
+index 74a16c9e86fe3a89ced32af44af0a72f1cf43cf6..8912807675b7c07a92af304907fc10111ba4d4d4 100644
+--- a/pg-core/dialect.js
++++ b/pg-core/dialect.js
 @@ -1006,7 +1006,9 @@ class PgDialect {
          const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
          const relationTableName = getTableUniqueName(relation.referencedTable);

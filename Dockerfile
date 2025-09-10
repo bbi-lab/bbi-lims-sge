@@ -11,6 +11,9 @@ FROM base AS build
 
 COPY --link package.json package.json .
 COPY --link pnpm-lock.yaml pnpm-lock.yaml .
+COPY --link pnpm-workspace.yaml pnpm-workspace.yaml .
+COPY patches ./patches/
+
 RUN npm install -g pnpm
 RUN pnpm install --frozen-lockfile
 
