@@ -3,7 +3,6 @@
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
-import { haPuc19GibsonProducts } from '~/server/db/schema/sge/oligos'
 import { RecordService } from '~/utils/service/RecordService'
 
 const config = useRuntimeConfig()
