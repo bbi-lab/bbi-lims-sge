@@ -35,7 +35,7 @@ const columnDefs = {
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.haCloningExperimentName}</a>` : null
         },
         exportValue: (data: any) => {
-            return _.get(data, 'haCloningExperimentId', '')
+            return _.get(data, 'haCloningExperimentName', '')
         },
         index: 1,
     },
@@ -66,6 +66,9 @@ const columnDefs = {
         header: 'Insert DNA - 2:1 (ng)',
         index: 6,
         format: (data: any) => _.round(data.insertDnaMass, 1),
+        exportValue: (data: any) => {
+            return _.get(data, 'insertDnaMass')
+        },
         path: 'insertDnaMass.displayValue',
         bodyClass: 'italic font-bold',
     },
@@ -73,6 +76,9 @@ const columnDefs = {
         header: 'Insert volume (µL)',
         index: 6,
         format: (data: any) => _.round(data.insertVolume, 1),
+        exportValue: (data: any) => {
+            return _.get(data, 'insertVolume')
+        },
         path: 'insertVolumeRounded.displayValue',
         bodyClass: 'italic font-bold',
     },
@@ -80,6 +86,9 @@ const columnDefs = {
         header: 'Vector volume (µL)',
         index: 7,
         format: (data: any) => _.round(data.vectorVolume, 1),
+        exportValue: (data: any) => {
+            return _.get(data, 'vectorVolume')
+        },
         path: 'vectorVolumeRounded.displayValue',
         bodyClass: 'italic font-bold',
     },
@@ -92,6 +101,12 @@ const columnDefs = {
             if (data.vectorVolume && data.insertVolume) {
                 const totalVolume = data.vectorVolume + data.insertVolume
                 return _.round(totalVolume, 1)
+            }
+            return null
+        },
+        exportValue: (data: any) => {
+            if (data.vectorVolume && data.insertVolume) {
+                return data.vectorVolume + data.insertVolume
             }
             return null
         },
@@ -136,40 +151,6 @@ const fieldDefs: FieldDefinitions = {
         label: 'Quant (ng/µL)',
     },
 }
-const displayWithClause = {
-    preppedBy: {
-        columns: {id: true, name: true},
-    },
-    haPuc19PcrProduct: {
-        with: {
-            haPcrProduct: {
-                with: {
-                    haCloningExperiment: {
-                        columns: {id: true, name: true},
-                    },
-                },
-            }
-        }
-    },
-    wellable: {
-        with: {
-            wellContents: {
-                columns: {id: true, name: true},
-                with: {
-                    well: {
-                        columns: {id: true, name: true},
-                        with: {
-                            plate: {
-                                columns: {id: true, name: true},
-                            }
-                        }
-                    }
-                }
-            },
-        }
-    },
-}
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -180,7 +161,6 @@ const displayWithClause = {
                 schemaName="select"
                 title="HA pUC19 Gibson products"
                 :columnDefs="columnDefs"
-                :withClause="displayWithClause"
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
