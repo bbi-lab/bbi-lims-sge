@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { usePlateLayout } from '#imports'
 import _ from 'lodash'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'

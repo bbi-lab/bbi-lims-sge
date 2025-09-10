@@ -2,7 +2,6 @@
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { read as readXlsx, utils as XlsxUtils } from 'xlsx'
-import { usePlateLayout } from '~/composables/plateLayout'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
