@@ -1,7 +1,9 @@
 export const useCrudTable = () => {
     const state = reactive({
         editingRecordId: null as string | null,
+        editingRecord: null as any,
         editingMultipleRecordsIds: [] as string[],
+        editingMultipleRecords: [] as any[],
         showEditForm: false,
         showAddForm: false,
         showMultipleEditForm: false,
@@ -14,6 +16,9 @@ export const useCrudTable = () => {
 
     const didClickRecordEdit = (event: any) => {
         state.editingRecordId = event.id
+        state.editingRecord = event
+        state.editingMultipleRecordsIds = []
+        state.editingMultipleRecords = []
         state.showEditForm = true
         state.showAddForm = false
     }
@@ -44,6 +49,9 @@ export const useCrudTable = () => {
     }
     const didClickMultipleRecordEdit = (records: any[]) => {
         state.editingMultipleRecordsIds = records.map((record: any) => record.id)
+        state.editingMultipleRecords = records
+        state.editingRecordId = null
+        state.editingRecord = null
         state.showMultipleEditForm = true
         state.showEditForm = false
         state.showAddForm = false
