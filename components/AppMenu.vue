@@ -54,7 +54,7 @@ const model = ref([
                 items: [
                     { label: 'sgRNA Cloning', to: '/sge/sg-rna-cloning-experiments' },
                     { label: 'HA Cloning', to: '/sge/ha-cloning-experiments' },
-                    { label: 'SNV Library Cloning' },
+                    { label: 'SNV Library Cloning', to: '/sge/snv-lib-cloning-experiments' },
                     { label: 'Transfection', to: '/sge/transfect-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },
                     { label: 'PCR', to: '/sge/pcr-experiments' },

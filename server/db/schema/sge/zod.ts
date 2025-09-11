@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
 import { externalSamples } from './external-samples'
 
 // tables
@@ -100,6 +100,14 @@ const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
 const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
+
+const selectSnvLibAmpProductsSchema = createSelectSchema(snvLibAmpProducts, {cleanedOn: nullableDateSchema})
+const insertSnvLibAmpProductsSchema = selectSnvLibAmpProductsSchema.omit({id: true})
+const updateSnvLibAmpProductsSchema = insertSnvLibAmpProductsSchema
+
+const selectSnvLibLinProductsSchema = createSelectSchema(snvLibLinProducts, {dpn1DigestOn: nullableDateSchema, gelExtractedOn: nullableDateSchema})
+const insertSnvLibLinProductsSchema = selectSnvLibLinProductsSchema.omit({id: true})
+const updateSnvLibLinProductsSchema = insertSnvLibLinProductsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
@@ -304,6 +312,16 @@ export const schemas = {
         select: selectSnvLibCloningExperimentsSchema,
         insert: insertSnvLibCloningExperimentsSchema,
         update: updateSnvLibCloningExperimentsSchema,
+    },
+    snvLibAmpProducts: {
+        select: selectSnvLibAmpProductsSchema,
+        insert: insertSnvLibAmpProductsSchema,
+        update: updateSnvLibAmpProductsSchema,
+    },
+    snvLibLinProducts: {
+        select: selectSnvLibLinProductsSchema,
+        insert: insertSnvLibLinProductsSchema,
+        update: updateSnvLibLinProductsSchema,
     },
     pcrExperiments: {
         select: selectPcrExperimentsSchema,

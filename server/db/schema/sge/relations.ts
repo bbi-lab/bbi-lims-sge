@@ -18,7 +18,7 @@ import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
@@ -769,20 +769,87 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             references: [targets.id],
         },
     },
-    // many: {
-    //     snvLibPlasmids: {
-    //         table: snvLibPlasmids,
-    //         schema: createSelectSchema(snvLibPlasmids),
-    //         fields: [snvLibPlasmids.snvLibCloningExperimentId],
-    //     },
-    //     plates: {
-    //         table: plates,
-    //         schema: createSelectSchema(plates),
-    //         fields: [plates.snvLibCloningExperimentId],
-    //     },
-    // }
+    many: {
+        snvLibAmpProducts: {
+            table: snvLibAmpProducts,
+            schema: createSelectSchema(snvLibAmpProducts),
+            fields: [snvLibAmpProducts.snvLibCloningExperimentId],
+        },
+        snvLibLinProducts: {
+            table: snvLibLinProducts,
+            schema: createSelectSchema(snvLibLinProducts),
+            fields: [snvLibLinProducts.snvLibCloningExperimentId],
+        },
+    },
 }
 export const snvLibCloningExperimentsRelations = relationsConfigToRelations(snvLibCloningExperiments, snvLibCloningExperimentsRelationsConfig)
+
+const snvLibAmpProductsRelationsConfig: RelationsConfig = {
+    one: {
+        cleanedBy: {
+            fields: [snvLibAmpProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibAmpProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id],
+        },
+        ampPrimerForward: {
+            fields: [snvLibAmpProducts.ampPrimerForwardId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        ampPrimerReverse: {
+            fields: [snvLibAmpProducts.ampPrimerReverseId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        twistLot: {
+            fields: [snvLibAmpProducts.twistLotId],
+            referenceTable: lots,
+            references: [lots.id],
+        },
+    },
+}
+export const snvLibAmpProductsRelations = relationsConfigToRelations(snvLibAmpProducts, snvLibAmpProductsRelationsConfig)
+
+const snvLibLinProductsRelationsConfig: RelationsConfig = {
+    one: {
+        dpn1DigestBy: {
+            fields: [snvLibLinProducts.dpn1DigestBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        gelExtractedBy: {
+            fields: [snvLibLinProducts.gelExtractedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibLinProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id],
+        },
+        linPrimerForward: {
+            fields: [snvLibLinProducts.linPrimerForwardId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        linPrimerReverse: {
+            fields: [snvLibLinProducts.linPrimerReverseId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        haPuc19Plasmid: {
+            fields: [snvLibLinProducts.haPuc19PlasmidId],
+            referenceTable: haPuc19Plasmids,
+            references: [haPuc19Plasmids.id],
+        },
+    },
+}
+export const snvLibLinProductsRelations = relationsConfigToRelations(snvLibLinProducts, snvLibLinProductsRelationsConfig)
 
 const extractionExperimentsRelationsConfig: RelationsConfig = {
     one:{
@@ -1137,6 +1204,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
     haCloningExperiments: haCloningExperimentsRelationsConfig,
     snvLibCloningExperiments: snvLibCloningExperimentsRelationsConfig,
+    snvLibAmpProducts: snvLibAmpProductsRelationsConfig,
+    snvLibLinProducts: snvLibLinProductsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
     transfectLotUsageRelations: transfectLotUsageRelationsConfig,
