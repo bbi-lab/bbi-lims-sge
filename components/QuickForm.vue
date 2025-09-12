@@ -231,7 +231,6 @@ function isReadOnly(key: string) {
     return props.readOnly ? true : _.has(props.readonlyValues, key) || _.get(props.fieldDefs, [key, 'readOnly'], false)
 }
 function isArrayInputDisabled(key: string, arrayIndex: number) {
-    console.log(props)
     // check if array item has id property and is explicitly null, if so it's a new/unsaved value and can be edited regardless of canUpdate being false
     const nullArrayItemId = _.get(record.value, [key, arrayIndex, 'id']) === null
     return isReadOnly(key) || isReadOnly(`${key}.*`) || (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && !nullArrayItemId)
@@ -253,7 +252,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -262,7 +261,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                     <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -271,7 +270,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                     <Select
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -280,7 +279,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) "
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -417,6 +416,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         v-model="record[key]"
                         class="w-80"
                         :disabled="isReadOnly(key)"
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">

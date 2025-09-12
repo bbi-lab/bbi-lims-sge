@@ -514,6 +514,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                             :class="`w-80 ${inputClasses[key]}`"
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
+                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                             v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(combinedRecord, [key, 'conflictingValueCount']) || !_.isEmpty(combinedRecord[key].val))"
