@@ -2,6 +2,7 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
+import { RecordService } from '~/utils/service/RecordService'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
@@ -194,6 +195,21 @@ const hideAddDialog = () => {
 }
 
 const fieldDefs: FieldDefinitions = {
+    name: {
+        props: {
+            defaultValue: '_HA',
+            onFocus: async (event: any) => {
+                if (_.endsWith(event.target?._value, '_HA')) {
+                    if (event.target.setSelectionRange) {
+                        setTimeout(() => {
+                            const pos = event.target._value.length - 3
+                             event.target.setSelectionRange(pos, pos)
+                        }, 0)
+                    }
+                }
+            },
+        },
+    },
     haPcrProducts: { display: false },
     'haCloningExperimentTargets.*': {
         label: 'Targets',

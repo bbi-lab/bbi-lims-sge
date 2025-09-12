@@ -77,7 +77,7 @@ const columnDefs: ColumnDefinitions = {
         elementClick: (data: any) => {
             if (_.isEmpty(data.snvLibAmpProducts)) {
                 addFormReadOnlyValues.value = {
-                    name: `${data?.name}_AMP`,
+                    name: _.replace(data.name, /_SNVlib$/gi , '_AMP'),
                     snvLibCloningExperimentId: _.get(data, 'id'),
                 }
                 addFormValues.value = {
@@ -106,7 +106,7 @@ const columnDefs: ColumnDefinitions = {
         elementClick: (data: any) => {
             if (_.isEmpty(data.snvLibLinProducts)) {
                 addFormReadOnlyValues.value = {
-                    name: `${data?.name}_LIN`,
+                    name: _.replace(data.name, /_SNVlib$/gi , '_LIN'),
                     snvLibCloningExperimentId: _.get(data, 'id'),
                 }
                 addFormValues.value = {
@@ -135,6 +135,21 @@ const hideAddDialog = () => {
 }
 
 const fieldDefs: FieldDefinitions = {
+    name: {
+        props: {
+            defaultValue: '_SNVlib',
+            onFocus: async (event: any) => {
+                if (_.endsWith(event.target?._value, '_SNVlib')) {
+                    if (event.target.setSelectionRange) {
+                        setTimeout(() => {
+                            const pos = event.target._value.length - 7
+                            event.target.setSelectionRange(pos, pos)
+                        }, 0)
+                    }
+                }
+            },
+        },
+    },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
