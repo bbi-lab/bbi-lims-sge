@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
 import { externalSamples } from './external-samples'
 
 // tables
@@ -108,6 +108,10 @@ const updateSnvLibAmpProductsSchema = insertSnvLibAmpProductsSchema
 const selectSnvLibLinProductsSchema = createSelectSchema(snvLibLinProducts, {dpn1DigestOn: nullableDateSchema, gelExtractedOn: nullableDateSchema})
 const insertSnvLibLinProductsSchema = selectSnvLibLinProductsSchema.omit({id: true})
 const updateSnvLibLinProductsSchema = insertSnvLibLinProductsSchema
+
+const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts, {gibsonOn: nullableDateSchema, cleanedOn: nullableDateSchema, transformedOn: nullableDateSchema, preppedOn: nullableDateSchema})
+const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
+const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})

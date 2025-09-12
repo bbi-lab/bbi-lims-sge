@@ -876,6 +876,13 @@
       "when": 1757700899150,
       "tag": "0124_curvy_spitfire",
       "breakpoints": true
+    },
+    {
+      "idx": 125,
+      "version": "7",
+      "when": 1757708917063,
+      "tag": "0125_hot_makkari",
+      "breakpoints": true
     }
   ]
 }

@@ -18,7 +18,7 @@ import { reagents } from './reagents'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
@@ -780,6 +780,11 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(snvLibLinProducts),
             fields: [snvLibLinProducts.snvLibCloningExperimentId],
         },
+        snvLibGibsonProducts: {
+            table: snvLibGibsonProducts,
+            schema: createSelectSchema(snvLibGibsonProducts),
+            fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
+        },
     },
 }
 export const snvLibCloningExperimentsRelations = relationsConfigToRelations(snvLibCloningExperiments, snvLibCloningExperimentsRelationsConfig)
@@ -850,6 +855,37 @@ const snvLibLinProductsRelationsConfig: RelationsConfig = {
     },
 }
 export const snvLibLinProductsRelations = relationsConfigToRelations(snvLibLinProducts, snvLibLinProductsRelationsConfig)
+
+const snvLibGibsonProductsRelationsConfig: RelationsConfig = {
+    one: {
+        gibsonBy: {
+            fields: [snvLibGibsonProducts.gibsonBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        cleanedBy: {
+            fields: [snvLibGibsonProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        transformedBy: {
+            fields: [snvLibGibsonProducts.transformedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        preppedBy: {
+            fields: [snvLibGibsonProducts.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id]
+        },
+    },
+}
+export const snvLibGibsonProductsRelations = relationsConfigToRelations(snvLibGibsonProducts, snvLibGibsonProductsRelationsConfig)
 
 const extractionExperimentsRelationsConfig: RelationsConfig = {
     one:{

@@ -107,7 +107,9 @@ export const snvLibGibsonProducts = pgTable('snv_lib_gibson_products', {
     passedQc: boolean('passed_qc').default(false),
     benchlingLink: text('benchling_link'),
     notes: text('notes'),
-})
+}, (table) => [
+  check("benchling_link_check", sql`${table.benchlingLink} ~* '^https?://.+$'`),
+])
 
 export const viewHaPuc19GibsonProductsWithCalcs = pgView('view_ha_puc19_gibson_products_with_calcs', {
     id: uuid('id'),
