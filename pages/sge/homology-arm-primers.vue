@@ -78,7 +78,7 @@ const fieldDefs: FieldDefinitions = {
         label: 'Targets',
         component: 'InputArray',
         canDelete: false,
-        canUpdate: false,
+        canUpdate: true,
         props: {
             components: [
                 {
