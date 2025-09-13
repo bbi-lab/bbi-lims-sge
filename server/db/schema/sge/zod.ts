@@ -327,6 +327,11 @@ export const schemas = {
         insert: insertSnvLibLinProductsSchema,
         update: updateSnvLibLinProductsSchema,
     },
+    snvLibGibsonProducts: {
+        select: selectSnvLibGibsonProductsSchema,
+        insert: insertSnvLibGibsonProductsSchema,
+        update: updateSnvLibGibsonProductsSchema,
+    },
     pcrExperiments: {
         select: selectPcrExperimentsSchema,
         insert: insertPcrExperimentsSchema,

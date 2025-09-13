@@ -3,6 +3,7 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { snvLibGibsonProducts } from '~/server/db/schema/sge/oligos'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
@@ -124,6 +125,35 @@ const columnDefs: ColumnDefinitions = {
             return _.get(x, 'snvLibLinProducts.0.name')
         },
     },
+    snvLibGibsonProducts: {
+        header: 'Gibson Product',
+        type: 'element',
+        element: (data: any) => {
+            const gibsonProduct = _.get(data, 'snvLibGibsonProducts.0')
+            const href = gibsonProduct?.id ? `/sge/snv-lib-gibson-products?id=${gibsonProduct?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${gibsonProduct.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+        },
+        elementClick: (data: any) => {
+            if (_.isEmpty(data.snvLibGibsonProducts)) {
+                addFormReadOnlyValues.value = {
+                    name: `${data.name}_Gibson`,
+                    snvLibCloningExperimentId: _.get(data, 'id'),
+                }
+                addFormValues.value = {
+                    gibsonBy: _.get(user, 'value.id'),
+                    gibsonOn: new Date(),
+                }
+                addFormTableName.value = 'snv-lib-gibson-products'
+                addFormHeader.value = 'Add Gibson Product'
+                addFormFieldDefs.value = gibsonProductFieldDefinitions
+                updateCurrentSnvLibCloningExperiment(data)
+                showAddDialog.value = true
+            }
+        },
+        exportValue: (x: any) => {
+            return _.get(x, 'snvLibGibsonProducts.0.name')
+        },
+    },
 }
 const didAddChildRecord = () => {
     crudTable.tableRef.value.addOrRefreshRecordIds([currentSnvLibCloningExperimentId.value])
@@ -168,6 +198,7 @@ const withClause = {
     target: true,
     snvLibAmpProducts: true,
     snvLibLinProducts: true,
+    snvLibGibsonProducts: true,
 }
 const ampProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
@@ -348,6 +379,33 @@ const linProductFieldDefinitions: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+}
+const gibsonProductFieldDefinitions: FieldDefinitions = {
+    name: { index: 0 },
+    snvLibCloningExperimentId: {
+        label: 'SNV Library Cloning Experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    snvLibLinProductId: {
+        label: 'SNVlib LIN Product',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-lin-products`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 2,
     },
 }
 </script>
