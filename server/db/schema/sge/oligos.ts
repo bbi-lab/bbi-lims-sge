@@ -177,3 +177,114 @@ FROM ${haPuc19GibsonProducts}
     ) AS t_ha_pcr_products ON t_ha_pcr_products.id = ${haPuc19PcrProducts.haPcrProductId}
     JOIN ${haCloningExperiments} ON ${haCloningExperiments.id} = t_ha_pcr_products.ha_cloning_experiment_id
     JOIN ${users} ON ${users.id} = ${haPuc19GibsonProducts.preppedBy}`)
+
+export const snvLibGibsonProductsView = pgView('snv_lib_gibson_products_view', {
+    id: uuid('id'),
+    name: varchar('name', { length: 255 }),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id'),
+    snvLibCloningExperimentName: varchar('snv_lib_cloning_experiment_name', { length: 255 }),
+    ampProductId: uuid('amp_product_id'),
+    ampProductName: varchar('amp_product_name', { length: 255 }),
+    ampProductSize: integer('amp_product_size'),
+    ampProductConcentration: doublePrecision('amp_product_concentration'),
+    linProductId: uuid('lin_product_id'),
+    linProductName: varchar('lin_product_name', { length: 255 }),
+    linProductConcentration: doublePrecision('lin_product_concentration'),
+    linProductSize: integer('lin_product_size'),
+    ampProductVectorAmount: doublePrecision('amp_product_vector_amount'),
+    linProductVectorAmount: doublePrecision('lin_product_vector_amount'),
+    gibsonOn: timestamp('gibson_on'),
+    gibsonByName: varchar('gibson_by_name', { length: 255 }),
+    cleanedOn: timestamp('cleaned_on'),
+    cleanedByName: varchar('cleaned_by_name', { length: 255 }),
+    transformedOn: timestamp('transformed_on'),
+    transformedByName: varchar('transformed_by_name', { length: 255 }),
+    preppedOn: timestamp('prepped_on'),
+    preppedByName: varchar('prepped_by_name', { length: 255 }),
+    quant: doublePrecision('quant'),
+    plasmidsaurusChecked: boolean('plasmidsaurus_checked'),
+    ngsChecked: boolean('ngs_checked'),
+    passedQc: boolean('passed_qc'),
+    benchlingLink: text('benchling_link'),
+    notes: text('notes'),
+    ampVolume: doublePrecision('amp_volume'),
+    linVolume: doublePrecision('lin_volume'),
+    totalVolume: doublePrecision('total_volume'),
+}).as(sql`SELECT
+    *,
+	amp_volume,
+	lin_volume,
+	CASE
+		WHEN amp_volume IS NOT NULL AND lin_volume IS NOT NULL
+		THEN amp_volume + lin_volume
+		ELSE NULL
+	END AS total_volume
+FROM (
+	SELECT *,
+	CASE
+		WHEN amp_product_vector_amount IS NOT NULL AND amp_product_concentration != 0
+		THEN amp_product_vector_amount / amp_product_concentration
+		ELSE NULL
+	END AS amp_volume,
+	CASE
+		WHEN lin_product_vector_amount IS NOT NULL AND lin_product_concentration != 0
+		THEN lin_product_vector_amount / lin_product_concentration
+		ELSE NULL
+	END AS lin_volume
+FROM (
+	SELECT
+	${snvLibGibsonProducts}.*,
+	${snvLibCloningExperiments.name} AS snv_lib_cloning_experiment_name,
+	amp_products.id AS amp_product_id,
+	amp_products.name AS amp_product_name,
+	amp_products.amp_product_size AS amp_product_size,
+	amp_products.quant AS amp_product_concentration,
+	lin_products.id AS lin_product_id,
+	lin_products.name AS lin_product_name,
+	lin_products.quant AS lin_product_concentration,
+	lin_products.ha_pcr_product_size AS ha_pcr_product_size,
+	CASE
+		WHEN lin_products.ha_pcr_product_size IS NOT NULL AND amp_products.amp_product_size IS NOT NULL
+	 	THEN lin_products.ha_pcr_product_size - amp_products.amp_product_size + 2649
+	 	ELSE NULL
+	END AS lin_product_size,
+	CASE
+		WHEN lin_products.ha_pcr_product_size IS NOT NULL AND amp_products.amp_product_size IS NOT NULL
+		AND amp_products.amp_product_size IS NOT NULL AND snv_lib_gibson_products.lin_product_vector_amount IS NOT NULL
+		AND amp_products.amp_product_size - lin_products.ha_pcr_product_size != 2649
+		THEN 7.0 * amp_products.amp_product_size / (lin_products.ha_pcr_product_size - amp_products.amp_product_size + 2649) * snv_lib_gibson_products.lin_product_vector_amount
+		ELSE NULL
+	END AS amp_product_vector_amount
+FROM ${snvLibGibsonProducts}
+JOIN ${snvLibCloningExperiments} ON ${snvLibCloningExperiments.id} = ${snvLibGibsonProducts.snvLibCloningExperimentId}
+LEFT JOIN
+	(SELECT ${snvLibLinProducts.id} AS id,
+		${snvLibLinProducts.name} AS name,
+		${snvLibLinProducts.snvLibCloningExperimentId} AS snv_lib_cloning_experiment_id,
+		${snvLibLinProducts.quant} AS quant,
+		CASE
+			 WHEN ${haPcrProducts.startPosition} IS NOT NULL AND ${haPcrProducts.stopPosition} IS NOT NULL
+			 THEN
+			 	${haPcrProducts.stopPosition} - ${haPcrProducts.startPosition} + 1
+			 ELSE NULL
+		END AS ha_pcr_product_size
+		FROM ${snvLibLinProducts}
+			LEFT JOIN ${haPuc19Plasmids} ON ${haPuc19Plasmids.id} = ${snvLibLinProducts.haPuc19PlasmidId}
+			LEFT JOIN ${haPuc19GibsonProducts} ON ${haPuc19Plasmids.haPuc19GibsonProductId} = ${haPuc19GibsonProducts.id}
+			LEFT JOIN ${haPuc19PcrProducts} ON ${haPuc19GibsonProducts.haPuc19PcrProductId} = ${haPuc19PcrProducts.id}
+			LEFT JOIN ${haPcrProducts} ON ${haPuc19PcrProducts.haPcrProductId} = ${haPcrProducts.id}
+	) lin_products ON lin_products.snv_lib_cloning_experiment_id = ${snvLibGibsonProducts.snvLibCloningExperimentId}
+LEFT JOIN (
+	SELECT
+        ${snvLibAmpProducts.id} AS id,
+		${snvLibAmpProducts.name} AS name,
+		${snvLibAmpProducts.snvLibCloningExperimentId} AS snv_lib_cloning_experiment_id,
+		${snvLibAmpProducts.quant} AS quant,
+		CASE
+			 WHEN ${snvLibAmpProducts.startPosition} IS NOT NULL AND ${snvLibAmpProducts.stopPosition} IS NOT NULL
+			 THEN ${snvLibAmpProducts.stopPosition} - ${snvLibAmpProducts.startPosition} + 1
+			 ELSE NULL
+		END AS amp_product_size
+	FROM ${snvLibAmpProducts}
+    ) amp_products ON amp_products.snv_lib_cloning_experiment_id = ${snvLibGibsonProducts.snvLibCloningExperimentId}
+) t2 ) t3`)
