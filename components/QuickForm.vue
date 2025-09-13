@@ -366,7 +366,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                 <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
                     <div :id="key">
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && !recordId)" icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
+                        <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && (_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) || !recordId)" icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                         <!-- Iterate over array items -->
                         <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]">
                             <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
