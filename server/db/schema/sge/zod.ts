@@ -8,7 +8,7 @@ import { transfectExperiments, transfectLotUsage, transfectTargets } from './tra
 import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
-import { plates, viewPlatesWithWellCounts } from './plate'
+import { plates } from './plate'
 import { pellets } from './pellet'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
@@ -18,9 +18,10 @@ import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
-import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples, viewSequencingRunAllSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts, viewHaPuc19GibsonProductsWithCalcs } from './oligos'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -239,6 +240,7 @@ const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
 const selectViewSequencingRunAllSamplesSchema = createSelectSchema(viewSequencingRunAllSamples)
 const selectViewHaPuc19GibsonProductsWithCalcsSchema = createSelectSchema(viewHaPuc19GibsonProductsWithCalcs)
+const selectViewSnvLibGibsonProductsSchema = createSelectSchema(viewSnvLibGibsonProducts)
 
 // export all schemas
 export const schemas = {
@@ -466,5 +468,8 @@ export const schemas = {
     },
     viewHaPuc19GibsonProductsWithCalcs: {
         select: selectViewHaPuc19GibsonProductsWithCalcsSchema
+    },
+    viewSnvLibGibsonProducts: {
+        select: selectViewSnvLibGibsonProductsSchema
     },
 }
