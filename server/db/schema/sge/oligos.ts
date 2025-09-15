@@ -61,7 +61,7 @@ export const haPuc19GibsonProducts = pgTable('ha_puc19_gibson_products', {
 export const snvLibAmpProducts = pgTable('snv_lib_amp_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).unique(),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
     twistLotId: uuid('twist_lot_id').references(() => lots.id),
     ampPrimerForwardId: uuid('amp_primer_forward_id').references(() => amplificationPrimers.id).notNull(),
     ampPrimerReverseId: uuid('amp_primer_reverse_id').references(() => amplificationPrimers.id).notNull(),
@@ -76,7 +76,7 @@ export const snvLibAmpProducts = pgTable('snv_lib_amp_products', {
 export const snvLibLinProducts = pgTable('snv_lib_lin_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).unique(),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
     haPuc19PlasmidId: uuid('ha_puc19_plasmid_id').references(() => haPuc19Plasmids.id).notNull(),
     linPrimerForwardId: uuid('lin_primer_forward_id').references(() => linearizationPrimers.id).notNull(),
     linPrimerReverseId: uuid('lin_primer_reverse_id').references(() => linearizationPrimers.id).notNull(),
@@ -91,7 +91,7 @@ export const snvLibLinProducts = pgTable('snv_lib_lin_products', {
 export const snvLibGibsonProducts = pgTable('snv_lib_gibson_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
-    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).unique(),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
     linProductVectorAmount: doublePrecision('lin_product_vector_amount').default(50),
     gibsonOn: timestamp('gibson_on'),
     gibsonBy: uuid('gibson_by').references(() => users.id),

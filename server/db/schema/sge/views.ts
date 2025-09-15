@@ -78,7 +78,7 @@ FROM ${haPuc19GibsonProducts}
         FROM  ${haPcrProducts}
     ) AS t_ha_pcr_products ON t_ha_pcr_products.id = ${haPuc19PcrProducts.haPcrProductId}
     JOIN ${haCloningExperiments} ON ${haCloningExperiments.id} = t_ha_pcr_products.ha_cloning_experiment_id
-    JOIN ${users} ON ${users.id} = ${haPuc19GibsonProducts.preppedBy}`)
+    LEFT JOIN ${users} ON ${users.id} = ${haPuc19GibsonProducts.preppedBy}`)
 
 export const viewSnvLibGibsonProducts = pgView('view_snv_lib_gibson_products', {
     id: uuid('id'),
@@ -143,6 +143,10 @@ FROM (
 	lin_products.name AS lin_product_name,
 	lin_products.quant AS lin_product_concentration,
 	lin_products.ha_pcr_product_size AS ha_pcr_product_size,
+    gibson_by_user.name AS gibson_by_name,
+    cleaned_by_user.name AS cleaned_by_name,
+    transformed_by_user.name AS transformed_by_name,
+    prepped_by_user.name AS prepped_by_name,
 	CASE
 		WHEN lin_products.ha_pcr_product_size IS NOT NULL AND amp_products.amp_product_size IS NOT NULL
 	 	THEN lin_products.ha_pcr_product_size - amp_products.amp_product_size + 2649
@@ -157,6 +161,10 @@ FROM (
 	END AS amp_product_vector_amount
 FROM ${snvLibGibsonProducts}
 JOIN ${snvLibCloningExperiments} ON ${snvLibCloningExperiments.id} = ${snvLibGibsonProducts.snvLibCloningExperimentId}
+LEFT JOIN ${users} AS prepped_by_user ON prepped_by_user.id = ${snvLibGibsonProducts.preppedBy}
+LEFT JOIN ${users} AS transformed_by_user ON transformed_by_user.id = ${snvLibGibsonProducts.transformedBy}
+LEFT JOIN ${users} AS cleaned_by_user ON cleaned_by_user.id = ${snvLibGibsonProducts.cleanedBy}
+LEFT JOIN ${users} AS gibson_by_user ON gibson_by_user.id = ${snvLibGibsonProducts.gibsonBy}
 LEFT JOIN
 	(SELECT ${snvLibLinProducts.id} AS id,
 		${snvLibLinProducts.name} AS name,
