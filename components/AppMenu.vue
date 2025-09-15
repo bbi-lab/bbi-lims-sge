@@ -38,6 +38,11 @@ const model = ref([
                         { label: 'HA pUC19 PCR products', to: '/sge/ha-puc-19-pcr-products' },
                         { label: 'HA pUC19 Gibson products', to: '/sge/ha-puc-19-gibson-products' },
                     ]},
+                    { label: 'SNVlib products', items: [
+                        { label: 'SNVlib AMP products', to: '/sge/snv-lib-amp-products' },
+                        { label: 'SNVlib LIN products', to: '/sge/snv-lib-lin-products' },
+                        { label: 'SNVlib Gibson products', to: '/sge/snv-lib-gibson-products' },
+                    ]},
                     { label: 'Primers', items: [
                         { label: 'Amplification primers', to: '/sge/amplification-primers' },
                         { label: 'Linearization primers', to: '/sge/linearization-primers' },
