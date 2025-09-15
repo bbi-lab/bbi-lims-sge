@@ -34,7 +34,8 @@ const refreshFormattedValues = (ids?: string[]) => {
     for (const [k, v] of _.entries(formattedColumnDefs)) {
         const rows = ids ? _.filter(records.value, (x: any) => ids.includes(x.id)) : records.value
         for (const r of rows) {
-            _.set(r, [k, 'displayValue'], v.format(r))
+            // setting displayValue to preserve original while also replacing primative-type values with objects to include originalValue
+            _.isObject(r[k]) ? _.set(r, [k, 'displayValue'], v.format(r)) : _.set(r, k, {originalValue: r[k], displayValue: v.format(r)})
         }
     }
 }
