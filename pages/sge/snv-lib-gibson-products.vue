@@ -41,80 +41,141 @@ const columnDefs = {
     },
     snvLibCloningExperimentId: { display: false },
     snvLibCloningExperimentName: { display: false },
-    linProductAmount: {
-        header: 'LIN Product Amount (ng)',
+    ampProductId: { display: false },
+    linProductId: { display: false },
+    linProductVectorAmount: {
+        header: 'LIN Product Vector Amount (ng)',
         index: 3,
     },
     quant: {
         header: 'Quant (ng/µL)',
         index: 4,
     },
-    // haPcrProductLength: {
-    //     header: 'Insert DNA Length (bp)',
-    //     index: 5,
-    //     bodyClass: 'italic font-bold',
-    // },
-    // insertDnaMass: {
-    //     header: 'Insert DNA - 2:1 (ng)',
-    //     index: 6,
-    //     format: (data: any) => _.round(data.insertDnaMass, 1),
-    //     exportValue: (data: any) => {
-    //         return _.get(data, 'insertDnaMass')
-    //     },
-    //     path: 'insertDnaMass.displayValue',
-    //     bodyClass: 'italic font-bold',
-    // },
-    // insertVolumeRounded: {
-    //     header: 'Insert volume (µL)',
-    //     index: 6,
-    //     format: (data: any) => _.round(data.insertVolume, 1),
-    //     exportValue: (data: any) => {
-    //         return _.get(data, 'insertVolume')
-    //     },
-    //     path: 'insertVolumeRounded.displayValue',
-    //     bodyClass: 'italic font-bold',
-    // },
-    // vectorVolumeRounded: {
-    //     header: 'Vector volume (µL)',
-    //     index: 7,
-    //     format: (data: any) => _.round(data.vectorVolume, 1),
-    //     exportValue: (data: any) => {
-    //         return _.get(data, 'vectorVolume')
-    //     },
-    //     path: 'vectorVolumeRounded.displayValue',
-    //     bodyClass: 'italic font-bold',
-    // },
-    // vectorVolume: { display: false },
-    // insertVolume: { display: false },
-    // vectorPlusInsertVolume: {
-    //     header: 'Insert + Vector Volume (µL)',
-    //     index: 7,
-    //     format: (data: any) => {
-    //         if (data.vectorVolume && data.insertVolume) {
-    //             const totalVolume = data.vectorVolume + data.insertVolume
-    //             return _.round(totalVolume, 1)
-    //         }
-    //         return null
-    //     },
-    //     exportValue: (data: any) => {
-    //         if (data.vectorVolume && data.insertVolume) {
-    //             return data.vectorVolume + data.insertVolume
-    //         }
-    //         return null
-    //     },
-    //     path: 'vectorPlusInsertVolume.displayValue',
-    //     bodyClass: 'italic font-bold',
-    // },
+    gibsonOn: {
+        index: 5,
+    },
+    gibsonByName: {
+        header: 'Gibson By',
+        index: 6,
+    },
+    cleanedOn: {
+        index: 7,
+    },
+    cleanedByName: {
+        header: 'Cleaned By',
+        index: 8,
+    },
+    transformedOn: {
+        index: 9,
+    },
+    transformedByName: {
+        header: 'Transformed By',
+        index: 10,
+    },
+    preppedOn: {
+        index: 11,
+    },
+    preppedByName: {
+        header: 'Prepped By',
+        index: 12,
+    },
+    plasmidsaurusChecked: {
+        header: 'Plasmidsaurus Checked',
+        index: 13,
+    },
+    ngsChecked: {
+        header: 'NGS Checked',
+        index: 14,
+    },
+    passedQc: {
+        header: 'Passed QC',
+        index: 15,
+    },
+    benchlingLink: {
+        format: 'hyperlink',
+        index: 16,
+    },
+    notes: {
+        index: 17,
+    },
+    ampProductName: {
+        header: 'AMP Product Name',
+        bodyClass: 'italic font-bold',
+    },
+    ampProductSize: {
+        header: 'AMP Product Size (bp)',
+        bodyClass: 'italic font-bold',
+    },
+    ampProductConcentration: {
+        header: 'AMP Product Conc. (ng/µL)',
+        bodyClass: 'italic font-bold',
+    },
+    linProductName: {
+        header: 'LIN Product Name',
+        bodyClass: 'italic font-bold',
+    },
+    linProductConcentration: {
+        header: 'LIN Product Conc. (ng/µL)',
+        bodyClass: 'italic font-bold',
+    },
+    linProductSize: {
+        header: 'LIN Product Size (bp)',
+        bodyClass: 'italic font-bold',
+    },
+    ampProductVectorAmount: {
+        header: 'AMP Product Vector Amount (ng)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.ampProductVectorAmount ? _.round(data.ampProductVectorAmount, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'ampProductVectorAmount')
+        },
+        path: 'ampProductVectorAmount.displayValue',
+    },
+    ampVolume: {
+        header: 'AMP Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.ampVolume ? _.round(data.ampVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'ampVolume.originalValue')
+        },
+        path: 'ampVolume.displayValue',
+    },
+    linVolume: {
+        header: 'LIN Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.linVolume ? _.round(data.linVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'linVolume.originalValue')
+        },
+        path: 'linVolume.displayValue',
+    },
+    totalVolume: {
+        header: 'Total Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.totalVolume ? _.round(data.totalVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'totalVolume.originalValue')
+        },
+        path: 'totalVolume.displayValue',
+    },
 }
 const fieldDefs: FieldDefinitions = {
     name: {
         index: 0,
     },
-    haPuc19PcrProductId: {
-        label: 'HA pUC19 PCR Product',
+    snvLibCloningExperimentId: {
+        label: 'SNVlib Cloning Experiment',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/ha-puc-19-pcr-products`,
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
@@ -175,7 +236,7 @@ const fieldDefs: FieldDefinitions = {
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="snv-lib-gibson-products"
+                tableName="view-snv-lib-gibson-products"
                 schemaName="select"
                 title="SNVlib Gibson products"
                 :columnDefs="columnDefs"
@@ -248,13 +309,16 @@ const fieldDefs: FieldDefinitions = {
             The following calculations are used for SNVlib Gibson products:
         </div>
         <ul class="list-disc list-inside mb-4">
-            <li>Insert DNA length = HA PCR product stop position - HA PCR product start position + 1</li>
-            <li>Insert DNA mass (ng) = Insert length (bp) / pUC19 Vector length (bp) * Vector amount (ng) * 2 </li>
-            <li>Insert volume (µL) = Insert DNA mass (ng) / Quant (ng/µL)</li>
-            <li>Vector volume (µL) = pUC19 Vector amount (ng) / pUC19 Vector Concentration (ng/µL)</li>
-            <li>Total volume (µL) = Insert volume (µL) + Vector volume (µL)</li>
+            <li>AMP product size (bp) = AMP product stop position - AMP product start position + 1</li>
+            <li>LIN product size (bp) = HA PCR product size (bp) + pUC19 vector size (bp) - AMP product size (bp)</li>
+            <li>AMP product vector amount (ng) = 7 * AMP product size (bp) / LIN product size (bp) * LIN product vector amount (ng)</li>
+            <li>AMP volume (µL) = AMP product vector amount (ng) / AMP product concentration (ng/µL)</li>
+            <li>LIN volume (µL) = LIN product vector amount (ng) / LIN product concentration (ng/µL)</li>
+            <li>Total volume (µL) = AMP volume (µL) + LIN volume (µL)</li>
         </ul>
         <div>Precise values are used for calculations, and rounded to 1 decimal place for display.</div>
-        <div>For reference, the pUC19 vector length is <i><b>2649</b></i> bp.</div>
+        <div>For reference, the pUC19 vector size is <i><b>2649</b></i> bp.</div>
+        <div>AMP product concentration: AMP product quant </div>
+        <div>LIN product concentration: LIN product quant </div>
     </Dialog>
 </template>
