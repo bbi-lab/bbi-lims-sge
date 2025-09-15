@@ -67,7 +67,7 @@ const columnDefs = {
         index: 6,
         format: (data: any) => _.round(data.insertDnaMass, 1),
         exportValue: (data: any) => {
-            return _.get(data, 'insertDnaMass')
+            return _.get(data, 'insertDnaMass.originalValue')
         },
         path: 'insertDnaMass.displayValue',
         bodyClass: 'italic font-bold',
@@ -77,7 +77,7 @@ const columnDefs = {
         index: 6,
         format: (data: any) => _.round(data.insertVolume, 1),
         exportValue: (data: any) => {
-            return _.get(data, 'insertVolume')
+            return _.get(data, 'insertVolume.originalValue')
         },
         path: 'insertVolumeRounded.displayValue',
         bodyClass: 'italic font-bold',
@@ -87,7 +87,7 @@ const columnDefs = {
         index: 7,
         format: (data: any) => _.round(data.vectorVolume, 1),
         exportValue: (data: any) => {
-            return _.get(data, 'vectorVolume')
+            return _.get(data, 'vectorVolume.originalValue')
         },
         path: 'vectorVolumeRounded.displayValue',
         bodyClass: 'italic font-bold',
