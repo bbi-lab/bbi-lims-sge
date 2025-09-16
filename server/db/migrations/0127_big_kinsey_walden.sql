@@ -1,0 +1,1 @@
+ALTER TABLE "snv_lib_plasmids" ADD CONSTRAINT "snv_lib_plasmids_snv_lib_cloning_experiment_id_unique" UNIQUE("snv_lib_cloning_experiment_id");
