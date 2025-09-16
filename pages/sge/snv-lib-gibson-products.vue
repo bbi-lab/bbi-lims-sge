@@ -183,17 +183,15 @@ const fieldDefs: FieldDefinitions = {
         },
         index: 1,
     },
-    gibsonBy: {
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/users`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        }
+    linProductVectorAmount: {
+        label: 'LIN Product Vector Amount (ng)',
+        props:{
+            defaultValue: 50,
+        },
+        index: 2,
     },
-    cleanedBy: {
+    gibsonBy: {
+        label: 'Gibson By',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/users`,
@@ -201,9 +199,10 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             dropdown: true,
-        }
+        },
     },
     transformedBy: {
+        label: 'Transformed By',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/users`,
@@ -211,9 +210,21 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             dropdown: true,
-        }
+        },
+    },
+    cleanedBy: {
+        label: 'Cleaned By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
     },
     preppedBy: {
+        label: 'Prepped By',
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/users`,
@@ -221,13 +232,16 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             dropdown: true,
-        }
-    },
-    linProductAmount: {
-        label: 'LIN Product Amount (ng)',
+        },
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+    ngsChecked: {
+        label: 'NGS Checked',
+    },
+    passedQc: {
+        label: 'Passed QC',
     },
 }
 </script>

@@ -24,7 +24,7 @@ const model = ref([
             { label: 'Plasmids', icon: 'pi pi-fw pi-spinner',
                 items: [
                     { label: 'sgRNA', to: '/sge/sg-rna-plasmids' },
-                    { label: 'SNV Library' },
+                    { label: 'SNV Library', to: '/sge/snv-lib-plasmids' },
                     { label: 'HA pUC19', to: '/sge/ha-puc-19-plasmids' },
                 ]
             },

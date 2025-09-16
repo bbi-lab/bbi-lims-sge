@@ -4,6 +4,7 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { snvLibGibsonProducts } from '~/server/db/schema/sge/oligos'
+import { snvLibPlasmids } from '~/server/db/schema/sge/plasmid'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
@@ -154,6 +155,32 @@ const columnDefs: ColumnDefinitions = {
             return _.get(x, 'snvLibGibsonProducts.0.name')
         },
     },
+    snvLibPlasmids: {
+        header: 'Plasmids',
+        type: 'element',
+        element: (data: any) => {
+            const plasmid = _.get(data, 'snvLibPlasmids.0')
+            const href = plasmid?.id ? `/sge/snv-lib-plasmids?id=${plasmid?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${plasmid.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+        },
+        elementClick: (data: any) => {
+            if (_.isEmpty(data.snvLibPlasmids)) {
+                addFormReadOnlyValues.value = {
+                    name: data.name,
+                    snvLibCloningExperimentId: _.get(data, 'id'),
+                    targetId: _.get(data, 'targetId'),
+                }
+                addFormTableName.value = 'snv-lib-plasmids'
+                addFormHeader.value = 'Add SNVlib Plasmid'
+                addFormFieldDefs.value = plasmidFieldDefinitions
+                updateCurrentSnvLibCloningExperiment(data)
+                showAddDialog.value = true
+            }
+        },
+        exportValue: (x: any) => {
+            return _.get(x, 'snvLibPlasmids.0.name')
+        },
+    },
 }
 const didAddChildRecord = () => {
     crudTable.tableRef.value.addOrRefreshRecordIds([currentSnvLibCloningExperimentId.value])
@@ -193,12 +220,15 @@ const fieldDefs: FieldDefinitions = {
     },
     snvLibAmpProducts: { display: false },
     snvLibLinProducts: { display: false },
+    snvLibGibsonProducts: { display: false },
+    snvLibPlasmids: { display: false },
 }
 const withClause = {
     target: true,
     snvLibAmpProducts: true,
     snvLibLinProducts: true,
     snvLibGibsonProducts: true,
+    snvLibPlasmids: true,
 }
 const ampProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
@@ -395,17 +425,97 @@ const gibsonProductFieldDefinitions: FieldDefinitions = {
         },
         index: 1,
     },
-    snvLibLinProductId: {
-        label: 'SNVlib LIN Product',
+    linProductVectorAmount: {
+        label: 'LIN Product Vector Amount (ng)',
+        props:{
+            defaultValue: 50,
+        },
+        index: 2,
+    },
+    gibsonBy: {
+        label: 'Gibson By',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/snv-lib-lin-products`,
+            searchBaseUrl: `${config.public.apiBase}/users`,
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 2,
+    },
+    transformedBy: {
+        label: 'Transformed By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+    cleanedBy: {
+        label: 'Cleaned By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+    preppedBy: {
+        label: 'Prepped By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+    quant: {
+        label: 'Quant (ng/µL)',
+    },
+    ngsChecked: {
+        label: 'NGS Checked',
+    },
+    passedQc: {
+        label: 'Passed QC',
+    },
+}
+const plasmidFieldDefinitions: FieldDefinitions = {
+    targetId: {
+        label: 'Target',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/targets`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 0,
+    },
+    snvLibCloningExperimentId: {
+        label: 'SNV Library Cloning Experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    volume: {
+        label: 'Volume (µL)',
+    },
+    quant: {
+        label: 'Quant (ng/µL)',
     },
 }
 </script>

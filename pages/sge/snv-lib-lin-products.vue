@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
-import _, { drop } from 'lodash'
+import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 
 const config = useRuntimeConfig()
