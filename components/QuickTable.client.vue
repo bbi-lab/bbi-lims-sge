@@ -297,16 +297,16 @@ function getExportRecords() {
         for (const columnDef of _.filter(sortedColumnDefs.value, (x) => x.exportable !== false)) {
             if (_.map(visibleColumns.value, (x) => x.code).includes(columnDef.key)) {
                 if (columnDef.exportValue) {
-                    _.set(exportRecord, columnDef.key, columnDef.exportValue(record))
+                    _.set(exportRecord, [columnHeader(columnDef)], columnDef.exportValue(record))
                 } else if (_.isFunction(columnDef.format)) {
-                    _.set(exportRecord, columnDef.key, columnDef.format(record))
+                    _.set(exportRecord, [columnHeader(columnDef)], columnDef.format(record))
                 } else if (columnDef.format == 'date-time') {
-                    _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
+                    _.set(exportRecord, [columnHeader(columnDef)], formatDate(_.get(record, columnDef.path ?? columnDef.key)))
                 } else if (columnDef.type == 'array') {
                     const joined = _.join(_.get(record, columnDef.path ?? columnDef.key), ', ')
-                    _.set(exportRecord, columnDef.key, joined)
+                    _.set(exportRecord, [columnHeader(columnDef)], joined)
                 } else {
-                    _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
+                    _.set(exportRecord, [columnHeader(columnDef)], _.get(record, columnDef.path ?? columnDef.key))
                 }
             }
         }
@@ -338,7 +338,7 @@ const exportXLSX = function() {
     if (!_.isEmpty(exportRecords)) {
         rows.push(_.keys(exportRecords[0]))
     } else {
-        rows.push(_.map(sortedColumnDefs.value, (x) => x.key))
+        rows.push(_.map(_.filter(sortedColumnDefs.value, (x) => x.exportable !== false), (x) => columnHeader(x)))
     }
 
     // data rows
