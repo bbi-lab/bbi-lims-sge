@@ -69,17 +69,10 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
 export function parsePutPostError(error: any, recordType: string) {
     let data
 
-    // convert duplicate value error message to more useful data object
-    const regex = /^duplicate key value violates unique constraint "([^"]*)"/
-    const match = error.message?.match(regex)
-    if (match) {
-        const tableName = _.snakeCase(recordType)
-        let fieldName
-        // check that constraint name conforms to default `${tableName}_${fieldName}_unique` (snakecase)
-        if (match[1].startsWith(`${tableName}_`) && match[1].endsWith('_unique')) {
-            fieldName = _.camelCase(match[1].slice(tableName.length + 1, -7))
-        }
-        // TODO confirm that field name is valid for given recordType before setting data value
+    const regex = /^Key \(([^)]*)\)=\(([^)]*)\) already exists[.]$/
+    const match = error?.cause?.detail ? error.cause.detail.match(regex) : null
+    if (error?.cause?.routine == '_bt_check_unique' && match) {
+        const fieldName = match[1]
         data = fieldName ? [{
             code: 'duplicate_key_value',
             path: [fieldName],
