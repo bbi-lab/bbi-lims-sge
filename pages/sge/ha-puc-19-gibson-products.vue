@@ -72,45 +72,34 @@ const columnDefs = {
         path: 'insertDnaMass.displayValue',
         bodyClass: 'italic font-bold',
     },
-    insertVolumeRounded: {
+    insertVolume: {
         header: 'Insert volume (µL)',
         index: 6,
-        format: (data: any) => _.round(data.insertVolume, 1),
+        format: (data: any) => data.insertVolume ? _.round(data.insertVolume, 1) : null,
         exportValue: (data: any) => {
             return _.get(data, 'insertVolume.originalValue')
         },
-        path: 'insertVolumeRounded.displayValue',
+        path: 'insertVolume.displayValue',
         bodyClass: 'italic font-bold',
     },
-    vectorVolumeRounded: {
+    vectorVolume: {
         header: 'Vector volume (µL)',
         index: 7,
-        format: (data: any) => _.round(data.vectorVolume, 1),
+        format: (data: any) => data.vectorVolume ? _.round(data.vectorVolume, 1) : null,
         exportValue: (data: any) => {
             return _.get(data, 'vectorVolume.originalValue')
         },
-        path: 'vectorVolumeRounded.displayValue',
+        path: 'vectorVolume.displayValue',
         bodyClass: 'italic font-bold',
     },
-    vectorVolume: { display: false },
-    insertVolume: { display: false },
-    vectorPlusInsertVolume: {
+    totalVolume: {
         header: 'Insert + Vector Volume (µL)',
         index: 7,
-        format: (data: any) => {
-            if (data.vectorVolume && data.insertVolume) {
-                const totalVolume = data.vectorVolume + data.insertVolume
-                return _.round(totalVolume, 1)
-            }
-            return null
-        },
+        format: (data: any) => data.insertVolume ? _.round(data.totalVolume, 1) : null,
         exportValue: (data: any) => {
-            if (data.vectorVolume && data.insertVolume) {
-                return data.vectorVolume + data.insertVolume
-            }
-            return null
+            return _.get(data, 'totalVolume.originalValue')
         },
-        path: 'vectorPlusInsertVolume.displayValue',
+        path: 'totalVolume.displayValue',
         bodyClass: 'italic font-bold',
     },
 }

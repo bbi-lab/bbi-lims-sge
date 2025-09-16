@@ -31,6 +31,7 @@ export const viewHaPuc19GibsonProductsWithCalcs = pgView('view_ha_puc19_gibson_p
     insertDnaMass: doublePrecision('insert_dna_mass'),
     insertVolume: doublePrecision('insert_volume'),
     vectorVolume: doublePrecision('vector_volume'),
+    totalVolume: doublePrecision('total_volume'),
     notes: text('notes'),
 }).as(sql`SELECT
     ${haPuc19GibsonProducts.id} AS id,
@@ -62,6 +63,11 @@ export const viewHaPuc19GibsonProductsWithCalcs = pgView('view_ha_puc19_gibson_p
             THEN ${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration}
         ELSE NULL
     END AS vector_volume,
+    CASE
+        WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL AND ${haPuc19GibsonProducts.quant} IS NOT NULL AND ${haPuc19GibsonProducts.puc19VectorConcentration} IS NOT NULL
+            THEN (t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0 / ${haPuc19GibsonProducts.quant}) + (${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration})
+        ELSE NULL
+    END AS total_volume,
     ${haPuc19GibsonProducts.notes} AS notes
 FROM ${haPuc19GibsonProducts}
     JOIN ${haPuc19PcrProducts} ON ${haPuc19PcrProducts.id} = ${haPuc19GibsonProducts.haPuc19PcrProductId}
