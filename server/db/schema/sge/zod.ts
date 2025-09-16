@@ -22,6 +22,7 @@ import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } fr
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
+import { isValidUrl } from '~/utils/formUtils'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -110,7 +111,7 @@ const selectSnvLibLinProductsSchema = createSelectSchema(snvLibLinProducts, {dpn
 const insertSnvLibLinProductsSchema = selectSnvLibLinProductsSchema.omit({id: true})
 const updateSnvLibLinProductsSchema = insertSnvLibLinProductsSchema
 
-const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts, {gibsonOn: nullableDateSchema, cleanedOn: nullableDateSchema, transformedOn: nullableDateSchema, preppedOn: nullableDateSchema})
+const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts, {gibsonOn: nullableDateSchema, cleanedOn: nullableDateSchema, transformedOn: nullableDateSchema, preppedOn: nullableDateSchema, benchlingLink: z.custom<string>((val) => isValidUrl(val), { message: "Invalid URL" }).nullable()})
 const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
 const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
@@ -193,7 +194,7 @@ const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
 const selectSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids)
-const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids).omit({id: true})
+const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {externalLink: z.custom<string>((val) => isValidUrl(val), { message: "Invalid URL" }).nullable()}).omit({id: true})
 const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
 
 const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)

@@ -419,7 +419,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
-                    <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && !_.isEmpty(record[key])" :href="record[key]" target="_blank">
+                    <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && isValidUrl(record[key])" :href="record[key]" target="_blank">
                         <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
                     </a>
                 </template>
