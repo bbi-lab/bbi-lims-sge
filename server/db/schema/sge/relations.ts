@@ -785,6 +785,11 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(snvLibGibsonProducts),
             fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
         },
+        snvLibPlasmids: {
+            table: snvLibPlasmids,
+            schema: createSelectSchema(snvLibPlasmids),
+            fields: [snvLibPlasmids.snvLibCloningExperimentId],
+        },
     },
 }
 export const snvLibCloningExperimentsRelations = relationsConfigToRelations(snvLibCloningExperiments, snvLibCloningExperimentsRelationsConfig)
