@@ -32,11 +32,15 @@ const columnDefs = {
     },
     snvLibCloningExperiment: {
         header: 'SNVlib Cloning Experiment',
-        format: (data: any) => {
-            return data.wellContents?.[0]?.well.plate?.snvLibCloningExperiment?.name || ''
+        type: 'element',
+        element: (data: any) => {
+            const href = data.snvLibCloningExperiment ? `/sge/snv-lib-cloning-experiments?id=${data.snvLibCloningExperiment.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.snvLibCloningExperiment?.name}</a>` : null
         },
-        path: 'snvLibCloningExperiment.displayValue',
-        index: 2,
+        exportValue: (data: any) => {
+            return _.get(data, 'snvLibCloningExperiment.name', '')
+        },
+        index: 1,
     },
     snvLibCloningExperimentId: { display: false},
     volume: {
@@ -95,6 +99,9 @@ const displayWithClause = {
                 }
             }
         }
+    },
+    snvLibCloningExperiment: {
+        columns: {id: true, name: true},
     },
     // wellable: {
     //     with: {
