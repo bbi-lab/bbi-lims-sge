@@ -197,7 +197,7 @@ const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {externalLin
 const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
 
 const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)
-const insertSnvLibPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
+const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
 const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
 
 const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
