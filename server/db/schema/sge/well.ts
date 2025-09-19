@@ -66,7 +66,11 @@ export const wellables = pgTable('wellables', {
       'ha_pcr_products',
       'ha_puc19_pcr_products',
       'ha_puc19_gibson_products',
-      'ha_puc19_plasmids'
+      'ha_puc19_plasmids',
+      'snv_lib_amp_products',
+      'snv_lib_lin_products',
+      'snv_lib_gibson_products',
+      'snv_lib_plasmids'
     )`
   )
 ])
