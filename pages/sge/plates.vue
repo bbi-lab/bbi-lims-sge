@@ -78,14 +78,14 @@ const fieldDefs = {
         index: 1,
         component: 'Select',
         props: {
-            options: _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
-                const pattern = /preseq-|-pcr$/
+            options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
+                const pattern = /^preseq-|-pcr$/
                 if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {
                     return { label: value.label, code: key }
                 }
-            }),
+            }), 'label'),
             optionLabel: 'label',
             optionValue: 'code',
             optionDisabled: 'disabled',

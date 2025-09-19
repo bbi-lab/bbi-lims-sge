@@ -69,12 +69,12 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'PreSeq 3',
             },
             'snv-lib-preseq-2': {
-                desc: 'SNV-lib PreSeq 2',
-                label: 'SNV-lib PreSeq 2',
+                desc: 'SNVlib PreSeq 2',
+                label: 'SNVlib PreSeq 2',
             },
             'snv-lib-preseq-3': {
-                desc: 'SNV-lib PreSeq 3',
-                label: 'SNV-lib PreSeq 3',
+                desc: 'SNVlib PreSeq 3',
+                label: 'SNVlib PreSeq 3',
             },
             'seq-index': {
                 desc: 'Sequencing index plate',
@@ -91,6 +91,38 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             'external-sample-indexing': {
                 desc: 'External sample indexing',
                 label: 'External sample indexing',
+            },
+            'ha-pcr-product-storage': {
+                desc: 'HA PCR product storage',
+                label: 'HA PCR product storage',
+            },
+            'ha-puc19-pcr-product-storage': {
+                desc: 'HA pUC19 PCR product storage',
+                label: 'HA pUC19 PCR product storage',
+            },
+            'ha-puc19-gibson-product-storage': {
+                desc: 'HA pUC19 Gibson product storage',
+                label: 'HA pUC19 Gibson product storage',
+            },
+            'ha-puc19-plasmid-storage': {
+                desc: 'HA pUC19 plasmid storage',
+                label: 'HA pUC19 plasmid storage',
+            },
+            'snv-lib-amp-product-storage': {
+                desc: 'SNVlib AMP product storage',
+                label: 'SNVlib AMP product storage',
+            },
+            'snv-lib-lin-product-storage': {
+                desc: 'SNVlib LIN product storage',
+                label: 'SNVlib LIN product storage',
+            },
+            'snv-lib-gibson-product-storage': {
+                desc: 'SNVlib Gibson product storage',
+                label: 'SNVlib Gibson product storage',
+            },
+            'snv-lib-plasmid-storage': {
+                desc: 'SNVlib plasmid storage',
+                label: 'SNVlib plasmid storage',
             },
         },
     },
@@ -121,12 +153,12 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'PreSeq 3',
             },
             'snv-lib-preseq-2': {
-                desc: 'SNV-lib PreSeq 2',
-                label: 'SNV-lib PreSeq 2',
+                desc: 'SNVlib PreSeq 2',
+                label: 'SNVlib PreSeq 2',
             },
             'snv-lib-preseq-3': {
-                desc: 'SNV-lib PreSeq 3',
-                label: 'SNV-lib PreSeq 3',
+                desc: 'SNVlib PreSeq 3',
+                label: 'SNVlib PreSeq 3',
             },
         },
     },
@@ -137,8 +169,8 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'sgRNA cloning',
             },
             'snv-lib': {
-                desc: 'SNV-lib cloning',
-                label: 'SNV-lib cloning',
+                desc: 'SNVlib cloning',
+                label: 'SNVlib cloning',
             },
         },
     },

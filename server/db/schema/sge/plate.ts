@@ -27,14 +27,20 @@ export type PlateType = 'pellet-storage' |
  'seq-index' |
  'pcr1-primer-storage' |
  'pcr2-primer-storage' |
- 'external-sample-indexing'
+ 'external-sample-indexing' |
+ 'ha-pcr-product-storage' |
+ 'ha-puc19-pcr-product-storage' |
+ 'ha-puc19-gibson-product-storage' |
+ 'ha-puc19-plasmid-storage' |
+ 'snv-lib-amp-product-storage' |
+ 'snv-lib-lin-product-storage' |
+ 'snv-lib-gibson-product-storage' |
+ 'snv-lib-plasmid-storage'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
-  // plasmidExperimentId: uuid('plasmid_experiment_id').references(() => plasmidExperiments.id),
   sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
-  // snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id),
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),
