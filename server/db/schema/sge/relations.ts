@@ -227,6 +227,21 @@ const wellablesRelationsConfig: RelationsConfig = {
             referenceTable: haPuc19Plasmids,
             references: [haPuc19Plasmids.id],
         },
+        snvLibAmpProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibAmpProducts,
+            references: [snvLibAmpProducts.id],
+        },
+        snvLibLinProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibLinProducts,
+            references: [snvLibLinProducts.id],
+        },
+        snvLibGibsonProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibGibsonProducts,
+            references: [snvLibGibsonProducts.id],
+        },
     },
     many: {
         wellContents: {
@@ -821,6 +836,11 @@ const snvLibAmpProductsRelationsConfig: RelationsConfig = {
             referenceTable: lots,
             references: [lots.id],
         },
+        wellable: {
+            fields: [snvLibAmpProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
 }
 export const snvLibAmpProductsRelations = relationsConfigToRelations(snvLibAmpProducts, snvLibAmpProductsRelationsConfig)
@@ -857,6 +877,11 @@ const snvLibLinProductsRelationsConfig: RelationsConfig = {
             referenceTable: haPuc19Plasmids,
             references: [haPuc19Plasmids.id],
         },
+        wellable: {
+            fields: [snvLibLinProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
 }
 export const snvLibLinProductsRelations = relationsConfigToRelations(snvLibLinProducts, snvLibLinProductsRelationsConfig)
@@ -887,6 +912,11 @@ const snvLibGibsonProductsRelationsConfig: RelationsConfig = {
             fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
             referenceTable: snvLibCloningExperiments,
             references: [snvLibCloningExperiments.id]
+        },
+        wellable: {
+            fields: [snvLibGibsonProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
 }
