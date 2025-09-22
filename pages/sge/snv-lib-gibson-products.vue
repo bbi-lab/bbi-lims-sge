@@ -256,6 +256,7 @@ const fieldDefs: FieldDefinitions = {
                 :columnDefs="columnDefs"
                 :where="whereClauses"
                 :canEditMultiple="true"
+                :canDelete="false"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
