@@ -118,8 +118,15 @@ export const viewSnvLibGibsonProducts = pgView('view_snv_lib_gibson_products', {
     ampVolume: doublePrecision('amp_volume'),
     linVolume: doublePrecision('lin_volume'),
     totalVolume: doublePrecision('total_volume'),
+    totalReactionVolume: doublePrecision('total_reaction_volume'),
+    h2oVolume: doublePrecision('h2o_volume'),
+    ncWaterVolume: doublePrecision('nc_water_volume'),
+    twoXNebuilderReagentVolume: doublePrecision('two_x_nebuilder_reagent_volume')
 }).as(sql`SELECT
     *,
+    CASE WHEN total_reaction_volume IS NOT NULL THEN total_reaction_volume/2 ELSE NULL END AS two_x_nebuilder_reagent_volume,
+	CASE WHEN total_reaction_volume IS NOT NULL AND lin_volume IS NOT NULL THEN total_reaction_volume/2 - lin_volume ELSE NULL END AS nc_water_volume,
+    CASE WHEN total_reaction_volume IS NOT NULL AND amp_volume IS NOT NULL AND lin_volume IS NOT NULL THEN total_reaction_volume/2 - (amp_volume + lin_volume) ELSE NULL END AS h2o_volume,
 	CASE
 		WHEN amp_volume IS NOT NULL AND lin_volume IS NOT NULL
 		THEN amp_volume + lin_volume
@@ -139,8 +146,22 @@ FROM (
 	END AS lin_volume
 FROM (
 	SELECT
-	${snvLibGibsonProducts}.*,
-	${snvLibCloningExperiments.name} AS snv_lib_cloning_experiment_name,
+	${snvLibGibsonProducts.id} AS id,
+    ${snvLibGibsonProducts.name} AS name,
+    ${snvLibGibsonProducts.snvLibCloningExperimentId} AS snv_lib_cloning_experiment_id,
+    ${snvLibGibsonProducts.linProductVectorAmount} AS lin_product_vector_amount,
+    ${snvLibGibsonProducts.gibsonOn} AS gibson_on,
+    ${snvLibGibsonProducts.cleanedOn} AS cleaned_on,
+    ${snvLibGibsonProducts.transformedOn} AS transformed_on,
+    ${snvLibGibsonProducts.preppedOn} AS prepped_on,
+    ${snvLibGibsonProducts.quant} AS quant,
+    ${snvLibGibsonProducts.plasmidsaurusChecked} AS plasmidsaurus_checked,
+    ${snvLibGibsonProducts.ngsChecked} AS ngs_checked,
+    ${snvLibGibsonProducts.passedQc} AS passed_qc,
+    ${snvLibGibsonProducts.benchlingLink} AS benchling_link,
+    ${snvLibGibsonProducts.notes} AS notes,
+    ${snvLibGibsonProducts.totalReactionVolume} AS total_reaction_volume,
+    ${snvLibCloningExperiments.name} AS snv_lib_cloning_experiment_name,
 	amp_products.id AS amp_product_id,
 	amp_products.name AS amp_product_name,
 	amp_products.amp_product_size AS amp_product_size,
