@@ -166,6 +166,42 @@ const columnDefs = {
         },
         path: 'totalVolume.displayValue',
     },
+    totalReactionVolume: {
+        header: 'Total Reaction Volume (µL)',
+    },
+    twoXNebuilderReagentVolume: {
+        header: '2X NEBuilder Reagent Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.twoXNebuilderReagentVolume ? _.round(data.twoXNebuilderReagentVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'twoXNebuilderReagentVolume.originalValue')
+        },
+        path: 'twoXNebuilderReagentVolume.displayValue',
+    },
+    ncWaterVolume: {
+        header: 'NC Water Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.ncWaterVolume ? _.round(data.ncWaterVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'ncWaterVolume.originalValue')
+        },
+        path: 'ncWaterVolume.displayValue',
+    },
+    h2oVolume: {
+        header: 'H2O Volume (µL)',
+        bodyClass: 'italic font-bold',
+        format: (data: any) => {
+            return data.h2oVolume ? _.round(data.h2oVolume, 1) : null
+        },
+        exportValue: (data: any) => {
+            return _.get(data, 'h2oVolume.originalValue')
+        },
+        path: 'h2oVolume.displayValue',
+    },
 }
 const fieldDefs: FieldDefinitions = {
     name: {
@@ -242,6 +278,12 @@ const fieldDefs: FieldDefinitions = {
     },
     passedQc: {
         label: 'Passed QC',
+    },
+    totalReactionVolume: {
+        label: 'Total Reaction Volume (µL)',
+        props:{
+            defaultValue: 10,
+        },
     },
 }
 </script>
