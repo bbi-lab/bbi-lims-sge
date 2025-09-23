@@ -116,15 +116,18 @@ const columnDefs = {
         },
         path: 'twoXNebuilderReagentVolume.displayValue',
     },
-    h2oVolume: {
+    h2oVolume: { display: false },
+    h2oVolumeFormatted: {
         header: 'H₂O Volume (µL)',
         index: 10,
-        bodyClass: 'italic font-bold',
-        format: (data: any) => data.h2oVolume ? _.round(data.h2oVolume, 1) : null,
-        exportValue: (data: any) => {
-            return _.get(data, 'h2oVolume.originalValue')
+        type: 'element',
+        element: (data: any) => {
+            const bodyClass = data.h2oVolume < 0 ? 'text-red-500 italic font-bold' : 'italic font-bold'
+            return _.isNumber(data.h2oVolume) ? `<span class="${bodyClass}">${_.round(data.h2oVolume, 1)}</span>` : ''
         },
-        path: 'h2oVolume.displayValue',
+        exportValue: (data: any) => {
+            return data?.h2oVolume
+        },
     },
 }
 const fieldDefs: FieldDefinitions = {

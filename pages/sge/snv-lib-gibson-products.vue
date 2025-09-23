@@ -180,27 +180,29 @@ const columnDefs = {
         },
         path: 'twoXNebuilderReagentVolume.displayValue',
     },
-    ncWaterVolume: {
+    ncWaterVolume: { display: false },
+    ncWaterVolumeFormatted: {
         header: 'NC Water Volume (µL)',
-        bodyClass: 'italic font-bold',
-        format: (data: any) => {
-            return data.ncWaterVolume ? _.round(data.ncWaterVolume, 1) : null
+        type: 'element',
+        element: (data: any) => {
+            const bodyClass = data.ncWaterVolume < 0 ? 'text-red-500 italic font-bold' : 'italic font-bold'
+            return _.isNumber(data.ncWaterVolume) ? `<span class="${bodyClass}">${_.round(data.ncWaterVolume, 1)}</span>` : ''
         },
         exportValue: (data: any) => {
-            return _.get(data, 'ncWaterVolume.originalValue')
+            return data?.ncWaterVolume
         },
-        path: 'ncWaterVolume.displayValue',
     },
-    h2oVolume: {
+    h2oVolume: { display: false },
+    h2oVolumeFormatted: {
         header: 'H₂O Volume (µL)',
-        bodyClass: 'italic font-bold',
-        format: (data: any) => {
-            return data.h2oVolume ? _.round(data.h2oVolume, 1) : null
+        type: 'element',
+        element: (data: any) => {
+            const bodyClass = data.h2oVolume < 0 ? 'text-red-500 italic font-bold' : 'italic font-bold'
+            return _.isNumber(data.h2oVolume) ? `<span class="${bodyClass}">${_.round(data.h2oVolume, 1)}</span>` : ''
         },
         exportValue: (data: any) => {
-            return _.get(data, 'h2oVolume.originalValue')
+            return data?.h2oVolume
         },
-        path: 'h2oVolume.displayValue',
     },
 }
 const fieldDefs: FieldDefinitions = {
