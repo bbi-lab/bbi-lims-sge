@@ -4,6 +4,7 @@ import { targets } from './target'
 import { sql } from 'drizzle-orm/sql'
 import { haPuc19GibsonProducts } from './oligos'
 import { users } from '../user'
+import { boolean } from 'drizzle-orm/gel-core'
 
 export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -26,7 +27,8 @@ export const snvLibPlasmids = pgTable('snv_lib_plasmids', {
   quant: doublePrecision('quant'),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
   snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).unique(),
-  verificationStatus: varchar('verification_status', {enum: ['passed', 'failed']}),
+  plasmidsaurusVerification: boolean('plasmidsaurus_verification').default(false),
+  ngsVerificationStatus: varchar('ngs_verification_status', {enum: ['passed', 'failed']}),
   externalLink: text('external_link'),
   notes: text('notes'),
 }, (table) => [

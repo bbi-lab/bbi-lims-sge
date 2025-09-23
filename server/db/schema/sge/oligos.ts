@@ -106,6 +106,7 @@ export const snvLibGibsonProducts = pgTable('snv_lib_gibson_products', {
     ngsChecked: boolean('ngs_checked').default(false),
     passedQc: boolean('passed_qc').default(false),
     benchlingLink: text('benchling_link'),
+    totalReactionVolume: doublePrecision('total_reaction_volume').default(10),
     notes: text('notes'),
 }, (table) => [
   check("benchling_link_check", sql`${table.benchlingLink} ~* '^https?://.+$'`),
