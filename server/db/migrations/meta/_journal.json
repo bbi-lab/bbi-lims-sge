@@ -925,6 +925,13 @@
       "when": 1758665125107,
       "tag": "0131_massive_tigra",
       "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1758670026786,
+      "tag": "0132_light_fenris",
+      "breakpoints": true
     }
   ]
 }

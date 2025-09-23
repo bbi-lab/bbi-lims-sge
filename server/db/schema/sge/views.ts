@@ -33,58 +33,69 @@ export const viewHaPuc19GibsonProductsWithCalcs = pgView('view_ha_puc19_gibson_p
     vectorVolume: doublePrecision('vector_volume'),
     totalVolume: doublePrecision('total_volume'),
     notes: text('notes'),
+    totalReactionVolume: doublePrecision('total_reaction_volume'),
+    twoXNebuilderReagentVolume: doublePrecision('two_x_nebuilder_reagent_volume'),
+    h2oVolume: doublePrecision('h2o_volume'),
 }).as(sql`SELECT
-    ${haPuc19GibsonProducts.id} AS id,
-    ${haPuc19GibsonProducts.name} AS name,
-    ${haPuc19PcrProducts.id} AS ha_puc19_pcr_product_id,
-    ${haPuc19PcrProducts.name} AS ha_puc19_pcr_product_name,
-    ${haPuc19GibsonProducts.puc19VectorAmount} AS puc19_vector_amount,
-    ${haPuc19GibsonProducts.puc19VectorConcentration} AS puc19_vector_concentration,
-    ${haPuc19GibsonProducts.quant} AS quant,
-    ${haPuc19GibsonProducts.preppedOn} AS prepped_on,
-    ${users.name} AS prepped_by_name,
-    ${haCloningExperiments.id} AS ha_cloning_experiment_id,
-    ${haCloningExperiments.name} AS ha_cloning_experiment_name,
-    t_ha_pcr_products.id AS ha_pcr_product_id,
-    t_ha_pcr_products.name AS ha_pcr_product_name,
-    t_ha_pcr_products.ha_pcr_product_length AS ha_pcr_product_length,
-    CASE
-        WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL
-            THEN t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0
-        ELSE NULL
-    END AS insert_dna_mass,
-    CASE
-        WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL AND ${haPuc19GibsonProducts.quant} IS NOT NULL
-            THEN t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0 / ${haPuc19GibsonProducts.quant}
-        ELSE NULL
-    END AS insert_volume,
-    CASE
-        WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND ${haPuc19GibsonProducts.puc19VectorConcentration} IS NOT NULL
-            THEN ${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration}
-        ELSE NULL
-    END AS vector_volume,
-    CASE
-        WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL AND ${haPuc19GibsonProducts.quant} IS NOT NULL AND ${haPuc19GibsonProducts.puc19VectorConcentration} IS NOT NULL
-            THEN (t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0 / ${haPuc19GibsonProducts.quant}) + (${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration})
-        ELSE NULL
-    END AS total_volume,
-    ${haPuc19GibsonProducts.notes} AS notes
-FROM ${haPuc19GibsonProducts}
-    JOIN ${haPuc19PcrProducts} ON ${haPuc19PcrProducts.id} = ${haPuc19GibsonProducts.haPuc19PcrProductId}
-    JOIN (
-        SELECT
-            ${haPcrProducts.id} AS id,
-            ${haPcrProducts.name} AS name,
-            ${haPcrProducts.haCloningExperimentId} AS ha_cloning_experiment_id,
-            CASE
-                WHEN ${haPcrProducts.startPosition} IS NOT NULL AND ${haPcrProducts.stopPosition} IS NOT NULL
-                    THEN ${haPcrProducts.stopPosition} - ${haPcrProducts.startPosition} + 1
-                ELSE NULL
-            END AS ha_pcr_product_length
-        FROM  ${haPcrProducts}
-    ) AS t_ha_pcr_products ON t_ha_pcr_products.id = ${haPuc19PcrProducts.haPcrProductId}
-    JOIN ${haCloningExperiments} ON ${haCloningExperiments.id} = t_ha_pcr_products.ha_cloning_experiment_id
-    LEFT JOIN ${users} ON ${users.id} = ${haPuc19GibsonProducts.preppedBy}`)
+        *,
+        CASE WHEN two_x_nebuilder_reagent_volume IS NOT NULL AND insert_volume IS NOT NULL AND vector_volume IS NOT NULL
+            THEN two_x_nebuilder_reagent_volume - (insert_volume + vector_volume)
+            ELSE NULL
+        END AS h2o_volume
+    FROM (SELECT
+        ${haPuc19GibsonProducts.id} AS id,
+        ${haPuc19GibsonProducts.name} AS name,
+        ${haPuc19PcrProducts.id} AS ha_puc19_pcr_product_id,
+        ${haPuc19PcrProducts.name} AS ha_puc19_pcr_product_name,
+        ${haPuc19GibsonProducts.puc19VectorAmount} AS puc19_vector_amount,
+        ${haPuc19GibsonProducts.puc19VectorConcentration} AS puc19_vector_concentration,
+        ${haPuc19GibsonProducts.quant} AS quant,
+        ${haPuc19GibsonProducts.preppedOn} AS prepped_on,
+        ${haPuc19GibsonProducts.totalReactionVolume} AS total_reaction_volume,
+        CASE WHEN ${haPuc19GibsonProducts.totalReactionVolume} IS NOT NULL THEN ${haPuc19GibsonProducts.totalReactionVolume}/2 ELSE NULL END AS two_x_nebuilder_reagent_volume,
+        ${users.name} AS prepped_by_name,
+        ${haCloningExperiments.id} AS ha_cloning_experiment_id,
+        ${haCloningExperiments.name} AS ha_cloning_experiment_name,
+        t_ha_pcr_products.id AS ha_pcr_product_id,
+        t_ha_pcr_products.name AS ha_pcr_product_name,
+        t_ha_pcr_products.ha_pcr_product_length AS ha_pcr_product_length,
+        CASE
+            WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL
+                THEN t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0
+            ELSE NULL
+        END AS insert_dna_mass,
+        CASE
+            WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL AND ${haPuc19GibsonProducts.quant} IS NOT NULL
+                THEN t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0 / ${haPuc19GibsonProducts.quant}
+            ELSE NULL
+        END AS insert_volume,
+        CASE
+            WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND ${haPuc19GibsonProducts.puc19VectorConcentration} IS NOT NULL
+                THEN ${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration}
+            ELSE NULL
+        END AS vector_volume,
+        CASE
+            WHEN ${haPuc19GibsonProducts.puc19VectorAmount} IS NOT NULL AND t_ha_pcr_products.ha_pcr_product_length IS NOT NULL AND ${haPuc19GibsonProducts.quant} IS NOT NULL AND ${haPuc19GibsonProducts.puc19VectorConcentration} IS NOT NULL
+                THEN (t_ha_pcr_products.ha_pcr_product_length / 2649.0 * ${haPuc19GibsonProducts.puc19VectorAmount} * 2.0 / ${haPuc19GibsonProducts.quant}) + (${haPuc19GibsonProducts.puc19VectorAmount} / ${haPuc19GibsonProducts.puc19VectorConcentration})
+            ELSE NULL
+        END AS total_volume,
+        ${haPuc19GibsonProducts.notes} AS notes
+    FROM ${haPuc19GibsonProducts}
+        JOIN ${haPuc19PcrProducts} ON ${haPuc19PcrProducts.id} = ${haPuc19GibsonProducts.haPuc19PcrProductId}
+        JOIN (
+            SELECT
+                ${haPcrProducts.id} AS id,
+                ${haPcrProducts.name} AS name,
+                ${haPcrProducts.haCloningExperimentId} AS ha_cloning_experiment_id,
+                CASE
+                    WHEN ${haPcrProducts.startPosition} IS NOT NULL AND ${haPcrProducts.stopPosition} IS NOT NULL
+                        THEN ${haPcrProducts.stopPosition} - ${haPcrProducts.startPosition} + 1
+                    ELSE NULL
+                END AS ha_pcr_product_length
+            FROM  ${haPcrProducts}
+        ) AS t_ha_pcr_products ON t_ha_pcr_products.id = ${haPuc19PcrProducts.haPcrProductId}
+        JOIN ${haCloningExperiments} ON ${haCloningExperiments.id} = t_ha_pcr_products.ha_cloning_experiment_id
+        LEFT JOIN ${users} ON ${users.id} = ${haPuc19GibsonProducts.preppedBy}) t1`)
 
 export const viewSnvLibGibsonProducts = pgView('view_snv_lib_gibson_products', {
     id: uuid('id'),

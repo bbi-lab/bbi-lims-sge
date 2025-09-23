@@ -55,6 +55,7 @@ export const haPuc19GibsonProducts = pgTable('ha_puc19_gibson_products', {
     preppedOn: timestamp('prepped_on'),
     preppedBy: uuid('prepped_by').references(() => users.id),
     quant: doublePrecision('quant'),
+    totalReactionVolume: doublePrecision('total_reaction_volume').default(10),
     notes: text('notes'),
 })
 
