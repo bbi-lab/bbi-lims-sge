@@ -102,6 +102,30 @@ const columnDefs = {
         path: 'totalVolume.displayValue',
         bodyClass: 'italic font-bold',
     },
+    totalReactionVolume: {
+        header: 'Total Reaction Volume (µL)',
+        index: 8,
+    },
+    twoXNebuilderReagentVolume: {
+        header: '2X NEBuilder Reagent Volume (µL)',
+        index: 9,
+        bodyClass: 'italic font-bold',
+        format: (data: any) => data.twoXNebuilderReagentVolume ? _.round(data.twoXNebuilderReagentVolume, 1) : null,
+        exportValue: (data: any) => {
+            return _.get(data, 'twoXNebuilderReagentVolume.originalValue')
+        },
+        path: 'twoXNebuilderReagentVolume.displayValue',
+    },
+    h2oVolume: {
+        header: 'H₂O Volume (µL)',
+        index: 10,
+        bodyClass: 'italic font-bold',
+        format: (data: any) => data.h2oVolume ? _.round(data.h2oVolume, 1) : null,
+        exportValue: (data: any) => {
+            return _.get(data, 'h2oVolume.originalValue')
+        },
+        path: 'h2oVolume.displayValue',
+    },
 }
 const fieldDefs: FieldDefinitions = {
     name: {
@@ -138,6 +162,9 @@ const fieldDefs: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+    totalReactionVolume: {
+        label: 'Total Reaction Volume (µL)',
     },
 }
 </script>
@@ -225,6 +252,9 @@ const fieldDefs: FieldDefinitions = {
             <li>Insert volume (µL) = Insert DNA mass (ng) / Quant (ng/µL)</li>
             <li>Vector volume (µL) = pUC19 Vector amount (ng) / pUC19 Vector Concentration (ng/µL)</li>
             <li>Total volume (µL) = Insert volume (µL) + Vector volume (µL)</li>
+            <hr></hr>
+            <li>2x NEBuilder reagent volume (µL) = Total reaction volume (µL) / 2</li>
+            <li>H₂O volume (µL) = 2x NEBuilder reagent volume (µL) - Total volume (µL)</li>
         </ul>
         <div>Precise values are used for calculations, and rounded to 1 decimal place for display.</div>
         <div>For reference, the pUC19 vector length is <i><b>2649</b></i> bp.</div>
