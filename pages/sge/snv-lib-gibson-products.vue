@@ -170,7 +170,7 @@ const columnDefs = {
         header: 'Total Reaction Volume (µL)',
     },
     twoXNebuilderReagentVolume: {
-        header: '2X NEBuilder Reagent Volume (µL)',
+        header: '2x NEBuilder Reagent Volume (µL)',
         bodyClass: 'italic font-bold',
         format: (data: any) => {
             return data.twoXNebuilderReagentVolume ? _.round(data.twoXNebuilderReagentVolume, 1) : null
@@ -192,7 +192,7 @@ const columnDefs = {
         path: 'ncWaterVolume.displayValue',
     },
     h2oVolume: {
-        header: 'H2O Volume (µL)',
+        header: 'H₂O Volume (µL)',
         bodyClass: 'italic font-bold',
         format: (data: any) => {
             return data.h2oVolume ? _.round(data.h2oVolume, 1) : null
@@ -372,6 +372,10 @@ const fieldDefs: FieldDefinitions = {
             <li>AMP volume (µL) = AMP product vector amount (ng) / AMP product concentration (ng/µL)</li>
             <li>LIN volume (µL) = LIN product vector amount (ng) / LIN product concentration (ng/µL)</li>
             <li>Total volume (µL) = AMP volume (µL) + LIN volume (µL)</li>
+            <hr></hr>
+            <li>2x NEBuilder reagent volume  (µL) = Total reaction volume (µL) / 2</li>
+            <li>NC water volume (µL) = 2x NEbuilder reagent volume  (µL) - LIN volume (µL)</li>
+            <li>H₂O volume (µL) = 2x NEBuilder reagent volume  (µL) - Total volume (µL)</li>
         </ul>
         <div>Precise values are used for calculations, and rounded to 1 decimal place for display.</div>
         <div>For reference, the pUC19 vector size is <i><b>2649</b></i> bp.</div>
