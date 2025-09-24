@@ -485,6 +485,12 @@ const gibsonProductFieldDefinitions: FieldDefinitions = {
     passedQc: {
         label: 'Passed QC',
     },
+    totalReactionVolume: {
+        label: 'Total Reaction Volume (µL)',
+        props: {
+            defaultValue: 10,
+        }
+    },
 }
 const plasmidFieldDefinitions: FieldDefinitions = {
     targetId: {

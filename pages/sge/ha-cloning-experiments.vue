@@ -409,6 +409,12 @@ const haPuc19GibsonProductFieldDefinitions: FieldDefinitions = {
     quant: {
         label: 'Quant (ng/µL)',
     },
+    totalReactionVolume: {
+        label: 'Total Reaction Volume (µL)',
+        props: {
+            defaultValue: 10,
+        }
+    },
 }
 const haPuc19PlasmidFieldDefinitions: FieldDefinitions = {
     haPuc19GibsonProductId: {

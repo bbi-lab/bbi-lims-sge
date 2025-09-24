@@ -168,6 +168,9 @@ const fieldDefs: FieldDefinitions = {
     },
     totalReactionVolume: {
         label: 'Total Reaction Volume (µL)',
+        props: {
+            defaultValue: 10,
+        }
     },
 }
 </script>
