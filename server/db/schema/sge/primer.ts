@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm/sql'
-import { pgTable, uuid, varchar, text, check, smallint, uniqueIndex} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, check, smallint, uniqueIndex, timestamp} from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { targets } from './target'
 import { type InferSelectModel } from 'drizzle-orm/table'
@@ -10,6 +10,7 @@ export const linearizationPrimers = pgTable('linearization_primers', {
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }).notNull(),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),
@@ -22,6 +23,7 @@ export const amplificationPrimers = pgTable('amplification_primers', {
     sequence: varchar('sequence', { length: 255 }).notNull(),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
     temperature: smallint('temperature'),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]+$'`),
@@ -33,6 +35,7 @@ export const homologyArmPrimers = pgTable('homology_arm_primers', {
     sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
     cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
@@ -51,6 +54,7 @@ export const homologyArmPuc19Primers = pgTable('homology_arm_puc19_primers', {
     homologyArmPrimerId: uuid('homology_arm_primer_id').references(() => homologyArmPrimers.id).notNull(),
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
@@ -62,6 +66,7 @@ export const preseq1Primers = pgTable('preseq_1_primers', {
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
@@ -74,6 +79,7 @@ export const preseq2Primers = pgTable('preseq_2_primers', {
     sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
     adapterSequence: varchar('adapter_sequence', { length: 255 }),
+    orderedOn: timestamp('ordered_on'),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),

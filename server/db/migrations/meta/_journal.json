@@ -932,6 +932,13 @@
       "when": 1758670026786,
       "tag": "0132_light_fenris",
       "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1761778111208,
+      "tag": "0133_white_misty_knight",
+      "breakpoints": true
     }
   ]
 }
