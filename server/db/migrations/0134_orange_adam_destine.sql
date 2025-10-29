@@ -1,0 +1,1 @@
+ALTER TABLE "snv_lib_cloning_experiments" ADD COLUMN "cloning_strategy" varchar NOT NULL;
