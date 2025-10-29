@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, text, doublePrecision } from 'drizzle-orm/pg-core'
 import { extractionExperiments } from './extraction-experiment'
 import { pellets } from './pellet'
-import { InferSelectModel } from 'drizzle-orm'
+import { type InferSelectModel } from 'drizzle-orm/table'
 
 export const VALID_PROTOCOLS = ['AllPrep', 'DNeasy']
 

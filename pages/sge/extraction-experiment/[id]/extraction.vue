@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
-import { nucleicAcids, VALID_PROTOCOLS, type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import { type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { pellets } from '~/server/db/schema/sge/pellet'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
 const pelletsCrudTable = useCrudTable()
 const nucleicAcidsCrudTable = useCrudTable()
+const showPelletsFromAllDays = ref(false)
 
+const pelletsWhereClause = computed(() => {
+    return showPelletsFromAllDays.value ? {'==':[{'var': 'nucleicAcid'}, null]} :
+    {
+        'and':[
+            {'==':[{'var': 'nucleicAcid'}, null]},
+            {'in':[{'var': 'harvestDay'}, [5, 13]]},
+        ]
+    }
+})
 const extractionExperiment = ref()
 const showNucleicAcidEditDialog = computed(() => {
     return nucleicAcidsCrudTable.state.showEditForm || nucleicAcidsCrudTable.state.showMultipleEditForm
@@ -37,8 +46,9 @@ const extractFromSelectedPellets = async () => {
                 detail: `${_.size(nucleicAcidsAdded)} nucleic acids added`,
                 life: 3000,
             })
+            // add nucleic acids to nucleic acids table and remove from pellets table
+            nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(nucleicAcidsAdded, 'id'))
             _.forEach(nucleicAcidsAdded, (x) => {
-                nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordId(x.id)
                 pelletsCrudTable.tableRef.value.removeRecordId(x.pelletId)
             })
             pelletsCrudTable.tableRef.value.selectedRecords = []
@@ -61,10 +71,7 @@ const extractFromSelectedPellets = async () => {
 }
 
 const didDeleteMultipleNucleicAcids = (event: any[]) => {
-    console.log(event)
-    event.forEach(e => {
-        pelletsCrudTable.tableRef.value.addOrRefreshRecordId(e.pelletId)
-    })
+    pelletsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(event, 'pelletId'))
 }
 const pelletsWithClause = Object.freeze({
     transfectTarget: {
@@ -212,7 +219,7 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                     schemaName="select"
                     :columnDefs="pelletsColumnDefs"
                     :withClause="pelletsWithClause"
-                    :where="{'==':[{'var': 'nucleicAcid'}, null]}"
+                    :where="pelletsWhereClause"
                     :canAdd="false"
                     :canDelete="false"
                     :canEdit="false"
@@ -229,6 +236,12 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                             label="Extract"
                             :disabled="_.isEmpty(pelletsCrudTable.tableRef.value?.selectedRecords)"
                             @click="extractFromSelectedPellets" />
+                            <span class="flex items-center space-x-2">
+                                <ToggleSwitch id="showPelletsFromAllDaysToggle" v-model="showPelletsFromAllDays" />
+                                <label for="showPelletsFromAllDaysToggle">
+                                    All days
+                                </label>
+                            </span>
                     </template>
                 </QuickTable>
             </SplitterPanel>

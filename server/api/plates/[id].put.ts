@@ -13,7 +13,7 @@ export default defineEventHandler<{ body: UpdatePlate }>(async (event) => {
 
         // only allow plateType to change if wells are empty
         const existingPlate = await db.query.plates.findFirst({where: () => eq(plates.id, id)})
-        if (existingPlate && existingPlate.plateType !== values.plateType) {
+        if (_.has(values, 'plateType') && existingPlate && existingPlate.plateType !== values.plateType) {
             const wellsWithContents = await db.query.wells.findMany({
                 with: {
                     wellContents: true

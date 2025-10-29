@@ -10,7 +10,7 @@ import MdiRotateLeftVariant from '~icons/mdi/rotate-left-variant'
 export type PlateWithPlateDiagramWells = Plate & {
     wells: PlateDiagramWell[]
 }
-const plateDiagram = ref<PlateDiagram>()
+let plateDiagram:PlateDiagram | null = null
 const plateDiagramDiv = ref()
 const modelValue = defineModel<PlateWithPlateDiagramWells>()
 
@@ -26,6 +26,9 @@ const props = defineProps({
     showClearSelectionButton: {
         type: Boolean,
         default: true,
+    },
+    showExportButton: {
+        type: Boolean,
     },
     plateType: {
         type: String as PropType<PlateType>,
@@ -55,6 +58,7 @@ const emit = defineEmits([
     'well-selection-cleared',
     'all-wells-selected',
     'well-contents-updated',
+    'did-click-export-plate-layout',
 ])
 
 function wellRangeSelected(wells: PlateDiagramWell[]) {
@@ -62,29 +66,47 @@ function wellRangeSelected(wells: PlateDiagramWell[]) {
 }
 
 function wellSelectionCleared() {
-    plateDiagram.value?.clearSelection()
-    emit('well-selection-cleared')
+    if (plateDiagram) {
+        plateDiagram.clearSelection()
+        emit('well-selection-cleared')
+    }
 }
 
 function allWellsSelected() {
-    plateDiagram.value?.selectAllWells()
-    emit('all-wells-selected', modelValue.value?.wells)
+    if (plateDiagram) {
+        plateDiagram?.selectAllWells()
+        emit('all-wells-selected', modelValue.value?.wells)
+    }
 }
 
-onMounted(async() => {
-    if (modelValue.value){
-        if (plateDiagramDiv.value) {
-            plateDiagram.value = makePlateDiagram(props.plateType, props.sizeX, props.sizeY)
-                .wells(modelValue.value.wells)
+const renderOrRefreshChart = () => {
+    if (!plateDiagram) {
+        plateDiagram = makePlateDiagram(props.plateType, props.sizeX, props.sizeY)
                 .render(plateDiagramDiv.value)
                 .wellRangeSelected(wellRangeSelected) as PlateDiagram
-        }
     }
+    if (plateDiagram && modelValue.value) {
+        plateDiagram
+            .wells(modelValue.value.wells)
+            .refresh()
+        wellSelectionCleared()
+    }
+}
+watch(modelValue, (newValue, oldValue) => {
+    if (!_.isEqual(newValue, oldValue)) {
+        renderOrRefreshChart()
+    }
+}, { deep: true })
+
+onMounted(async() => {
+    renderOrRefreshChart()
 })
 
 const updateWells = (newValues: PlateDiagramWell[], oldValues: PlateDiagramWell[]) => {
-    plateDiagram.value?.updateWellContents(newValues)
-    emit('well-contents-updated', newValues, oldValues)
+    if (plateDiagram) {
+        plateDiagram.updateWellContents(newValues)
+        emit('well-contents-updated', newValues, oldValues)
+    }
 }
 
 defineExpose({
@@ -117,6 +139,13 @@ defineExpose({
                         </span>
                     </template>
                 </Button>
+                <Button
+                    v-if="showExportButton"
+                    v-tooltip="{value: 'Export', showDelay: 500}"
+                    @click="emit('did-click-export-plate-layout')"
+                    severity="secondary"
+                    icon="pi pi-file-export"
+                />
                 <slot name="button1" />
                 <slot name="button2" />
                 <slot name="button3" />

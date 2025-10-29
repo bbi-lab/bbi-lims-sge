@@ -17,10 +17,10 @@ async function onDidClickSignIn(event) {
     if (email.value && password.value) {
         const response = await AuthService.loginUser(email.value, password.value, {event})
         if (response.success) {
-            // fetching session from server, otherwise loggedIn value may still be false 
+            // fetching session from server, otherwise loggedIn value may still be false
             await fetch()
             if (loggedIn.value) {
-                navigateTo(router.currentRoute?.value?.query?.from || '/')
+                await navigateTo(router.currentRoute?.value?.query?.redirect || '/')
             }
         } else {
             toast.add({severity: 'error', summary: response.errorMessage})
@@ -45,7 +45,7 @@ async function onDidClickSignIn(event) {
                         <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
 
                         <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                        <Password 
+                        <Password
                             id="password1"
                             v-model="password"
                             placeholder="Password"

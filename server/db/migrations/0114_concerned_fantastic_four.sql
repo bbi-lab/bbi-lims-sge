@@ -1,0 +1,2 @@
+ALTER TABLE "ha_cloning_experiments" ALTER COLUMN "name" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "ha_pcr_products" ADD CONSTRAINT "ha_pcr_products_ha_cloning_experiment_id_unique" UNIQUE("ha_cloning_experiment_id");

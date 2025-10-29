@@ -5,6 +5,18 @@ const props = defineProps({
   error: Object as () => NuxtError
 })
 
+const handleChunkError = () => {
+  // Reload the page when chunk loading fails
+  window.location.reload()
+}
+
+// Handle chunk load errors globally
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason?.message?.includes('dynamically imported module')) {
+    handleChunkError()
+    event.preventDefault()
+  }
+})
 </script>
 
 <template>

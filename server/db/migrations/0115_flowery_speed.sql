@@ -1,0 +1,1 @@
+ALTER TABLE "homology_arm_puc19_primers" ADD COLUMN "sequence_type" varchar;

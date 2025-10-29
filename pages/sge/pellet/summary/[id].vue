@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { pellets } from '~/server/db/schema/sge/pellet'
 import { RecordService } from '~/utils/service/RecordService'
 import _ from 'lodash'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 const route = useRoute()
 
+type NucleicAcidPcrEntry = Record<string, {plateName: string, plateType: string, plateTypeLabel: string, wells: {x: number, y: number}[]}>
 const pellet = ref()
+const pcrEntries = ref<NucleicAcidPcrEntry>({})
+
 onMounted (async () => {
     pellet.value = await RecordService.getRecord(
         `${config.public.apiBase}/pellets`,
@@ -59,7 +63,27 @@ onMounted (async () => {
                                 }
                             }
                         },
-                    }
+                    },
+                    wellContents: {
+                        with: {
+                            well: {
+                                columns: {
+                                    id: true,
+                                    x: true,
+                                    y: true,
+                                },
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                            name: true,
+                                            plateType: true,
+                                        }
+                                    }
+                                }
+                            },
+                        },
+                    },
                 }
             },
             wellContents: {
@@ -84,6 +108,22 @@ onMounted (async () => {
             },
         }
     )
+
+    pcrEntries.value = _.reduce(pellet.value.nucleicAcid?.wellContents || [], (acc: NucleicAcidPcrEntry, wellContent) => {
+        const plateId = wellContent.well.plate.id
+        if (!_.has(acc, plateId)) {
+            _.set(acc, plateId, {
+                plateName: wellContent.well.plate.name,
+                plateType: wellContent.well.plate.plateType,
+                plateTypeLabel: ENUM_LOOKUPS.plates.plateType[wellContent.well.plate.plateType].label,
+                wells: [_.pick(wellContent.well, ['x', 'y'])]
+            })
+        } else {
+            acc[plateId].wells.push(_.pick(wellContent.well, ['x', 'y']))
+        }
+        return acc as NucleicAcidPcrEntry
+    }, {})
+
 })
 </script>
 <template>
@@ -173,6 +213,22 @@ onMounted (async () => {
                     <strong>Notes:</strong> {{ pellet.nucleicAcid.notes }}
                 </div>
             </template>
+        </div>
+        <div v-if="!_.isEmpty(pellet.nucleicAcid?.wellContents)" class="space-x-4 space-y-2">
+            <div class="text-lg font-bold">PCR:</div>
+            <hr>
+            <div v-for="pcrEntry of _.sortBy(_.values(pcrEntries), 'plateType')">
+                <div>
+                    <strong>Plate:</strong> {{ pcrEntry.plateName }}
+                </div>
+                <div>
+                    <strong>Plate type:</strong> {{ pcrEntry.plateTypeLabel }}
+                </div>
+                <div>
+                    <strong>Wells:</strong> {{ pcrEntry.wells.map((well) => `${wellCoordinateToChar(well.y)}${well.x}`).join(', ') }}
+                </div>
+                <hr>
+            </div>
         </div>
     </div>
 </template>

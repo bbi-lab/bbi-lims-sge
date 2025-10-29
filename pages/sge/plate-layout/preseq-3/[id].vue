@@ -6,10 +6,10 @@ import IxMoveLayerDown from '~icons/ix/move-layer-down';
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
-let sourcePlateLayout: typeof plateLayout | null
+const plateLayout = usePlateLayout()
+const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
-const sourcePlateDiagramKey = ref<string>()
+// const sourcePlateDiagramKey = ref<string>()
 const toast = useToast()
 const { user } = useUserSession()
 
@@ -23,19 +23,17 @@ const selectedSourcePlate = computed(() => {
 
 watch (selectedSourcePlate, async (newValue) => {
     if (newValue) {
-        sourcePlateLayout = usePlateLayout(newValue.id)
+        sourcePlateLayout.setPlateId(newValue.id)
 
         if (newValue.plateType === 'preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['nucleicAcidId'],
-                selectionTableRecordIdPaths: [(x: any) => {
-                    return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                        return _.get(wellContentSource, 'sourceWell.plate.id')
-                    }))
+                colorBy: ['nucleicAcid.id'],
+                selectionTableRecordIdPaths: [(wellable: any) => {
+                    return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const nucleicAcidName = _.get(well, ['wellContents', 0, 'nucleicAcid', 'pellet', 'name'])
+                    const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
                     return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
                 },
             }
@@ -45,80 +43,86 @@ watch (selectedSourcePlate, async (newValue) => {
                         pellet: true
                     }
                 },
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
-                },
+                    }
+                }
             })
         } else if (newValue.plateType === 'seq-index') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
-                selectionTableRecordIdPaths: ['indexPrimerId'],
+                selectionTableRecordIdPaths: ['wellContents.0.well.plateId'],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+                    const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
                     return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
                 },
                 symbol: (well: any) => {
-                    const primerDirection = _.get(well, ['wellContents', 0, 'indexPrimer', 'sequenceType'])
+                    const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'indexPrimer', 'sequenceType'])
                     return primerDirection ? _.upperCase(primerDirection[0]) : ''
                 },
             }
             await sourcePlateLayout.loadPlate({
                 indexPrimer: true,
-                wellContentSources: {
+                wellContents: {
                     with: {
-                        sourceWell: {
-                            columns: {},
+                        wellContentSources: {
                             with: {
-                                plate: {
-                                    columns: {
-                                        id: true,
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            },
                         },
-                    },
-                },
+                    }
+                }
             })
         }
         sourcePlateWithWellSpecs.value = {
             ...sourcePlateLayout.plateWithWellContents.value,
             wells: _.values(sourcePlateLayout.wellSpecs.value),
         }
-        sourcePlateDiagramKey.value = newValue.id
+        // sourcePlateDiagramKey.value = newValue.id
     } else {
-        sourcePlateLayout = null
         sourcePlateWithWellSpecs.value = null
     }
 })
 
 onMounted(() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
-        selectionTableRecordIdPaths: [(x: any) => {
-            return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                return _.get(wellContentSource, 'sourceWell.plate.id')
-            }))
+        selectionTableRecordIdPaths: [(wellable: any) => {
+            return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
         }],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                const nucleicAcid = wellContent.nucleicAcid
+                const nucleicAcid = wellContent?.wellable?.nucleicAcid
                 if (nucleicAcid) {
                     return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
-                } else if (wellContent.indexPrimer) {
-                    return `${wellContent.indexPrimer.indexSequence} (${wellContent.indexPrimer.primerType} INDEX)`
+                } else if (wellContent?.wellable?.indexPrimer) {
+                    return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                 } else {
                     return ''
                 }
@@ -141,19 +145,23 @@ const loadPlate = async () => {
                 }
             },
             indexPrimer: true,
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
-                },
+                }
             },
         },
     )
@@ -194,11 +202,14 @@ const transferSelectedWellsContents = async () => {
 
 const columnDefs = {
     plateType: { display: false },
+    // snvLibCloningExperimentId: { display: false },
+    sgRnaCloningExperimentId: { display: false },
     plateTypeLabel: { header: 'Type' },
     cycleName: { display: false },
     cycleId: { display: false },
     targets: { display: false },
     pcrExperimentId: { display: false},
+    plasmidExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     wellsCount: { display: false },
@@ -224,6 +235,9 @@ const columnDefs = {
 const whereClause ={
     "in": [{"var": "plateType"}, ["preseq-2", "seq-index"]]
 }
+const frozenRecordIds = computed(() => {
+    return _.compact(_.concat(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')), selectedSourcePlate.value?.id))
+})
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -242,16 +256,16 @@ const whereClause ={
                 :sortBy="['plateTypeLabel', 'name']"
                 selectionMode="single"
                 :showColumnFilters="true"
-                emptyMessage="">
+                emptyMessage=""
+                v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel :size="40" :minSize="25">
             <Splitter layout="vertical">
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
-                        :key="sourcePlateDiagramKey"
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
-                        v-if="!_.isEmpty(selectedSourcePlate) && sourcePlateWithWellSpecs"
+                        v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
                         v-model="sourcePlateWithWellSpecs"
                         :plateType="sourcePlateWithWellSpecs.plateType"
                         :sizeX="sourcePlateWithWellSpecs.sizeX"
@@ -267,7 +281,7 @@ const whereClause ={
                             <Button
                                 severity="secondary"
                                 v-tooltip="{value: 'Transfer well contents to PreSeq 3 plate', showDelay: 500}"
-                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells)"
+                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
                                 @click="transferSelectedWellsContents">
                                 <template #icon>
                                     <IxMoveLayerDown />
@@ -299,7 +313,7 @@ const whereClause ={
                                 class="p-button-secondary"
                                 icon="pi pi-trash"
                                 v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                                :disabled="_.isEmpty(plateLayout.selectedWells)"
+                                :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                                 @click="plateLayout.emptySelectedWells" />
                         </template>
                     </PlateDiagram>

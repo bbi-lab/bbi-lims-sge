@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import type { extractionLotUsage } from '~/server/db/schema/sge/extraction-experiment'
+import { nucleicAcids } from '~/server/db/schema/sge/nucleic-acid'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import Molecule from '~icons/mdi/molecule'
 
@@ -70,6 +72,17 @@ const rowActions = {
         iconPos: 'right',
     },
 }
+const fieldDefs = {
+    extractedOn: {
+        type: 'date'
+    },
+    nucleicAcids: {
+        display: false,
+    },
+    extractionLotUsage: {
+        display: false,
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -91,6 +104,7 @@ const rowActions = {
                 v-if="crudTable.state.showAddForm"
                 tableName="extraction-experiments"
                 schemaName="insert"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -99,6 +113,7 @@ const rowActions = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="extraction-experiments"
                 schemaName="update"
+                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

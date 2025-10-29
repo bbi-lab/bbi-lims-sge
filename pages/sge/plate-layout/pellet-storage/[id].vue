@@ -4,20 +4,21 @@ import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 
 onMounted(async() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['pellet.transfectTarget.target.name'],
-        selectionTableRecordIdPaths: ['pelletId'],
+        selectionTableRecordIdPaths: ['pellet.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const pelletName = _.get(well, ['wellContents', 0, 'pellet', 'transfectTarget', 'target', 'name'])
-            return pelletName ? `${wellCoordinate}:<br>${pelletName} (pellet)` : wellCoordinate
+            const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'name'])
+            return pelletName ? `${wellCoordinate}:<br>${pelletName}` : wellCoordinate
         },
     }
     loadPlate()
@@ -59,25 +60,29 @@ const whereClause = {
     ]
 }
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
+        }
     },
     transfectTarget: {
         with: {
@@ -136,7 +141,16 @@ const columnDefs = {
     },
     wellContents: {
         header: 'Location',
-        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        format: (x: any) => {
+            // return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''
+            if (!_.isEmpty(x?.wellable?.wellContents)) {
+                return _.map(x.wellable.wellContents, (wellContent) => {
+                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
+                }).join(', ')
+            } else {
+                return ''
+            }
+        },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 2,
@@ -156,7 +170,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a pellet.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'pelletId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
@@ -212,7 +226,7 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-trash"
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(plateLayout.selectedWells)"
+                        :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
                 </template>
             </PlateDiagram>

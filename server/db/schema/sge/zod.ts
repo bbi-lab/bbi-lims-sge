@@ -5,19 +5,23 @@ import { genes } from './gene'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
-import { plasmidExperiments } from './plasmid-experiment'
+import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { pcrExperiments } from './pcr-experiment'
-import { plates, viewPlatesWithWellCounts } from './plate'
+import { plates } from './plate'
 import { pellets } from './pellet'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { plasmids } from './plasmid'
+import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
+import { externalSamples } from './external-samples'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -66,9 +70,49 @@ const selectTransfectLotUsageSchema = createSelectSchema(transfectLotUsage, {usa
 const insertTransfectLotUsageSchema = selectTransfectLotUsageSchema.omit({id: true}).partial()
 const updateTransfectLotUsageSchema = insertTransfectLotUsageSchema
 
-const selectPlasmidExperimentsSchema = createSelectSchema(plasmidExperiments, {startedOn: nullableDateSchema})
-const insertPlasmidExperimentsSchema = selectPlasmidExperimentsSchema.omit({id: true})
-const updatePlasmidExperimentsSchema = insertPlasmidExperimentsSchema
+const selectSgRnaCloningExperimentsSchema = createSelectSchema(sgRnaCloningExperiments, {transformedOn: nullableDateSchema})
+const insertSgRnaCloningExperimentsSchema = selectSgRnaCloningExperimentsSchema.omit({id: true})
+const updateSgRnaCloningExperimentsSchema = insertSgRnaCloningExperimentsSchema
+
+const selectHaCloningExperimentsSchema = createSelectSchema(haCloningExperiments, {startedOn: nullableDateSchema})
+const insertHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true}).merge(
+    z.object({
+        haCloningExperimentTargets: z.object({ targetId: z.string() }).array().nonempty("Target(s) required"),
+    }
+))
+const updateHaCloningExperimentsSchema = selectHaCloningExperimentsSchema.omit({id: true})
+
+const selectHaPcrProductsSchema = createSelectSchema(haPcrProducts, {performedOn: nullableDateSchema})
+const insertHaPcrProductsSchema = selectHaPcrProductsSchema.omit({id: true})
+const updateHaPcrProductsSchema = insertHaPcrProductsSchema
+
+const selectHaPuc19PcrProductsSchema = createSelectSchema(haPuc19PcrProducts, {cleanedOn: nullableDateSchema})
+const insertHaPuc19PcrProductsSchema = selectHaPuc19PcrProductsSchema.omit({id: true})
+const updateHaPuc19PcrProductsSchema = insertHaPuc19PcrProductsSchema
+
+const selectHaPuc19GibsonProductsSchema = createSelectSchema(haPuc19GibsonProducts, {preppedOn: nullableDateSchema})
+const insertHaPuc19GibsonProductsSchema = selectHaPuc19GibsonProductsSchema.omit({id: true})
+const updateHaPuc19GibsonProductsSchema = insertHaPuc19GibsonProductsSchema
+
+const selectHaPuc19PlasmidsSchema = createSelectSchema(haPuc19Plasmids, {transformedOn: nullableDateSchema, colonyPickedOn: nullableDateSchema, preppedOn: nullableDateSchema})
+const insertHaPuc19PlasmidsSchema = selectHaPuc19PlasmidsSchema.omit({id: true})
+const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
+
+const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
+const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
+const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
+
+const selectSnvLibAmpProductsSchema = createSelectSchema(snvLibAmpProducts, {cleanedOn: nullableDateSchema})
+const insertSnvLibAmpProductsSchema = selectSnvLibAmpProductsSchema.omit({id: true})
+const updateSnvLibAmpProductsSchema = insertSnvLibAmpProductsSchema
+
+const selectSnvLibLinProductsSchema = createSelectSchema(snvLibLinProducts, {dpn1DigestOn: nullableDateSchema, gelExtractedOn: nullableDateSchema})
+const insertSnvLibLinProductsSchema = selectSnvLibLinProductsSchema.omit({id: true})
+const updateSnvLibLinProductsSchema = insertSnvLibLinProductsSchema
+
+const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts, {gibsonOn: nullableDateSchema, cleanedOn: nullableDateSchema, transformedOn: nullableDateSchema, preppedOn: nullableDateSchema, benchlingLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()})
+const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
+const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
@@ -114,9 +158,27 @@ const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
 const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
 const updateWellContentSourcesSchema = insertWellContentSourcesSchema
 
-// const selectWellSourcesSchema = createSelectSchema(wellSources)
-// const insertWellSourcesSchema = selectWellSourcesSchema.omit({id: true}).partial()
-// const updateWellSourcesSchema = insertWellSourcesSchema
+const selectSequencingRunsSchema = createSelectSchema(sequencingRuns, {createdOn: nullableDateSchema, startedOn: nullableDateSchema, endedOn: nullableDateSchema})
+const insertSequencingRunsSchema = selectSequencingRunsSchema.omit({id: true}).partial()
+const updateSequencingRunsSchema = insertSequencingRunsSchema
+
+const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
+const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, createdAt: true}).partial()
+const updateSequencingRunSamples = insertSequencingRunSamples
+
+const selectExternalSamples = createSelectSchema(externalSamples)
+const insertExternalSamples = createSelectSchema(externalSamples, {
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+}).omit({id: true, createdAt: true}).partial()
+const updateExternalSamples = insertExternalSamples
+
+const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
+const insertSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+}).omit({id: true}).partial()
+const updateSequencingRunExternalSamples = insertSequencingRunExternalSamples
 
 const selectPelletsSchema = createSelectSchema(pellets, {harvestedOn: nullableDateSchema})
 const insertPelletsSchema = selectPelletsSchema.omit({id: true}).partial()
@@ -130,9 +192,17 @@ const selectReagentsSchema = createSelectSchema(reagents)
 const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
-const selectPlasmidsSchema = createSelectSchema(plasmids)
-const insertPlasmidsSchema = createSelectSchema(plasmids).omit({id: true})
-const updatePlasmidsSchema = insertPlasmidsSchema
+const selectSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids)
+const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
+const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
+
+const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)
+const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
+const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
+
+const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
+const insertSgRnaOligosSchema = createSelectSchema(sgRnaOligos).omit({id: true})
+const updateSgRnaOligosSchema = insertSgRnaOligosSchema
 
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
@@ -146,6 +216,10 @@ const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
 const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
+const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers)
+const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true}).partial()
+const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
+
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
@@ -154,9 +228,21 @@ const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
 const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
 const updateIndexPrimerSchema = insertIndexPrimerSchema
 
+const selectpreseq1PrimerSchema = createSelectSchema(preseq1Primers)
+const insertpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatepreseq1PrimerSchema = insertpreseq1PrimerSchema
+
+const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers)
+const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
+
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
+const selectViewSequencingRunAllSamplesSchema = createSelectSchema(viewSequencingRunAllSamples)
+const selectViewHaPuc19GibsonProductsWithCalcsSchema = createSelectSchema(viewHaPuc19GibsonProductsWithCalcs)
+const selectViewSnvLibGibsonProductsSchema = createSelectSchema(viewSnvLibGibsonProducts)
 
+// export all schemas
 export const schemas = {
     // tables
     projects: {
@@ -198,10 +284,55 @@ export const schemas = {
         insert: insertTransfectLotUsageSchema,
         update: updateTransfectLotUsageSchema,
     },
-    plasmidExperiments: {
-        select: selectPlasmidExperimentsSchema,
-        insert: insertPlasmidExperimentsSchema,
-        update: updatePlasmidExperimentsSchema,
+    sgRnaCloningExperiments: {
+        select: selectSgRnaCloningExperimentsSchema,
+        insert: insertSgRnaCloningExperimentsSchema,
+        update: updateSgRnaCloningExperimentsSchema,
+    },
+    haCloningExperiments: {
+        select: selectHaCloningExperimentsSchema,
+        insert: insertHaCloningExperimentsSchema,
+        update: updateHaCloningExperimentsSchema,
+    },
+    haPcrProducts: {
+        select: selectHaPcrProductsSchema,
+        insert: insertHaPcrProductsSchema,
+        update: updateHaPcrProductsSchema,
+    },
+    haPuc19PcrProducts: {
+        select: selectHaPuc19PcrProductsSchema,
+        insert: insertHaPuc19PcrProductsSchema,
+        update: updateHaPuc19PcrProductsSchema,
+    },
+    haPuc19GibsonProducts: {
+        select: selectHaPuc19GibsonProductsSchema,
+        insert: insertHaPuc19GibsonProductsSchema,
+        update: updateHaPuc19GibsonProductsSchema,
+    },
+    haPuc19Plasmids: {
+        select: selectHaPuc19PlasmidsSchema,
+        insert: insertHaPuc19PlasmidsSchema,
+        update: updateHaPuc19PlasmidsSchema,
+    },
+    snvLibCloningExperiments: {
+        select: selectSnvLibCloningExperimentsSchema,
+        insert: insertSnvLibCloningExperimentsSchema,
+        update: updateSnvLibCloningExperimentsSchema,
+    },
+    snvLibAmpProducts: {
+        select: selectSnvLibAmpProductsSchema,
+        insert: insertSnvLibAmpProductsSchema,
+        update: updateSnvLibAmpProductsSchema,
+    },
+    snvLibLinProducts: {
+        select: selectSnvLibLinProductsSchema,
+        insert: insertSnvLibLinProductsSchema,
+        update: updateSnvLibLinProductsSchema,
+    },
+    snvLibGibsonProducts: {
+        select: selectSnvLibGibsonProductsSchema,
+        insert: insertSnvLibGibsonProductsSchema,
+        update: updateSnvLibGibsonProductsSchema,
     },
     pcrExperiments: {
         select: selectPcrExperimentsSchema,
@@ -228,11 +359,26 @@ export const schemas = {
         insert: insertWellContentSourcesSchema,
         update: updateWellContentSourcesSchema,
     },
-    // wellSources: {
-    //     select: selectWellSourcesSchema,
-    //     insert: insertWellSourcesSchema,
-    //     update: updateWellSourcesSchema,
-    // },
+    sequencingRuns: {
+        select: selectSequencingRunsSchema,
+        insert: insertSequencingRunsSchema,
+        update: updateSequencingRunsSchema,
+    },
+    sequencingRunSamples: {
+        select: selectSequencingRunSamples,
+        insert: insertSequencingRunSamples,
+        update: updateSequencingRunSamples,
+    },
+    externalSamples: {
+        select: selectExternalSamples,
+        insert: insertExternalSamples,
+        update: updateExternalSamples,
+    },
+    sequencingRunExternalSamples: {
+        select: selectSequencingRunExternalSamples,
+        insert: insertSequencingRunExternalSamples,
+        update: updateSequencingRunExternalSamples,
+    },
     extractionExperiments: {
         select: selectExtractionExperimentsSchema,
         insert: insertExtractionExperimentsSchema,
@@ -243,15 +389,25 @@ export const schemas = {
         insert: insertExtractionLotUsageSchema,
         update: updateExtractionLotUsageSchema,
     },
-    plasmids: {
-        select: selectPlasmidsSchema,
-        insert: insertPlasmidsSchema,
-        update: updatePlasmidsSchema,
+    sgRnaPlasmids: {
+        select: selectSgRnaPlasmidsSchema,
+        insert: insertSgRnaPlasmidsSchema,
+        update: updateSgRnaPlasmidsSchema,
+    },
+    snvLibPlasmids: {
+        select: selectSnvLibPlasmidsSchema,
+        insert: insertSnvLibPlasmidsSchema,
+        update: updateSnvLibPlasmidsSchema,
     },
     nucleicAcids: {
         select: selectNucleicAcidsSchema,
         insert: insertNucleicAcidsSchema,
         update: updateNucleicAcidsSchema,
+    },
+    sgRnaOligos: {
+        select: selectSgRnaOligosSchema,
+        insert: insertSgRnaOligosSchema,
+        update: updateSgRnaOligosSchema,
     },
     pellets: {
         select: selectPelletsSchema,
@@ -278,6 +434,11 @@ export const schemas = {
         insert: insertHomologyArmPrimerSchema,
         update: updateHomologyArmPrimerSchema,
     },
+    homologyArmPuc19Primers: {
+        select: selectHomologyArmPuc19PrimerSchema,
+        insert: insertHomologyArmPuc19PrimerSchema,
+        update: updateHomologyArmPuc19PrimerSchema,
+    },
     linearizationPrimers: {
         select: selectLinearizationPrimerSchema,
         insert: insertLinearizationPrimerSchema,
@@ -288,9 +449,27 @@ export const schemas = {
         insert: insertIndexPrimerSchema,
         update: updateIndexPrimerSchema,
     },
-
+    preseq1Primers: {
+        select: selectpreseq1PrimerSchema,
+        insert: insertpreseq1PrimerSchema,
+        update: updatepreseq1PrimerSchema,
+    },
+    preseq2Primers: {
+        select: selectpreseq2PrimerSchema,
+        insert: insertpreseq2PrimerSchema,
+        update: updatepreseq2PrimerSchema,
+    },
     // views
     viewPlatesWithWellCounts: {
         select: selectViewPlatesWithWellCountsSchema,
+    },
+    viewSequencingRunAllSamples: {
+        select: selectViewSequencingRunAllSamplesSchema
+    },
+    viewHaPuc19GibsonProductsWithCalcs: {
+        select: selectViewHaPuc19GibsonProductsWithCalcsSchema
+    },
+    viewSnvLibGibsonProducts: {
+        select: selectViewSnvLibGibsonProductsSchema
     },
 }

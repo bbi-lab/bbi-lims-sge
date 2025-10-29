@@ -1,0 +1,1 @@
+ALTER TABLE "plasmid_experiments" ADD COLUMN "experiment_type" varchar NOT NULL;

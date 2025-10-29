@@ -4,6 +4,8 @@ import { RecordService } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
 import { useActiveElement } from '@vueuse/core'
+import moment from 'moment'
+import type { FieldDefinitions} from '~/components/QuickForm.vue'
 
 const config = useRuntimeConfig()
 const confirmPopup = useConfirm()
@@ -23,8 +25,8 @@ const props = defineProps({
   schemaName: {type: String, required: true},
   readOnly: {type: Boolean, default: false},
   withClause: {type: Object},
-  fieldDefs: {type: Object},                 // to override widgets/labels for individual fields
-  readonlyValues: {type: Object},             // to hide fields on form
+  fieldDefs: {type: Object as PropType<FieldDefinitions>},   // to override widgets/labels for individual fields
+  readonlyValues: {type: Object},                           // to hide fields on form
 })
 const emit = defineEmits([
     'records-update',
@@ -101,6 +103,21 @@ const refreshForm = async function() {
     formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
     records.value = await RecordService.getRecordsByIds(apiBaseUrl.value, props.recordIds, props.withClause)
 
+    if (formSchema.value?.properties) {
+        // convert date strings to Date objects
+        _.forEach(formSchema.value.properties, (value, key) => {
+            _.forEach(records.value, (record) => {
+                if (record[key] && _.includes(['date', 'date-time'], getFieldType(value, key, props.fieldDefs))) {
+                    try {
+                        record[key] = moment(record[key]).toDate()
+                    } catch (e) {
+                        console.error(`Error converting field ${key} to date:`, e)
+                    }
+                }
+            })
+        })
+    }
+
     combinedRecord.value = _.reduce(records.value, (acc: any, record) => {
         _.forEach(record, (value, key) => {
             if (key == 'id') return  // ignore ids
@@ -146,12 +163,10 @@ async function saveRecords() {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
-        if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-            showLoginModal()
-        } else if (formElement.value && _.isArray(error.data?.data)) {
+        if (formElement.value && _.isArray(error.data?.data)) {
             addErrorsToForm(formElement.value, error.data.data)
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         }
     })
 }
@@ -194,6 +209,11 @@ function getLabel(key: string) {
         return _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key))
     }
 }
+function isArrayInputDisabled(key: string, arrayIndex: number) {
+    // disable input if canUpdate is false and any of the records being edited has any id values for the given key
+    const hasIds = _.some(records.value, (record) => _.get(record, [key, arrayIndex, 'id']) !== null)
+    return isReadOnly(key) || isReadOnly(`${key}.*`) || (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && hasIds)
+}
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
@@ -201,17 +221,18 @@ function getLabel(key: string) {
         <Button v-if="!readOnly" class="ml-1" v-tooltip="{value: 'Save'}" icon="pi pi-save" size="small" :disabled="!dataChanged" @click="saveRecords" />
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
+        <slot name="form-element-header" />
         <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
-            <template v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
-                <div class="mb-5" v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+            <div class="mb-5" v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
+                <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
                     <div class="flex items-start">
                         <AutoCompleter
                             :input-id="key"
                             :inputClass="inputClasses[key]"
                             v-model="combinedRecord[key].val"
                             v-model:obj="relatedRecords[key]"
-                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
@@ -223,9 +244,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='NestedSelect'">
                     <div class="flex items-start">
                         <NestedSelect
                             :key="key"
@@ -233,7 +253,7 @@ function getLabel(key: string) {
                             :inputClass="inputClasses[key]"
                             :ref="(el) => _.set(inputRefs, key, el)"
                             v-model="combinedRecord[key].val"
-                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                             :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
@@ -245,21 +265,19 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='Select'">
                     <Select
                         :id="key"
                         :class="inputClasses[key]"
                         v-model="combinedRecord[key].val"
-                        v-bind="_.get(fieldDefs, [key, 'props'])"
+                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                         :placeholder="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                     />
-                </div>
-                <div class="mb-5" v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
-                    <label :for="key" class="block font-bold mb-3">{{ _.get(fieldDefs, [key, 'label'], formatFieldLabel(key)) }}</label>
+                </template>
+                <template v-else-if="_.get(fieldDefs, [key, 'component'])=='InputNumber'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputText
                             v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'])"
@@ -276,7 +294,7 @@ function getLabel(key: string) {
                             :inputId="key"
                             :inputClass="inputClasses[key]"
                             v-model="combinedRecord[key].val"
-                            v-bind="_.get(fieldDefs, [key, 'props'])"
+                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                             showButtons :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
                             :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
@@ -290,9 +308,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date'">
                     <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
@@ -313,9 +330,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='date-time'">
                     <div class="flex items-start quickform-input-wrapper">
                         <DatePicker
                             :id="key"
@@ -338,9 +354,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="val?.enum">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="val?.enum">
                     <Select
                         :id="key"
                         :class="inputClasses[key]"
@@ -349,9 +364,8 @@ function getLabel(key: string) {
                         :placeholder="_.has(combinedRecord, [key, 'conflictingValueCount']) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                         :disabled="isReadOnly(key)"
                     />
-                </div>
-                <div class="mb-5" v-else-if="val?.oneOf">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="val?.oneOf">
                     <div class="flex items-start quickform-input-wrapper">
                         <Select
                             :id="key"
@@ -370,9 +384,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='boolean'">
                     <Checkbox
                         :id="key"
                         :pt="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null ? { box: { class: 'bg-surface-200 dark:bg-gray-800' } } : {}"
@@ -387,9 +400,8 @@ function getLabel(key: string) {
                         </template>
                     </Button>
                     <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} values`}}</span>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='integer'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
@@ -410,9 +422,8 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='number'">
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='number'">
                     <div class="flex items-start quickform-input-wrapper">
                         <InputNumber
                             :id="key"
@@ -432,68 +443,69 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-                <div class="mb-5" v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
-                    <div class="flex items-start quickform-input-wrapper">
-                        <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                        <Button v-if="(_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount'])" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
-                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
-                            <template #icon>
-                                <GrommetIconsRevert />
-                            </template>
-                        </Button>
-                        </div>
-                    <div class="group">
-                        <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} sets of values`}}</span>
-                        <span v-else-if="_.isEmpty(combinedRecord[key].val)" class="pl-3">No values</span>
-
-                        <Button v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
-                    </div>
-
-                    <!-- Iterate over array items -->
-                    <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
-                        <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='ManyToMany'">
-                            <ManyToMany
-                                v-model="combinedRecord[key].val[arrayIndex]"
-                                v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                :disabled="isReadOnly(key) || (!_.get(fieldDefs, [`${key}.*`, 'canUpdate']) && !_.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
-                                :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
-                                @did-click-delete="combinedRecord[key].val.splice(arrayIndex, 1)"
-                            />
-                        </div>
-                        <!-- Check that all array item properties are covered by JSON schema -->
-                        <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
-                            <template v-for="itemKey in Object.keys(arrayItem)" >
-                                <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                    <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
-                                </span>
-                                <!-- don't display UUID fields, values should not change -->
-                                <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                    <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" />
-                                </span>
-                            </template>
-                            <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
-                        </div>
-                        <div class="mt-2" v-else-if="val.items.type=='string'">
-                            <div class="flex items-start quickform-input-wrapper">
-                                <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" />
-                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                </template>
+                <template v-else-if="getFieldType(val, key, fieldDefs)=='array' && val?.items">
+                    <div :id="key">
+                        <div class="flex items-start quickform-input-wrapper">
+                            <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
+                            <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && ((_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount']))" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
+                            <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) &&_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
+                                <template #icon>
+                                    <GrommetIconsRevert />
+                                </template>
+                            </Button>
                             </div>
+                        <div class="group">
+                            <span v-if="_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val == null" class="pl-3">{{`${_.get(combinedRecord, [key, 'conflictingValueCount'])} sets of values`}}</span>
+                            <span v-else-if="_.isEmpty(combinedRecord[key].val)" class="pl-3">No values</span>
+
+                            <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) &&_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val==null" v-tooltip="{value: 'Overwrite values', showDelay: 1000}" icon="pi pi-pencil" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
                         </div>
-                        <div class="mt-2" v-else-if="val.items.type=='integer'">
-                            <div class="flex items-start quickform-input-wrapper">
-                                <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]" showButtons :minFractionDigits="0" :maxFractionDigits="0" />
-                                <Button class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+
+                        <!-- Iterate over array items -->
+                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
+                            <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
+                                <InputArray
+                                    v-model="combinedRecord[key].val[arrayIndex]"
+                                    v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
+                                    :disabled="isArrayInputDisabled(key, arrayIndex)"
+                                    :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
+                                    @did-click-delete="combinedRecord[key].val.splice(arrayIndex, 1)"
+                                />
                             </div>
+                            <!-- Check that all array item properties are covered by JSON schema -->
+                            <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
+                                <template v-for="itemKey in Object.keys(arrayItem)" >
+                                    <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
+                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                    </span>
+                                    <!-- don't display UUID fields, values should not change -->
+                                    <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
+                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
+                                    </span>
+                                </template>
+                                <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                            </div>
+                            <div class="mt-2" v-else-if="val.items.type=='string'">
+                                <div class="flex items-start quickform-input-wrapper">
+                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" />
+                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                </div>
+                            </div>
+                            <div class="mt-2" v-else-if="val.items.type=='integer'">
+                                <div class="flex items-start quickform-input-wrapper">
+                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" :showButtons="!isArrayInputDisabled(key, arrayIndex)" :minFractionDigits="0" :maxFractionDigits="0" />
+                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                </div>
+                            </div>
+                            <!-- Array properties not covered by JSON schema -->
+                            <template v-else=>
+                                <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
+                            </template>
                         </div>
-                        <!-- Array properties not covered by JSON schema -->
-                        <template v-else=>
-                            <InputText class="w-80" disabled v-model="combinedRecord[key].val[arrayIndex]" />
-                        </template>
                     </div>
-                </div>
-                <div class="mb-5" v-else>
-                    <label :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
+                </template>
+                <template v-else>
                     <!-- <InputText v-if="_.has(combinedRecord[key].val, '__conflictingValues')" :id="key" @focusin="handleFocusIn" @focusout="handleFocusOut" :placeholder="`${combinedRecord[key].val['__conflictingValues']} values`" class="w-80" :disabled="isReadOnly(key)" /> -->
                     <div class="flex items-start quickform-input-wrapper">
                         <InputText
@@ -502,9 +514,10 @@ function getLabel(key: string) {
                             :class="`w-80 ${inputClasses[key]}`"
                             :disabled="isReadOnly(key)"
                             :placeholder="placeholders[key]"
+                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
                             v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
-                        <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(combinedRecord, [key, 'conflictingValueCount']) || !_.isEmpty(combinedRecord[key].val))"
+                        <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && (!_.has(combinedRecord, [key, 'conflictingValueCount']) && isValidUrl(combinedRecord[key].val))"
                             :href="combinedRecord[key].val"
                             target="_blank">
                             <Button class="ml-2" icon="pi pi-external-link" variant="text" severity="info" />
@@ -516,8 +529,9 @@ function getLabel(key: string) {
                             </template>
                         </Button>
                     </div>
-                </div>
-            </template>
+                </template>
+                <div v-if="_.has(fieldDefs, [key, 'subtext'])" class="italic mt-3mb-3">{{ getSubtext(key) }}</div>
+            </div>
         </div>
     </div>
     <ConfirmPopup></ConfirmPopup>

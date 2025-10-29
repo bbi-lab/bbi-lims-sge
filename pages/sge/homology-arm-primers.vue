@@ -7,76 +7,66 @@ import { wellCoordinateToChar } from '~/lib/plate-diagram'
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 
-const displayWithClause = Object.freeze({
-    target: {
-        columns: {
-            name: true
-        },
+const withClause = Object.freeze({
+    targets: {
         with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
-                columns: {
-                    name: true
-                },
-                with: {
-                    gene: {
-                        columns: {
-                            symbol: true
-                        }
-                    }
-                }
-            }
-        }
-    },
-    wellContents: {
-        with: {
-            well: {
+            target: {
                 columns: {
                     id: true,
-                    x: true,
-                    y: true,
-                },
-                with: {
-                    plate: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            plateType: true,
-                        }
-                    }
+                    name: true,
                 }
             },
-        },
+        }
     },
+    wellable: {
+        with: {
+            wellContents: {
+                with: {
+                    well: {
+                        columns: {
+                            id: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
+                        }
+                    },
+                },
+            },
+        }
+    }
 })
 
 const columnDefs: ColumnDefinitions = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
-        format: (x) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+    targets: {
+        format: (data: any) => {
+            return _.map(data.targets, 'target.name')
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'targets.displayValue',
         index: 2,
-    },
-    project: {
-        format: (x) => {
-            return x.target?.project?.name || ''
-        },
-        path: 'project.displayValue',
-        index: 3,
     },
     wellContents: {
         header: 'Location',
-        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        format: (x: any) => {
+            //.return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''
+            if (!_.isEmpty(x?.wellable?.wellContents)) {
+                return _.map(x.wellable.wellContents, (wellContent) => {
+                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
+                }).join(', ')
+            } else {
+                return ''
+            }
+        },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 5,
@@ -84,15 +74,29 @@ const columnDefs: ColumnDefinitions = {
 }
 
 const fieldDefs: FieldDefinitions = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'targets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: false,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['region.gene.symbol', 'region.name', 'name'],
+                        valueField: 'id',
+                        inputClass: 'w-64',
+                        displayFormat: (x: any) => {
+                            return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+                        },
+                        searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+                    },
+                },
+            ]
         }
     },
 }
@@ -105,7 +109,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="homology-arm-primers"
                 schemaName="select"
                 title="Homology Arm Primers"
-                :with-clause="displayWithClause"
+                :with-clause="withClause"
                 :column-defs="columnDefs"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
@@ -116,7 +120,8 @@ const fieldDefs: FieldDefinitions = {
                 v-if="crudTable.state.showAddForm"
                 tableName="homology-arm-primers"
                 schemaName="insert"
-                :field-defs="fieldDefs"
+                :fieldDefs="fieldDefs"
+                :withClause="withClause"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -125,7 +130,8 @@ const fieldDefs: FieldDefinitions = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="homology-arm-primers"
                 schemaName="update"
-                :field-defs="fieldDefs"
+                :fieldDefs="fieldDefs"
+                :withClause="withClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

@@ -6,9 +6,11 @@ import Molecule from '~icons/mdi/molecule'
 import DotsTriangle from '~icons/mdi/dots-triangle'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import DnaIcon from '~icons/mdi/dna'
-import IcBaselineStraighten from '~icons/ic/baseline-straighten'
 import IconParkSolidExperiment from '~icons/icon-park-solid/experiment'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
+import FluentRun16Filled from '~icons/fluent/run-16-filled'
+import FluentMolecule16Filled from '~icons/fluent/molecule-16-filled'
+import MdiMagic from '~icons/mdi/magic'
 
 const model = ref([
     {
@@ -19,16 +21,48 @@ const model = ref([
             { label: 'Targets', icon: 'pi pi-fw pi-bullseye', to: '/sge/targets' },
             { label: 'Genes', iconComponent: DnaIcon, to: '/sge/genes' },
             { label: 'Regions', icon: 'pi pi-fw pi-map', to: '/sge/regions' },
-            { label: 'Plasmids', icon: 'pi pi-fw pi-spinner', to: '/sge/plasmids' },
+            { label: 'Plasmids', icon: 'pi pi-fw pi-spinner',
+                items: [
+                    { label: 'sgRNA', to: '/sge/sg-rna-plasmids' },
+                    { label: 'SNV Library', to: '/sge/snv-lib-plasmids' },
+                    { label: 'HA pUC19', to: '/sge/ha-puc-19-plasmids' },
+                ]
+            },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
             { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
+            { label: 'Oligos', iconComponent: FluentMolecule16Filled,
+                items: [
+                    { label: 'sgRNA', to: '/sge/sg-rna-oligos' },
+                    { label: 'HA products', items: [
+                        { label: 'HA PCR products', to: '/sge/ha-pcr-products' },
+                        { label: 'HA pUC19 PCR products', to: '/sge/ha-puc-19-pcr-products' },
+                        { label: 'HA pUC19 Gibson products', to: '/sge/ha-puc-19-gibson-products' },
+                    ]},
+                    { label: 'SNVlib products', items: [
+                        { label: 'SNVlib AMP products', to: '/sge/snv-lib-amp-products' },
+                        { label: 'SNVlib LIN products', to: '/sge/snv-lib-lin-products' },
+                        { label: 'SNVlib Gibson products', to: '/sge/snv-lib-gibson-products' },
+                    ]},
+                    { label: 'Primers', items: [
+                        { label: 'Amplification primers', to: '/sge/amplification-primers' },
+                        { label: 'Linearization primers', to: '/sge/linearization-primers' },
+                        { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
+                        { label: 'Homology Arm pUC19 primers', to: '/sge/homology-arm-puc-19-primers' },
+                        { label: 'PreSeq 1 primers', to: '/sge/preseq-1-primers' },
+                        { label: 'PreSeq 2 primers', to: '/sge/preseq-2-primers' },
+                        { label: 'Index primers', to: '/sge/index-primers' },
+                    ]},
+                ]
+             },
             { label: 'Plates/Storage', iconComponent: PhGridNineFill, to: '/sge/plates' },
             { label: 'Experiments', iconComponent: IconParkSolidExperiment,
                 items: [
-                    { label: 'PCR', to: '/sge/pcr-experiments' },
+                    { label: 'sgRNA Cloning', to: '/sge/sg-rna-cloning-experiments' },
+                    { label: 'HA Cloning', to: '/sge/ha-cloning-experiments' },
+                    { label: 'SNV Library Cloning', to: '/sge/snv-lib-cloning-experiments' },
                     { label: 'Transfection', to: '/sge/transfect-experiments' },
-                    { label: 'Plasmid', to: '/sge/plasmid-experiments' },
                     { label: 'Extraction', to: '/sge/extraction-experiments' },
+                    { label: 'PCR', to: '/sge/pcr-experiments' },
                 ]
             },
             { label: 'Reagents', iconComponent: BeakerOutline,
@@ -37,14 +71,37 @@ const model = ref([
                     { label: 'Reagent List', to: '/sge/reagents' },
                 ]
             },
-            { label: 'Primers', iconComponent: IcBaselineStraighten, style: 'transform: scale(1, -1)',
+            { label: 'Sequencing', iconComponent: FluentRun16Filled,
                 items: [
-                    { label: 'Amplification', to: '/sge/amplification-primers' },
-                    { label: 'Linearization', to: '/sge/linearization-primers' },
-                    { label: 'Homology Arm', to: '/sge/homology-arm-primers' },
-                    { label: 'Index', to: '/sge/index-primers' },
+                    { label: 'Internal Samples', to: '/sge/internal-samples' },
+                    { label: 'External Samples', to: '/sge/external-samples' },
+                    { label: 'Sequencing Runs', to: '/sge/sequencing-runs' },
                 ]
-            }
+            },
+            { label: 'External', icon: 'pi pi-fw pi-external-link',
+                items: [
+                    {
+                        label: 'UCSC In-silico PCR',
+                        url: 'https://genome.ucsc.edu/cgi-bin/hgPcr',
+                        target: '_blank'
+                    },
+                    {
+                        label: 'UCSC Blat',
+                        url: 'https://genome.ucsc.edu/cgi-bin/hgBlat',
+                        target: '_blank',
+                    },
+                    {
+                        label: 'Primer3',
+                        url: 'https://bioinfo.ut.ee/primer3-0.4.0',
+                        target: '_blank',
+                    },
+                ]
+             },
+            { label: 'Experimental', class: 'italic', iconComponent: MdiMagic,
+                items: [
+                    { label: 'JBrowse', to: '/sge/experimental/jbrowse' },
+                ]
+             },
         ]
     },
     {

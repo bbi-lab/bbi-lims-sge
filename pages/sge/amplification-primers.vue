@@ -2,63 +2,25 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
+const route = useRoute()
 
-// const showAddForm = ref(false)
-// const showEditForm = ref(false)
-// const editingRecordId = ref<string | null>(null)
-// const amplificationPrimersTable = ref()
-// const showMultipleEditForm = ref(false)
-// const editingMultipleRecordsIds = ref<string[]>([])
+const tableKey = ref<string>(uuidv4())
+const whereClauses = ref()
+const readonlyValues = ref<Record<string, any>>({})
 
-// function didClickRecordEdit(event: any) {
-//     editingRecordId.value = event.id
-//     showEditForm.value = true
-//     showAddForm.value = false
-// }
+watch(() => route.query, async (newValue, oldValue) => {
+    const queryParamFilters = _.map(newValue, (val, key) => {
+        return {"==": [{"var": key}, val] }
+    })
+    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+    readonlyValues.value = newValue
+    tableKey.value = uuidv4()
+}, { immediate: true })
 
-// function didClickRecordAdd() {
-//     showAddForm.value = true
-//     showEditForm.value = false
-// }
-// function didClickCancelAddForm() {
-//     showAddForm.value = false
-// }
-// function didClickCancelEditForm() {
-//     editingRecordId.value = null
-//     showEditForm.value = false
-// }
-
-// function didAddRecord(event: any) {
-//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-//     showAddForm.value = false
-// }
-// function didUpdateRecord(event: any) {
-//     amplificationPrimersTable.value.addOrRefreshRecordId(event.id)
-//     showEditForm.value = false
-// }
-// function didDeleteRecord(event: any) {
-//     amplificationPrimersTable.value.removeRecordId(event.id)
-//     showEditForm.value = false
-// }
-// function didClickMultipleRecordEdit(recordIds: string[]) {
-//     editingMultipleRecordsIds.value = recordIds
-//     showMultipleEditForm.value = true
-//     showEditForm.value = false
-//     showAddForm.value = false
-// }
-// function didClickCancelMultipleEditForm() {
-//     editingMultipleRecordsIds.value = []
-//     showMultipleEditForm.value = false
-// }
-// function didUpdateMultipleRecords(event: any) {
-//     event.forEach((e: any) => {
-//         if (e.id) amplificationPrimersTable.value.addOrRefreshRecordId(e.id)
-//     })
-//     showMultipleEditForm.value = false
-// }
 const displayWithClause = Object.freeze({
     target: {
         columns: {
@@ -84,23 +46,27 @@ const displayWithClause = Object.freeze({
             },
         },
     },
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
         },
     },
@@ -128,7 +94,15 @@ const columnDefs = {
     },
     wellContents: {
         header: 'Location',
-        format: (x: any) => { return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
+        format: (x: any) => {
+            if (!_.isEmpty(x?.wellable?.wellContents)) {
+                return _.map(x.wellable.wellContents, (wellContent) => {
+                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
+                }).join(', ')
+            } else {
+                return ''
+            }
+        },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 5,
@@ -153,11 +127,13 @@ const fieldDefs: FieldDefinitions = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
                 tableName="amplification-primers"
                 schemaName="select"
                 title="Amplification Primers"
                 :withClause="displayWithClause"
+                :where="whereClauses"
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
@@ -172,6 +148,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="amplification-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
@@ -181,6 +158,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="amplification-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
@@ -191,6 +169,7 @@ const fieldDefs: FieldDefinitions = {
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"
             />

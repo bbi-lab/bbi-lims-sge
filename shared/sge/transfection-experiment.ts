@@ -7,7 +7,7 @@ import { dateSchema } from '../../server/db/helpers/schemas'
 import { z } from 'zod'
 import _ from 'lodash'
 import type { DBQueryConfig } from 'drizzle-orm'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, ne } from 'drizzle-orm'
 
 const baseUrl = '/api/transfect-experiments'
 const pelletsUrl = '/api/pellets'
@@ -32,6 +32,7 @@ type TransfectionTargetSelect = z.infer<typeof transfectionTargetSelect>
 type TranfectionExperimentTarget = TransfectionTargetSelect & {
     target: {
         name: string
+        negativeControl: boolean
         region: {
             name: string
             gene: {
@@ -80,7 +81,8 @@ export class TransfectionExperiment {
                     transfectTargets: {
                         columns: {
                             id: true,
-                            transfectionCount: true
+                            transfectionCount: true,
+                            negativeControl: true,
                         },
                         with: {
                             pellets: {
@@ -209,6 +211,21 @@ export class TransfectionExperiment {
 
         if (data.value) {
             return {success: true, data: data.value}
+        } else {
+            return {success: false}
+        }
+    }
+
+    async deletePellets(pelletIds: string[]) {
+        const deletedPellets: PelletSelect[] = []
+        for (const pelletId of pelletIds) {
+            const {data} = await useFetch<PelletSelect>(`${pelletsUrl}/${pelletId}`, {method: 'DELETE'})
+            if (data.value) {
+                deletedPellets.push(data.value)
+            }
+        }
+        if (!_.isEmpty(deletedPellets)) {
+            return {success: true, data: deletedPellets}
         } else {
             return {success: false}
         }

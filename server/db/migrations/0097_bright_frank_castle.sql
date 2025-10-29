@@ -1,0 +1,6 @@
+ALTER TABLE "well_contents" DROP CONSTRAINT "one_item_per_well_content";--> statement-breakpoint
+ALTER TABLE "well_contents" ADD COLUMN "pcr_1_primer_id" uuid;--> statement-breakpoint
+ALTER TABLE "well_contents" ADD COLUMN "pcr_2_primer_id" uuid;--> statement-breakpoint
+ALTER TABLE "well_contents" ADD CONSTRAINT "well_contents_pcr_1_primer_id_pcr_1_primers_id_fk" FOREIGN KEY ("pcr_1_primer_id") REFERENCES "public"."pcr_1_primers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "well_contents" ADD CONSTRAINT "well_contents_pcr_2_primer_id_pcr_2_primers_id_fk" FOREIGN KEY ("pcr_2_primer_id") REFERENCES "public"."pcr_2_primers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "well_contents" ADD CONSTRAINT "one_item_per_well_content" CHECK (num_nonnulls("well_contents"."amplification_primer_id", "well_contents"."linearization_primer_id", "well_contents"."homology_arm_primer_id", "well_contents"."pcr_1_primer_id", "well_contents"."pcr_2_primer_id", "well_contents"."index_primer_id", "well_contents"."nucleic_acid_id", "well_contents"."pellet_id", "well_contents"."sg_rna_plasmid_id", "well_contents"."snv_lib_plasmid_id", "well_contents"."oligo_id") = 1);

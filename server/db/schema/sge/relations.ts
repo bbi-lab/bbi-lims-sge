@@ -2,10 +2,9 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { pcrExperiments } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
-import { plasmidExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
-import { wellContents, wellContentSources, wells } from './well'
+import { wellables, wellContents, wellContentSources, wells } from './well'
 import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
@@ -16,9 +15,13 @@ import { pellets } from './pellet'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { plasmids } from './plasmid'
 import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, indexPrimers, linearizationPrimers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
+import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
+import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
+import { externalSamples } from './external-samples'
 
 const genesRelationsConfig: RelationsConfig = {
     many: {
@@ -61,35 +64,70 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: wells,
             references: [wells.id],
         },
-        amplificationPrimer: {
-            fields: [wellContents.amplificationPrimerId],
-            referenceTable: amplificationPrimers,
-            references: [amplificationPrimers.id],
-        },
-        linearizationPrimer: {
-            fields: [wellContents.linearizationPrimerId],
-            referenceTable: linearizationPrimers,
-            references: [linearizationPrimers.id],
-        },
-        homologyArmPrimer: {
-            fields: [wellContents.homologyArmPrimerId],
-            referenceTable: homologyArmPrimers,
-            references: [homologyArmPrimers.id],
-        },
-        indexPrimer: {
-            fields: [wellContents.indexPrimerId],
-            referenceTable: indexPrimers,
-            references: [indexPrimers.id],
-        },
-        nucleicAcid: {
-            fields: [wellContents.nucleicAcidId],
-            referenceTable: nucleicAcids,
-            references: [nucleicAcids.id],
-        },
-        pellet: {
-            fields: [wellContents.pelletId],
-            referenceTable: pellets,
-            references: [pellets.id],
+        // amplificationPrimer: {
+        //     fields: [wellContents.amplificationPrimerId],
+        //     referenceTable: amplificationPrimers,
+        //     references: [amplificationPrimers.id],
+        // },
+        // linearizationPrimer: {
+        //     fields: [wellContents.linearizationPrimerId],
+        //     referenceTable: linearizationPrimers,
+        //     references: [linearizationPrimers.id],
+        // },
+        // homologyArmPrimer: {
+        //     fields: [wellContents.homologyArmPrimerId],
+        //     referenceTable: homologyArmPrimers,
+        //     references: [homologyArmPrimers.id],
+        // },
+        // preseq1Primer: {
+        //     fields: [wellContents.preseq1PrimerId],
+        //     referenceTable: preseq1Primers,
+        //     references: [preseq1Primers.id],
+        // },
+        // preseq2Primer: {
+        //     fields: [wellContents.preseq2PrimerId],
+        //     referenceTable: preseq2Primers,
+        //     references: [preseq2Primers.id],
+        // },
+        // indexPrimer: {
+        //     fields: [wellContents.indexPrimerId],
+        //     referenceTable: indexPrimers,
+        //     references: [indexPrimers.id],
+        // },
+        // nucleicAcid: {
+        //     fields: [wellContents.nucleicAcidId],
+        //     referenceTable: nucleicAcids,
+        //     references: [nucleicAcids.id],
+        // },
+        // pellet: {
+        //     fields: [wellContents.pelletId],
+        //     referenceTable: pellets,
+        //     references: [pellets.id],
+        // },
+        // sgRnaPlasmid: {
+        //     fields: [wellContents.sgRnaPlasmidId],
+        //     referenceTable: sgRnaPlasmids,
+        //     references: [sgRnaPlasmids.id],
+        // },
+        // snvLibPlasmid: {
+        //     fields: [wellContents.snvLibPlasmidId],
+        //     referenceTable: snvLibPlasmids,
+        //     references: [snvLibPlasmids.id],
+        // },
+        // sgRnaOligo: {
+        //     fields: [wellContents.sgRnaOligoId],
+        //     referenceTable: sgRnaOligos,
+        //     references: [sgRnaOligos.id],
+        // },
+        // externalSample: {
+        //     fields: [wellContents.externalSampleId],
+        //     referenceTable: externalSamples,
+        //     references: [externalSamples.id],
+        // },
+        wellable: {
+            fields: [wellContents.wellableId],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
     many: {
@@ -101,6 +139,119 @@ const wellContentsRelationsConfig: RelationsConfig = {
     },
 }
 export const wellContentsRelations = relationsConfigToRelations(wellContents, wellContentsRelationsConfig)
+
+const wellablesRelationsConfig: RelationsConfig = {
+    one: {
+        amplificationPrimer: {
+            fields: [wellables.id],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        linearizationPrimer: {
+            fields: [wellables.id],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        homologyArmPrimer: {
+            fields: [wellables.id],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        homologyArmPuc19Primer: {
+            fields: [wellables.id],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
+        },
+        preseq1Primer: {
+            fields: [wellables.id],
+            referenceTable: preseq1Primers,
+            references: [preseq1Primers.id],
+        },
+        preseq2Primer: {
+            fields: [wellables.id],
+            referenceTable: preseq2Primers,
+            references: [preseq2Primers.id],
+        },
+        indexPrimer: {
+            fields: [wellables.id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        nucleicAcid: {
+            fields: [wellables.id],
+            referenceTable: nucleicAcids,
+            references: [nucleicAcids.id],
+        },
+        pellet: {
+            fields: [wellables.id],
+            referenceTable: pellets,
+            references: [pellets.id],
+        },
+        sgRnaPlasmid: {
+            fields: [wellables.id],
+            referenceTable: sgRnaPlasmids,
+            references: [sgRnaPlasmids.id],
+        },
+        snvLibPlasmid: {
+            fields: [wellables.id],
+            referenceTable: snvLibPlasmids,
+            references: [snvLibPlasmids.id],
+        },
+        sgRnaOligo: {
+            fields: [wellables.id],
+            referenceTable: sgRnaOligos,
+            references: [sgRnaOligos.id],
+        },
+        externalSample: {
+            fields: [wellables.id],
+            referenceTable: externalSamples,
+            references: [externalSamples.id],
+        },
+        haPcrProduct: {
+            fields: [wellables.id],
+            referenceTable: haPcrProducts,
+            references: [haPcrProducts.id],
+        },
+        haPuc19PcrProduct: {
+            fields: [wellables.id],
+            referenceTable: haPuc19PcrProducts,
+            references: [haPuc19PcrProducts.id],
+        },
+        haPuc19GibsonProduct: {
+            fields: [wellables.id],
+            referenceTable: haPuc19GibsonProducts,
+            references: [haPuc19GibsonProducts.id],
+        },
+        haPuc19Plasmid: {
+            fields: [wellables.id],
+            referenceTable: haPuc19Plasmids,
+            references: [haPuc19Plasmids.id],
+        },
+        snvLibAmpProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibAmpProducts,
+            references: [snvLibAmpProducts.id],
+        },
+        snvLibLinProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibLinProducts,
+            references: [snvLibLinProducts.id],
+        },
+        snvLibGibsonProduct: {
+            fields: [wellables.id],
+            referenceTable: snvLibGibsonProducts,
+            references: [snvLibGibsonProducts.id],
+        },
+    },
+    many: {
+        wellContents: {
+            table: wellContents,
+            schema: createSelectSchema(wellContents),
+            fields: [wellContents.wellableId],
+        },
+    }
+}
+export const wellablesRelations = relationsConfigToRelations(wellables, wellablesRelationsConfig)
 
 const wellContentSourcesRelationsConfig: RelationsConfig = {
     one: {
@@ -122,27 +273,6 @@ const wellContentSourcesRelationsConfig: RelationsConfig = {
     },
 }
 export const wellContentSourcesRelations = relationsConfigToRelations(wellContentSources, wellContentSourcesRelationsConfig)
-
-// const wellSourcesRelationsConfig: RelationsConfig = {
-//     one: {
-//         sourceWell: {
-//             fields: [wellSources.sourceWellId],
-//             referenceTable: wells,
-//             references: [wells.id],
-//         },
-//         destWell: {
-//             fields: [wellSources.destWellId],
-//             referenceTable: wells,
-//             references: [wells.id],
-//         },
-//         createdBy: {
-//             fields: [wellSources.createdBy],
-//             referenceTable: users,
-//             references: [users.id],
-//         },
-//     },
-// }
-// export const wellSourcesRelations = relationsConfigToRelations(wellSources, wellSourcesRelationsConfig)
 
 const wellsRelationsConfig: RelationsConfig = {
     one:{
@@ -168,7 +298,17 @@ const platesRelationsConfig: RelationsConfig = {
             fields: [plates.pcrExperimentId],
             referenceTable: pcrExperiments,
             references: [pcrExperiments.id],
-        }
+        },
+        sgRnaCloningExperiment: {
+            fields: [plates.sgRnaCloningExperimentId],
+            referenceTable: sgRnaCloningExperiments,
+            references: [sgRnaCloningExperiments.id],
+        },
+        // snvLibCloningExperiment: {
+        //     fields: [plates.snvLibCloningExperimentId],
+        //     referenceTable: snvLibCloningExperiments,
+        //     references: [snvLibCloningExperiments.id],
+        // },
     },
     many: {
         wells: {
@@ -179,6 +319,107 @@ const platesRelationsConfig: RelationsConfig = {
     }
 }
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
+
+const sequencingRunsRelationsConfig: RelationsConfig = {
+    many: {
+        samples: {
+            table: sequencingRunSamples,
+            schema: createSelectSchema(sequencingRunSamples),
+            fields: [sequencingRunSamples.sequencingRunId],
+        },
+        externalSamples: {
+            table: sequencingRunExternalSamples,
+            schema: createSelectSchema(sequencingRunExternalSamples),
+            fields: [sequencingRunExternalSamples.sequencingRunId],
+        },
+    }
+}
+export const sequencingRunsRelations = relationsConfigToRelations(sequencingRuns, sequencingRunsRelationsConfig)
+
+const sequencingRunSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        sequencingRun: {
+            fields: [sequencingRunSamples.sequencingRunId],
+            referenceTable: sequencingRuns,
+            references: [sequencingRuns.id],
+        },
+        nucleicAcid: {
+            fields: [sequencingRunSamples.nucleicAcidId],
+            referenceTable: nucleicAcids,
+            references: [nucleicAcids.id],
+        },
+        indexPrimer1: {
+            fields: [sequencingRunSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [sequencingRunSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        sourceWell: {
+            fields: [sequencingRunSamples.sourceWellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
+    },
+}
+export const sequencingRunSamplesRelations = relationsConfigToRelations(sequencingRunSamples, sequencingRunSamplesRelationsConfig)
+
+const externalSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [externalSamples.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        }
+    },
+    many: {
+        sequencingRuns: {
+            table: sequencingRunExternalSamples,
+            schema: createSelectSchema(sequencingRunExternalSamples),
+            fields: [sequencingRunExternalSamples.externalSampleId],
+        },
+        // wellContents: {
+        //     table: wellContents,
+        //     schema: createSelectSchema(wellContents),
+        //     fields: [wellContents.externalSampleId],
+        // },
+    }
+}
+export const externalSamplesRelations = relationsConfigToRelations(externalSamples, externalSamplesRelationsConfig)
+
+const sequencingRunExternalSamplesRelationsConfig: RelationsConfig = {
+    one: {
+        externalSample: {
+            fields: [sequencingRunExternalSamples.externalSampleId],
+            referenceTable: externalSamples,
+            references: [externalSamples.id],
+        },
+        sequencingRun: {
+            fields: [sequencingRunExternalSamples.sequencingRunId],
+            referenceTable: sequencingRuns,
+            references: [sequencingRuns.id],
+        },
+        indexPrimer1: {
+            fields: [sequencingRunExternalSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [sequencingRunExternalSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        sourceWell: {
+            fields: [sequencingRunExternalSamples.sourceWellId],
+            referenceTable: wells,
+            references: [wells.id],
+        },
+    },
+}
+export const sequencingRunExternalSamplesRelations = relationsConfigToRelations(sequencingRunExternalSamples, sequencingRunExternalSamplesRelationsConfig)
 
 const projectsRelationsConfig: RelationsConfig = {
     many: {
@@ -210,11 +451,36 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(transfectTargets),
             fields: [transfectTargets.targetId],
         },
-        plasmids: {
-            table: plasmids,
-            schema: createSelectSchema(plasmids),
-            fields: [plasmids.targetId],
-        }
+        amplificationPrimers: {
+            table: amplificationPrimers,
+            schema: createSelectSchema(amplificationPrimers),
+            fields: [amplificationPrimers.targetId],
+        },
+        linearizationPrimers: {
+            table: linearizationPrimers,
+            schema: createSelectSchema(linearizationPrimers),
+            fields: [linearizationPrimers.targetId],
+        },
+        preseq1Primers: {
+            table: preseq1Primers,
+            schema: createSelectSchema(preseq1Primers),
+            fields: [preseq1Primers.targetId],
+        },
+        preseq2Primers: {
+            table: preseq2Primers,
+            schema: createSelectSchema(preseq2Primers),
+            fields: [preseq2Primers.targetId],
+        },
+        sgRnaPlasmids: {
+            table: sgRnaPlasmids,
+            schema: createSelectSchema(sgRnaPlasmids),
+            fields: [sgRnaPlasmids.targetId],
+        },
+        snvLibPlasmids: {
+            table: snvLibPlasmids,
+            schema: createSelectSchema(snvLibPlasmids),
+            fields: [snvLibPlasmids.targetId],
+        },
     }
 }
 export const targetsRelations = relationsConfigToRelations(targets, targetsRelationsConfig)
@@ -288,6 +554,16 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        snvLib: {
+            fields: [transfectTargets.snvLibPlasmidId],
+            referenceTable: snvLibPlasmids,
+            references: [snvLibPlasmids.id],
+        },
+        sgRna: {
+            fields: [transfectTargets.sgRnaPlasmidId],
+            referenceTable: sgRnaPlasmids,
+            references: [sgRnaPlasmids.id],
+        },
     },
     many: {
         pellets: {
@@ -315,16 +591,336 @@ const transfectLotUsageRelationsConfig: RelationsConfig = {
 }
 export const transfectLotUsageRelations = relationsConfigToRelations(transfectLotUsage, transfectLotUsageRelationsConfig)
 
-const plasmidExperimentsRelationsConfig: RelationsConfig = {
+const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
         technician: {
-            fields: [plasmidExperiments.technician],
+            fields: [sgRnaCloningExperiments.technician],
             referenceTable: users,
             references: [users.id],
         },
     },
+    many: {
+        plates: {
+            table: plates,
+            schema: createSelectSchema(plates),
+            fields: [plates.sgRnaCloningExperimentId],
+        },
+    }
 }
-export const plasmidExperimentsRelations = relationsConfigToRelations(plasmidExperiments, plasmidExperimentsRelationsConfig)
+export const sgRnaCloningExperimentsRelations = relationsConfigToRelations(sgRnaCloningExperiments, sgRnaCloningExperimentsRelationsConfig)
+
+const haCloningExperimentsRelationsConfig: RelationsConfig = {
+    many: {
+        haCloningExperimentTargets: {
+            table: haCloningExperimentTargets,
+            schema: createSelectSchema(haCloningExperimentTargets),
+            fields: [haCloningExperimentTargets.haCloningExperimentId],
+        },
+        haPcrProducts: {
+            table: haPcrProducts,
+            schema: createSelectSchema(haPcrProducts),
+            fields: [haPcrProducts.haCloningExperimentId],
+        },
+    },
+}
+export const haCloningExperimentsRelations = relationsConfigToRelations(haCloningExperiments, haCloningExperimentsRelationsConfig)
+
+const haCloningExperimentTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [haCloningExperimentTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        haCloningExperiment: {
+            fields: [haCloningExperimentTargets.haCloningExperimentId],
+            referenceTable: haCloningExperiments,
+            references: [haCloningExperiments.id],
+        }
+    }
+}
+export const haCloningExperimentTargetsRelations = relationsConfigToRelations(haCloningExperimentTargets, haCloningExperimentTargetsRelationsConfig)
+
+const haPcrProductsRelationsConfig: RelationsConfig = {
+    one: {
+        performedBy: {
+            fields: [haPcrProducts.performedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haCloningExperiment: {
+            fields: [haPcrProducts.haCloningExperimentId],
+            referenceTable: haCloningExperiments,
+            references: [haCloningExperiments.id],
+        },
+        haPrimerForward: {
+            fields: [haPcrProducts.haPrimerForwardId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        haPrimerReverse: {
+            fields: [haPcrProducts.haPrimerReverseId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        wellable: {
+            fields: [haPcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    many: {
+        haPuc19PcrProducts: {
+            table: haPuc19PcrProducts,
+            schema: createSelectSchema(haPuc19PcrProducts),
+            fields: [haPuc19PcrProducts.haPcrProductId],
+        }
+    }
+}
+export const haPcrProductsRelations = relationsConfigToRelations(haPcrProducts, haPcrProductsRelationsConfig)
+
+const haPuc19PcrProductsRelationsConfig: RelationsConfig = {
+    one: {
+        cleanedBy: {
+            fields: [haPuc19PcrProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPcrProduct: {
+            fields: [haPuc19PcrProducts.haPcrProductId],
+            referenceTable: haPcrProducts,
+            references: [haPcrProducts.id],
+        },
+        haPuc19PrimerForward: {
+            fields: [haPuc19PcrProducts.haPuc19PrimerForwardId],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
+        },
+        haPuc19PrimerReverse: {
+            fields: [haPuc19PcrProducts.haPuc19PrimerReverseId],
+            referenceTable: homologyArmPuc19Primers,
+            references: [homologyArmPuc19Primers.id],
+        },
+        wellable: {
+            fields: [haPuc19PcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    many: {
+        haPuc19GibsonProducts: {
+            table: haPuc19GibsonProducts,
+            schema: createSelectSchema(haPuc19GibsonProducts),
+            fields: [haPuc19GibsonProducts.haPuc19PcrProductId],
+        },
+    }
+}
+export const haPuc19PcrProductsRelations = relationsConfigToRelations(haPuc19PcrProducts, haPuc19PcrProductsRelationsConfig)
+
+const haPuc19GibsonProductsRelationsConfig: RelationsConfig = {
+    one: {
+        preppedBy: {
+            fields: [haPuc19GibsonProducts.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPuc19PcrProduct: {
+            fields: [haPuc19GibsonProducts.haPuc19PcrProductId],
+            referenceTable: haPuc19PcrProducts,
+            references: [haPuc19PcrProducts.id],
+        },
+        wellable: {
+            fields: [haPuc19PcrProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    many: {
+        haPuc19Plasmids: {
+            table: haPuc19Plasmids,
+            schema: createSelectSchema(haPuc19Plasmids),
+            fields: [haPuc19Plasmids.haPuc19GibsonProductId],
+        },
+    }
+}
+export const haPuc19GibsonProductsRelations = relationsConfigToRelations(haPuc19GibsonProducts, haPuc19GibsonProductsRelationsConfig)
+
+const haPuc19PlasmidsRelationsConfig: RelationsConfig = {
+    one: {
+        preppedBy: {
+            fields: [haPuc19Plasmids.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        colonyPickedBy: {
+            fields: [haPuc19Plasmids.colonyPickedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        transformedBy: {
+            fields: [haPuc19Plasmids.transformedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        haPuc19GibsonProduct: {
+            fields: [haPuc19Plasmids.haPuc19GibsonProductId],
+            referenceTable: haPuc19GibsonProducts,
+            references: [haPuc19GibsonProducts.id],
+        },
+        wellable: {
+            fields: [haPuc19Plasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const haPuc19PlasmidsRelations = relationsConfigToRelations(haPuc19Plasmids, haPuc19PlasmidsRelationsConfig)
+
+const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
+    one:{
+        target: {
+            fields: [snvLibCloningExperiments.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {
+        snvLibAmpProducts: {
+            table: snvLibAmpProducts,
+            schema: createSelectSchema(snvLibAmpProducts),
+            fields: [snvLibAmpProducts.snvLibCloningExperimentId],
+        },
+        snvLibLinProducts: {
+            table: snvLibLinProducts,
+            schema: createSelectSchema(snvLibLinProducts),
+            fields: [snvLibLinProducts.snvLibCloningExperimentId],
+        },
+        snvLibGibsonProducts: {
+            table: snvLibGibsonProducts,
+            schema: createSelectSchema(snvLibGibsonProducts),
+            fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
+        },
+        snvLibPlasmids: {
+            table: snvLibPlasmids,
+            schema: createSelectSchema(snvLibPlasmids),
+            fields: [snvLibPlasmids.snvLibCloningExperimentId],
+        },
+    },
+}
+export const snvLibCloningExperimentsRelations = relationsConfigToRelations(snvLibCloningExperiments, snvLibCloningExperimentsRelationsConfig)
+
+const snvLibAmpProductsRelationsConfig: RelationsConfig = {
+    one: {
+        cleanedBy: {
+            fields: [snvLibAmpProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibAmpProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id],
+        },
+        ampPrimerForward: {
+            fields: [snvLibAmpProducts.ampPrimerForwardId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        ampPrimerReverse: {
+            fields: [snvLibAmpProducts.ampPrimerReverseId],
+            referenceTable: amplificationPrimers,
+            references: [amplificationPrimers.id],
+        },
+        twistLot: {
+            fields: [snvLibAmpProducts.twistLotId],
+            referenceTable: lots,
+            references: [lots.id],
+        },
+        wellable: {
+            fields: [snvLibAmpProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const snvLibAmpProductsRelations = relationsConfigToRelations(snvLibAmpProducts, snvLibAmpProductsRelationsConfig)
+
+const snvLibLinProductsRelationsConfig: RelationsConfig = {
+    one: {
+        dpn1DigestBy: {
+            fields: [snvLibLinProducts.dpn1DigestBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        gelExtractedBy: {
+            fields: [snvLibLinProducts.gelExtractedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibLinProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id],
+        },
+        linPrimerForward: {
+            fields: [snvLibLinProducts.linPrimerForwardId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        linPrimerReverse: {
+            fields: [snvLibLinProducts.linPrimerReverseId],
+            referenceTable: linearizationPrimers,
+            references: [linearizationPrimers.id],
+        },
+        haPuc19Plasmid: {
+            fields: [snvLibLinProducts.haPuc19PlasmidId],
+            referenceTable: haPuc19Plasmids,
+            references: [haPuc19Plasmids.id],
+        },
+        wellable: {
+            fields: [snvLibLinProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const snvLibLinProductsRelations = relationsConfigToRelations(snvLibLinProducts, snvLibLinProductsRelationsConfig)
+
+const snvLibGibsonProductsRelationsConfig: RelationsConfig = {
+    one: {
+        gibsonBy: {
+            fields: [snvLibGibsonProducts.gibsonBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        cleanedBy: {
+            fields: [snvLibGibsonProducts.cleanedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        transformedBy: {
+            fields: [snvLibGibsonProducts.transformedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        preppedBy: {
+            fields: [snvLibGibsonProducts.preppedBy],
+            referenceTable: users,
+            references: [users.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibGibsonProducts.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id]
+        },
+        wellable: {
+            fields: [snvLibGibsonProducts.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const snvLibGibsonProductsRelations = relationsConfigToRelations(snvLibGibsonProducts, snvLibGibsonProductsRelationsConfig)
 
 const extractionExperimentsRelationsConfig: RelationsConfig = {
     one:{
@@ -377,14 +973,19 @@ const pelletsRelationsConfig: RelationsConfig = {
             referenceTable: transfectTargets,
             references: [transfectTargets.id],
         },
+        wellable: {
+            fields: [pellets.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
     oneToOne: {
         nucleicAcid: {
             table: nucleicAcids
         },
-        wellContents: {
-            table: wellContents
-        },
+        // wellContents: {
+        //     table: wellContents
+        // },
     },
 }
 export const pelletsRelations = relationsConfigToRelations(pellets, pelletsRelationsConfig)
@@ -400,21 +1001,56 @@ const lotsRelationsConfig: RelationsConfig = {
 }
 export const lotsRelations = relationsConfigToRelations(lots, lotsRelationsConfig)
 
-const plasmidsRelationsConfig: RelationsConfig = {
+const sgRnaPlasmidsRelationsConfig: RelationsConfig = {
     one: {
         target: {
-            fields: [plasmids.targetId],
+            fields: [sgRnaPlasmids.targetId],
             referenceTable: targets,
             references: [targets.id],
         },
-        plasmidExperiment: {
-            fields: [plasmids.plasmidExperimentId],
-            referenceTable: plasmidExperiments,
-            references: [plasmidExperiments.id],
+        wellable: {
+            fields: [sgRnaPlasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.sgRnaPlasmidId],
+    //     }
+    // },
 }
-export const plasmidsRelations = relationsConfigToRelations(plasmids, plasmidsRelationsConfig)
+export const sgRnaPlasmidsRelations = relationsConfigToRelations(sgRnaPlasmids, sgRnaPlasmidsRelationsConfig)
+
+const snvLibPlasmidsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [snvLibPlasmids.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        snvLibCloningExperiment: {
+            fields: [snvLibPlasmids.snvLibCloningExperimentId],
+            referenceTable: snvLibCloningExperiments,
+            references: [snvLibCloningExperiments.id],
+        },
+        wellable: {
+            fields: [snvLibPlasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.snvLibPlasmidId],
+    //     }
+    // },
+}
+export const snvLibPlasmidsRelations = relationsConfigToRelations(snvLibPlasmids, snvLibPlasmidsRelationsConfig)
 
 const nucleicAcidsRelationsConfig: RelationsConfig = {
     one: {
@@ -428,16 +1064,44 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
             referenceTable: pellets,
             references: [pellets.id],
         },
+        wellable: {
+            fields: [nucleicAcids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.nucleicAcidId],
-        }
-    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.nucleicAcidId],
+    //     }
+    // },
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
+
+const sgRnaOligosRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [sgRnaOligos.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        wellable: {
+            fields: [sgRnaOligos.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.sgRnaOligoId],
+    //     }
+    // },
+}
+export const sgRnaOligosRelations = relationsConfigToRelations(sgRnaOligos, sgRnaOligosRelationsConfig)
 
 const amplificationPrimersRelationsConfig: RelationsConfig = {
     one: {
@@ -446,12 +1110,17 @@ const amplificationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [amplificationPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const amplificationPrimersRelations = relationsConfigToRelations(amplificationPrimers, amplificationPrimersRelationsConfig)
 
@@ -462,57 +1131,152 @@ const linearizationPrimersRelationsConfig: RelationsConfig = {
             referenceTable: targets,
             references: [targets.id],
         },
+        wellable: {
+            fields: [linearizationPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
-        }
-    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
 }
 export const linearizationPrimersRelations = relationsConfigToRelations(linearizationPrimers, linearizationPrimersRelationsConfig)
 
 const homologyArmPrimersRelationsConfig: RelationsConfig = {
     one: {
-        target: {
-            fields: [homologyArmPrimers.targetId],
-            referenceTable: targets,
-            references: [targets.id],
+        wellable: {
+            fields: [homologyArmPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
-    oneToOne: {
-        wellContents: {
-            table: wellContents
+    many: {
+        targets: {
+            table: homologyArmPrimerTargets,
+            schema: createSelectSchema(homologyArmPrimerTargets),
+            fields: [homologyArmPrimerTargets.homologyArmPrimerId],
         }
     },
 }
 export const homologyArmPrimersRelations = relationsConfigToRelations(homologyArmPrimers, homologyArmPrimersRelationsConfig)
 
-const indexPrimersRelationsConfig: RelationsConfig = {
-    many: {
-        wellContents: {
-            table: wellContents,
-            schema: createSelectSchema(wellContents),
-            fields: [wellContents.indexPrimerId],
+const homologyArmPrimerTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [homologyArmPrimerTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        homologyArmPrimer: {
+            fields: [homologyArmPrimerTargets.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        }
+    }
+}
+export const homologyArmPrimerTargetsRelations = relationsConfigToRelations(homologyArmPrimerTargets, homologyArmPrimerTargetsRelationsConfig)
+
+const homologyArmPuc19PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        homologyArmPrimer: {
+            fields: [homologyArmPuc19Primers.homologyArmPrimerId],
+            referenceTable: homologyArmPrimers,
+            references: [homologyArmPrimers.id],
+        },
+        wellable: {
+            fields: [homologyArmPuc19Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
         },
     },
 }
+export const homologyArmPuc19PrimersRelations = relationsConfigToRelations(homologyArmPuc19Primers, homologyArmPuc19PrimersRelationsConfig)
+
+const indexPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [indexPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    // many: {
+    //     wellContents: {
+    //         table: wellContents,
+    //         schema: createSelectSchema(wellContents),
+    //         fields: [wellContents.indexPrimerId],
+    //     },
+    // },
+}
 export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
+
+const preseq1PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [preseq1Primers.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        wellable: {
+            fields: [preseq1Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
+}
+export const preseq1PrimersRelations = relationsConfigToRelations(preseq1Primers, preseq1PrimersRelationsConfig)
+
+const preseq2PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [preseq2Primers.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        wellable: {
+            fields: [preseq2Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    // oneToOne: {
+    //     wellContents: {
+    //         table: wellContents
+    //     }
+    // },
+}
+export const preseq2PrimersRelations = relationsConfigToRelations(preseq2Primers, preseq2PrimersRelationsConfig)
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
+    wellables: wellablesRelationsConfig,
     wellContentSources: wellContentSourcesRelationsConfig,
-    // wellSources: wellSourcesRelationsConfig,
     wells: wellsRelationsConfig,
     plates: platesRelationsConfig,
     projects: projectsRelationsConfig,
     targets: targetsRelationsConfig,
     regions: regionsRelationsConfig,
     genes: genesRelationsConfig,
-    plasmids: plasmidsRelationsConfig,
+    sgRnaPlasmids: sgRnaPlasmidsRelationsConfig,
+    snvLibPlasmids: snvLibPlasmidsRelationsConfig,
     nucleicAcids: nucleicAcidsRelationsConfig,
+    sgRnaOligos: sgRnaOligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
-    plasmidExperiments: plasmidExperimentsRelationsConfig,
+    sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
+    haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
+    haCloningExperiments: haCloningExperimentsRelationsConfig,
+    snvLibCloningExperiments: snvLibCloningExperimentsRelationsConfig,
+    snvLibAmpProducts: snvLibAmpProductsRelationsConfig,
+    snvLibLinProducts: snvLibLinProductsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
     transfectLotUsageRelations: transfectLotUsageRelationsConfig,
@@ -522,5 +1286,11 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     amplificationPrimers: amplificationPrimersRelationsConfig,
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
+    preseq1Primers: preseq1PrimersRelationsConfig,
+    preseq2Primers: preseq2PrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
+    sequencingRuns: sequencingRunsRelationsConfig,
+    sequencingRunSamples: sequencingRunSamplesRelationsConfig,
+    externalSamples: externalSamplesRelationsConfig,
+    sequencingRunExternalSamples: sequencingRunExternalSamplesRelationsConfig,
 }

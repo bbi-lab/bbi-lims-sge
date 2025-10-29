@@ -2,29 +2,35 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import pg from 'pg'
 
 import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
-import {users, userGroups, userGroupMemberships} from '../db/schema/user';
+import {users, userGroups, userGroupMemberships} from '../db/schema/user'
 
 import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
-import {plates, viewPlatesWithWellCounts} from '../db/schema/sge/plate'
-import {wellContents, wells, wellContentSources} from '../db/schema/sge/well'
+import {plates} from '../db/schema/sge/plate'
+import {wellContents, wells, wellContentSources, wellables} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
-import {plasmids} from '../db/schema/sge/plasmid'
+import {haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
-import { plasmidExperiments } from '../db/schema/sge/plasmid-experiment'
+import { haCloningExperiments, haCloningExperimentTargets, sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from '../db/schema/sge/extraction-experiment'
 import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
-import _ from 'lodash'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets } from '../db/schema/sge/primer'
+import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts } from '../db/schema/sge/oligos'
+import { externalSamples } from '../db/schema/sge/external-samples'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from '../db/schema/sge/views'
+
+// Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
+const { relationsConfigs, ...sgeRelationships } = sgeRelations
 
 // By checking whether useRuntimeConfig is defined, we support use outside the Nuxt lifecycle.
 const config = typeof useRuntimeConfig == 'undefined' ? undefined : useRuntimeConfig()
@@ -38,60 +44,62 @@ export const schema = {
   plates,
   wells,
   wellContents,
+  wellables,
   wellContentSources,
   projects,
   targets,
   genes,
   regions,
   cycles,
-  plasmids,
+  snvLibPlasmids,
+  sgRnaPlasmids,
   nucleicAcids,
+  sgRnaOligos,
   pellets,
   lots,
   reagents,
   transfectExperiments,
   transfectTargets,
   transfectLotUsage,
-  plasmidExperiments,
+  sgRnaCloningExperiments,
+
+  haCloningExperiments,
+  haCloningExperimentTargets,
+  haPcrProducts,
+  haPuc19PcrProducts,
+  haPuc19Plasmids,
+  haPuc19GibsonProducts,
+
+  snvLibCloningExperiments,
+  snvLibAmpProducts,
+  snvLibLinProducts,
+  snvLibGibsonProducts,
   extractionExperiments,
   extractionLotUsage,
   amplificationPrimers,
   linearizationPrimers,
   homologyArmPrimers,
+  homologyArmPrimerTargets,
+  homologyArmPuc19Primers,
+  preseq1Primers,
+  preseq2Primers,
   indexPrimers,
+  sequencingRuns,
+  sequencingRunSamples,
+  externalSamples,
+  sequencingRunExternalSamples,
 
   //views
   viewPlatesWithWellCounts,
+  viewSequencingRunAllSamples,
+  viewHaPuc19GibsonProductsWithCalcs,
+  viewSnvLibGibsonProducts,
 
   // relations
   usersRelations,
   userGroupsRelations,
   userGroupMembershipsRelations,
-  platesRelations: sgeRelations.platesRelations,
-  pcrExperimentsRelations: sgeRelations.pcrExperimentsRelations,
-  wellsRelations: sgeRelations.wellsRelations,
-  wellContentsRelations: sgeRelations.wellContentsRelations,
-  wellContentSourcesRelations: sgeRelations.wellContentSourcesRelations,
-  // wellSourcesRelations: sgeRelations.wellSourcesRelations,
-  projectsRelations: sgeRelations.projectsRelations,
-  targetsRelations: sgeRelations.targetsRelations,
-  regionsRelations: sgeRelations.regionsRelations,
-  genesRelations: sgeRelations.genesRelations,
-  cyclesRelations: sgeRelations.cyclesRelations,
-  plasmidsRelations: sgeRelations.plasmidsRelations,
-  nucleicAcidsRelations: sgeRelations.nucleicAcidsRelations,
-  pelletsRelations: sgeRelations.pelletsRelations,
-  lotsRelations: sgeRelations.lotsRelations,
-  transfectExperimentsRelations: sgeRelations.transfectExperimentsRelations,
-  transfectTargetsRelations: sgeRelations.transfectTargetsRelations,
-  transfectLotUsageRelations: sgeRelations.transfectLotUsageRelations,
-  plasmidExperimentsRelations: sgeRelations.plasmidExperimentsRelations,
-  extractionExperimentsRelations: sgeRelations.extractionExperimentsRelations,
-  extractionLotUsageRelations: sgeRelations.extractionLotUsageRelations,
-  amplificationPrimersRelations: sgeRelations.amplificationPrimersRelations,
-  linearizationPrimersRelations: sgeRelations.linearizationPrimersRelations,
-  homologyArmPrimersRelations: sgeRelations.homologyArmPrimersRelations,
-  indexPrimersRelations: sgeRelations.indexPrimersRelations,
+  ...sgeRelationships,
 }
 
 const ssl = config?.ssl != null ? config.ssl

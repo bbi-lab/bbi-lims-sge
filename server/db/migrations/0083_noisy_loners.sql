@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "unique_index_primers_per_sequencing_run" ON "sequencing_run_samples" USING btree ("sequencing_run_id",least("index_primer_1_id", "index_primer_2_id"),greatest("index_primer_1_id", "index_primer_2_id"));

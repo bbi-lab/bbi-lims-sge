@@ -8,13 +8,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       return navigateTo('/')
     } else if (!loggedIn.value && !['/register', '/login'].includes(to.path)) {
       // if not logged in and not currently headed to login page, redirect there
-      return navigateTo({path: '/login', query: {from: to.path}})
+      return navigateTo({path: '/login', query: {redirect: to.fullPath}})
     } else if (loggedIn.value && ['/register', '/login'].includes(to.path)) {
       // if already logged in and is headed to the login page, redirect to home
       // to prevent infinite redirect
       return navigateTo('/')
     }
-    
+
     return
   }
 )

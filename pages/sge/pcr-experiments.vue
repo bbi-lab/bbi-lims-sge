@@ -19,7 +19,7 @@ async function didAddRecord(event: any) {
         plateType: event.pcrType,
         pcrExperimentId: event.id,
     })
-    crudTable.tableRef.value.addOrRefreshRecordId(event.id)
+    crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
     crudTable.state.showAddForm = false
 }
 
@@ -66,7 +66,7 @@ const rowActions = {
     plates: {
         label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
         action: (data: any) => {
-            router.push({path:`/sge/plate-diagram/${data.pcrType}/${data.plates[0].id}`})
+            router.push({path:`/sge/plate-layout/${data.pcrType}/${data.plates[0].id}`})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
@@ -103,6 +103,9 @@ const fieldDefs = {
             },
         }
     },
+    startedOn: {
+        type: 'date',
+    }
 }
 const withClause = {
     plates: {columns: {id: true}},

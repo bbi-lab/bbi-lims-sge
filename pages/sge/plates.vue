@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 const router = useRouter()
 const route = useRoute()
 const crudTable = useCrudTable()
+const config = useRuntimeConfig()
 
 const tableKey = ref<string>(uuidv4())
 const whereClauses = ref()
@@ -26,6 +27,8 @@ const columnDefs = {
     plateType: { display: false },
     plateTypeLabel: { header: 'Type', index: 1 },
     pcrExperimentId: { display: false},
+    sgRnaCloningExperimentId: { display: false},
+    // snvLibCloningExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     cycleId: { display: false },
@@ -54,7 +57,7 @@ const columnDefs = {
         path: 'wellsProcessed.displayValue',
     },
     discarded: { index: 5 },
-    processed: { header: 'Plate processed', index: 6 }
+    processed: { header: 'Plate processed', index: 6 },
 }
 const rowActions = {
     layout: {
@@ -67,25 +70,29 @@ const rowActions = {
 
 const fieldDefs = {
     pcrExperimentId: { display: false },
+    sgRnaCloningExperimentId: { display: false },
+    // snvLibCloningExperimentId: { display: false },
     wells: { display: false },
     name: { index: 0 },
     plateType: {
         index: 1,
         component: 'Select',
         props: {
-            options: _.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
-                if (key === 'preseq-1' || key === 'preseq-2' || key === 'preseq-3') {
+            options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
+                const pattern = /^preseq-|-pcr$/
+                if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {
                     return { label: value.label, code: key }
                 }
-            }),
+            }), 'label'),
             optionLabel: 'label',
             optionValue: 'code',
             optionDisabled: 'disabled',
         },
         events: {
-            change: (record: any) => {
+            change: (record: any, recordOld: any) => {
+                if (record?.plateType == recordOld?.plateType) return
                 if (_.endsWith(record.plateType, '-storage')) {
                     record.sizeX = 9
                     record.sizeY = 9
@@ -97,10 +104,6 @@ const fieldDefs = {
         },
     },
 }
-
-// const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})
-// const readonlyValues = queryParams
-
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">

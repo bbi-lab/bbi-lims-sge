@@ -8,6 +8,7 @@ import  {
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
+import { preseq1Primers } from '~/server/db/schema/sge/primer'
 
 const router = useRouter()
 const route = useRoute()
@@ -46,20 +47,38 @@ const displayWithClause = Object.freeze({
             pellets: true
         }
     },
-    plasmids: {
+    sgRnaPlasmids: {
         columns: {id: true}
+    },
+    snvLibPlasmids: {
+        columns: {id: true}
+    },
+    amplificationPrimers: {
+        columns: {id: true, name: true, sequence: true, sequenceType: true},
+    },
+    preseq1Primers: {
+        columns: {id: true, name: true, sequence: true, sequenceType: true},
+    },
+    preseq2Primers: {
+        columns: {id: true, name: true, sequence: true, sequenceType: true},
     },
 })
 
 const rowActions = {
-    plasmids: {
-        label: (data: any) => { return `${data.plasmids?.length || 0}`},
+    sgRnaPlasmids: {
+        label: (data: any) => { return `${data.sgRnaPlasmids?.length || 0} sgRNA`},
         action: (data: any) => {
-            router.push({path:'/sge/plasmids', query: {'targetId': data.id}})
+            router.push({path:'/sge/sg-rna-plasmids', query: {'targetId': data.id}})
         },
-        icon: 'pi pi-fw pi-spinner',
-        iconPos: 'right',
-        tooltip: 'Plasmids',
+        tooltip: 'sgRNA',
+    },
+    snvLibPlasmids: {
+        label: (data: any) => { return `${data.snvLibPlasmids?.length || 0} SNV-lib`},
+        action: (data: any) => {
+            router.push({path:'/sge/snv-lib-plasmids', query: {'targetId': data.id}})
+        },
+        disabled: () => true,
+        tooltip: 'SNV-lib',
     },
     pellets: {
         label: (data: any) => { return `${_.sumBy(data.transfectTargets, (x: any) => x.pellets.length)}`},
@@ -127,6 +146,57 @@ const columnDefs: ColumnDefinitions = {
     transfectTargets: {
         display: false,
     },
+    plasmids: {
+        display: false,
+    },
+    amplificationPrimers: {
+        format: (x) => _.isArray(x.amplificationPrimers) ? _.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
+        type: 'element',
+        element: (x: any) => {
+            const value = _.isArray(x.amplificationPrimers) ? _.join(_.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : ''
+            const href = `/sge/amplification-primers?targetId=${x.id}`
+            return value ? `${value}<a href="${href}" class="text-blue-500 hover:underline"><span class="iconify mdi--link-variant" /></a>` : ''
+        },
+        path: 'amplificationPrimers.displayValue',
+        exportValue: (x) => _.isArray(x.amplificationPrimers) ? _.join(_.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
+    },
+    preseq1Primers: {
+        format: (x) => _.isArray(x.preseq1Primers) ? _.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
+        type: 'element',
+        element: (x: any) => {
+            const value = _.isArray(x.preseq1Primers) ? _.join(_.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : ''
+            const href = `/sge/preseq-1-primers?targetId=${x.id}`
+            return value ? `${value}<a href="${href}" class="text-blue-500 hover:underline"><span class="iconify mdi--link-variant" /></a>` : ''
+        },
+        path: 'preseq1Primers.displayValue',
+        exportValue: (x) => _.isArray(x.preseq1Primers) ? _.join(_.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
+    },
+    preseq2Primers: {
+        format: (x) => _.isArray(x.preseq2Primers) ? _.map(x.preseq2Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
+        type: 'element',
+        element: (x: any) => {
+            const value = _.isArray(x.preseq2Primers) ? _.join(_.map(x.preseq2Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : ''
+            const href = `/sge/preseq-2-primers?targetId=${x.id}`
+            return value ? `${value}<a href="${href}" class="text-blue-500 hover:underline"><span class="iconify mdi--link-variant" /></a>` : ''
+        },
+        path: 'preseq2Primers.displayValue',
+        exportValue: (x) => _.isArray(x.preseq2Primers) ? _.join(_.map(x.preseq2Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
+    },
+    linearizationPrimers: {
+        display: false,
+    },
+    homologyArmPrimers: {
+        display: false,
+    },
+    sgRnaPlasmids: {
+        display: false,
+    },
+    snvLibPlasmids: {
+        display: false,
+    },
+    sequence: {
+        bodyClass: 'break-all min-w-64',
+    }
 }
 
 const fieldDefs: FieldDefinitions = {
@@ -141,14 +211,14 @@ const fieldDefs: FieldDefinitions = {
             searchWithClause: {gene: {columns: {symbol:true}}},
         },
         events: {
-            change: async (record: any) => {
-                if (record && record.regionId && _.isEmpty(record.name)) {
+            change: async (record: any, recordOld: any) => {
+                if (record?.regionId && (record.regionId != recordOld?.regionId)) {
                     const region = await RecordService.getRecord(`${config.public.apiBase}/regions`, record.regionId as string, {
                         gene: {
                             columns: {symbol: true}
                         }
                     })
-                    record.name = `${region.gene.symbol}_${_.replace(region.name, /exon[\s]+/gi , 'X')}`
+                    record.name = _.toUpper(`${region.gene.symbol}_${_.replace(region.name, /exon[\s]+/gi , 'X')}`)
                 }
             }
         },
@@ -223,6 +293,7 @@ const fieldDefs: FieldDefinitions = {
                 tableName="targets"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
+                :readonlyValues="readonlyValues"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"

@@ -1,0 +1,4 @@
+ALTER TABLE "sequencing_run_external_samples" ADD CONSTRAINT "external_sample_primer_check" CHECK (
+    ((COALESCE(TRIM("sequencing_run_external_samples"."custom_index_seq_1"), '') <> '' OR COALESCE(TRIM("sequencing_run_external_samples"."custom_index_seq_2"), '') <> '') AND "sequencing_run_external_samples"."index_primer_1_id" IS NULL AND "sequencing_run_external_samples"."index_primer_2_id" IS NULL) OR
+    ("sequencing_run_external_samples"."index_primer_1_id" IS NOT NULL AND "sequencing_run_external_samples"."index_primer_2_id" IS NOT NULL));--> statement-breakpoint
+ALTER TABLE "sequencing_run_samples" ADD CONSTRAINT "internal_sample_primer_check" CHECK ("sequencing_run_samples"."index_primer_1_id" IS NOT NULL AND "sequencing_run_samples"."index_primer_2_id" IS NOT NULL);

@@ -4,22 +4,23 @@ import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 
 onMounted(async() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
-        selectionTableRecordIdPaths: ['indexPrimerId'],
+        selectionTableRecordIdPaths: ['indexPrimer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+            const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
             return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'indexPrimer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'indexPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -40,26 +41,30 @@ const loadPlate = async () => {
 }
 
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
-    },
+        }
+    }
 }
 const columnDefs = {
     colorTile:{
@@ -86,7 +91,7 @@ const columnDefs = {
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x.wellContents, (x) => x.well.plate.id == route.params.id)
+            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
             return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
         },
         path: 'wellContents.displayValue',

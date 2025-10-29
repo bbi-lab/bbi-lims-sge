@@ -1,4 +1,3 @@
-import type { PlateWithWellContents, WellWithContents } from "~/utils/sge/plateUtils"
 import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
@@ -6,6 +5,28 @@ import type { Well, WellContent } from "~/server/db/schema/sge/well"
 import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
+import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
+import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer, preseq1Primer, preseq2Primer } from "~/server/db/schema/sge/primer"
+import type { Plate } from "~/server/db/schema/sge/plate"
+
+type WellWithContents = Well & {
+    wellContents: WellContent & {
+        wellable: {
+            amplificationPrimer: AmplificationPrimer
+            linearizationPrimer: LinearizationPrimer
+            homologyArmPrimer: HomologyArmPrimer
+            preseq1Primer: preseq1Primer
+            preseq2Primer: preseq2Primer
+            nucleicAcid: NucleicAcid & {
+                pellet: Pellet
+            },
+        }
+    }[]
+}
+
+type PlateWithWellContents = Plate & {
+    wells: WellWithContents[]
+}
 
 type WellSpecs = {
     [key: string]: {
@@ -30,18 +51,34 @@ interface wellContentDisplayConfig {
     tooltip?: Function | null
 }
 
-export const usePlateLayout = (plateId: string) => {
+interface ExportPlateLayoutColumnConfig {
+    header: string,
+    data: Function | string,
+}
+interface ExportPlateLayoutConfig {
+    filename?: string,
+    columns: ExportPlateLayoutColumnConfig[],
+    sortBy?: Function | string | string[],
+}
+
+export const usePlateLayout = () => {
     const plateWithWellContents = ref<PlateWithWellContents>()
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
     const wellSpecs = ref<WellSpecs>({})
     const selectedWells = ref<WellSpecs[string][]>([])
     const toast = useComposableToast()
     const config = useRuntimeConfig()
-    const { showLoginModal } = useLayout() as { showLoginModal: () => void }
     const wellContentsWithClause = ref()
     const plateDiagramRef = ref()
     const selectionTableRef = ref()
     const { user } = useUserSession()
+    const plateId = ref()
+
+    let exportPlateLayoutConifg: ExportPlateLayoutConfig
+
+    const setPlateId = (id: string) => {
+        plateId.value = id
+    }
 
     const setSelectionTableRef = (el: any) => {
         selectionTableRef.value = el
@@ -49,6 +86,11 @@ export const usePlateLayout = (plateId: string) => {
     const setPlateDiagramRef = (el: any) => {
         plateDiagramRef.value = el
     }
+
+    const setExportPlateLayoutConfig = (config: ExportPlateLayoutConfig) => {
+        exportPlateLayoutConifg = config
+    }
+
     const plateWithPlateDiagramWells = computed(() => {
         return {
             ...plateWithWellContents.value,
@@ -60,12 +102,7 @@ export const usePlateLayout = (plateId: string) => {
         try {
             await loadPlate(wellContentsWithClause.value)
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
-            return
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         }
     }
 
@@ -73,7 +110,7 @@ export const usePlateLayout = (plateId: string) => {
         wellContentsWithClause.value = contentsWithClause || {}
         plateWithWellContents.value = await RecordService.getRecord(
             `${config.public.apiBase}/plates`,
-            plateId,
+            plateId.value,
             {
                 wells: {
                     columns: {
@@ -83,7 +120,11 @@ export const usePlateLayout = (plateId: string) => {
                     },
                     with: {
                         wellContents: {
-                            with: wellContentsWithClause.value,
+                            with: {
+                                wellable: {
+                                    with: wellContentsWithClause.value,
+                                },
+                            },
                         },
                     },
                 },
@@ -115,17 +156,27 @@ export const usePlateLayout = (plateId: string) => {
     const updateWellSpecs = () => {
         if (!plateWithWellContents.value) return
 
+        // remove any well specs that are not in the current plate
+        wellSpecs.value = _.pick(wellSpecs.value, _.map(plateWithWellContents.value.wells, 'id'))
+
+        // add or update well specs for each well in the plate
         plateWithWellContents.value.wells.forEach((well) => {
             // remove empty wells from color map
             if (_.isEmpty(well.wellContents)) {
                 _.unset(wellSpecs.value, well.id)
             }
             const contentsToColorBy = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
+                return _.map(wellContentsDisplayConfig.value?.colorBy, (x) => _.isFunction(x) ? x(wellContent?.wellable) : _.get(wellContent?.wellable, x as _.PropertyPath))
             }))).sort()
 
             const selectionTableRecordIds = _.compact(_.flatten(_.map(well.wellContents, (wellContent) => {
-                return _.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => _.isFunction(x) ? x(wellContent) : _.get(wellContent, x as _.PropertyPath))
+                return _.flatten(_.map(wellContentsDisplayConfig.value?.selectionTableRecordIdPaths, (x) => {
+                    if (_.isFunction(x)) {
+                        return x(wellContent?.wellable)
+                    } else {
+                        return _.get(wellContent?.wellable, x as _.PropertyPath)
+                    }
+                }))
             }))).sort()
 
             const existingWellSpec = _.get(wellSpecs.value, well.id)
@@ -160,22 +211,19 @@ export const usePlateLayout = (plateId: string) => {
 
     const emptySelectedWells = async () => {
         await reloadPlate()
+
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const wellContentsToDelete = _.flatten(_.compact(_.map(selectedWells.value, (x) => {
             return _.get(x, 'data.wellContents')
         })))
-        let deletedRecords: WellContent[]
+        let deletedRecords: WellContent[] | undefined
         try {
             deletedRecords = await RecordService.deleteRecords(
                 `${config.public.apiBase}/well-contents`,
                 wellContentsToDelete
             )
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(deletedRecords)) {
@@ -209,9 +257,7 @@ export const usePlateLayout = (plateId: string) => {
             ..._.flatten(_.map(oldValues || [], 'selectionTableRecordIds')),,
         ])))
 
-        selectionTableIdsToRefresh.forEach((id) => {
-            selectionTableRef.value.addOrRefreshRecordId(id)
-        })
+        selectionTableRef.value.addOrRefreshRecordIds(selectionTableIdsToRefresh)
     }
 
     interface WellContentsAndSources extends Partial<WellContent> {
@@ -228,11 +274,7 @@ export const usePlateLayout = (plateId: string) => {
                 recordsToAdd
             ) as WellContent[]
         } catch (error: any) {
-            if (error.statusCode == 401 && error.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
-            }
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
         if (!_.isEmpty(newRecords)) {
@@ -247,12 +289,12 @@ export const usePlateLayout = (plateId: string) => {
         return newRecords
     }
 
-    const assignIdToSelectedWells = async (id: string, column: 'amplificationPrimerId' | 'linearizationPrimerId' | 'homologyArmPrimerId' | 'indexPrimerId' | 'nucleicAcidId' | 'pelletId') => {
+    const assignIdToSelectedWells = async (id: string) => {
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const recordsToAdd = _.map(selectedWells.value, (well) => {
             return {
                 wellId: well.id,
-                [column]: id,
+                wellableId: id,
             }
         })
         const newRecords = await addWellContents(recordsToAdd)
@@ -262,7 +304,7 @@ export const usePlateLayout = (plateId: string) => {
     const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
         let recordsToAdd: {
             wellId: string;
-            nucleicAcidId: string;
+            wellableId: string;
             sourceWellIds: String[];
             createdBy: string | null;
         }[]
@@ -276,11 +318,13 @@ export const usePlateLayout = (plateId: string) => {
                     wellContents: {
                         columns: {id: true},
                         with: {
-                            nucleicAcid: {
-                                columns: {id: true},
-                                with: {
-                                    pellet: {
-                                        columns: {id: true, name: true, isBackup: true},
+                            wellable: {
+                                nucleicAcid: {
+                                    columns: {id: true},
+                                    with: {
+                                        pellet: {
+                                            columns: {id: true, name: true, isBackup: true},
+                                        },
                                     },
                                 },
                             },
@@ -294,7 +338,7 @@ export const usePlateLayout = (plateId: string) => {
         type NucleicAcidWithPelletAndWellIds = NucleicAcidWithPellet & {wellIds: String[]}
 
         const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
-            const nucleicAcid = _.get(well, ['wellContents', 0, 'nucleicAcid'])
+            const nucleicAcid = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid'])
             if (nucleicAcid?.id) {
                 const existingWellIds = _.get(acc, [nucleicAcid.id, 'wellIds'], [])
                 _.set(acc, nucleicAcid.id, {...nucleicAcid, wellIds: [...existingWellIds, well.id]})
@@ -311,7 +355,7 @@ export const usePlateLayout = (plateId: string) => {
                 const userId = (user.value as User)?.id || null
                 return {
                     wellId: sortedWellIds[index],
-                    nucleicAcidId: value.id,
+                    wellableId: value.id,
                     sourceWellIds: value.wellIds,
                     createdBy: userId,
                 }
@@ -336,10 +380,41 @@ export const usePlateLayout = (plateId: string) => {
         selectedWells.value = []
     }
 
+    const exportPlateLayout = async () => {
+        if (plateWithWellContents.value && exportPlateLayoutConifg) {
+            const rows = []
+
+            // column headers row
+            rows.push(_.map(exportPlateLayoutConifg.columns, 'header'))
+
+            // data rows
+            const wellsSorted = exportPlateLayoutConifg.sortBy ? _.sortBy(plateWithWellContents.value.wells, exportPlateLayoutConifg.sortBy) : _.sortBy(plateWithWellContents.value.wells, ['y', 'x'])
+            for (const wellWithContents of wellsSorted) {
+                const row = []
+                for (const column of exportPlateLayoutConifg.columns) {
+                    if (_.isFunction(column.data)) {
+                        row.push(column.data(wellWithContents))
+                    } else {
+                        row.push(_.get(wellWithContents, column.data as _.PropertyPath, ''))
+                    }
+                }
+                rows.push(row)
+            }
+            const wb = XlsxUtils.book_new()
+            const ws = XlsxUtils.aoa_to_sheet(rows)
+
+            XlsxUtils.book_append_sheet(wb, ws, 'Sheet1')
+            writeFileXLSX(wb, `${exportPlateLayoutConifg.filename ?? plateWithWellContents.value.name}.xlsx`)
+        }
+    }
+
     return {
         // data
         plateWithWellContents,
+        plateWithPlateDiagramWells,
+        setPlateId,
         loadPlate,
+        reloadPlate,
 
         // well specs
         wellSpecs,
@@ -365,5 +440,9 @@ export const usePlateLayout = (plateId: string) => {
         assignIdToSelectedWells,
         addWellContents,
         poolPreSeq1PlateToSelectedWells,
+
+        // export plate layout
+        exportPlateLayout,
+        setExportPlateLayoutConfig,
     }
 }

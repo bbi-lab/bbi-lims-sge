@@ -5,7 +5,7 @@ import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -18,12 +18,10 @@ const selectionTableKey = ref(0)
 watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
         if (newValue === 'nucleic-acids') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcidId']
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
         } else if (newValue === 'view-plates-with-well-counts') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(x: any) => {
-                return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                    return _.get(wellContentSource, 'sourceWell.plate.id')
-                }))
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
+                return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
             }]
         }
     }
@@ -31,18 +29,21 @@ watch(selectionTableName, async (newValue) => {
 })
 
 onMounted(() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['nucleicAcidId'],
-        selectionTableRecordIdPaths: [(x: any) => {
-            return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
-                return _.get(wellContentSource, 'sourceWell.plate.id')
-            }))
-        }],
+        colorBy: ['nucleicAcid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const nucleicAcidName = _.get(well, ['wellContents', 0, 'nucleicAcid', 'pellet', 'name'])
+            const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
             return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
         },
+    }
+    if (selectionTableName.value === 'nucleic-acids') {
+        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
+    } else if (selectionTableName.value === 'view-plates-with-well-counts') {
+        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
+            return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
+        }]
     }
     loadPlate()
 })
@@ -55,17 +56,21 @@ const loadPlate = async () => {
                     pellet: true
                 }
             },
-            wellContentSources: {
+            wellContents: {
                 with: {
-                    sourceWell: {
-                        columns: {},
+                    wellContentSources: {
                         with: {
-                            plate: {
-                                columns: {
-                                    id: true,
-                                }
-                            }
-                        }
+                            sourceWell: {
+                                columns: {},
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                        }
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -91,23 +96,27 @@ const loadPlate = async () => {
 const displayWithClause = computed(() => {
     if (selectionTableName.value === 'nucleic-acids') {
         return {
-            wellContents: {
+            wellable: {
                 with: {
-                    well: {
-                        columns: {
-                            id: true,
-                            x: true,
-                            y: true,
-                        },
+                    wellContents: {
                         with: {
-                            plate: {
+                            well: {
                                 columns: {
                                     id: true,
-                                    name: true,
-                                    plateType: true,
+                                    x: true,
+                                    y: true,
+                                },
+                                with: {
+                                    plate: {
+                                        columns: {
+                                            id: true,
+                                            name: true,
+                                            plateType: true,
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            },
+                        },
                     },
                 },
             },
@@ -149,7 +158,9 @@ const columnDefs = computed(() => {
             plateTypeLabel: { header: 'Type' },
             cycleName: { header: 'Cycle' },
             cycleId: { display: false },
-            pcrExperimentId: { display: false},
+            pcrExperimentId: { display: false },
+            sgRnaCloningExperimentId: { display: false },
+            // snvLibCloningExperimentId: { display: false },
             sizeX: { display: false },
             sizeY: { display: false },
             wellsCount: { display: false },
@@ -193,7 +204,7 @@ const columnDefs = computed(() => {
             wellContents: {
                 header: 'Wells',
                 format: (x: any) => {
-                    const wellCoordinates = _.map(_.filter(x.wellContents, (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
+                    const wellCoordinates = _.map(_.filter(x.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
                         return {x: wellContent.well.x, y: wellContent.well.y,}
                     })
                     const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
@@ -256,7 +267,7 @@ const rowActions = {
                 return
             } else {
                 if (selectionTableName.value === 'nucleic-acids') {
-                    await plateLayout.assignIdToSelectedWells(data.id, 'nucleicAcidId')
+                    await plateLayout.assignIdToSelectedWells(data.id)
                 } else if (selectionTableName.value === 'view-plates-with-well-counts') {
                     await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
                 }
@@ -270,10 +281,10 @@ const rowActions = {
         },
     },
 }
-const selectionTableOptions = ref([
+const selectionTableOptions = [
     { label: 'Plates', value: 'view-plates-with-well-counts' },
     { label: 'DNA', value: 'nucleic-acids' },
-])
+]
 watch(selectionTableName, (newValue, oldValue) => {
     if (newValue != oldValue) {
         selectionTableKey.value += 1
@@ -331,7 +342,7 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-trash"
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(plateLayout.selectedWells)"
+                        :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
                 </template>
             </PlateDiagram>

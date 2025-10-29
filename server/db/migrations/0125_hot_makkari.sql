@@ -1,0 +1,1 @@
+ALTER TABLE "snv_lib_gibson_products" ADD CONSTRAINT "benchling_link_check" CHECK ("snv_lib_gibson_products"."benchling_link" ~* '^https?://.+$');

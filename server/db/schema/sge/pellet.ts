@@ -2,7 +2,7 @@ import { pgTable, timestamp, uuid, boolean, varchar, text, integer, doublePrecis
 import { users } from '../user'
 import { transfectTargets } from './transfect-experiment'
 import { extractionExperiments } from './extraction-experiment'
-import { InferSelectModel } from 'drizzle-orm'
+import { type InferSelectModel } from 'drizzle-orm/table'
 
 export const pellets = pgTable('pellets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

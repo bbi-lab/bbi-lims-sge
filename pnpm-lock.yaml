@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  drizzle-orm@0.44.5:
+    hash: 45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519
+    path: patches/drizzle-orm@0.44.5.patch
+
 importers:
 
   .:
@@ -19,7 +24,7 @@ importers:
         version: 13.0.0(vue@3.5.13)
       '@vueuse/nuxt':
         specifier: ^13.0.0
-        version: 13.0.0(magicast@0.3.5)(nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0))(vue@3.5.13)
+        version: 13.0.0(magicast@0.3.5)(nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0))(vue@3.5.13)
       argon2:
         specifier: ^0.41.1
         version: 0.41.1
@@ -30,11 +35,11 @@ importers:
         specifier: ^7.9.0
         version: 7.9.0
       drizzle-orm:
-        specifier: ^0.40.0
-        version: 0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
+        specifier: ^0.44.5
+        version: 0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.0(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(zod@3.24.2)
+        version: 0.7.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(zod@3.24.2)
       json-logic-js:
         specifier: ^2.0.5
         version: 2.0.5
@@ -90,6 +95,9 @@ importers:
         specifier: ^3.23.5
         version: 3.24.5(zod@3.24.2)
     devDependencies:
+      '@iconify-json/fluent':
+        specifier: ^1.2.23
+        version: 1.2.23
       '@iconify-json/grommet-icons':
         specifier: ^1.2.1
         version: 1.2.1
@@ -108,6 +116,9 @@ importers:
       '@iconify-json/ph':
         specifier: ^1.2.2
         version: 1.2.2
+      '@iconify/tailwind':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@nuxt/test-utils':
         specifier: ^3.17.2
         version: 3.17.2(@types/node@22.13.13)(@vue/test-utils@2.4.6)(happy-dom@17.4.4)(jiti@2.4.2)(magicast@0.3.5)(sass-embedded@1.86.0)(terser@5.39.0)(vitest@3.0.9(@types/node@22.13.13)(happy-dom@17.4.4)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
@@ -135,6 +146,9 @@ importers:
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.11
+      '@types/xlsx':
+        specifier: ^0.0.36
+        version: 0.0.36
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
@@ -152,7 +166,7 @@ importers:
         version: 3.23.1
       nuxt:
         specifier: ^3.16.1
-        version: 3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
+        version: 3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
       postcss:
         specifier: ^8.4.49
         version: 8.5.3
@@ -769,6 +783,9 @@ packages:
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
 
+  '@iconify-json/fluent@1.2.23':
+    resolution: {integrity: sha512-xSN0Qmg1YiHXhnF64+ghINT32SA8mNsoryjgG86jDmcmEePCdsx55Z4qNDnfzNGECfSx1M88h3y4DEA1og/oNg==}
+
   '@iconify-json/grommet-icons@1.2.1':
     resolution: {integrity: sha512-x5RT+J4QIUUsgLobgBXjaKp+gpjIy1fMyBSdbhU5nv8F5it3tkmqj2/U2jt8KRgjVnlIgvKqKsGVll48flMnew==}
 
@@ -786,6 +803,9 @@ packages:
 
   '@iconify-json/ph@1.2.2':
     resolution: {integrity: sha512-PgkEZNtqa8hBGjHXQa4pMwZa93hmfu8FUSjs/nv4oUU6yLsgv+gh9nu28Kqi8Fz9CCVu4hj1MZs9/60J57IzFw==}
+
+  '@iconify/tailwind@1.2.0':
+    resolution: {integrity: sha512-KgpIHWOTcRYw1XcoUqyNSrmYyfLLqZYu3AmP8zdfLk0F5TqRO8YerhlvlQmGfn7rJXgPeZN569xPAJnJ53zZxA==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -1510,6 +1530,10 @@ packages:
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
+  '@types/xlsx@0.0.36':
+    resolution: {integrity: sha512-mvfrKiKKMErQzLMF8ElYEH21qxWCZtN59pHhWGmWCWFJStYdMWjkDSAy6mGowFxHXaXZWe5/TW7pBUiWclIVOw==}
+    deprecated: This is a stub types definition for xlsx (https://github.com/sheetjs/js-xlsx). xlsx provides its own type definitions, so you don't need @types/xlsx installed!
+
   '@unhead/vue@2.0.2':
     resolution: {integrity: sha512-pUGcbmPNCALOVWnQRtIjJ5ubNaZus3nHfCBDPEVwhbiLzeLF6wbhgTakwksZ1EegKNOZwRAkmVbV6i+23OYEUQ==}
     peerDependencies:
@@ -1846,8 +1870,8 @@ packages:
   caniuse-api@3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
 
-  caniuse-lite@1.0.30001707:
-    resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
+  caniuse-lite@1.0.30001731:
+    resolution: {integrity: sha512-lDdp2/wrOmTRWuoB5DpfNkC0rJDU8DqRa6nYL6HK6sytw70QMopt/NIc/9SM7ylItlBWfACXk0tEn37UWM/+mg==}
 
   case-anything@3.1.2:
     resolution: {integrity: sha512-wljhAjDDIv/hM2FzgJnYQg90AWmZMNtESCjTeLH680qTzdo0nErlCxOmgzgX4ZsZAtIvqHyD87ES8QyriXB+BQ==}
@@ -2313,8 +2337,8 @@ packages:
     resolution: {integrity: sha512-l6dMSE100u7sDaTbLczibrQZjA35jLsHNqIV+jmhNVO3O8jzM6kywMOmV9uOz9ZVSCMPQhAZEFjL/qDPVrqpUA==}
     hasBin: true
 
-  drizzle-orm@0.40.1:
-    resolution: {integrity: sha512-aPNhtiJiPfm3qxz1czrnIDkfvkSdKGXYeZkpG55NPTVI186LmK2fBLMi4dsHpPHlJrZeQ92D322YFPHADBALew==}
+  drizzle-orm@0.44.5:
+    resolution: {integrity: sha512-jBe37K7d8ZSKptdKfakQFdeljtu3P2Cbo7tJoJSVZADzIKOBo9IAJPOmMsH2bZl90bZgh8FQlD8BjxXA/zuBkQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -2324,12 +2348,13 @@ packages:
       '@neondatabase/serverless': '>=0.10.0'
       '@op-engineering/op-sqlite': '>=2'
       '@opentelemetry/api': ^1.4.1
-      '@planetscale/database': '>=1'
+      '@planetscale/database': '>=1.13'
       '@prisma/client': '*'
       '@tidbcloud/serverless': '*'
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
       '@types/sql.js': '*'
+      '@upstash/redis': '>=1.34.7'
       '@vercel/postgres': '>=0.8.0'
       '@xata.io/client': '*'
       better-sqlite3: '>=7'
@@ -2373,6 +2398,8 @@ packages:
         optional: true
       '@types/sql.js':
         optional: true
+      '@upstash/redis':
+        optional: true
       '@vercel/postgres':
         optional: true
       '@xata.io/client':
@@ -2402,8 +2429,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.7.0:
-    resolution: {integrity: sha512-xgCRYYVEzRkeXTS33GSMgoowe3vKsMNBjSI+cwG1oLQVEhAWWbqtb/AAMlm7tkmV4fG/uJjEmWzdzlEmTgWOoQ==}
+  drizzle-zod@0.7.1:
+    resolution: {integrity: sha512-nZzALOdz44/AL2U005UlmMqaQ1qe5JfanvLujiTHiiT8+vZJTBFhj3pY4Vk+L6UWyKFfNmLhk602Hn4kCTynKQ==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: '>=3.0.0'
@@ -5224,6 +5251,10 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
+  '@iconify-json/fluent@1.2.23':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/grommet-icons@1.2.1':
     dependencies:
       '@iconify/types': 2.0.0
@@ -5245,6 +5276,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/ph@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify/tailwind@1.2.0':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -6097,6 +6132,10 @@ snapshots:
 
   '@types/web-bluetooth@0.0.21': {}
 
+  '@types/xlsx@0.0.36':
+    dependencies:
+      xlsx: 0.18.5
+
   '@unhead/vue@2.0.2(vue@3.5.13)':
     dependencies:
       hookable: 5.5.3
@@ -6313,13 +6352,13 @@ snapshots:
 
   '@vueuse/metadata@13.0.0': {}
 
-  '@vueuse/nuxt@13.0.0(magicast@0.3.5)(nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0))(vue@3.5.13)':
+  '@vueuse/nuxt@13.0.0(magicast@0.3.5)(nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0))(vue@3.5.13)':
     dependencies:
       '@nuxt/kit': 3.16.1(magicast@0.3.5)
       '@vueuse/core': 13.0.0(vue@3.5.13)
       '@vueuse/metadata': 13.0.0
       local-pkg: 1.1.1
-      nuxt: 3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
+      nuxt: 3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
       vue: 3.5.13
     transitivePeerDependencies:
       - magicast
@@ -6414,7 +6453,7 @@ snapshots:
   autoprefixer@10.4.21(postcss@8.5.3):
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001707
+      caniuse-lite: 1.0.30001731
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -6462,7 +6501,7 @@ snapshots:
 
   browserslist@4.24.4:
     dependencies:
-      caniuse-lite: 1.0.30001707
+      caniuse-lite: 1.0.30001731
       electron-to-chromium: 1.5.124
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
@@ -6515,11 +6554,11 @@ snapshots:
   caniuse-api@3.0.0:
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001707
+      caniuse-lite: 1.0.30001731
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
 
-  caniuse-lite@1.0.30001707: {}
+  caniuse-lite@1.0.30001731: {}
 
   case-anything@3.1.2: {}
 
@@ -6888,9 +6927,9 @@ snapshots:
       d3-transition: 3.0.1(d3-selection@3.0.0)
       d3-zoom: 3.0.0
 
-  db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)):
+  db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)):
     optionalDependencies:
-      drizzle-orm: 0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
+      drizzle-orm: 0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
 
   debug@2.6.9:
     dependencies:
@@ -6977,15 +7016,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1):
+  drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1):
     optionalDependencies:
       '@types/pg': 8.11.11
       gel: 2.0.1
       pg: 8.14.1
 
-  drizzle-zod@0.7.0(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(zod@3.24.2):
+  drizzle-zod@0.7.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
+      drizzle-orm: 0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
@@ -7792,7 +7831,7 @@ snapshots:
 
   nanotar@0.2.0: {}
 
-  nitropack@2.11.8(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)):
+  nitropack@2.11.8(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.0.4
@@ -7814,7 +7853,7 @@ snapshots:
       cookie-es: 2.0.0
       croner: 9.0.0
       crossws: 0.3.4
-      db0: 0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
+      db0: 0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
       defu: 6.1.4
       destr: 2.0.3
       dot-prop: 9.0.0
@@ -7860,7 +7899,7 @@ snapshots:
       unenv: 2.0.0-rc.15
       unimport: 4.1.2
       unplugin-utils: 0.2.4
-      unstorage: 1.15.0(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0)
+      unstorage: 1.15.0(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0)
       untyped: 2.0.0
       unwasm: 0.3.9
       youch: 4.1.0-beta.6
@@ -7959,7 +7998,7 @@ snapshots:
       - bcrypt
       - magicast
 
-  nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0):
+  nuxt@3.16.1(@parcel/watcher@2.5.1)(@types/node@22.13.13)(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))(ioredis@5.6.0)(magicast@0.3.5)(rollup@4.37.0)(sass-embedded@1.86.0)(terser@5.39.0)(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass-embedded@1.86.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0):
     dependencies:
       '@nuxt/cli': 3.23.1(magicast@0.3.5)
       '@nuxt/devalue': 2.0.2
@@ -7996,7 +8035,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       nanotar: 0.2.0
-      nitropack: 2.11.8(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
+      nitropack: 2.11.8(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
       nypm: 0.6.0
       ofetch: 1.4.1
       ohash: 2.0.11
@@ -8018,7 +8057,7 @@ snapshots:
       unimport: 4.1.2
       unplugin: 2.2.2
       unplugin-vue-router: 0.12.0(vue-router@4.5.0(vue@3.5.13))(vue@3.5.13)
-      unstorage: 1.15.0(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0)
+      unstorage: 1.15.0(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0)
       untyped: 2.0.0
       vue: 3.5.13
       vue-bundle-renderer: 2.1.1
@@ -9189,7 +9228,7 @@ snapshots:
       acorn: 8.14.1
       webpack-virtual-modules: 0.6.2
 
-  unstorage@1.15.0(db0@0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0):
+  unstorage@1.15.0(db0@0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1)))(ioredis@5.6.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -9200,7 +9239,7 @@ snapshots:
       ofetch: 1.4.1
       ufo: 1.5.4
     optionalDependencies:
-      db0: 0.3.1(drizzle-orm@0.40.1(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
+      db0: 0.3.1(drizzle-orm@0.44.5(patch_hash=45a98366d0c898415c87117683463e965c54f2830befc1024ffbd16ef89fb519)(@types/pg@8.11.11)(gel@2.0.1)(pg@8.14.1))
       ioredis: 5.6.0
 
   untun@0.1.3:

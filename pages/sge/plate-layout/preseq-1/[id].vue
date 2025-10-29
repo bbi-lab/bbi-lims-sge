@@ -5,7 +5,7 @@ import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout(route.params.id as string)
+const plateLayout = usePlateLayout()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -15,12 +15,13 @@ const config = useRuntimeConfig()
 const whereClause = ref()
 
 onMounted(async() => {
+    plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['nucleicAcidId'],
-        selectionTableRecordIdPaths: ['nucleicAcidId'],
+        colorBy: ['nucleicAcid.id'],
+        selectionTableRecordIdPaths: ['nucleicAcid.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const nucleicAcidName = _.get(well, ['wellContents', 0, 'nucleicAcid', 'pellet', 'name'])
+            const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
             return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
         },
     }
@@ -38,10 +39,7 @@ const loadPlate = async () => {
         },
     )
 
-    plateWithWellSpecs.value = {
-        ...plateLayout.plateWithWellContents.value,
-        wells: _.values(plateLayout.wellSpecs.value),
-    }
+    plateWithWellSpecs.value = plateLayout.plateWithPlateDiagramWells.value
 
     pcrExperiment.value = await RecordService.getRecord(
         `${config.public.apiBase}/pcr-experiments`,
@@ -59,23 +57,27 @@ const loadPlate = async () => {
 }
 
 const displayWithClause = {
-    wellContents: {
+    wellable: {
         with: {
-            well: {
-                columns: {
-                    id: true,
-                    x: true,
-                    y: true,
-                },
+            wellContents: {
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
         },
     },
@@ -126,7 +128,7 @@ const columnDefs = {
     wellContents: {
         header: 'Wells',
         format: (x: any) => {
-            const wellCoordinates = _.map(_.filter(x.wellContents, (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
+            const wellCoordinates = _.map(_.filter(x.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
                 return {x: wellContent.well.x, y: wellContent.well.y,}
             })
             const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
@@ -183,7 +185,7 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
-                await plateLayout.assignIdToSelectedWells(data.id, 'nucleicAcidId')
+                await plateLayout.assignIdToSelectedWells(data.id)
             }
         },
         icon: 'pi pi-fw pi-arrow-right',
@@ -196,6 +198,12 @@ const rowActions = {
 }
 
 const layoutPreseq1 = async () => {
+    const wellContentsDetected = _.some(plateLayout.plateWithWellContents.value?.wells, (well) => !_.isEmpty(well.wellContents))
+    if (wellContentsDetected) {
+        toast.add({ severity: 'warn', summary: 'Wells already populated', detail: 'Auto-layout requires plate to be empty', life: 3000 })
+        return
+    }
+
     let lastColumnPopulated = 0
     const allWellContentsToAdd = []
 
@@ -300,6 +308,8 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-star"
                         v-tooltip="{value: 'Auto-layout', showDelay: 500}"
+                        :disabled="!_.isEmpty(plateLayout.selectedWells.value) || _.isEmpty(plateLayout.selectionTableRef.value?.selectedRecords)"
+
                         @click="layoutPreseq1" />
                 </template>
                 <template #button2>
@@ -307,7 +317,7 @@ const frozenRecordIds = computed(() => {
                         class="p-button-secondary"
                         icon="pi pi-trash"
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(plateLayout.selectedWells)"
+                        :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
                 </template>
             </PlateDiagram>

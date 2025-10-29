@@ -20,9 +20,11 @@ const router = useRouter()
 const localStorageKey = `settings::${route.path}`
 const dtKey = ref(uuidv4())
 const dtId = useId()
+const invalidRecordMessages = ref()
 
-const clearRouteQueryParams = () => {
-    router.push({ path: route.path })
+const clearRouteQueryParams = async () => {
+    await router.push({ path: route.path })
+    loadTableData()
 }
 
 const refreshFormattedValues = (ids?: string[]) => {
@@ -32,7 +34,8 @@ const refreshFormattedValues = (ids?: string[]) => {
     for (const [k, v] of _.entries(formattedColumnDefs)) {
         const rows = ids ? _.filter(records.value, (x: any) => ids.includes(x.id)) : records.value
         for (const r of rows) {
-            _.set(r, [k, 'displayValue'], v.format(r))
+            // setting displayValue to preserve original while also replacing primative-type values with objects to include originalValue
+            _.isObject(r[k]) ? _.set(r, [k, 'displayValue'], v.format(r)) : _.set(r, k, {originalValue: r[k], displayValue: v.format(r)})
         }
     }
 }
@@ -75,6 +78,7 @@ watch(isLoginModalVisible, (newValue, oldValue) => {
     }
 })
 
+
 onMounted(async() => {
     if (!loggedIn.value) {
         showLoginModal()
@@ -105,8 +109,20 @@ const props = defineProps({
   selectionDisabled: {type: Boolean, default: false},
   expandEnums: {type: Boolean, default: false},
   emptyMessage: {type: String, default: 'No data'},
+  invalidRecords: {type: Object},
 })
 
+watch(() => props.invalidRecords, (newValue) => {
+    if (newValue) {
+        invalidRecordMessages.value = newValue
+    }
+}, { immediate: true })
+
+watch(() => props.where, (newValue, oldValue) => {
+    if (!_.isEqual(newValue, oldValue)) {
+        loadTableData()
+    }
+})
 const frozenRecordIds = defineModel<string[]>('frozenRecordIds')
 
 const emit = defineEmits([
@@ -140,16 +156,18 @@ const visibleColumns = ref()
 interface ColumnDefinition {
     header?: string,
     index?: number,
-    format?: string | ((data: any) => string),
+    format?: string | ((data: any) => string | string[]),
     path?: string,
     type?: string,
     display?: boolean,
     sortable?: boolean,
     element?: string | ((data: any) => string),
     elementSearchText?: (data: any) => string,
+    elementClick?: (event: any) => void,
     searchable?: boolean,
     exportable?: boolean,
     exportValue?: (record: any) => string,
+    bodyClass?: string,
 }
 interface SortedColumnDefinition extends ColumnDefinition {
     key: string
@@ -252,7 +270,7 @@ function didClickEditRecord(event: MouseEvent) {
     emit('clicked-record-edit', event)
 }
 function didClickEditMultipleRecords(event: MouseEvent) {
-    emit('clicked-multiple-record-edit', _.map(selectedRecords.value, (x) => x.id))
+    emit('clicked-multiple-record-edit', selectedRecords.value)
 }
 function didClickDeleteSelectedRecords(event: MouseEvent) {
     RecordService.deleteRecords(apiBaseUrl.value, selectedRecords.value).then((result) => {
@@ -264,7 +282,7 @@ function didClickDeleteSelectedRecords(event: MouseEvent) {
             emit('did-delete-multiple-records', result)
         }
     }).catch(error => {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.statusMessage, life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
     })
     displayDeleteConfirmation.value = false
 }
@@ -279,16 +297,16 @@ function getExportRecords() {
         for (const columnDef of _.filter(sortedColumnDefs.value, (x) => x.exportable !== false)) {
             if (_.map(visibleColumns.value, (x) => x.code).includes(columnDef.key)) {
                 if (columnDef.exportValue) {
-                    _.set(exportRecord, columnDef.key, columnDef.exportValue(record))
+                    _.set(exportRecord, [columnHeader(columnDef)], columnDef.exportValue(record))
                 } else if (_.isFunction(columnDef.format)) {
-                    _.set(exportRecord, columnDef.key, columnDef.format(record))
+                    _.set(exportRecord, [columnHeader(columnDef)], columnDef.format(record))
                 } else if (columnDef.format == 'date-time') {
-                    _.set(exportRecord, columnDef.key, formatDate(_.get(record, columnDef.path ?? columnDef.key)))
+                    _.set(exportRecord, [columnHeader(columnDef)], formatDate(_.get(record, columnDef.path ?? columnDef.key)))
                 } else if (columnDef.type == 'array') {
                     const joined = _.join(_.get(record, columnDef.path ?? columnDef.key), ', ')
-                    _.set(exportRecord, columnDef.key, joined)
+                    _.set(exportRecord, [columnHeader(columnDef)], joined)
                 } else {
-                    _.set(exportRecord, columnDef.key, _.get(record, columnDef.path ?? columnDef.key))
+                    _.set(exportRecord, [columnHeader(columnDef)], _.get(record, columnDef.path ?? columnDef.key))
                 }
             }
         }
@@ -320,7 +338,7 @@ const exportXLSX = function() {
     if (!_.isEmpty(exportRecords)) {
         rows.push(_.keys(exportRecords[0]))
     } else {
-        rows.push(_.map(sortedColumnDefs.value, (x) => x.key))
+        rows.push(_.map(_.filter(sortedColumnDefs.value, (x) => x.exportable !== false), (x) => columnHeader(x)))
     }
 
     // data rows
@@ -335,15 +353,33 @@ const exportXLSX = function() {
     writeFileXLSX(wb, `${exportFilename.value}.xlsx`)
 }
 
-const addOrRefreshRecordId = async (recordId: string) => {
-    const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
-    const existingRecordIndex = _.findIndex(records.value, {id: recordId})
-    if (existingRecordIndex!=-1) {
-        records.value[existingRecordIndex] = currentRecord
-    } else if (currentRecord){
-        records.value = _.concat(records.value, currentRecord)
+// const addOrRefreshRecordId = async (recordId: string) => {
+//     const currentRecord = await RecordService.getRecord(apiBaseUrl.value, recordId, props.withClause, props.expandEnums)
+//     const existingRecordIndex = _.findIndex(records.value, {id: recordId})
+//     if (existingRecordIndex!=-1) {
+//         records.value[existingRecordIndex] = currentRecord
+//     } else if (currentRecord){
+//         records.value = _.concat(records.value, currentRecord)
+//     }
+//     refreshFormattedValues([recordId])
+// }
+
+const addOrRefreshRecordIds = async (recordIds: string[]) => {
+    const currentRecords = await RecordService.getRecordsByIds(apiBaseUrl.value, recordIds, props.withClause, props.expandEnums)
+
+    const newRecordIds: string[] = []
+    for (const recordId of recordIds) {
+        const existingRecordIndex = _.findIndex(records.value, {id: recordId})
+        if (existingRecordIndex!=-1) {
+            records.value[existingRecordIndex] = _.find(currentRecords, {id: recordId})
+        } else {
+            newRecordIds.push(recordId)
+        }
     }
-    refreshFormattedValues([recordId])
+    if (!_.isEmpty(newRecordIds)) {
+        records.value = _.concat(records.value, _.filter(currentRecords, (x) => newRecordIds.includes(x.id)))
+    }
+    refreshFormattedValues(recordIds)
 }
 
 const removeRecordId = (recordId: string) => {
@@ -370,7 +406,7 @@ const exportOptions = ref([
         command: () => exportCSV()
     }
 ])
-defineExpose({ addOrRefreshRecordId, removeRecordId, selectedRecords })
+defineExpose({ addOrRefreshRecordIds, removeRecordId, selectedRecords, records })
 
 function setGlobalSearchTerm() {
     _.set(filters.value, ['global', 'value'], globalSearchTerm.value)
@@ -453,7 +489,7 @@ function filteringComplete() {
     >
         <template #header>
             <div class="flex flex-wrap gap-2 items-center justify-between">
-                <span v-if="props.title">
+                <span v-if="props.title && !$slots.title">
                     <span class="text-2xl font-bold m-0">{{ !_.isEmpty(props.where) ? `${props.title} (filtered)` : props.title }}</span>
                     <Button v-if="!_.isEmpty(props.where) && !_.isEmpty(route.query)"
                         text
@@ -461,6 +497,9 @@ function filteringComplete() {
                         severity="info"
                         @click="clearRouteQueryParams"
                         v-tooltip="{value: 'Clear filters'}" />
+                </span>
+                <span v-if="$slots.title">
+                    <slot name="title" />
                 </span>
                 <Toolbar class="border-0">
                     <template #start>
@@ -496,6 +535,13 @@ function filteringComplete() {
         <template #loading> Loading </template>
 
         <Column columnKey="selectBox" :reorderableColumn="false" :class="`w-0 !pl-6 ${selectionDisabled ? 'p-disabled' : ''}`" v-if="selectionMode=='multiple'" :selectionMode="selectionMode" :exportable="false" frozen />
+        <Column v-if="!_.isEmpty(invalidRecordMessages)" columnKey="invalidRecordIndicator" :reorderableColumn="true" class="w-0 !pl-6" :exportable="false" frozen>
+            <template #body="slotProps">
+                <span v-if="invalidRecordMessages[slotProps.data.id]" class="text-red-600">
+                    <i class="pi pi-exclamation-circle" v-tooltip="invalidRecordMessages[slotProps.data.id].messages.join(', ')" />
+                </span>
+            </template>
+        </Column>
         <Column columnKey="crudButtons" :reorderableColumn="false" :class="`whitespace-nowrap !pr-0 w-0 ${selectionMode=='multiple' ? '!pl-0' : ''}`" v-if="props.canEdit || props.showColumnFilters" :exportable="false" :showFilterMenu="false" frozen>
             <template v-if="props.showColumnFilters" #header>
                 <Button :icon="displayColumnFilters ? 'pi pi-search-minus' : 'pi pi-search-plus'" text rounded severity="info" @click="toggleColumnFilters"/>
@@ -516,7 +562,7 @@ function filteringComplete() {
         </Column>
         <template v-for="columnDef of filterByColumnVisibility(sortedColumnDefs)">
             <template v-if="columnDef.display!==false">
-                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-if="columnDef.format=='date-time'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -524,7 +570,7 @@ function filteringComplete() {
                         {{ formatDate(slotProps.data[columnDef.key]) }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.type=='boolean' || _.includes(columnDef.type, 'boolean')" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -532,7 +578,7 @@ function filteringComplete() {
                         {{ slotProps.data[columnDef.key] ? '✓' : '' }}
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.format=='hyperlink'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
@@ -544,17 +590,17 @@ function filteringComplete() {
                         </a>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.type=='element'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>
                     <template #body="slotProps">
-                        <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)"></span>
-                        <span v-else-if="_.isString(columnDef.element)" v-html="columnDef.element"></span>
+                        <span v-if="_.isFunction(columnDef.element)" v-html="columnDef.element(slotProps.data)" v-on:click="columnDef.elementClick ? columnDef.elementClick(slotProps.data) : null"></span>
+                        <span v-else-if="_.isString(columnDef.element)" v-html="columnDef.element" v-on:click="columnDef.elementClick ? columnDef.elementClick(slotProps.data) : null"></span>
                         <span v-else>err</span>
                     </template>
                 </Column>
-                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" style="width: max-content !important; min-width: max-content !important; max-width: max-content !important;" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
+                <Column v-else-if="columnDef.key!='id'" :field="columnDef.path" :header="columnHeader(columnDef)" :reorderableColumn="showSettings" :bodyClass="columnDef.bodyClass || '!w-max !max-w-max !min-w-max'" :showFilterMenu="false" :showClearButton="false" :sortable="_.get(columnDef, 'sortable', true)">
                     <template v-if="columnDef.path && _.has(filters, columnDef.path)" #filter="{ filterModel, filterCallback }">
                         <InputText class="w-full m-0 p-1" v-model="filterModel.value" type="text" @input="debounceSearch(filterCallback, columnDef.key)()" :ref="el => _.set(columnFilterInputs, columnDef.key, el)" />
                     </template>

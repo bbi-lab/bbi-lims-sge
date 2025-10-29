@@ -4,12 +4,6 @@ import _ from 'lodash'
 const crudTable = useCrudTable()
 const rowActions = {}
 
-const columnDefs = {
-    wellContents:{ display: false }
-}
-const fieldDefs = {
-    wellContents:{ display: false }
-}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -20,7 +14,6 @@ const fieldDefs = {
                 schemaName="select"
                 title="Index Primers"
                 :rowActions="rowActions"
-                :columnDefs="columnDefs"
                 :can-edit="false"
                 :can-delete="false"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
@@ -32,7 +25,6 @@ const fieldDefs = {
                 v-if="crudTable.state.showAddForm"
                 tableName="index-primers"
                 schemaName="insert"
-                :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
             />
