@@ -70,7 +70,9 @@ export const wellables = pgTable('wellables', {
       'snv_lib_amp_products',
       'snv_lib_lin_products',
       'snv_lib_gibson_products',
-      'snv_lib_plasmids'
+      'snv_lib_plasmids',
+      'snv_lib_clonal_dna_products',
+      'snv_lib_golden_gate_products'
     )`
   )
 ])

@@ -124,6 +124,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'SNVlib plasmid storage',
                 label: 'SNVlib plasmid storage',
             },
+            'snv-lib-clonal-dna-product-storage': {
+                desc: 'SNVlib clonal DNA product storage',
+                label: 'SNVlib clonal DNA product storage',
+            },
+            'snv-lib-golden-gate-product-storage': {
+                desc: 'SNVlib Golden Gate product storage',
+                label: 'SNVlib Golden Gate product storage',
+            },
         },
     },
     'pcrExperiments': {

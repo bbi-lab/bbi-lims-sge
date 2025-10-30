@@ -112,3 +112,24 @@ export const snvLibGibsonProducts = pgTable('snv_lib_gibson_products', {
 }, (table) => [
   check("benchling_link_check", sql`${table.benchlingLink} ~* '^https?://.+$'`),
 ])
+
+export const snvLibClonalDnaProducts = pgTable('snv_lib_clonal_dna_products', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
+    gelExtractedOn: timestamp('gel_extracted_on'),
+    gelExtractedBy: uuid('gel_extracted_by').references(() => users.id),
+    quant: doublePrecision('quant'),
+    size: integer('size'),
+    notes: text('notes'),
+})
+
+export const snvLibGoldenGateProducts = pgTable('snv_lib_golden_gate_products', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
+    snvLibAmpProductId: uuid('snv_lib_amp_product_id').references(() => snvLibAmpProducts.id).notNull().unique(),
+    snvLibClonalDnaProductId: uuid('snv_lib_clonal_dna_product_id').references(() => snvLibClonalDnaProducts.id).notNull().unique(),
+    goldenGateProductVectorAmount: doublePrecision('golden_gate_product_vector_amount').default(50),
+    notes: text('notes'),
+})
