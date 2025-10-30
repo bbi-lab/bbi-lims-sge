@@ -965,6 +965,16 @@ const snvLibGoldenGateProductsRelationsConfig: RelationsConfig = {
             referenceTable: wellables,
             references: [wellables.id],
         },
+        snvLibAmpProduct: {
+            fields: [snvLibGoldenGateProducts.snvLibAmpProductId],
+            referenceTable: snvLibAmpProducts,
+            references: [snvLibAmpProducts.id],
+        },
+        snvLibClonalDnaProduct: {
+            fields: [snvLibGoldenGateProducts.snvLibClonalDnaProductId],
+            referenceTable: snvLibClonalDnaProducts,
+            references: [snvLibClonalDnaProducts.id],
+        },
     },
 }
 export const snvLibGoldenGateProductsRelations = relationsConfigToRelations(snvLibGoldenGateProducts, snvLibGoldenGateProductsRelationsConfig)
