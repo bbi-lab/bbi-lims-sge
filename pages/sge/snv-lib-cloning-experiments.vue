@@ -3,7 +3,7 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { snvLibGibsonProducts } from '~/server/db/schema/sge/oligos'
+import { snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from '~/server/db/schema/sge/oligos'
 import { snvLibPlasmids } from '~/server/db/schema/sge/plasmid'
 
 const crudTable = useCrudTable()
@@ -60,6 +60,10 @@ const updateCurrentSnvLibCloningExperiment = (data: any) => {
 }
 
 const columnDefs: ColumnDefinitions = {
+    snvLibClonalDnaProducts: { display: false },
+    snvLibGoldenGateProducts: { display: false },
+    snvLibLinProducts: { display: false },
+    snvLibGibsonProducts: { display: false },
     name: {
         index: 0,
     },
@@ -68,9 +72,21 @@ const columnDefs: ColumnDefinitions = {
         path: 'target.name',
         index: 1,
     },
+    cloningStrategy: {
+        index: 2,
+    },
+    startedOn: {
+        index: 3,
+        type: 'date',
+    },
+    endedOn: {
+        index: 4,
+        type: 'date',
+    },
     snvLibAmpProducts: {
         header: 'AMP Product',
         type: 'element',
+        index: 5,
         element: (data: any) => {
             const ampProduct = _.get(data, 'snvLibAmpProducts.0')
             const href = ampProduct?.id ? `/sge/snv-lib-amp-products?id=${ampProduct?.id}` : null
@@ -79,7 +95,7 @@ const columnDefs: ColumnDefinitions = {
         elementClick: (data: any) => {
             if (_.isEmpty(data.snvLibAmpProducts)) {
                 addFormReadOnlyValues.value = {
-                    name: _.replace(data.name, /_SNVlib$/gi , '_AMP'),
+                    name: `${_.replace(data.name, /_SNVlib/gi , '')}_AMP`,
                     snvLibCloningExperimentId: _.get(data, 'id'),
                 }
                 addFormValues.value = {
@@ -97,18 +113,24 @@ const columnDefs: ColumnDefinitions = {
             return _.get(x, 'snvLibAmpProducts.0.name')
         },
     },
-    snvLibLinProducts: {
-        header: 'LIN Product',
+    backbone: {
         type: 'element',
+        index: 6,
         element: (data: any) => {
-            const linProduct = _.get(data, 'snvLibLinProducts.0')
-            const href = linProduct?.id ? `/sge/snv-lib-lin-products?id=${linProduct?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${linProduct.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+            let product, href
+            if (data?.cloningStrategy == 'Gibson') {
+                product = _.get(data, 'snvLibLinProducts.0')
+                href = product?.id ? `/sge/snv-lib-lin-products?id=${product?.id}` : null
+            } else if (data?.cloningStrategy == 'Golden Gate') {
+                product = _.get(data, 'snvLibClonalDnaProducts.0')
+                href = product?.id ? `/sge/snv-lib-clonal-dna-products?id=${product?.id}` : null
+            }
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${product.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
         elementClick: (data: any) => {
-            if (_.isEmpty(data.snvLibLinProducts)) {
+            if (data?.cloningStrategy == 'Gibson' && _.isEmpty(data.snvLibLinProducts)) {
                 addFormReadOnlyValues.value = {
-                    name: _.replace(data.name, /_SNVlib$/gi , '_LIN'),
+                    name: `${_.replace(data.name, /_SNVlib/gi , '')}_Gibson`,
                     snvLibCloningExperimentId: _.get(data, 'id'),
                 }
                 addFormValues.value = {
@@ -118,26 +140,48 @@ const columnDefs: ColumnDefinitions = {
                 addFormTableName.value = 'snv-lib-lin-products'
                 addFormHeader.value = 'Add LIN Product'
                 addFormFieldDefs.value = linProductFieldDefinitions
-                updateCurrentSnvLibCloningExperiment(data)
-                showAddDialog.value = true
+            } else if (data?.cloningStrategy == 'Golden Gate' && _.isEmpty(data.snvLibClonalDna)) {
+                addFormReadOnlyValues.value = {
+                    name: `${_.replace(data.name, /_SNVlib/gi , '')}_ClonalDNA`,
+                    snvLibCloningExperimentId: _.get(data, 'id'),
+                }
+                addFormValues.value = {
+                    gelExtractedBy: _.get(user, 'value.id'),
+                    gelExtractedOn: new Date(),
+                }
+                addFormTableName.value = 'snv-lib-clonal-dna-products'
+                addFormHeader.value = 'Add Clonal DNA'
+                addFormFieldDefs.value = clonalDnaProductFieldDefinitions
+            } else {
+                return
             }
+            updateCurrentSnvLibCloningExperiment(data)
+            showAddDialog.value = true
         },
         exportValue: (x: any) => {
             return _.get(x, 'snvLibLinProducts.0.name')
         },
     },
-    snvLibGibsonProducts: {
-        header: 'Gibson Product',
+    assembledDna: {
+        header: 'Assembled DNA',
         type: 'element',
+        index: 7,
         element: (data: any) => {
-            const gibsonProduct = _.get(data, 'snvLibGibsonProducts.0')
-            const href = gibsonProduct?.id ? `/sge/snv-lib-gibson-products?id=${gibsonProduct?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${gibsonProduct.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+            let product, href
+            if (data?.cloningStrategy == 'Gibson') {
+                product = _.get(data, 'snvLibGibsonProducts.0')
+                href = product?.id ? `/sge/snv-lib-gibson-products?id=${product?.id}` : null
+            } else if (data?.cloningStrategy == 'Golden Gate') {
+                product = _.get(data, 'snvLibGoldenGateProducts.0')
+                href = product?.id ? `/sge/snv-lib-golden-gate-products?id=${product?.id}` : null
+            }
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${product.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
         elementClick: (data: any) => {
-            if (_.isEmpty(data.snvLibGibsonProducts)) {
+            console.log('data', data)
+            if (data?.cloningStrategy == 'Gibson' && _.isEmpty(data.snvLibGibsonProducts)) {
                 addFormReadOnlyValues.value = {
-                    name: `${data.name}_Gibson`,
+                    name: `${_.replace(data.name, /_SNVlib/gi , '')}_Gibson`,
                     snvLibCloningExperimentId: _.get(data, 'id'),
                 }
                 addFormValues.value = {
@@ -147,17 +191,38 @@ const columnDefs: ColumnDefinitions = {
                 addFormTableName.value = 'snv-lib-gibson-products'
                 addFormHeader.value = 'Add Gibson Product'
                 addFormFieldDefs.value = gibsonProductFieldDefinitions
-                updateCurrentSnvLibCloningExperiment(data)
-                showAddDialog.value = true
+            } else if (data?.cloningStrategy == 'Golden Gate' && _.isEmpty(data.snvLibGoldenGateProducts)) {
+                addFormReadOnlyValues.value = {
+                    name: `${_.replace(data.name, /_SNVlib/gi , '')}_GoldenGate`,
+                    snvLibCloningExperimentId: _.get(data, 'id'),
+                }
+                addFormValues.value = {
+                    goldenGateBy: _.get(user, 'value.id'),
+                    goldenGateOn: new Date(),
+                }
+                addFormTableName.value = 'snv-lib-golden-gate-products'
+                addFormHeader.value = 'Add Golden Gate Product'
+                addFormFieldDefs.value = goldenGateProductFieldDefinitions
+            } else {
+                return
             }
+
+            updateCurrentSnvLibCloningExperiment(data)
+            showAddDialog.value = true
         },
         exportValue: (x: any) => {
-            return _.get(x, 'snvLibGibsonProducts.0.name')
+            if (x?.cloningStrategy == 'Gibson') {
+                return _.get(x, 'snvLibGibsonProducts.0.name')
+            } else if (x?.cloningStrategy == 'Golden Gate') {
+                return _.get(x, 'snvLibGoldenGateProducts.0.name')
+            }
+            return null
         },
     },
     snvLibPlasmids: {
         header: 'Plasmids',
         type: 'element',
+        index: 8,
         element: (data: any) => {
             const plasmid = _.get(data, 'snvLibPlasmids.0')
             const href = plasmid?.id ? `/sge/snv-lib-plasmids?id=${plasmid?.id}` : null
@@ -222,6 +287,8 @@ const fieldDefs: FieldDefinitions = {
     snvLibLinProducts: { display: false },
     snvLibGibsonProducts: { display: false },
     snvLibPlasmids: { display: false },
+    snvLibClonalDnaProducts: { display: false },
+    snvLibGoldenGateProducts: { display: false },
 }
 const withClause = {
     target: true,
@@ -229,6 +296,8 @@ const withClause = {
     snvLibLinProducts: true,
     snvLibGibsonProducts: true,
     snvLibPlasmids: true,
+    snvLibClonalDnaProducts: true,
+    snvLibGoldenGateProducts: true,
 }
 const ampProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
@@ -522,6 +591,84 @@ const plasmidFieldDefinitions: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+}
+const clonalDnaProductFieldDefinitions: FieldDefinitions = {
+    name: { index: 0 },
+    snvLibCloningExperimentId: {
+        label: 'SNV Library Cloning Experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    gelExtractedBy: {
+        label: 'Gel Extracted By',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/users`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+    },
+    gelExtractedOn: {
+        type: 'date',
+    },
+    quant: {
+        label: 'Quant (ng/µL)',
+    },
+}
+const goldenGateProductFieldDefinitions: FieldDefinitions = {
+    name: { index: 0 },
+    snvLibCloningExperimentId: {
+        label: 'SNV Library Cloning Experiment',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 1,
+    },
+    snvLibAmpProductId: {
+        label: 'AMP Product',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-amp-products`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 2,
+    },
+    snvLibClonalDnaProductId: {
+        label: 'Clonal DNA Product',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/snv-lib-clonal-dna-products`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
+        index: 3,
+    },
+    goldenGateProductVectorAmount: {
+        label: 'Golden Gate Product Vector Amount (ng)',
+        props:{
+            defaultValue: 50,
+        },
+        index: 4,
     },
 }
 </script>
