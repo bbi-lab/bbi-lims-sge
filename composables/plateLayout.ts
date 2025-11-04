@@ -319,11 +319,13 @@ export const usePlateLayout = () => {
                         columns: {id: true},
                         with: {
                             wellable: {
-                                nucleicAcid: {
-                                    columns: {id: true},
-                                    with: {
-                                        pellet: {
-                                            columns: {id: true, name: true, isBackup: true},
+                                with: {
+                                    nucleicAcid: {
+                                        columns: {id: true},
+                                        with: {
+                                            pellet: {
+                                                columns: {id: true, name: true, isBackup: true},
+                                            },
                                         },
                                     },
                                 },
