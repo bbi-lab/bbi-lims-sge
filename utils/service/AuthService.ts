@@ -4,7 +4,7 @@ export const AuthService = {
             const response = await $fetch(`/api/users/login`, {method: 'POST', body: { email, password }})
             return response
         } catch (err:any) {
-            return {success: false, errorMessage: err.statusMessage || 'Login failed. Please check your credentials.'}
+            return {success: false, errorMessage: err.data?.statusMessage || 'Login failed. Please check your credentials.'}
         }
     },
 
@@ -13,7 +13,8 @@ export const AuthService = {
             const response = await $fetch(`/api/users/register`, {method: 'POST', body: { name, email, password }})
             return response
         } catch (err:any) {
-            return {success: false, errorMessage: err.statusMessage || 'Registration failed.'}
+            console.error(JSON.stringify(err))
+            return {success: false, errorMessage: err.data?.statusMessage || 'Registration failed.'}
         }
     },
 }

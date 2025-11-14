@@ -64,7 +64,7 @@ const extractFromSelectedPellets = async () => {
         toast.add({
             severity: 'error',
             summary: 'Error adding nucleic acids',
-            detail: e.statusMessage || 'Unknown error',
+            detail: e.data?.statusMessage || 'Unknown error',
             life: 3000,
         })
     }
