@@ -2,7 +2,6 @@ import { selectRecords } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { type QueryParams, type SelectParams, queryToSelectParams } from '../utils/restApi'
 import { useDrizzle } from '../utils/db'
-import { PgViewWithSelection } from 'drizzle-orm/pg-core'
 
 export default defineEventHandler(async (event) => {
     const db = useDrizzle()

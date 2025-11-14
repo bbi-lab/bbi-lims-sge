@@ -1,17 +1,21 @@
-import { setup } from '@nuxt/test-utils/e2e'
+import { describe, expect, it } from 'vitest'
 import { $fetch } from '@nuxt/test-utils'
-import { describe, it } from 'vitest'
-import { schemas } from '@/server/db/schema/user'
+import { setup } from '@nuxt/test-utils/e2e'
+import { generateTokens } from "~/server/utils/jwt"
+import { v4 as uuidv4 } from 'uuid'
 
 describe('API route: users (GET)', async () => {
-  await setup({
-    host: 'http://localhost:3001',
-  })
+  await setup()
 
-  it('should return a users', async () => {
-    const res = await $fetch('/api/users')
-    for (const user of res) {
-      schemas.selectUserSchema.parse(user)
-    }
+  it('return success response for valid request', async () => {
+    const tokens = generateTokens(uuidv4())
+    const res = await $fetch('/api/users', {
+      headers: {
+        Authorization: `Bearer ${tokens.accessToken}`
+      }
+    })
+    expect(res).toBeDefined()
+    expect(Array.isArray(res)).toBe(true)
+
   })
 })

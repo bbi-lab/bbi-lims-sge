@@ -162,7 +162,7 @@ const selectWellContentsSchema = createSelectSchema(wellContents)
 const insertWellContentsSchema = selectWellContentsSchema.omit({id: true}).partial()
 const updateWellContentsSchema = insertWellContentsSchema
 
-const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
+const selectWellContentSourcesSchema = createSelectSchema(wellContentSources, {createdAt: nullableDateSchema})
 const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
 const updateWellContentSourcesSchema = insertWellContentSourcesSchema
 
@@ -170,18 +170,18 @@ const selectSequencingRunsSchema = createSelectSchema(sequencingRuns, {createdOn
 const insertSequencingRunsSchema = selectSequencingRunsSchema.omit({id: true}).partial()
 const updateSequencingRunsSchema = insertSequencingRunsSchema
 
-const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
+const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples, {createdAt: nullableDateSchema})
 const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, createdAt: true}).partial()
 const updateSequencingRunSamples = insertSequencingRunSamples
 
-const selectExternalSamples = createSelectSchema(externalSamples)
+const selectExternalSamples = createSelectSchema(externalSamples, {createdAt: nullableDateSchema})
 const insertExternalSamples = createSelectSchema(externalSamples, {
     customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
     customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
 }).omit({id: true, createdAt: true}).partial()
 const updateExternalSamples = insertExternalSamples
 
-const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
+const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {createdAt: nullableDateSchema})
 const insertSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {
     customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
     customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
