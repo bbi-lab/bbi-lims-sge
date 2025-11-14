@@ -40,6 +40,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'sgRNA oligo',
                 label: 'sgRNA oligo',
             },
+            'sg-rna-plasmid-storage': {
+                desc: 'sgRNA plasmid storage',
+                label: 'sgRNA plasmid storage',
+            },
             'sg-rna-plasmid': {
                 desc: 'sgRNA plasmid',
                 label: 'sgRNA plasmid',
