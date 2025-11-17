@@ -138,10 +138,10 @@ watch(() => recordClone.value, (newValue, oldValue) => {
 function deleteRecord() {
     if (_.has(record.value, 'id')) {
         RecordService.deleteRecord(apiBaseUrl.value, record.value.id).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 3000 })
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 5000 })
             emit('record-delete', result)
         }).catch(error => {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
         })
     }
     displayDeleteConfirmation.value = false
@@ -202,13 +202,13 @@ async function saveRecord() {
         // updating single record - limit to properties in JSON schema
         const values = {id: _.get(record.value, 'id'), ..._.pick(record.value,  Object.keys(formSchema.value.properties))}
         RecordService.updateRecord(apiBaseUrl.value, values).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 5000 });
             emit('record-update', result)
         }).catch(error => {
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
+                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
             }
         })
     } else if (!props.recordId && formSchema.value) {
@@ -216,13 +216,13 @@ async function saveRecord() {
         const values = _.pick(record.value, Object.keys(formSchema.value.properties))
 
         RecordService.addRecord(apiBaseUrl.value, values).then((result) => {
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 5000 });
             emit('record-add', result)
         }).catch(error => {
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
-                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
+                toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
             }
         })
     }

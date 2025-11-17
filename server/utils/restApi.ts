@@ -91,17 +91,15 @@ export function parsePutPostError(error: any, recordType: string) {
     return {error, data}
 }
 
-export async function parseDeleteError(error: any, recordId: string) {
-    // convert delete error due to constraint to more user-friendly error message
-    const regex = /^update or delete on table "([^"]*)" violates foreign key constraint "([^"]*)" on table "([^"]*)"/
-    const match = error.message?.match(regex)
+export async function parseDeleteError(error: any) {
+    const regex = /^Key \(([^)]*)\)=\(([^)]*)\) is still referenced from table "([^"]*)"[.]$/
+    const match = error?.cause?.detail ? error.cause.detail.match(regex) : null
 
-    if (match && match.length === 4) {
+    if (error?.cause?.routine == 'ri_ReportViolation' && match) {
         const relatedTable = match[3]
 
         if (relatedTable == 'well_contents') {
-            const fieldName = `${_.camelCase(_.trimEnd(match[1], 's'))}Id`
-            if (wellContents[fieldName]) {
+            if (match[1] == 'id') {
                 const relatedWellContents = await db.query.wellContents.findMany({
                     with: {
                         well: {
@@ -114,13 +112,13 @@ export async function parseDeleteError(error: any, recordId: string) {
                             },
                         },
                     },
-                    where: eq(wellContents[fieldName], recordId),
+                    where: eq(wellContents.wellableId, match[2]),
                 })
                 const plateNames = _.uniq(_.map(relatedWellContents, 'well.plate.name'))
-                error.message = `Cannot delete due to presence in plate(s)/storage box(es): ${_.join(plateNames, ',')}.`
+                error.statusMessage = `Cannot delete due to presence in plate(s)/storage box(es): ${_.join(plateNames, ',')}.`
             }
         } else {
-            error.message = `Cannot delete due to related records in ${_.startCase(relatedTable)} table.`
+            error.statusMessage = `Cannot delete due to related records in ${_.lowerCase(_.startCase(relatedTable))} table.`
         }
     }
 }
