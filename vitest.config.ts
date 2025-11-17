@@ -5,9 +5,9 @@ export default defineVitestConfig({
     test: {
         environment: 'nuxt',
         environmentOptions: {
-        nuxt: {
-            domEnvironment: 'happy-dom',
-        },
+            nuxt: {
+                domEnvironment: 'happy-dom',
+            },
         },
     },
 })
