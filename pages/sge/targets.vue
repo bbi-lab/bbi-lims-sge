@@ -77,7 +77,6 @@ const rowActions = {
         action: (data: any) => {
             router.push({path:'/sge/snv-lib-plasmids', query: {'targetId': data.id}})
         },
-        disabled: () => true,
         tooltip: 'SNV-lib',
     },
     pellets: {
