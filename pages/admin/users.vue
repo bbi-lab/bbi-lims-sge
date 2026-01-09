@@ -48,6 +48,7 @@ const columnDefs = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="users"
                 schemaName="admin-update-user-schema"
+                :fieldDefs="{'userGroupMemberships.*': {canUpdate: true}}"
                 :canDelete="true"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"

@@ -16,11 +16,11 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
     }
 
     // define JSON schema property to select a user group
-    const userGroups = await getUserGroups() as UserGroup[]
-    const userGroupsJsonSchemaProperty:JsonSchema7AnyType = {
-      type: 'string',
-      oneOf: _.map(userGroups, (x) => { return { const: x.id, title: x.name } }),
-    }
+    // const userGroups = await getUserGroups() as UserGroup[]
+    // const userGroupsJsonSchemaProperty:JsonSchema7AnyType = {
+    //   type: 'string',
+    //   oneOf: _.map(userGroups, (x) => { return { const: x.id, title: x.name } }),
+    // }
 
     // iterate over properties and replace one-to-many relations with corresponding JsonSchema property
     const properties = Object.keys(_.get(jsonSchema, 'properties', {}))
@@ -76,7 +76,7 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
 
             // TODO - this will only be true as long as column name in drizzle table defintion is camel-case version of column name in the database
             const propNameToReplace = _.camelCase(itemsRelationsConfigField.name)
-            _.set(itemsJsonSchema, ['properties', propNameToReplace], userGroupsJsonSchemaProperty)
+            _.set(itemsJsonSchema, ['properties', propNameToReplace], relatedRecordsJsonSchemaProperty)
           } else {
             throw createError({statusCode: 500})
           }
