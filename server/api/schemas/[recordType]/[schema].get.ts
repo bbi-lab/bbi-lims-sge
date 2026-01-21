@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
         // generate JSON Schema from Zod object
         const jsonSchema = zodToJsonSchema(currentSchema, { $refStrategy: 'none' })
 
-        console.log('Generated JSON Schema:', JSON.stringify(jsonSchema, null, 2))
         const relationsConfig = _.get(relationsConfigs, _.camelCase(recordType)) as RelationsConfig
         const enumLookups = _.get(ENUM_LOOKUPS, _.camelCase(recordType), {}) as EnumLookup
 
