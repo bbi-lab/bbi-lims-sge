@@ -77,6 +77,7 @@ export function parsePutPostError(error: any, recordType: string) {
             code: 'duplicate_key_value',
             path: [fieldName],
             message: 'Must be unique',
+            description: `${match[2]} already exists`
         }] : undefined
     }
 

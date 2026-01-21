@@ -6,7 +6,7 @@ import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { dateSchema } from '../../server/db/helpers/schemas'
 import { z } from 'zod'
 import _ from 'lodash'
-import type { DBQueryConfig } from 'drizzle-orm'
+import { parsePutPostError } from '../../server/utils/restApi'
 import { eq, inArray, ne } from 'drizzle-orm'
 
 const baseUrl = '/api/transfect-experiments'
@@ -207,12 +207,12 @@ export class TransfectionExperiment {
     }
 
     async addPellets(pellets: PelletInsert[]) {
-        const {data} = await useFetch<PelletSelect[]>(pelletsUrl, {method: 'POST', body: pellets})
+        const {data, error} = await useFetch<PelletSelect[]>(pelletsUrl, {method: 'POST', body: pellets})
 
-        if (data.value) {
+        if (data?.value) {
             return {success: true, data: data.value}
-        } else {
-            return {success: false}
+        } else{
+            return {success: false, error: error?.value?.data?.data || error?.value}
         }
     }
 
