@@ -299,6 +299,8 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                             :placeholder="placeholders[key]"
                             :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
                             :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                            :min="_.get(fieldDefs, [key, 'min'])"
+                            :max="_.get(fieldDefs, [key, 'max'])"
                             v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />
@@ -413,6 +415,8 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                             :disabled="isReadOnly(key)"
                             :minFractionDigits="0"
                             :maxFractionDigits="0"
+                            :min="_.get(fieldDefs, [key, 'min'])"
+                            :max="_.get(fieldDefs, [key, 'max'])"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(combinedRecord[key].val))"
                         />
                         <Button icon="pi pi-times" class="ml-2" severity="secondary" outlined @click="clearValue(key)" />

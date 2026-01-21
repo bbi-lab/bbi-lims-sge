@@ -27,6 +27,10 @@ interface FieldDefinition {
     type?: string,
     index?: number,
     events?: Record<string, Function>,
+    minFractionDigits?: number,
+    maxFractionDigits?: number,
+    min?: number,
+    max?: number,
 }
 export interface FieldDefinitions {[key: string]: FieldDefinition}
 
@@ -349,6 +353,8 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         :disabled="isReadOnly(key)"
                         :minFractionDigits="0"
                         :maxFractionDigits="0"
+                        :min="_.get(fieldDefs, [key, 'min'])"
+                        :max="_.get(fieldDefs, [key, 'max'])"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </template>
@@ -360,6 +366,8 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         :disabled="isReadOnly(key)"
                         :minFractionDigits="_.get(fieldDefs, [key, 'minFractionDigits'], 0)"
                         :maxFractionDigits="_.get(fieldDefs, [key, 'maxFractionDigits'], 20)"
+                        :min="_.get(fieldDefs, [key, 'min'])"
+                        :max="_.get(fieldDefs, [key, 'max'])"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                 </template>

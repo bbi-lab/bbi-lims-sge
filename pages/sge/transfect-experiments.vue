@@ -221,6 +221,8 @@ const fieldDefs: FieldDefinitions = {
     },
     replicateCount: {
         label: 'Number of replicates',
+        min: 1,
+        max: 9,
     },
     transfectionCount: {
         display: false,
