@@ -289,6 +289,8 @@ const fieldDefs: FieldDefinitions = {
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :where="whereClauses?.[0]"
+                sortField="cycle.name"
+                :sortOrder="-1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

@@ -110,6 +110,8 @@ const props = defineProps({
   expandEnums: {type: Boolean, default: false},
   emptyMessage: {type: String, default: 'No data'},
   invalidRecords: {type: Object},
+  sortField: {type: String },
+  sortOrder: {type: Number },
 })
 
 watch(() => props.invalidRecords, (newValue) => {
@@ -484,6 +486,8 @@ function filteringComplete() {
         :loading="loading"
         :filter-display="displayColumnFilters ? 'row' : undefined"
         :globalFilterFields="globalFilterFields"
+        :sort-field="props.sortField"
+        :sort-order="props.sortOrder"
         @update:filters="filteringInProgress = true"
         @filter="filteringComplete"
     >
