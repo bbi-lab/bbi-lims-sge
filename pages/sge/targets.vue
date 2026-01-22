@@ -8,7 +8,7 @@ import  {
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
-import { preseq1Primers } from '~/server/db/schema/sge/primer'
+import { amplificationPrimers, preseq1Primers } from '~/server/db/schema/sge/primer'
 
 const router = useRouter()
 const route = useRoute()
@@ -241,6 +241,33 @@ const fieldDefs: FieldDefinitions = {
     transfectTargets: {
         display: false,
     },
+    linearizationPrimers: {
+        display: false,
+    },
+    homologyArmPrimers: {
+        display: false,
+    },
+    sgRnaPlasmids: {
+        display: false,
+    },
+    snvLibPlasmids: {
+        display: false,
+    },
+    preseq1Primers: {
+        display: false,
+    },
+    preseq2Primers: {
+        display: false,
+    },
+    amplificationPrimers: {
+        display: false,
+    },
+    'fixedEdits.*': {
+        canUpdate: true,
+    },
+    'skipPositions.*': {
+        canUpdate: true,
+    }
 }
 </script>
 <template>
