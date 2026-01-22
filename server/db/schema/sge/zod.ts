@@ -19,7 +19,7 @@ import { nucleicAcids } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from './oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -114,6 +114,14 @@ const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts
 const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
 const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
+const selectSnvLibClonalDnaProductsSchema = createSelectSchema(snvLibClonalDnaProducts, {gelExtractedOn: nullableDateSchema})
+const insertSnvLibClonalDnaProductsSchema = selectSnvLibClonalDnaProductsSchema.omit({id: true})
+const updateSnvLibClonalDnaProductsSchema = insertSnvLibClonalDnaProductsSchema
+
+const selectSnvLibGoldenGateProductsSchema = createSelectSchema(snvLibGoldenGateProducts)
+const insertSnvLibGoldenGateProductsSchema = selectSnvLibGoldenGateProductsSchema.omit({id: true})
+const updateSnvLibGoldenGateProductsSchema = insertSnvLibGoldenGateProductsSchema
+
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchemaOrig = selectPcrExperimentsSchema.omit({id: true})
 const insertPcrExperimentsSchema = insertPcrExperimentsSchemaOrig.superRefine((data, ctx) => {
@@ -154,7 +162,7 @@ const selectWellContentsSchema = createSelectSchema(wellContents)
 const insertWellContentsSchema = selectWellContentsSchema.omit({id: true}).partial()
 const updateWellContentsSchema = insertWellContentsSchema
 
-const selectWellContentSourcesSchema = createSelectSchema(wellContentSources)
+const selectWellContentSourcesSchema = createSelectSchema(wellContentSources, {createdAt: nullableDateSchema})
 const insertWellContentSourcesSchema = selectWellContentSourcesSchema.omit({id: true}).partial()
 const updateWellContentSourcesSchema = insertWellContentSourcesSchema
 
@@ -162,18 +170,18 @@ const selectSequencingRunsSchema = createSelectSchema(sequencingRuns, {createdOn
 const insertSequencingRunsSchema = selectSequencingRunsSchema.omit({id: true}).partial()
 const updateSequencingRunsSchema = insertSequencingRunsSchema
 
-const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples)
+const selectSequencingRunSamples = createSelectSchema(sequencingRunSamples, {createdAt: nullableDateSchema})
 const insertSequencingRunSamples = selectSequencingRunSamples.omit({id: true, createdAt: true}).partial()
 const updateSequencingRunSamples = insertSequencingRunSamples
 
-const selectExternalSamples = createSelectSchema(externalSamples)
+const selectExternalSamples = createSelectSchema(externalSamples, {createdAt: nullableDateSchema})
 const insertExternalSamples = createSelectSchema(externalSamples, {
     customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
     customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
 }).omit({id: true, createdAt: true}).partial()
 const updateExternalSamples = insertExternalSamples
 
-const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples)
+const selectSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {createdAt: nullableDateSchema})
 const insertSequencingRunExternalSamples = createSelectSchema(sequencingRunExternalSamples, {
     customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
     customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
@@ -208,32 +216,32 @@ const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
 
-const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers)
-const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {orderedOn: nullableDateSchema})
+const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateAmplificationPrimerSchema = insertAmplificationPrimerSchema
 
-const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers)
-const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true})
+const selectHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {orderedOn: nullableDateSchema})
+const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
-const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers)
-const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i))}).omit({id: true}).partial()
+const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {orderedOn: nullableDateSchema})
+const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)), orderedOn: nullableDateSchema}).omit({id: true}).partial()
 const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
 
-const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers)
-const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {orderedOn: nullableDateSchema})
+const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
 const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
 const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
 const updateIndexPrimerSchema = insertIndexPrimerSchema
 
-const selectpreseq1PrimerSchema = createSelectSchema(preseq1Primers)
-const insertpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const selectpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {orderedOn: nullableDateSchema})
+const insertpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updatepreseq1PrimerSchema = insertpreseq1PrimerSchema
 
-const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers)
-const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i))}).omit({id: true})
+const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {orderedOn: nullableDateSchema})
+const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
 
 // views
@@ -333,6 +341,16 @@ export const schemas = {
         select: selectSnvLibGibsonProductsSchema,
         insert: insertSnvLibGibsonProductsSchema,
         update: updateSnvLibGibsonProductsSchema,
+    },
+    snvLibClonalDnaProducts: {
+        select: selectSnvLibClonalDnaProductsSchema,
+        insert: insertSnvLibClonalDnaProductsSchema,
+        update: updateSnvLibClonalDnaProductsSchema,
+    },
+    snvLibGoldenGateProducts: {
+        select: selectSnvLibGoldenGateProductsSchema,
+        insert: insertSnvLibGoldenGateProductsSchema,
+        update: updateSnvLibGoldenGateProductsSchema,
     },
     pcrExperiments: {
         select: selectPcrExperimentsSchema,

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
             statusMessage: `Could not find table, check to make sure ${_.camelCase(recordType)} is included in drizzle db schemas`
         })
 
-        const deletedRecord = db.transaction(async (tx) => {
+        const deletedRecord = await db.transaction(async (tx) => {
             // auto-delete dependent child records that are managed as part of parent
             if (_.camelCase(recordType) == 'transfectExperiments') {
                 await tx.delete(transfectTargets).where(eq(transfectTargets.experimentId, id))
@@ -39,11 +39,10 @@ export default defineEventHandler(async (event) => {
 
         return deletedRecord
     } catch (e: any) {
-        await parseDeleteError(e, id)
-
+        await parseDeleteError(e)
         throw createError({
             statusCode: 400,
-            statusMessage: e.message
+            statusMessage: e.statusMessage || e.message,
         })
     }
 })

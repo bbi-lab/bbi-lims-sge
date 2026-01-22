@@ -219,7 +219,7 @@ const layoutPreseq1 = async () => {
         const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
             return {
                 wellId: well.id,
-                nucleicAcidId: negativeControl.id,
+                wellableId: negativeControl.wellable?.id,
             }
         })
         allWellContentsToAdd.push(...wellContentsToAdd)
@@ -236,7 +236,7 @@ const layoutPreseq1 = async () => {
         const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
             return {
                 wellId: well.id,
-                nucleicAcidId: dayFiveNucleicAcid.id,
+                wellableId: dayFiveNucleicAcid.wellable?.id,
             }
         })
         allWellContentsToAdd.push(...wellContentsToAdd)
@@ -253,7 +253,7 @@ const layoutPreseq1 = async () => {
         const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
             return {
                 wellId: well.id,
-                nucleicAcidId: dayThirteenNucleicAcid.id,
+                wellableId: dayThirteenNucleicAcid.wellable?.id,
             }
         })
         allWellContentsToAdd.push(...wellContentsToAdd)

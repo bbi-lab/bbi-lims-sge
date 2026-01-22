@@ -41,7 +41,7 @@ const plamidPlateDisplayConfig = {
         return sgRnaPlasmid ? `${wellCoordinate}:<br>` + _.get(sgRnaPlasmid, 'name') : wellCoordinate
     },
     symbol: (well: any) => {
-        const sgRnaPlasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
+        const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
         if (sgRnaPlasmid?.verificationStatus == 'passed') {
             return '✓'
         } else if (sgRnaPlasmid?.verificationStatus == 'failed') {
@@ -56,7 +56,7 @@ const sgRnaOligoPlateDisplayConfig = {
     selectionTableRecordIdPaths: ['sgRnaOligoId'],
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-        const oligos = _.map(well.wellContents, 'sgRnaOligo')
+        const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
         return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
     },
     symbol: (well: any) => {
@@ -213,8 +213,8 @@ const transferSelectedWellsContents = async () => {
             const destinationWell = destinationWellsSorted[index]
             return _.map(wellContents, (wellContent) => {
                 return {
-                    ..._.pick(wellContent, ['sgRnaOligoId']),
                     wellId: destinationWell.id,
+                    wellableId: wellContent.wellableId,
                     sourceWellIds: [well.id],
                     createdBy: (user.value as User)?.id,
                 }

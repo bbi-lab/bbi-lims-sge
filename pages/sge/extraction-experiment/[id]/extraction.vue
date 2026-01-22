@@ -64,7 +64,7 @@ const extractFromSelectedPellets = async () => {
         toast.add({
             severity: 'error',
             summary: 'Error adding nucleic acids',
-            detail: e.statusMessage || 'Unknown error',
+            detail: e.data?.statusMessage || 'Unknown error',
             life: 3000,
         })
     }
@@ -177,12 +177,11 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/pellets`,
-            searchFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
-            searchWithClause: {
-                transfectTarget: {columns: {}, with: {experiment: {columns: {name: true}}, target: {columns: {name: true}}}},
-            },
+            searchFields: ['name'],
             valueField: 'id',
-            displayFields: ['transfectTarget.experiment.name', 'transfectTarget.target.name'],
+            displayFields: ['name', 'isBackup'],
+            displayFormat: (x: any) => x.isBackup ? `${x.name} (backup)` : x.name,
+            inputClass: 'w-80',
         }
     },
     dnaConcentration: {

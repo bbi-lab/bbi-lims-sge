@@ -147,6 +147,7 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name', 'isBackup'],
             displayFormat: (x: any) => x.isBackup ? `${x.name} (backup)` : x.name,
+            inputClass: 'w-80',
         }
     },
     dnaConcentration: {

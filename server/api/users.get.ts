@@ -1,4 +1,5 @@
 import { getAllUsers } from '~/server/services/user-services'
+import { type QueryParams, type SelectParams, queryToSelectParams } from '../utils/restApi'
 
 export default defineEventHandler(async (event) => {
     const queryParams = getQuery(event) as QueryParams

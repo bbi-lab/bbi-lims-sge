@@ -12,6 +12,7 @@ export const sgRnaCloningExperiments = pgTable('sg_rna_cloning_experiments', {
 export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull().unique(),
+  cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}).notNull(),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
   startedOn: timestamp('started_on').defaultNow(),
   endedOn: timestamp('ended_on'),

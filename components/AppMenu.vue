@@ -42,6 +42,8 @@ const model = ref([
                         { label: 'SNVlib AMP products', to: '/sge/snv-lib-amp-products' },
                         { label: 'SNVlib LIN products', to: '/sge/snv-lib-lin-products' },
                         { label: 'SNVlib Gibson products', to: '/sge/snv-lib-gibson-products' },
+                        { label: 'SNVlib Clonal DNA products', to: '/sge/snv-lib-clonal-dna-products' },
+                        { label: 'SNVlib Golden Gate products', to: '/sge/snv-lib-golden-gate-products' },
                     ]},
                     { label: 'Primers', items: [
                         { label: 'Amplification primers', to: '/sge/amplification-primers' },

@@ -15,6 +15,7 @@ export type PlateType = 'pellet-storage' |
  'ha-puc19-primer-storage' |
  'sg-rna-oligo-storage' |
  'sg-rna-oligo' |
+ 'sg-rna-plasmid-storage' |
  'sg-rna-plasmid' |
  'amp-pcr' |
  'lin-pcr' |
@@ -35,7 +36,9 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-amp-product-storage' |
  'snv-lib-lin-product-storage' |
  'snv-lib-gibson-product-storage' |
- 'snv-lib-plasmid-storage'
+ 'snv-lib-plasmid-storage' |
+ 'snv-lib-clonal-dna-product-storage' |
+ 'snv-lib-golden-gate-product-storage'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

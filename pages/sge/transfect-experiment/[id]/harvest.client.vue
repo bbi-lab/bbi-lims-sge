@@ -41,20 +41,20 @@ const existingTargetReplicates = computed(() => {
     if (currentHarvestDay.value == 5) return []
 
     if (formData.value.isBackup) {
-        return _.map(_.filter(experiment.value?.pellets, (x) => x.harvestDay == currentHarvestDay.value && !x.isBackup), (dayPellet) => {
+        return _.sortBy(_.map(_.filter(experiment.value?.pellets, (x) => x.harvestDay == currentHarvestDay.value && !x.isBackup), (dayPellet) => {
             return dayPellet.name ? {
                 label: dayPellet.name,
                 code: dayPellet
             } : null
-        })
+        }), 'label')
     } else {
         const zeroPaddedDay = _.padStart(_.toString(currentHarvestDay.value), 2, '0')
-        return currentHarvestDay.value == 5 ? [] : _.map(_.filter(experiment.value?.pellets, (x) => x.harvestDay == 5), (day5Pellet) => {
+        return currentHarvestDay.value == 5 ? [] : _.sortBy(_.map(_.filter(experiment.value?.pellets, (x) => x.harvestDay == 5), (day5Pellet) => {
             return day5Pellet.name ? {
                 label: _.replace(day5Pellet.name, '_D05_', `_D${zeroPaddedDay}_`),
                 code: day5Pellet
             } : null
-        })
+        }), 'label')
     }
 
 })
@@ -217,7 +217,6 @@ async function addPellets() {
     const pellets: DraftPellet[] = []
 
     if (currentHarvestDay.value == 5) {
-        let newPelletName = ''
         // check to make sure no pellets exist with any of same transfections
         const pelletWithSameTransfections = _.find(experiment.value?.pellets, (x) => {
             return selectedTarget.value!.code == x.transfectTargetId &&
@@ -230,30 +229,39 @@ async function addPellets() {
             toast.add({ severity: 'error', summary: 'Warning', detail: `Day 5 pellet with same transfections already exists: ${pelletWithSameTransfections.name} (${_.join(pelletWithSameTransfections.transfections, ',')})`, life: 10000 })
             throw new Error('Pellet with same replicates already exists')
         } else {
+            // determine new pellet name based on existing pellets
             let transfections: string[]
+            let newPelletName
             if (_.map(selectedTransfections.value, 'code').includes('NC')) {
-                newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_NC`
+                newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_NC_${experiment.value?.name}`
                 transfections = ['NC']
             } else {
                 transfections = _.map(selectedTransfections.value, 'code').sort()
-                const maxPelletByName = _.last(_.sortBy(_.filter(experiment.value?.pellets, (x) => x.transfectTargetId == selectedTarget.value!.code), (x:any) => x.name))
-                const regex = /_R[0-9]+$/
+                const maxPelletByName = _.last(_.sortBy(_.filter(experiment.value?.pellets, (x) => x.transfectTargetId == selectedTarget.value!.code && x.harvestDay == 5), (x:any) => x.name))
+                const regex = /_D05_R([0-9]+)_/
                 const match = maxPelletByName?.name.match(regex)
                 if (match) {
-                    const lastReplicate = maxPelletByName.name.slice(match.index + 2, maxPelletByName.name.length)
+                    const lastReplicate = match[1]
                     const nextReplicate = parseInt(lastReplicate) + 1
-                    newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_R${nextReplicate}`
+                    // check to make sure we are not exceeding replicate count for experiment
+                    if (experiment.value?.data?.replicateCount && nextReplicate > experiment.value.data.replicateCount) {
+                        toast.add({ severity: 'error', summary: 'Warning', detail: `Maximum number of day 5 replicates reached for target: ${selectedTransfectionTarget.value?.target.name}`, life: 10000 })
+                        throw new Error('Maximum number of day 5 replicates reached for target')
+                    }
+                    newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_R${nextReplicate}_${experiment.value?.name}`
                 } else {
-                    newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_R1`
+                    newPelletName = `${selectedTransfectionTarget.value?.target.name}_D05_R1_${experiment.value?.name}`
                 }
             }
-            pellets.push({
-                name: newPelletName,
-                transfectTargetId: selectedTransfectionTarget.value?.id as string,
-                harvestDay: currentHarvestDay.value,
-                transfections,
-                ..._.omit(_.cloneDeep(formData.value), ['selectedTransfections', 'selectedTarget'])
-            })
+            if (newPelletName) {
+                pellets.push({
+                    name: newPelletName,
+                    transfectTargetId: selectedTransfectionTarget.value?.id as string,
+                    harvestDay: currentHarvestDay.value,
+                    transfections,
+                    ..._.omit(_.cloneDeep(formData.value), ['selectedTransfections', 'selectedTarget'])
+                })
+            }
         }
     } else {
         for (const selectedPellet of selectedPellets.value) {
@@ -306,7 +314,6 @@ async function submitPellets(pellets: DraftPellet[]) {
     })
     const response = await experiment.value?.addPellets(newPellets)
 
-
     if (response?.success) {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records added`, life: 3000 })
         crudTableKey.value++
@@ -341,7 +348,13 @@ async function submitPellets(pellets: DraftPellet[]) {
         }
         await refreshExperiment()
     } else {
-        toast.add({ severity: 'error', summary: 'Error adding pellets', life: 3000 })
+        if (response?.error && _.isArray(response.error) && _.size(response.error) > 0) {
+            for (const err of response.error) {
+                toast.add({ severity: 'error', summary: 'Error adding pellet', detail: err.description || '', life: 10000 })
+            }
+        } else {
+            toast.add({ severity: 'error', summary: 'Error adding pellets', life: 3000 })
+        }
     }
 }
 

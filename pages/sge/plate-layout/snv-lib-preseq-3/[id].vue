@@ -27,7 +27,7 @@ watch (selectedSourcePlate, async (newValue) => {
 
         if (newValue.plateType === 'snv-lib-preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['snvLibPlasmidId'],
+                colorBy: ['snvLibPlasmid.id'],
                 selectionTableRecordIdPaths: [(wellable: any) => {
                     return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
@@ -64,7 +64,7 @@ watch (selectedSourcePlate, async (newValue) => {
                 selectionTableRecordIdPaths: ['indexPrimer.id'],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const indexPrimers = _.map(well.wellContents, 'indexPrimer')
+                    const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
                     return indexPrimers ? `${wellCoordinate}:<br>` + _.map(indexPrimers, (indexPrimer) => `${indexPrimer.indexSequence} (${indexPrimer.primerType} INDEX)`).join('<br>') : wellCoordinate
                 },
                 symbol: (well: any) => {
@@ -180,8 +180,8 @@ const transferSelectedWellsContents = async () => {
             const destinationWell = destinationWellsSorted[index]
             return _.map(wellContents, (wellContent) => {
                 return {
-                    ..._.pick(wellContent, ['snvLibPlasmidId', 'indexPrimerId']),
                     wellId: destinationWell.id,
+                    wellableId: wellContent.wellableId,
                     sourceWellIds: [well.id],
                     createdBy: (user.value as User)?.id,
                 }

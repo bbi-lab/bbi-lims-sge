@@ -2,6 +2,7 @@ import IconsResolver from 'unplugin-icons/resolver'
 import ViteComponents from 'unplugin-vue-components/vite'
 
 export default defineNuxtConfig({
+    telemetry: { enabled: false },
     modules: ["@primevue/nuxt-module", 'nuxt-auth-utils', 'unplugin-icons/nuxt', '@nuxt/test-utils/module'],
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
 
