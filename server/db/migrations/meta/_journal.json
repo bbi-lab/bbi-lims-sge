@@ -974,6 +974,13 @@
       "when": 1769188903681,
       "tag": "0138_sturdy_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1769189206142,
+      "tag": "0139_dna_rna_wellable_funcs",
+      "breakpoints": true
     }
   ]
 }
