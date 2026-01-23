@@ -967,6 +967,13 @@
       "when": 1769037081681,
       "tag": "0137_rename_pellets",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1769188903681,
+      "tag": "0138_sturdy_stick",
+      "breakpoints": true
     }
   ]
 }

@@ -14,7 +14,7 @@ import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
 import {haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
-import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
+import {nucleicAcids, dna, rna} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { haCloningExperiments, haCloningExperimentTargets, sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
@@ -54,6 +54,8 @@ export const schema = {
   snvLibPlasmids,
   sgRnaPlasmids,
   nucleicAcids,
+  dna,
+  rna,
   sgRnaOligos,
   pellets,
   lots,

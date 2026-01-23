@@ -15,7 +15,7 @@ import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { nucleicAcids } from './nucleic-acid'
+import { nucleicAcids, dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
@@ -215,6 +215,14 @@ const updateSgRnaOligosSchema = insertSgRnaOligosSchema
 const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
 const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
 const updateNucleicAcidsSchema = insertNucleicAcidsSchema
+
+const selectDnaSchema = createSelectSchema(dna)
+const insertDnaSchema = createSelectSchema(dna).omit({id: true}).partial()
+const updateDnaSchema = insertDnaSchema
+
+const selectRnaSchema = createSelectSchema(rna)
+const insertRnaSchema = createSelectSchema(rna).omit({id: true}).partial()
+const updateRnaSchema = insertRnaSchema
 
 const selectAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {orderedOn: nullableDateSchema})
 const insertAmplificationPrimerSchema = createSelectSchema(amplificationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
@@ -421,6 +429,16 @@ export const schemas = {
         select: selectNucleicAcidsSchema,
         insert: insertNucleicAcidsSchema,
         update: updateNucleicAcidsSchema,
+    },
+    dna: {
+        select: selectDnaSchema,
+        insert: insertDnaSchema,
+        update: updateDnaSchema,
+    },
+    rna: {
+        select: selectRnaSchema,
+        insert: insertRnaSchema,
+        update: updateRnaSchema,
     },
     sgRnaOligos: {
         select: selectSgRnaOligosSchema,
