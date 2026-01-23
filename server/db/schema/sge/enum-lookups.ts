@@ -72,6 +72,34 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'PreSeq 3',
                 label: 'PreSeq 3',
             },
+            'dna-preseq-1': {
+                desc: 'DNA PreSeq 1',
+                label: 'DNA PreSeq 1',
+            },
+            'dna-preseq-2': {
+                desc: 'DNA PreSeq 2',
+                label: 'DNA PreSeq 2',
+            },
+            'dna-preseq-3': {
+                desc: 'DNA PreSeq 3',
+                label: 'DNA PreSeq 3',
+            },
+            'rna-rt': {
+                desc: 'RNA Reverse Transcription',
+                label: 'RNA RT',
+            },
+            'rna-preseq-1': {
+                desc: 'RNA PreSeq 1',
+                label: 'RNA PreSeq 1',
+            },
+            'rna-preseq-2': {
+                desc: 'RNA PreSeq 2',
+                label: 'RNA PreSeq 2',
+            },
+            'rna-preseq-3': {
+                desc: 'RNA PreSeq 3',
+                label: 'RNA PreSeq 3',
+            },
             'snv-lib-preseq-2': {
                 desc: 'SNVlib PreSeq 2',
                 label: 'SNVlib PreSeq 2',
