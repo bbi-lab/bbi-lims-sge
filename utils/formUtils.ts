@@ -65,6 +65,7 @@ export const getFieldType = (val: any, key: string, fieldDefs: Record<string, Sc
 }
 
 export const addErrorsToForm = (formElement: HTMLElement, formErrors: Array<{path: string[], message: string}>) => {
+    console.log('Adding form errors:', formErrors)
     // remove any previous validation errors
     formElement.querySelectorAll('.lims-validation-error').forEach((x) => x.remove())
 
@@ -76,7 +77,7 @@ export const addErrorsToForm = (formElement: HTMLElement, formErrors: Array<{pat
     // add error text and styling
     for (const e of formErrors) {
         const elementId = e.path.join('_')
-        const element = formElement.querySelector(`#${elementId}`)
+        const element = formElement.querySelector(`#${elementId}`) || formElement.querySelector(`#${_.camelCase(elementId)}`)
 
         if (!element) {
             console.error(`Element with id ${elementId} not found`)
