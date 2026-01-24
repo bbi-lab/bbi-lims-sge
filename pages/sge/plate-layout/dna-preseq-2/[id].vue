@@ -17,8 +17,8 @@ const selectionTableKey = ref(0)
 
 watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
-        if (newValue === 'nucleic-acids') {
-            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
+        if (newValue === 'dna') {
+            plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['dna.id']
         } else if (newValue === 'view-plates-with-well-counts') {
             plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
                 return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
@@ -31,15 +31,15 @@ watch(selectionTableName, async (newValue) => {
 onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['nucleicAcid.id'],
+        colorBy: ['dna.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
-            return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
+            const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
+            return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)` : wellCoordinate
         },
     }
-    if (selectionTableName.value === 'nucleic-acids') {
-        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['nucleicAcid.id']
+    if (selectionTableName.value === 'dna') {
+        plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = ['dna.id']
     } else if (selectionTableName.value === 'view-plates-with-well-counts') {
         plateLayout.wellContentsDisplayConfig.value.selectionTableRecordIdPaths = [(wellable: any) => {
             return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
@@ -51,7 +51,7 @@ onMounted(() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            nucleicAcid: {
+            dna: {
                 with: {
                     pellet: true
                 }
@@ -94,7 +94,7 @@ const loadPlate = async () => {
 }
 
 const displayWithClause = computed(() => {
-    if (selectionTableName.value === 'nucleic-acids') {
+    if (selectionTableName.value === 'dna') {
         return {
             wellable: {
                 with: {
@@ -168,7 +168,7 @@ const columnDefs = computed(() => {
             wellsProcessedCount: {
                 header: 'Wells processed',
                 format: (data: any) => {
-                    return _.includes(['preseq-1', 'preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
+                    return _.includes(['dna-preseq-1', 'dna-preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
                 },
                 path: 'wellsProcessedCount.displayValue',
             },
@@ -183,7 +183,7 @@ const columnDefs = computed(() => {
                 path: 'filled.displayValue',
             },
         }
-    } else if (selectionTableName.value === 'nucleic-acids') {
+    } else if (selectionTableName.value === 'dna') {
         return {
             colorTile:{
                 index: 0,
@@ -266,10 +266,10 @@ const rowActions = {
                 toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
                 return
             } else {
-                if (selectionTableName.value === 'nucleic-acids') {
+                if (selectionTableName.value === 'dna') {
                     await plateLayout.assignIdToSelectedWells(data.id)
                 } else if (selectionTableName.value === 'view-plates-with-well-counts') {
-                    // await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
+                    await plateLayout.poolDnaPreSeq1PlateToSelectedWells(data.id)
                 }
             }
         },
@@ -283,7 +283,7 @@ const rowActions = {
 }
 const selectionTableOptions = [
     { label: 'Plates', value: 'view-plates-with-well-counts' },
-    { label: 'DNA', value: 'nucleic-acids' },
+    { label: 'DNA', value: 'dna' },
 ]
 watch(selectionTableName, (newValue, oldValue) => {
     if (newValue != oldValue) {
@@ -292,7 +292,7 @@ watch(selectionTableName, (newValue, oldValue) => {
     }
 })
 const whereClause = computed(() => {
-    return (selectionTableName.value === 'view-plates-with-well-counts') ? {"==": [{"var": "plateType"}, "preseq-1"]} : {}
+    return (selectionTableName.value === 'view-plates-with-well-counts') ? {"==": [{"var": "plateType"}, "dna-preseq-1"]} : {}
 })
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
