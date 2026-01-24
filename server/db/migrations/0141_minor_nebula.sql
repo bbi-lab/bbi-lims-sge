@@ -1,0 +1,2 @@
+ALTER TABLE "pcr_experiments" DROP CONSTRAINT "preseq1_transfect_target_id_required";--> statement-breakpoint
+ALTER TABLE "pcr_experiments" ADD CONSTRAINT "preseq1_transfect_target_id_required" CHECK (("pcr_experiments"."pcr_type" NOT IN ('preseq-1', 'dna-preseq-1') AND "pcr_experiments"."transfect_target_id" IS NULL) OR "pcr_experiments"."transfect_target_id" IS NOT NULL);

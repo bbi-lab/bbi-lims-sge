@@ -81,7 +81,7 @@ const fieldDefs = {
         label: 'Target',
         component: 'NestedSelect',
         display: (x: any) => {
-            return x.pcrType == 'preseq-1'
+            return _.includes(['preseq-1','dna-preseq-1'], x.pcrType)
         },
         props: {
             parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
