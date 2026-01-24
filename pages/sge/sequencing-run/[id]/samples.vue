@@ -146,39 +146,41 @@ const didDeleteRecord = (record: any) => {
 const removeSelectedSamplesFromRun = () => {
     const sequencingRunInternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'internal'), 'id')
 
-    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSampleIds, {sequencingRunId: null})
-        .then((result: any) => {
-            if (_.isEmpty(result)) return
-            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} internal samples removed`, life: 3000 })
-            for (const id of sequencingRunInternalSampleIds) {
-                sequencingRunAllSamplesTable.value.removeRecordId(id)
-            }
-        })
-        .catch((error: any) => {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.data?.statusMessage || error.data?.message,
+    if (!_.isEmpty(sequencingRunInternalSampleIds)) {
+        RecordService.deleteRecordsById(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSampleIds)
+            .then((result: any) => {
+                if (_.isEmpty(result)) return
+                toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} internal samples removed`, life: 3000 })
+                for (const id of sequencingRunInternalSampleIds) {
+                    sequencingRunAllSamplesTable.value.removeRecordId(id)
+                }
             })
-        })
-
+            .catch((error: any) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.data?.statusMessage || error.data?.message,
+                })
+            })
+    }
     const sequencingRunExternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'external'), 'id')
-    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds, {sequencingRunId: null})
-        .then((result: any) => {
-            if (_.isEmpty(result)) return
-            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
-            for (const id of sequencingRunExternalSampleIds) {
-                sequencingRunAllSamplesTable.value.removeRecordId(id)
-            }
-        })
-        .catch((error: any) => {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.data?.statusMessage || error.data?.message,
+    if (!_.isEmpty(sequencingRunExternalSampleIds)) {
+        RecordService.deleteRecordsById(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds)
+            .then((result: any) => {
+                if (_.isEmpty(result)) return
+                toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
+                for (const id of sequencingRunExternalSampleIds) {
+                    sequencingRunAllSamplesTable.value.removeRecordId(id)
+                }
             })
-        })
-
+            .catch((error: any) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.data?.statusMessage || error.data?.message,
+                })
+            })
+    }
 }
 const addSelectedExternalSamples = async () => {
     const sequencingRunSamplesToAdd = _.map(selectedExternalSampleRecords.value, (selectedSample) => {
@@ -205,25 +207,27 @@ const addSelectedExternalSamples = async () => {
         })
 }
 const addToSequencingRun = async (selectedWells: any) => {
+    console.log(selectedWells)
     try {
         const sequencingRunSamplesToAdd = _.compact(_.map(selectedWells, ({data}) => {
             if (_.isEmpty(data.wellContents)) return null
 
-            const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P7')
-            const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P5')
-            const nucleicAcidWellContents = _.filter(data.wellContents, (x) => x.nucleicAcidId)
+            const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P7')
+            const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P5')
+            const nucleicAcidWellContents = _.filter(data.wellContents, (x) => x.wellable?.nucleicAcid?.id)
             if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && nucleicAcidWellContents.length == 1) {
                 return {
                     sequencingRunId: sequencingRun.value.id,
-                    nucleicAcidId: nucleicAcidWellContents[0].nucleicAcidId,
-                    indexPrimer1Id: indexPrimerContentsP7[0].indexPrimerId,
-                    indexPrimer2Id: indexPrimerContentsP5[0].indexPrimerId,
+                    nucleicAcidId: nucleicAcidWellContents[0].wellable.id,
+                    indexPrimer1Id: indexPrimerContentsP7[0].wellable.id,
+                    indexPrimer2Id: indexPrimerContentsP5[0].wellable.id,
                     sourceWellId: data.id,
                 }
             } else {
                 throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one nucleic acid.')
             }
         }))
+        console.log(sequencingRunSamplesToAdd)
         if (sequencingRunSamplesToAdd.length > 0) {
             const newRecords = await RecordService.addRecords(`${config.public.apiBase}/custom/sequencing-run/${route.params.id}/sequencing-run-samples`, sequencingRunSamplesToAdd) as any[]
             if (!_.isEmpty(newRecords)) {
