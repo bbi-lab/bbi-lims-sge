@@ -66,7 +66,12 @@ const displayWithClause = Object.freeze({
             }
         }
     },
-    nucleicAcid: {
+    dna: {
+        columns: {
+            id: true
+        },
+    },
+    rna: {
         columns: {
             id: true
         },
@@ -107,21 +112,33 @@ const columnDefs: ColumnDefinitions = {
     isCurrent: {
         index: 2,
     },
-    nucleicAcid: {
-        header: 'Nucleic Acid',
+    dna: {
+        header: 'DNA',
         index: 3,
         type: 'element',
         element: (x: any) => {
-            const href = _.has(x, 'nucleicAcid.id') ? `/sge/nucleic-acids?pelletId=${x.id}` : null
+            const href = _.has(x, 'dna.id') ? `/sge/dna?pelletId=${x.id}` : null
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
         },
         exportValue: (x: any) => {
-            return _.has(x, 'nucleicAcid.id') ? 'true' : 'false'
+            return _.has(x, 'dna.id') ? 'true' : 'false'
+        },
+    },
+    rna: {
+        header: 'RNA',
+        index: 4,
+        type: 'element',
+        element: (x: any) => {
+            const href = _.has(x, 'rna.id') ? `/sge/rna?pelletId=${x.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">✓</a>` : ''
+        },
+        exportValue: (x: any) => {
+            return _.has(x, 'rna.id') ? 'true' : 'false'
         },
     },
     transfectionExperiment: {
         path: 'transfectTarget.experiment.cycle.name',
-        index: 4,
+        index: 5,
     },
     wellContents: {
         header: 'Location',
@@ -137,14 +154,14 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 5,
+        index: 6,
     },
     transfectTarget: {
         header: 'Target',
         format: (x: any) => { return _.get(x, 'transfectTarget.target.name') || `${_.get(x, 'transfectTarget.target.region.gene.symbol')} : ${_.get(x, 'transfectTarget.target.region.name')}`},
         path: 'transfectTarget.displayValue',
         type: 'string',
-        index: 6,
+        index: 7,
     },
     transfectTargetId: {
         display: false,

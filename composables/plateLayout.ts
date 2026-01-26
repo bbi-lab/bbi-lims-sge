@@ -17,7 +17,7 @@ type WellWithContents = Well & {
             homologyArmPrimer: HomologyArmPrimer
             preseq1Primer: preseq1Primer
             preseq2Primer: preseq2Primer
-            nucleicAcid: NucleicAcid & {
+            dna: Dna & {
                 pellet: Pellet
             },
         }

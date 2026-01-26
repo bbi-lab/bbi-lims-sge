@@ -998,10 +998,15 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
         },
     },
     many: {
-        nucleicAcids: {
-            table: nucleicAcids,
-            schema: createSelectSchema(nucleicAcids),
-            fields: [nucleicAcids.extractionExperimentId],
+        dna: {
+            table: dna,
+            schema: createSelectSchema(dna),
+            fields: [dna.extractionExperimentId],
+        },
+        rna: {
+            table: rna,
+            schema: createSelectSchema(rna),
+            fields: [rna.extractionExperimentId],
         },
         extractionLotUsage: {
             table: extractionLotUsage,
