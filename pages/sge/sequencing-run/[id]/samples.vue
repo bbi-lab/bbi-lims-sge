@@ -34,12 +34,12 @@ const frozenRecordIds = computed(() => {
 })
 
 const invalidRecords = computed(() => {
-    const nucleicAcidIdCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'nucleicAcidId')
-    const recordsWithRepeatedNucleicAcids = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
-        return _.get(nucleicAcidIdCounts, record.nucleicAcidId) > 1
-    }).map((record) => ({id: record.id, count: nucleicAcidIdCounts[record.nucleicAcidId]}))
+    const dnaIdCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'dnaId')
+    const recordsWithRepeatedDna = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        return _.get(dnaIdCounts, record.dnaId) > 1
+    }).map((record) => ({id: record.id, count: dnaIdCounts[record.dnaId]}))
 
-    return _.mapValues(_.keyBy(recordsWithRepeatedNucleicAcids, 'id'), (val, id) => {
+    return _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
         return {messages: [`Repeated (${val?.count}x)`]}
     })
 })
@@ -52,9 +52,9 @@ watch (selectedPlateId, async (newValue) => {
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                    const nucleicAcid = wellContent?.wellable?.nucleicAcid
-                    if (nucleicAcid) {
-                        return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
+                    const dna = wellContent?.wellable?.dna
+                    if (dna) {
+                        return dna.pellet ? `${dna.pellet.name} (DNA)` : '?? (DNA)'
                     } else if (wellContent?.wellable?.indexPrimer) {
                         return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                     } else {
@@ -68,7 +68,7 @@ watch (selectedPlateId, async (newValue) => {
             },
         }
         await plateLayout.loadPlate({
-            nucleicAcid: {
+            dna: {
                 with: {
                     pellet: true
                 }
@@ -207,27 +207,25 @@ const addSelectedExternalSamples = async () => {
         })
 }
 const addToSequencingRun = async (selectedWells: any) => {
-    console.log(selectedWells)
     try {
         const sequencingRunSamplesToAdd = _.compact(_.map(selectedWells, ({data}) => {
             if (_.isEmpty(data.wellContents)) return null
 
             const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P7')
             const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P5')
-            const nucleicAcidWellContents = _.filter(data.wellContents, (x) => x.wellable?.nucleicAcid?.id)
-            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && nucleicAcidWellContents.length == 1) {
+            const dnaWellContents = _.filter(data.wellContents, (x) => x.wellable?.dna?.id)
+            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && dnaWellContents.length == 1) {
                 return {
                     sequencingRunId: sequencingRun.value.id,
-                    nucleicAcidId: nucleicAcidWellContents[0].wellable.id,
+                    dnaId: dnaWellContents[0].wellable.id,
                     indexPrimer1Id: indexPrimerContentsP7[0].wellable.id,
                     indexPrimer2Id: indexPrimerContentsP5[0].wellable.id,
                     sourceWellId: data.id,
                 }
             } else {
-                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one nucleic acid.')
+                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one DNA sample.')
             }
         }))
-        console.log(sequencingRunSamplesToAdd)
         if (sequencingRunSamplesToAdd.length > 0) {
             const newRecords = await RecordService.addRecords(`${config.public.apiBase}/custom/sequencing-run/${route.params.id}/sequencing-run-samples`, sequencingRunSamplesToAdd) as any[]
             if (!_.isEmpty(newRecords)) {
@@ -254,7 +252,7 @@ const columnDefs = {
     projectName: {index: 0, header: 'Project name (sequencing)'},
     sequencingRunId: { display: false},
     createdAt: { display: false },
-    nucleicAcidId: { display: false },
+    dndId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     indexPrimer1Label: { display: false },
@@ -265,7 +263,7 @@ const columnDefs = {
     sourceWellX: { display: false },
     sourceWellY: { display: false },
     sourcePlateName: { display: false },
-    nucleicAcid: { display: false},
+    dna: { display: false},
     sampleName: { index: 1 },
     sampleType: { index: 2 },
     indexPrimer1: {
@@ -288,7 +286,7 @@ const columnDefs = {
 }
 const internalSampleFieldDefs = {
     sequencingRunId: { display: false },
-    nucleicAcidId: { display: false },
+    dnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     sourceWellId: { display: false },

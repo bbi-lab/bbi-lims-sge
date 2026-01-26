@@ -88,7 +88,7 @@ const withClause = {
     sequencingRun: true,
     indexPrimer1: true,
     indexPrimer2: true,
-    nucleicAcid: {
+    dna: {
         with: {
             pellet: true,
         }

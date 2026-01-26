@@ -176,7 +176,7 @@ const updateSequencingRunSamples = insertSequencingRunSamples
 
 const selectExternalSamples = createSelectSchema(externalSamples, {createdAt: nullableDateSchema})
 const insertExternalSamples = createSelectSchema(externalSamples, {
-    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)),
     customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
 }).omit({id: true, createdAt: true}).partial()
 const updateExternalSamples = insertExternalSamples

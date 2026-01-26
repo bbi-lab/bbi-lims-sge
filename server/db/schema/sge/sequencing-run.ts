@@ -1,6 +1,6 @@
 import { pgTable, timestamp, uuid, varchar, uniqueIndex, doublePrecision, text, check } from "drizzle-orm/pg-core"
 import { wells } from "./well"
-import { nucleicAcids } from "./nucleic-acid"
+import { dna } from "./nucleic-acid"
 import { indexPrimers } from "./primer"
 import { sql } from "drizzle-orm/sql"
 import { externalSamples } from "./external-samples"
@@ -18,7 +18,7 @@ export const sequencingRunSamples = pgTable('sequencing_run_samples', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   projectName: varchar('project_name', { length: 255 }),
   sequencingRunId: uuid('sequencing_run_id').references(() => sequencingRuns.id).notNull(),
-  nucleicAcidId: uuid('nucleic_acid_id').references(() => nucleicAcids.id).notNull(),
+  dnaId: uuid('dna_id').references(() => dna.id).notNull(),
   indexPrimer1Id: uuid('index_primer_1_id').references(() => indexPrimers.id).notNull(),
   indexPrimer2Id: uuid('index_primer_2_id').references(() => indexPrimers.id).notNull(),
   sourceWellId: uuid('source_well_id').references(() => wells.id),

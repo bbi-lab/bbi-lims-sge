@@ -995,6 +995,13 @@
       "when": 1769214712854,
       "tag": "0141_minor_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1769448120698,
+      "tag": "0142_tidy_vanisher",
+      "breakpoints": true
     }
   ]
 }
