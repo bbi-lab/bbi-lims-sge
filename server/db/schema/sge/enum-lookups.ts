@@ -180,18 +180,18 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Homology arm primer PCR',
                 label: 'HA PCR',
             },
-            'preseq-1': {
-                desc: 'PreSeq 1',
-                label: 'PreSeq 1',
-            },
-            'preseq-2': {
-                desc: 'PreSeq 2',
-                label: 'PreSeq 2',
-            },
-            'preseq-3': {
-                desc: 'PreSeq 3',
-                label: 'PreSeq 3',
-            },
+            // 'preseq-1': {
+            //     desc: 'PreSeq 1',
+            //     label: 'PreSeq 1',
+            // },
+            // 'preseq-2': {
+            //     desc: 'PreSeq 2',
+            //     label: 'PreSeq 2',
+            // },
+            // 'preseq-3': {
+            //     desc: 'PreSeq 3',
+            //     label: 'PreSeq 3',
+            // },
             'dna-preseq-1': {
                 desc: 'DNA PreSeq 1',
                 label: 'DNA PreSeq 1',
