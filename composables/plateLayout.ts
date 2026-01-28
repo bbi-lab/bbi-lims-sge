@@ -304,6 +304,74 @@ export const usePlateLayout = () => {
         return newRecords
     }
 
+    const poolRnaRtPlateToSelectedWells = async (rnaRtPlateId: string) => {
+        let recordsToAdd: {
+            wellId: string;
+            wellableId: string;
+            sourceWellIds: String[];
+            createdBy: string | null;
+        }[]
+        // sort wells by x and inverse y coordinate to achieve the correct order
+        const sortedWellIds = _.map(_.sortBy(selectedWells.value, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`), 'id')
+
+        const rnaRtPlate = await RecordService.getRecord(`${config.public.apiBase}/plates`, rnaRtPlateId, {
+            wells: {
+                columns: {id: true},
+                with: {
+                    wellContents: {
+                        columns: {id: true},
+                        with: {
+                            wellable: {
+                                with: {
+                                    rna: {
+                                        columns: {id: true},
+                                        with: {
+                                            pellet: {
+                                                columns: {id: true, name: true, isBackup: true},
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            }
+        }) as PlateWithWellContents
+
+        type RnaWithPellet = Rna & {pellet: Pellet}
+        type RnaWithPelletAndWellIds = RnaWithPellet & {wellIds: String[]}
+
+        const pooledRna = _.sortBy(_.values(rnaRtPlate.wells.reduce((acc, well: WellWithContents) => {
+            const rna = _.get(well, ['wellContents', 0, 'wellable', 'rna'])
+            if (rna?.id) {
+                const existingWellIds = _.get(acc, [rna.id, 'wellIds'], [])
+                _.set(acc, rna.id, {...rna, wellIds: [...existingWellIds, well.id]})
+            }
+            return acc
+        }, {})), (x) => {
+            return x.pellet.name
+        }) as RnaWithPelletAndWellIds[]
+
+        if (pooledRna.length > sortedWellIds.length) {
+            throw new Error('Number of selected wells is less than number of RNA in the plate')
+        } else {
+            const wellContentsAndSources = _.map(pooledRna, (value, index) => {
+                const userId = (user.value as User)?.id || null
+                return {
+                    wellId: sortedWellIds[index],
+                    wellableId: value.id,
+                    sourceWellIds: value.wellIds,
+                    createdBy: userId,
+                }
+            })
+            recordsToAdd = wellContentsAndSources
+        }
+
+        const newRecords = await addWellContents(recordsToAdd)
+        return newRecords
+    }
+
     const poolDnaPreSeq1PlateToSelectedWells = async (dnaPreSeq1PlateId: string) => {
         let recordsToAdd: {
             wellId: string;
@@ -445,6 +513,7 @@ export const usePlateLayout = () => {
         assignIdToSelectedWells,
         addWellContents,
         poolDnaPreSeq1PlateToSelectedWells,
+        poolRnaRtPlateToSelectedWells,
 
         // export plate layout
         exportPlateLayout,
