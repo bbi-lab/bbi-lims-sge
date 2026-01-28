@@ -2,6 +2,9 @@ import _ from "lodash"
 import { homologyArmPrimerTargets } from "../db/schema/sge/primer"
 import { pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
 import {eq, inArray} from "drizzle-orm"
+import { deleteRecord } from "../services/generic-services"
+import { wellContents, wells } from "../db/schema/sge/well"
+import { plates } from "../db/schema/sge/plate"
 
 
 export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[]) => {
@@ -39,4 +42,23 @@ export const updatePcrExperimentTransfectTargets = async (id: string, targetIds:
         return existingTransfectTargets
     })
     return result
+}
+
+export async function deleteEmptyPlate(plateId: string) {
+    const nonEmptyWells = await db.select()
+        .from(wells)
+        .innerJoin(wellContents, eq(wells.id, wellContents.wellId))
+        .where(eq(wells.plateId, plateId))
+
+    // throw error if wells are not empty
+    if (nonEmptyWells.length > 0) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'Plate wells must be empty before deleting'
+        })
+    }
+    // delete wells then plate
+    await db.delete(wells).where(eq(wells.plateId, plateId))
+    const deletedRecord = await deleteRecord(plates, plateId)
+    return deletedRecord
 }
