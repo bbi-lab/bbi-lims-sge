@@ -2,7 +2,7 @@ import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
-import type { Dna } from "~/server/db/schema/sge/nucleic-acid"
+import type { Dna, Rna } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
@@ -18,6 +18,9 @@ type WellWithContents = Well & {
             preseq1Primer: preseq1Primer
             preseq2Primer: preseq2Primer
             dna: Dna & {
+                pellet: Pellet
+            },
+            rna: Rna & {
                 pellet: Pellet
             },
         }
