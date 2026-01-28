@@ -4,7 +4,7 @@ import pg from 'pg'
 import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user'
 
-import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
+import {pcrExperiments, pcrExperimentTargets} from '../db/schema/sge/pcr-experiment'
 import {plates} from '../db/schema/sge/plate'
 import {wellContents, wells, wellContentSources, wellables} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
@@ -41,6 +41,7 @@ export const schema = {
   userGroups,
   userGroupMemberships,
   pcrExperiments,
+  pcrExperimentTargets,
   plates,
   wells,
   wellContents,

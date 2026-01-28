@@ -1,6 +1,6 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { pcrExperiments } from './pcr-experiment'
+import { pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
@@ -52,10 +52,31 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             table: plates,
             schema: createSelectSchema(plates),
             fields: [plates.pcrExperimentId],
-        }
+        },
+        pcrExperimentTargets: {
+            table: pcrExperimentTargets,
+            schema: createSelectSchema(pcrExperimentTargets),
+            fields: [pcrExperimentTargets.pcrExperimentId],
+        },
     }
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
+
+const pcrExperimentTargetsRelationsConfig: RelationsConfig = {
+    one:{
+        pcrExperiment: {
+            fields: [pcrExperimentTargets.pcrExperimentId],
+            referenceTable: pcrExperiments,
+            references: [pcrExperiments.id],
+        },
+        transfectTarget: {
+            fields: [pcrExperimentTargets.transfectTargetId],
+            referenceTable: transfectTargets,
+            references: [transfectTargets.id],
+        },
+    }
+}
+export const pcrExperimentTargetsRelations = relationsConfigToRelations(pcrExperimentTargets, pcrExperimentTargetsRelationsConfig)
 
 const wellContentsRelationsConfig: RelationsConfig = {
     one:{
@@ -580,7 +601,12 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
             table: pellets,
             schema: createSelectSchema(pellets),
             fields: [pellets.transfectTargetId]
-        }
+        },
+        pcrExperimentTargets: {
+            table: pcrExperimentTargets,
+            schema: createSelectSchema(pcrExperimentTargets),
+            fields: [pcrExperimentTargets.transfectTargetId],
+        },
     }
 }
 export const transfectTargetsRelations = relationsConfigToRelations(transfectTargets, transfectTargetsRelationsConfig)
@@ -1393,6 +1419,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     sgRnaOligos: sgRnaOligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
+    pcrExperimentTargets: pcrExperimentTargetsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
     haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
     haCloningExperiments: haCloningExperimentsRelationsConfig,

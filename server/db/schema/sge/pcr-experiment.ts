@@ -17,3 +17,9 @@ export const pcrExperiments = pgTable('pcr_experiments', {
 }, (t) => [
   check('preseq1_transfect_target_id_required', sql`(${t.pcrType} NOT IN ('preseq-1', 'dna-preseq-1') AND ${t.transfectTargetId} IS NULL) OR ${t.transfectTargetId} IS NOT NULL`),
 ])
+
+export const pcrExperimentTargets = pgTable('pcr_experiment_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id).notNull(),
+  transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
+})

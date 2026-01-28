@@ -4,7 +4,7 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import { updateHomologyArmPrimerTargets } from '../utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets } from '../utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -26,10 +26,15 @@ export default defineEventHandler(async (event) => {
 
         const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
 
-        // handle single HA primer inserts that include 1:M targets
-        if (_.camelCase(recordType) == 'homologyArmPrimers' && body.length == 1 && _.isArray(body[0].targets) && newRecords?.length == 1) {
-           const targets = await updateHomologyArmPrimerTargets(newRecords[0].id, _.map(body[0].targets, 'targetId'))
-            _.set(newRecords, '0.targets', targets)
+        // handle single HA primer and PCR experiment inserts that include array of targets
+        if (body.length == 1 && newRecords?.length == 1) {
+            if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
+            const targets = await updateHomologyArmPrimerTargets(newRecords[0].id, _.map(body[0].targets, 'targetId'))
+                _.set(newRecords, '0.targets', targets)
+            } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
+                const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
+                await updatePcrExperimentTransfectTargets(newRecords[0].id, transfectTargetIds)
+            }
         }
 
         return newRecords
