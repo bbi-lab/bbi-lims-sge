@@ -76,6 +76,7 @@ export interface PlateDiagram {
     render: (container: HTMLElement) => PlateDiagram
     refresh: () => PlateDiagram
     resize: () => PlateDiagram
+    destroy: () => void
 
     wellRangeSelected: Accessor<((wells: PlateDiagramWell[]) => void) | null, PlateDiagram>
     updateWellContents: (updatedWells: PlateDiagramWell[]) => PlateDiagram
@@ -127,7 +128,7 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
     const xScale: d3.ScaleBand<string> = d3.scaleBand()
     const yScale: d3.ScaleBand<string> = d3.scaleBand()
 
-    const tooltip: d3.Selection<HTMLDivElement, any, any, any> = d3.select("body").append("div")
+    let tooltip: d3.Selection<HTMLDivElement, any, any, any> | null = null
 
     const updateWellOutlines: () => void = () => {
         if (svg) {
@@ -182,10 +183,28 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
     // Three function that change the tooltip when user hover / move / leave a cell
     const mouseover = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
         const tooltipText = d3.select(this).attr("tooltip")
+
+        // Create tooltip if it doesn't exist
+        if (!tooltip) {
+            tooltip = d3.select("body").append("div")
+                .attr("class", "plate-diagram-tooltip")
+                .style("opacity", 0)
+                .style("position", "absolute")
+                .style("user-select", "none")
+                .style("color", "color-mix(in srgb, var(--p-surface-0) calc(100%* var(--tw-text-opacity, 1)), transparent)")
+                .style("background-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "5px")
+                .style("z-index", "10")
+                .style("border-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
+                .style("padding", "5px")
+                .style("pointer-events", "none")
+        }
+
         tooltip
             .html(tooltipText)
             .style("opacity", 1)
-            .style("pointer-events", "none")
             .style("left", (event.pageX + 20) + "px")
             .style("top", (event.pageY - 20) + "px")
             .raise()
@@ -217,7 +236,9 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
     }
 
     const mouseleave = function(this: SVGRectElement, event: MouseEvent, w: PlateDiagramWell) {
-        tooltip.style("opacity", 0)
+        if (tooltip) {
+            tooltip.style("opacity", 0)
+        }
         updateWellOutlines()
     }
 
@@ -359,6 +380,25 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
             return plateDiagram
         },
 
+        destroy: () => {
+            // Remove tooltip from DOM
+            if (tooltip) {
+                tooltip.remove()
+                tooltip = null
+            }
+
+            // Clear container
+            if (_container && svg) {
+                svg.remove()
+                svg = null
+            }
+
+            // Reset state
+            _container = null
+            wellRangeSelected = null
+            wellSelectionStart = null
+        },
+
         refresh: () => {
             if (_container && svg) {
                 plateDiagram.resize()
@@ -396,20 +436,6 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
                 // const myColor = d3.scaleSequential()
                 //     .interpolator(d3.interpolateInferno)
                 //     .domain([1,100])
-
-                // style tooltip
-                tooltip.style("opacity", 0)
-                    .attr("class", "tooltip")
-                    .style("position", "absolute")
-                    .style("user-select", "none")
-                    .style("color", "color-mix(in srgb, var(--p-surface-0) calc(100%* var(--tw-text-opacity, 1)), transparent)")
-                    .style("background-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
-                    .style("border", "solid")
-                    .style("border-width", "2px")
-                    .style("border-radius", "5px")
-                    .style("z-index", "10")
-                    .style("border-color", "color-mix(in srgb, var(--p-surface-700) calc(100%* var(--tw-bg-opacity, 1)), transparent)")
-                    .style("padding", "5px")
 
                 // add the squares
                 // svg.selectAll()
