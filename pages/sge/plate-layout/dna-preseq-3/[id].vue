@@ -155,6 +155,7 @@ const loadPlate = async () => {
                                     plate: {
                                         columns: {
                                             id: true,
+                                            plateType: true,
                                         }
                                     }
                                 }
@@ -197,7 +198,29 @@ const transferSelectedWellsContents = async () => {
             })
         }))
         await plateLayout.addWellContents(wellContentsToAdd.flat())
+        plateLayout.selectionTableRef.value?.addOrRefreshRecordIds([selectedSourcePlate.value?.id])
     }
+}
+
+const emptySelectedWells = async () => {
+    const selectedWells = plateLayout.selectedWells.value
+
+    // find all the associateds dna-preseq-2 plate ids from well content sources
+    const associatedDnaPreseq2PlateIds = _.uniq(_.map(_.filter(_.flatten(_.map(selectedWells, (well) => {
+        return _.flatten(_.map(well.data.wellContents, (wellContent) => {
+            return _.flatten(_.map(wellContent.wellable.wellContents, (wellContent2) => {
+                return _.map(wellContent2.wellContentSources, (wellContentSource) => {
+                    return _.get(wellContentSource, 'sourceWell.plate')
+                })
+            })
+        )})
+    )})), (plate) => {
+        return plate.plateType === 'dna-preseq-2'
+    }), 'id'))
+
+    console.log(associatedDnaPreseq2PlateIds)
+    await plateLayout.emptySelectedWells()
+    plateLayout.selectionTableRef.value?.addOrRefreshRecordIds(associatedDnaPreseq2PlateIds)
 }
 
 const columnDefs = {
@@ -314,7 +337,7 @@ const frozenRecordIds = computed(() => {
                                 icon="pi pi-trash"
                                 v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
                                 :disabled="_.isEmpty(plateLayout.selectedWells.value)"
-                                @click="plateLayout.emptySelectedWells" />
+                                @click="emptySelectedWells" />
                         </template>
                     </PlateDiagram>
                 </SplitterPanel>
