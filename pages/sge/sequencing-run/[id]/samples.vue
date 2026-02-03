@@ -73,6 +73,11 @@ watch (selectedPlateId, async (newValue) => {
                     pellet: true
                 }
             },
+            rna: {
+                with: {
+                    pellet: true
+                }
+            },
             indexPrimer: true,
             wellContents: {
                 with: {
@@ -214,16 +219,18 @@ const addToSequencingRun = async (selectedWells: any) => {
             const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P7')
             const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P5')
             const dnaWellContents = _.filter(data.wellContents, (x) => x.wellable?.dna?.id)
-            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && dnaWellContents.length == 1) {
+            const rnaWellContents = _.filter(data.wellContents, (x) => x.wellable?.rna?.id)
+            const sampleField = dnaWellContents.length == 1 ? 'dnaId' : (rnaWellContents.length == 1 ? 'rnaId' : null)
+            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && sampleField) {
                 return {
                     sequencingRunId: sequencingRun.value.id,
-                    dnaId: dnaWellContents[0].wellable.id,
+                    [sampleField]: sampleField == 'dnaId' ? dnaWellContents[0].wellable.id : rnaWellContents[0].wellable.id,
                     indexPrimer1Id: indexPrimerContentsP7[0].wellable.id,
                     indexPrimer2Id: indexPrimerContentsP5[0].wellable.id,
                     sourceWellId: data.id,
                 }
             } else {
-                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one DNA sample.')
+                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one sample.')
             }
         }))
         if (sequencingRunSamplesToAdd.length > 0) {
@@ -239,10 +246,11 @@ const addToSequencingRun = async (selectedWells: any) => {
             }
         }
     } catch (error: any) {
+        console.log(error)
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.data?.statusMessage || error.data?.message,
+            detail: error.data?.statusMessage || error.data?.message || error,
             life: 10000,
         })
     }
@@ -252,7 +260,8 @@ const columnDefs = {
     projectName: {index: 0, header: 'Project name (sequencing)'},
     sequencingRunId: { display: false},
     createdAt: { display: false },
-    dndId: { display: false },
+    dnaId: { display: false },
+    rnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     indexPrimer1Label: { display: false },
@@ -361,7 +370,7 @@ const externalSamplesColumnDefs = {
                         <AutoCompleter
                             v-model="selectedPlateId"
                             :searchBaseUrl="`${config.public.apiBase}/plates`"
-                            :searchWhereClause="{'==': [{'var': 'plateType'}, 'preseq-3']}"
+                            :searchWhereClause="{'in': [{'var': 'plateType'}, ['dna-preseq-3', 'rna-preseq-3']]}"
                             iftaLabel="Plate"
                             dropdown
                             hideClearButton
