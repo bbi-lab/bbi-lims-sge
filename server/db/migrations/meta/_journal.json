@@ -1016,6 +1016,13 @@
       "when": 1770152626506,
       "tag": "0144_deep_ken_ellis",
       "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1770157792377,
+      "tag": "0145_awesome_namor",
+      "breakpoints": true
     }
   ]
 }
