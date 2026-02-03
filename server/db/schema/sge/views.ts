@@ -313,8 +313,9 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
 }).as(sql`SELECT
   sequencing_run_samples.id AS id,
   CASE
-    WHEN dna_pellets.name IS NOT NULL THEN dna_pellets.name
-    ELSE rna_pellets.name
+    WHEN dna_pellets.name IS NOT NULL THEN dna_pellets.name || '_DNA'
+    WHEN rna_pellets.name IS NOT NULL THEN rna_pellets.name || '_RNA'
+    ELSE null
   END AS sample_name,
   sequencing_run_id,
   'internal' AS sample_type,
