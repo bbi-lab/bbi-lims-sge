@@ -1,0 +1,4 @@
+ALTER TABLE "sequencing_run_samples" ALTER COLUMN "dna_id" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "sequencing_run_samples" ADD COLUMN "rna_id" uuid;--> statement-breakpoint
+ALTER TABLE "sequencing_run_samples" ADD CONSTRAINT "sequencing_run_samples_rna_id_rna_id_fk" FOREIGN KEY ("rna_id") REFERENCES "public"."rna"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sequencing_run_samples" ADD CONSTRAINT "dna_or_rna_check" CHECK (("sequencing_run_samples"."dna_id" IS NOT NULL AND "sequencing_run_samples"."rna_id" IS NULL) OR ("sequencing_run_samples"."rna_id" IS NOT NULL AND "sequencing_run_samples"."dna_id" IS NULL));

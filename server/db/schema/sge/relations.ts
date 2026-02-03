@@ -379,6 +379,11 @@ const sequencingRunSamplesRelationsConfig: RelationsConfig = {
             referenceTable: dna,
             references: [dna.id],
         },
+        rna: {
+            fields: [sequencingRunSamples.rnaId],
+            referenceTable: rna,
+            references: [rna.id],
+        },
         indexPrimer1: {
             fields: [sequencingRunSamples.indexPrimer1Id],
             referenceTable: indexPrimers,
