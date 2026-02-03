@@ -34,11 +34,10 @@ const frozenRecordIds = computed(() => {
 })
 
 const invalidRecords = computed(() => {
-    const dnaIdCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'dnaId')
+    const sampleNameCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'sampleName')
     const recordsWithRepeatedDna = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
-        return _.get(dnaIdCounts, record.dnaId) > 1
-    }).map((record) => ({id: record.id, count: dnaIdCounts[record.dnaId]}))
-
+        return _.get(sampleNameCounts, record.sampleName) > 1
+    }).map((record) => ({id: record.id, count: sampleNameCounts[record.sampleName]}))
     return _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
         return {messages: [`Repeated (${val?.count}x)`]}
     })
