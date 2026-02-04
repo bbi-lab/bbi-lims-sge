@@ -253,6 +253,7 @@ const dnaRnaFieldDefs: FieldDefinitions = {
                     :canEdit="false"
                     :canExport="false"
                     :hideSettings="true"
+                    :rowsPerPageOptions="[10, 25, 50, 100]"
                 >
                     <template #header-buttons>
                         <SelectButton
