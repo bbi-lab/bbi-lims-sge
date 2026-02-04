@@ -1030,6 +1030,13 @@
       "when": 1770160502810,
       "tag": "0146_flat_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1770242486744,
+      "tag": "0147_abandoned_winter_soldier",
+      "breakpoints": true
     }
   ]
 }
