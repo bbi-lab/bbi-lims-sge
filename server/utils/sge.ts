@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { homologyArmPrimerTargets } from "../db/schema/sge/primer"
+import { homologyArmPrimerTargets, preseq1PrimerTargets } from "../db/schema/sge/primer"
 import { pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
 import {eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
@@ -40,6 +40,23 @@ export const updatePcrExperimentTransfectTargets = async (id: string, targetIds:
             existingTransfectTargets.push(...await tx.insert(pcrExperimentTargets).values(transfectTargetsToInsert.map(targetId => ({ transfectTargetId: targetId, pcrExperimentId: id }))).returning())
         }
         return existingTransfectTargets
+    })
+    return result
+}
+
+export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[]) => {
+    const result = await db.transaction(async (tx) => {
+        const existingPreseq1PrimerTargets = await tx.select().from(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
+
+        // delete targets that are not in the incoming list
+        const missingPreseq1PrimerTargetIds = _.difference(_.map(existingPreseq1PrimerTargets, 'targetId'), targetIds)
+        await tx.delete(preseq1PrimerTargets).where(inArray(preseq1PrimerTargets.targetId, missingPreseq1PrimerTargetIds))
+        // insert targets that are in the incoming list and don't already exist
+        const preseq1PrimerTargetsToInsert = _.difference(targetIds, _.map(existingPreseq1PrimerTargets, 'targetId'))
+        if (!_.isEmpty(preseq1PrimerTargetsToInsert)) {
+            existingPreseq1PrimerTargets.push(...await tx.insert(preseq1PrimerTargets).values(preseq1PrimerTargetsToInsert.map(targetId => ({ targetId, preseq1PrimerId: id }))).returning())
+        }
+        return existingPreseq1PrimerTargets
     })
     return result
 }

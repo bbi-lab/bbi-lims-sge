@@ -3,6 +3,8 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
+import { preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
+import { targets } from '~/server/db/schema/sge/target'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -22,27 +24,13 @@ watch(() => route.query, async (newValue, oldValue) => {
 }, { immediate: true })
 
 const displayWithClause = Object.freeze({
-    target: {
-        columns: {
-            name: true
-        },
+    preseq1PrimerTargets: {
+        columns: {},
         with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
+            target: {
                 columns: {
                     name: true
                 },
-                with: {
-                    gene: {
-                        columns: {
-                            symbol: true
-                        }
-                    }
-                }
             },
         },
     },
@@ -76,13 +64,12 @@ const columnDefs = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
+    preseq1PrimerTargets: {
+        header: 'Target(s)',
         format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+            return _.map(x.preseq1PrimerTargets, 'target.name')
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'preseq1PrimerTargets.displayValue',
         index: 2,
     },
     project: {
@@ -111,16 +98,42 @@ const columnDefs = {
 }
 
 const fieldDefs: FieldDefinitions = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'preseq1PrimerTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['name'],
+                        valueField: 'id',
+                        displayFields: ['name'],
+                        dropdown: true,
+                    },
+                },
+            ]
         }
+    },
+}
+const formWithClause = {
+    preseq1PrimerTargets: {
+        columns: {
+            id: true,
+            targetId: true,
+        },
+        with: {
+            target: {
+                columns: {
+                    name: true
+                },
+            },
+        },
     },
 }
 </script>
@@ -160,6 +173,7 @@ const fieldDefs: FieldDefinitions = {
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"
