@@ -4,7 +4,7 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets } from '../utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets } from '../utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -34,6 +34,9 @@ export default defineEventHandler(async (event) => {
             } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
                 const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
                 await updatePcrExperimentTransfectTargets(newRecords[0].id, transfectTargetIds)
+            } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
+                const preseq1PrimerTargetIds = _.map(body[0].preseq1PrimerTargets, 'targetId')
+                await updatePreseq1PrimerTargets(newRecords[0].id, preseq1PrimerTargetIds)
             }
         }
 
