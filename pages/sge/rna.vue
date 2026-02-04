@@ -168,6 +168,7 @@ const fieldDefs: FieldDefinitions = {
                 :where="whereClauses"
                 :withClause="displayWithClause"
                 :canEditMultiple="true"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
