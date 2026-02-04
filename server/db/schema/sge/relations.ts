@@ -497,10 +497,10 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(linearizationPrimers),
             fields: [linearizationPrimers.targetId],
         },
-        preseq1Primers: {
-            table: preseq1Primers,
-            schema: createSelectSchema(preseq1Primers),
-            fields: [preseq1Primers.targetId],
+        preseq1PrimerTargets: {
+            table: preseq1PrimerTargets,
+            schema: createSelectSchema(preseq1PrimerTargets),
+            fields: [preseq1PrimerTargets.targetId],
         },
         preseq2Primers: {
             table: preseq2Primers,
@@ -1367,11 +1367,6 @@ export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, in
 
 const preseq1PrimersRelationsConfig: RelationsConfig = {
     one: {
-        // target: {
-        //     fields: [preseq1Primers.targetId],
-        //     referenceTable: targets,
-        //     references: [targets.id],
-        // },
         wellable: {
             fields: [preseq1Primers.id],
             referenceTable: wellables,
