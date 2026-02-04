@@ -81,7 +81,7 @@ const fieldDefs = {
         label: 'Target',
         component: 'NestedSelect',
         display: (x: any) => {
-            return x.pcrType == 'preseq-1'
+            return _.includes(['preseq-1','dna-preseq-1'], x.pcrType)
         },
         props: {
             parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
@@ -105,7 +105,49 @@ const fieldDefs = {
     },
     startedOn: {
         type: 'date',
-    }
+    },
+    pcrExperimentTargets: {
+        display: (x: any) => {
+            return x.pcrType == 'rna-rt'
+        },
+    },
+    'pcrExperimentTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
+        props: {
+            components: [
+                {
+                    variableField: 'transfectTargetId',
+                    label: 'Target',
+                    component: 'NestedSelect',
+                    display: (x: any) => {
+                        return _.includes(['preseq-1','dna-preseq-1', 'rna-rt'], x.pcrType)
+                    },
+                    componentProps: {
+                        parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
+                        parentSearchFields: ['cycle.name'],
+                        parentValueField: 'id',
+                        parentDisplayFields: ['cycle.name'],
+                        parentIftaLabel: 'Experiment',
+                        parentSearchWithClause: {
+                            cycle: {columns: {name: true}},
+                        },
+
+                        searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
+                        searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
+                        valueField: 'id',
+                        displayFormat: (x:any) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
+                        parentKeyField: 'experimentId',
+                        searchWithClause: {
+                            target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
+                        },
+                    }
+                },
+            ],
+        },
+    },
 }
 const withClause = {
     plates: {columns: {id: true}},
@@ -127,6 +169,55 @@ const withClause = {
                         }
                     }
                 }
+            }
+        }
+    },
+    pcrExperimentTargets: {
+        with: {
+            transfectTarget: {
+                with: {
+                    target: {
+                        columns: {
+                            name: true
+                        },
+                    },
+                    experiment: {
+                        columns: {},
+                        with: {
+                            cycle: {
+                                columns: {
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                },
+            }
+        }
+    },
+}
+
+const formWithClause = {
+    pcrExperimentTargets: {
+        with: {
+            transfectTarget: {
+                with: {
+                    target: {
+                        columns: {
+                            name: true
+                        },
+                    },
+                    experiment: {
+                        columns: {},
+                        with: {
+                            cycle: {
+                                columns: {
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                },
             }
         }
     },
@@ -154,6 +245,7 @@ const withClause = {
                 tableName="pcr-experiments"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="didAddRecord"
             />
@@ -163,6 +255,7 @@ const withClause = {
                 tableName="pcr-experiments"
                 schemaName="update"
                 :fieldDefs="{...fieldDefs, pcrType: { readOnly: true }}"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

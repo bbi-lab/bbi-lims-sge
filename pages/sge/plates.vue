@@ -79,7 +79,8 @@ const fieldDefs = {
         component: 'Select',
         props: {
             options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
-                const pattern = /^preseq-|-pcr$/
+                // disable PCR plate types that should only be generated on experiment creation
+                const pattern = /^preseq-|-pcr$|^rna-rt$|^[d|r]na-preseq-/
                 if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {

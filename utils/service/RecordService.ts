@@ -160,4 +160,21 @@ export const RecordService = {
             }
         }
     },
+
+    async deleteRecordsById(baseUrl: string, recordIds: string[]) {
+        try {
+            const deletedRecords = []
+            for (const id of recordIds) {
+                const data = await $fetch(`${baseUrl}/${id}`,  {method: 'DELETE'})
+                deletedRecords.push(data)
+            }
+            return deletedRecords
+        } catch (error: any) {
+            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
+                showLoginModal()
+            } else {
+                throw error
+            }
+        }
+    },
 }

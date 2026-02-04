@@ -51,6 +51,16 @@ onMounted(() => {
                     :hide-clear-button="true"
                     :disabled="disabled"
                 />
+                <NestedSelect
+                    v-if="c.component=='NestedSelect'"
+                    v-model="modelValue![c.variableField]"
+                    v-bind="_.omit(c.componentProps, ['parentSearchBaseUrl', 'searchBaseUrl', 'parentKeyField'])"
+                    :search-base-url="_.get(c.componentProps, 'searchBaseUrl', '')"
+                    :parent-search-base-url="_.get(c.componentProps, 'parentSearchBaseUrl', '')"
+                    :parent-key-field="_.get(c.componentProps, 'parentKeyField')"
+                    :hide-clear-button="true"
+                    :disabled="disabled"
+                />
                 <component
                     v-else
                     :is="c.component"

@@ -1,9 +1,11 @@
-// import { deleteRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { parseDeleteError } from '~/server/utils/restApi'
 import { eq } from 'drizzle-orm'
 import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
-import { homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
+import { homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
+import { plates } from '~/server/db/schema/sge/plate'
+import { deleteEmptyPlate } from '~/server/utils/sge'
+import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -29,6 +31,13 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(transfectTargets).where(eq(transfectTargets.experimentId, id))
             } else if (_.camelCase(recordType) == 'homologyArmPrimers') {
                 await tx.delete(homologyArmPrimerTargets).where(eq(homologyArmPrimerTargets.homologyArmPrimerId, id))
+            } else if (_.camelCase(recordType) == 'pcrExperiments') {
+                // delete associated plates if all wells are empty
+                for (const plate of await tx.select().from(plates).where(eq(plates.pcrExperimentId, id))) {
+                    await deleteEmptyPlate(plate.id)
+                }
+                // delete assiociated targets
+                await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
             }
 
             const deleteResult = await tx.delete(table)

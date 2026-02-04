@@ -5,7 +5,7 @@ import { ENUM_LOOKUPS } from './enum-lookups'
 import { transfectTargets } from './transfect-experiment'
 import { sql } from 'drizzle-orm/sql'
 
-export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
+export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'dna-preseq-1' | 'dna-preseq-2' | 'dna-preseq-3'| 'rna-rt' | 'rna-preseq-1' | 'rna-preseq-2' | 'rna-preseq-3'| 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
 
 export const pcrExperiments = pgTable('pcr_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -15,5 +15,11 @@ export const pcrExperiments = pgTable('pcr_experiments', {
   startedOn: timestamp('started_on').defaultNow(),
   transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id),
 }, (t) => [
-  check('preseq1_transfect_target_id_required', sql`(${t.pcrType} != 'preseq-1' AND ${t.transfectTargetId} IS NULL) OR ${t.transfectTargetId} IS NOT NULL`),
+  check('preseq1_transfect_target_id_required', sql`(${t.pcrType} NOT IN ('preseq-1', 'dna-preseq-1') AND ${t.transfectTargetId} IS NULL) OR ${t.transfectTargetId} IS NOT NULL`),
 ])
+
+export const pcrExperimentTargets = pgTable('pcr_experiment_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id).notNull(),
+  transfectTargetId: uuid('transfect_target_id').references(() => transfectTargets.id).notNull(),
+})

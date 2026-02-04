@@ -18,14 +18,14 @@ const columnDefs: ColumnDefinitions = {
     },
     createdAt: { display: false },
     sequencingRunId: { display: false },
-    nucleicAcidId: { display: false},
+    dnaId: { display: false},
     indexPrimer1Id:  { display: false},
     indexPrimer2Id:  { display: false},
     sourceWellId: { display: false },
     sampleName: {
         header: 'Sample Name',
         format: (data: any) => {
-            return data.nucleicAcid?.pellet?.name || ''
+            return data.dna?.pellet?.name || ''
         },
         path: 'sampleName.displayValue',
         index: 2,
@@ -57,11 +57,11 @@ const fieldDefs: FieldDefinitions = {
         },
         index: 3,
     },
-    nucleicAcidId: {
+    dnaId: {
         label: 'Sample name',
         component: 'AutoCompleter',
         props: {
-            searchBaseUrl: `${config.public.apiBase}/nucleic-acids`,
+            searchBaseUrl: `${config.public.apiBase}/dna`,
             searchFields: ['pellet.name'],
             valueField: 'id',
             displayFields: ['pellet.name'],
@@ -88,7 +88,7 @@ const withClause = {
     sequencingRun: true,
     indexPrimer1: true,
     indexPrimer2: true,
-    nucleicAcid: {
+    dna: {
         with: {
             pellet: true,
         }

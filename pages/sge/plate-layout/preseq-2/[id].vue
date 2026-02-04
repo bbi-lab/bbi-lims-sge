@@ -269,7 +269,7 @@ const rowActions = {
                 if (selectionTableName.value === 'nucleic-acids') {
                     await plateLayout.assignIdToSelectedWells(data.id)
                 } else if (selectionTableName.value === 'view-plates-with-well-counts') {
-                    await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
+                    // await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
                 }
             }
         },

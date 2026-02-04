@@ -4,7 +4,7 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { updateTargets as updateTranfectExperimentTargets} from '~/server/services/transfect-experiment-services'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { updateHomologyArmPrimerTargets } from '~/server/utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets } from '~/server/utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -35,6 +35,9 @@ export default defineEventHandler(async (event) => {
         } else if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body.targets)) {
             const haPrimerTargetIds = _.map(body.targets, 'targetId')
             await updateHomologyArmPrimerTargets(id, haPrimerTargetIds)
+        } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body.pcrExperimentTargets)) {
+            const transfectTargetIds = _.map(body.pcrExperimentTargets, 'transfectTargetId')
+            await updatePcrExperimentTransfectTargets(id, transfectTargetIds)
         }
 
         const updatedRecord = await updateRecord(_.get(db, ['query', _.camelCase(recordType), 'table']), id, parsedValues)
