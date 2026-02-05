@@ -1,10 +1,10 @@
 
 import _ from 'lodash'
-import {SelectParams} from '../utils/restApi'
+import type {SelectParams} from '../utils/restApi'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { PgViewWithSelection, type PgTable } from 'drizzle-orm/pg-core'
-import { eq, inArray, getTableName, sql } from 'drizzle-orm'
+import type { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import type { PgTransaction, PgViewWithSelection, PgTable } from 'drizzle-orm/pg-core'
+import { eq, inArray, getTableName } from 'drizzle-orm'
 import '../db/schema/sge/relations'
 import { useDrizzle } from '../utils/db'
 import { ENUM_LOOKUPS } from '../db/schema/sge/enum-lookups'
@@ -52,20 +52,20 @@ export async function selectRecords(queryBuilder: RelationalQueryBuilder<any, an
     return result
 }
 
-export async function selectRecordsFromView(view: PgViewWithSelection, selectParams: SelectParams) {
-    const records = await db.select().from(view)
+export async function selectRecordsFromView(view: PgViewWithSelection, selectParams: SelectParams, tx?: PgTransaction<any, any, any>) {
+    const records = await (tx ?? db).select().from(view)
     const result = applySelectParamsToRecords(selectParams, records)
     return result
 }
 
-export async function selectRecordFromView(view: PgViewWithSelection, id: string | number) {
+export async function selectRecordFromView(view: PgViewWithSelection, id: string | number, tx?: PgTransaction<any, any, any>) {
     if (!view.id) {
         throw createError({
             statusCode: 400,
             statusMessage: `View does not have an id column`
         })
     }
-    const record = await db.select().from(view).where(eq(view.id, id))
+    const record = await (tx ?? db).select().from(view).where(eq(view.id, id))
     return _.first(record)
 }
 
@@ -79,25 +79,16 @@ export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any
     return record
 }
 
-export async function insertRecord(table: PgTable<any>, values: RecordValues) {
-    const [newRecord] = await db
-      .insert(table)
-      .values(trimObjectValues([values])[0])
-      .returning()
-
-    return newRecord
+export async function insertRecords(table: PgTable<any>, records: Array<RecordValues>, tx?: PgTransaction<any, any, any>) {
+    const newRecords = await (tx ?? db)
+          .insert(table)
+          .values(trimObjectValues(records))
+          .returning()
+    return newRecords
 }
 
-export async function insertRecords(table: PgTable<any>, records: Array<RecordValues>) {
-    const newRecords = await db
-      .insert(table)
-      .values(trimObjectValues(records))
-      .returning()
-
-    return newRecords
-  }
-export async function updateRecord(table: PgTable<any>, id: string | number, values: RecordValues) {
-    const [updatedRecord] = await db
+export async function updateRecord(table: PgTable<any>, id: string | number, values: RecordValues, tx?: PgTransaction<any, any, any>) {
+    const [updatedRecord] = await (tx ?? db)
         .update(table)
         .set(trimObjectValues([values])[0])
         .where(eq(table.id, id))
@@ -106,8 +97,8 @@ export async function updateRecord(table: PgTable<any>, id: string | number, val
     return updatedRecord
 }
 
-export async function updateRecords(table: PgTable<any>, ids: string[] | number[], values: RecordValues) {
-    const updatedRecords = await db
+export async function updateRecords(table: PgTable<any>, ids: string[] | number[], values: RecordValues, tx?: PgTransaction<any, any, any>) {
+    const updatedRecords = await (tx ?? db)
         .update(table)
         .set(trimObjectValues([values])[0])
         .where(inArray(table.id, ids))
@@ -116,8 +107,8 @@ export async function updateRecords(table: PgTable<any>, ids: string[] | number[
     return updatedRecords
 }
 
-export async function deleteRecord(table: PgTable<any>, id: string | number) {
-    const [deletedRecord] = await db
+export async function deleteRecord(table: PgTable<any>, id: string | number, tx?: PgTransaction<any, any, any>) {
+    const [deletedRecord] = await (tx ?? db)
         .delete(table)
         .where(eq(table.id, id))
         .returning()
