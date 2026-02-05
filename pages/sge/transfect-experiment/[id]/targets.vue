@@ -148,6 +148,12 @@ const columnDefs = {
         index: 18,
         header: 'Notes',
     },
+    snvLibPlasmidId: {
+        display: false,
+    },
+    sgRnaPlasmidId: {
+        display: false,
+    },
 }
 
 // Generate field defs from column defs to avoid repeating ourselves
@@ -209,6 +215,12 @@ editFormFieldDefs['sgRna'] = {
         dropdown: true,
     },
     index: 8,
+}
+editFormFieldDefs['snvLibPlasmidId'] = {
+    display: false,
+}
+editFormFieldDefs['sgRnaPlasmidId'] = {
+    display: false,
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
