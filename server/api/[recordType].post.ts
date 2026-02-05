@@ -24,21 +24,24 @@ export default defineEventHandler(async (event) => {
             return insertSchema.parse(record)
         })
 
-        const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
+        const newRecords = await db.transaction(async (tx) => {
+            const insertedRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records, tx)
 
-        // handle single HA primer and PCR experiment inserts that include array of targets
-        if (body.length == 1 && newRecords?.length == 1) {
-            if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
-            const targets = await updateHomologyArmPrimerTargets(newRecords[0].id, _.map(body[0].targets, 'targetId'))
-                _.set(newRecords, '0.targets', targets)
-            } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
-                const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
-                await updatePcrExperimentTransfectTargets(newRecords[0].id, transfectTargetIds)
-            } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
-                const preseq1PrimerTargetIds = _.map(body[0].preseq1PrimerTargets, 'targetId')
-                await updatePreseq1PrimerTargets(newRecords[0].id, preseq1PrimerTargetIds)
+            // handle single HA primer, PCR experiment, and Preseq 1 primer inserts that include array of targets
+            if (body.length == 1 && insertedRecords?.length == 1) {
+                if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
+                    const targets = await updateHomologyArmPrimerTargets(insertedRecords[0].id, _.map(body[0].targets, 'targetId'), tx)
+                    _.set(insertedRecords, '0.targets', targets)
+                } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
+                    const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
+                    await updatePcrExperimentTransfectTargets(insertedRecords[0].id, transfectTargetIds, tx)
+                } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
+                    const preseq1PrimerTargetIds = _.map(body[0].preseq1PrimerTargets, 'targetId')
+                    await updatePreseq1PrimerTargets(insertedRecords[0].id, preseq1PrimerTargetIds, tx)
+                }
             }
-        }
+            return insertedRecords
+        })
 
         return newRecords
     } catch (e: any) {
