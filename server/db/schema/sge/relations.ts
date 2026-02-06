@@ -41,11 +41,6 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
-        transfectTarget: {
-            fields: [pcrExperiments.transfectTargetId],
-            referenceTable: transfectTargets,
-            references: [transfectTargets.id],
-        },
     },
     many: {
         plates: {

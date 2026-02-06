@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
             } else if (_.camelCase(recordType) == 'pcrExperiments') {
                 // delete associated plates if all wells are empty
                 for (const plate of await tx.select().from(plates).where(eq(plates.pcrExperimentId, id))) {
-                    await deleteEmptyPlate(plate.id)
+                    await deleteEmptyPlate(plate.id, tx)
                 }
                 // delete assiociated targets
                 await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))

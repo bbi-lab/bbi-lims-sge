@@ -5,11 +5,11 @@ import {eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wells } from "../db/schema/sge/well"
 import { plates } from "../db/schema/sge/plate"
+import type { PgTransaction } from "drizzle-orm/pg-core"
 
 
-export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[]) => {
-
-    const result = await db.transaction(async (tx) => {
+export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
         const existingTargets = await tx.select().from(homologyArmPrimerTargets).where(eq(homologyArmPrimerTargets.homologyArmPrimerId, id))
 
         // delete targets that are not in the incoming list
@@ -22,12 +22,14 @@ export const updateHomologyArmPrimerTargets = async (id: string, targetIds: stri
             existingTargets.push(...await tx.insert(homologyArmPrimerTargets).values(targetsToInsert.map(targetId => ({ targetId, homologyArmPrimerId: id }))).returning())
         }
         return existingTargets
-    })
+    }
+
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
     return result
 }
 
-export const updatePcrExperimentTransfectTargets = async (id: string, targetIds: string[]) => {
-    const result = await db.transaction(async (tx) => {
+export const updatePcrExperimentTransfectTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
         const existingTransfectTargets = await tx.select().from(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
 
         // delete targets that are not in the incoming list
@@ -40,12 +42,14 @@ export const updatePcrExperimentTransfectTargets = async (id: string, targetIds:
             existingTransfectTargets.push(...await tx.insert(pcrExperimentTargets).values(transfectTargetsToInsert.map(targetId => ({ transfectTargetId: targetId, pcrExperimentId: id }))).returning())
         }
         return existingTransfectTargets
-    })
+    }
+
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
     return result
 }
 
-export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[]) => {
-    const result = await db.transaction(async (tx) => {
+export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
         const existingPreseq1PrimerTargets = await tx.select().from(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
 
         // delete targets that are not in the incoming list
@@ -57,12 +61,13 @@ export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[]
             existingPreseq1PrimerTargets.push(...await tx.insert(preseq1PrimerTargets).values(preseq1PrimerTargetsToInsert.map(targetId => ({ targetId, preseq1PrimerId: id }))).returning())
         }
         return existingPreseq1PrimerTargets
-    })
+    }
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
     return result
 }
 
-export async function deleteEmptyPlate(plateId: string) {
-    const nonEmptyWells = await db.select()
+export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, any, any>) {
+    const nonEmptyWells = await (tx ?? db).select()
         .from(wells)
         .innerJoin(wellContents, eq(wells.id, wellContents.wellId))
         .where(eq(wells.plateId, plateId))
@@ -75,7 +80,7 @@ export async function deleteEmptyPlate(plateId: string) {
         })
     }
     // delete wells then plate
-    await db.delete(wells).where(eq(wells.plateId, plateId))
-    const deletedRecord = await deleteRecord(plates, plateId)
+    await (tx ?? db).delete(wells).where(eq(wells.plateId, plateId))
+    const deletedRecord = await deleteRecord(plates, plateId, tx)
     return deletedRecord
 }

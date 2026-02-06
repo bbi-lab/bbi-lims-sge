@@ -30,7 +30,7 @@ onMounted(() => {
 </script>
 <template>
     <div class="flex flex-wrap">
-        <template v-for="c of components" :key="modelValue![c.variableField]">
+        <template v-for="(c, index) in components" :key="index">
             <span v-if="c.component=='Checkbox'">
                 <label :for="c.variableField">
                     {{ c.label || c.variableField}}

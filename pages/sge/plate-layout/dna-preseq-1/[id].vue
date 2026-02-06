@@ -45,14 +45,18 @@ const loadPlate = async () => {
         `${config.public.apiBase}/pcr-experiments`,
         plateWithWellSpecs.value.pcrExperimentId as string,
         {
-            transfectTarget: {
-                columns: {id: true},
+            pcrExperimentTargets: {
+                with: {
+                    transfectTarget: {
+                        columns: {id: true},
+                    }
+                }
             }
         }
     )
 
     whereClause.value = {
-        '==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]
+        '==':[{'var': 'pellet.transfectTarget.id'}, _.get(pcrExperiment.value, 'pcrExperimentTargets.0.transfectTarget.id')]
     }
 }
 

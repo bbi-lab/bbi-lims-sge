@@ -1044,6 +1044,13 @@
       "when": 1770247328923,
       "tag": "0148_true_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 149,
+      "version": "7",
+      "when": 1770398951171,
+      "tag": "0149_chief_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

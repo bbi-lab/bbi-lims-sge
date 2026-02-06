@@ -6,7 +6,7 @@ import { haPuc19Plasmids } from "./plasmid"
 import { haCloningExperiments, snvLibCloningExperiments } from "./plasmid-experiment"
 import { plates } from "./plate"
 import { wellContents, wellContentSources, wells } from "./well"
-import { pcrExperiments } from "./pcr-experiment"
+import { pcrExperiments, pcrExperimentTargets } from "./pcr-experiment"
 import { transfectExperiments, transfectTargets } from "./transfect-experiment"
 import { targets } from "./target"
 import { cycles } from "./cycle"
@@ -282,7 +282,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
     left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
-    left join ${transfectTargets} on ${eq(pcrExperiments.transfectTargetId, transfectTargets.id)}
+    left join ${pcrExperimentTargets} on ${eq(pcrExperiments.id, pcrExperimentTargets.pcrExperimentId)}
+    left join ${transfectTargets} on ${eq(pcrExperimentTargets.transfectTargetId, transfectTargets.id)}
     left join ${targets} on ${eq(targets.id, transfectTargets.targetId)}
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
     left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)}
