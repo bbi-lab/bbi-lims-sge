@@ -118,6 +118,7 @@ const refreshForm = async function() {
         })
     }
 
+    console.log(records)
     combinedRecord.value = _.reduce(records.value, (acc: any, record) => {
         _.forEach(record, (value, key) => {
             if (key == 'id') return  // ignore ids
@@ -214,6 +215,15 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
     const hasIds = _.some(records.value, (record) => _.get(record, [key, arrayIndex, 'id']) !== null)
     return isReadOnly(key) || isReadOnly(`${key}.*`) || (!_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) && hasIds)
 }
+
+function hasFixedSize(key: string) {
+    const fixedSize = _.get(props.fieldDefs, [key, 'fixedSize'], false)
+    if (_.isFunction(fixedSize)) {
+        return fixedSize(_.cloneDeep(combinedRecord.value))
+    } else {
+        return fixedSize
+    }
+}
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
@@ -222,7 +232,8 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
-        <div v-for="(val, key) in formSchemPropertiesComputed" class="mt-5">
+        {{ combinedRecord }}
+        <div v-for="(val, key) in formSchemPropertiesComputed" :key="key" class="mt-5">
             <div class="mb-5" v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                 <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -452,7 +463,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                     <div :id="key">
                         <div class="flex items-start quickform-input-wrapper">
                             <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
-                            <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && ((_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount']))" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
+                            <Button v-if="!hasFixedSize(key) && !isReadOnly(key) && !isReadOnly(`${key}.*`) && ((_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null) || !_.has(combinedRecord, [key, 'conflictingValueCount']))" v-tooltip="{value: 'Add value', showDelay: 1000}" icon="pi pi-plus" class="ml-2" severity="primary" outlined @click="addNewItemToArray(combinedRecord, [key, 'val'], val.items)" />
                             <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) &&_.has(combinedRecord, [key, 'conflictingValueCount']) && combinedRecord[key].val!=null" v-tooltip="{value: 'Revert to multiple values', showDelay: 1000}" outlined severity="info" class="ml-2" @click="combinedRecord[key].val=null">
                                 <template #icon>
                                     <GrommetIconsRevert />
@@ -467,7 +478,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         </div>
 
                         <!-- Iterate over array items -->
-                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val">
+                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in combinedRecord[key].val" :key="arrayIndex">
                             <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
                                 <InputArray
                                     v-model="combinedRecord[key].val[arrayIndex]"
@@ -479,7 +490,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                             </div>
                             <!-- Check that all array item properties are covered by JSON schema -->
                             <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
-                                <template v-for="itemKey in Object.keys(arrayItem)" >
+                                <template v-for="itemKey in Object.keys(arrayItem)" :key="itemKey">
                                     <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
                                         <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                     </span>
@@ -488,18 +499,18 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                                         <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
                                     </span>
                                 </template>
-                                <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='string'">
                                 <div class="flex items-start quickform-input-wrapper">
                                     <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" />
-                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='integer'">
                                 <div class="flex items-start quickform-input-wrapper">
                                     <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" :showButtons="!isArrayInputDisabled(key, arrayIndex)" :minFractionDigits="0" :maxFractionDigits="0" />
-                                    <Button v-if="!isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <!-- Array properties not covered by JSON schema -->
