@@ -5,6 +5,7 @@ import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
 import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets } from '../utils/sge'
+import { insertPlate } from '../services/plate-services'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -32,9 +33,21 @@ export default defineEventHandler(async (event) => {
                 if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
                     const targets = await updateHomologyArmPrimerTargets(insertedRecords[0].id, _.map(body[0].targets, 'targetId'), tx)
                     _.set(insertedRecords, '0.targets', targets)
-                } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
-                    const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
-                    await updatePcrExperimentTransfectTargets(insertedRecords[0].id, transfectTargetIds, tx)
+                } else if (_.camelCase(recordType) == 'pcrExperiments') {
+                    // add corresponding PCR plate with same name as experiment
+                    const newPlate = {
+                        name: insertedRecords[0].name,
+                        sizeX: 12,
+                        sizeY: 8,
+                        plateType: insertedRecords[0].pcrType,
+                        pcrExperimentId: insertedRecords[0].id,
+                    }
+                    await insertPlate(newPlate, tx)
+
+                    if (_.isArray(body[0].pcrExperimentTargets)) {
+                        const transfectTargetIds = _.map(body[0].pcrExperimentTargets, 'transfectTargetId')
+                        await updatePcrExperimentTransfectTargets(insertedRecords[0].id, transfectTargetIds, tx)
+                    }
                 } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
                     const preseq1PrimerTargetIds = _.map(body[0].preseq1PrimerTargets, 'targetId')
                     await updatePreseq1PrimerTargets(insertedRecords[0].id, preseq1PrimerTargetIds, tx)
