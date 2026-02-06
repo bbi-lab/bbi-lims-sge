@@ -248,7 +248,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
-        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" class="mt-5">
+        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" :key="key" class="mt-5">
             <div class="mb-5" v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
                 <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                 <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -376,7 +376,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                         <label class="font-bold mb-3 mr-5">{{ getLabel(key) }}</label>
                         <Button v-if="!isReadOnly(key) && !isReadOnly(`${key}.*`) && (_.get(props.fieldDefs, [`${key}.*`, 'canUpdate']) || !recordId)" icon="pi pi-plus" severity="primary" outlined @click="addNewItemToArray(record, key, val.items)" />
                         <!-- Iterate over array items -->
-                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]">
+                        <div class="mt-2" v-for="(arrayItem, arrayIndex) in record[key]" :key="arrayIndex">
                             <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
                                 <InputArray
                                     v-model="record[key][arrayIndex]"
@@ -388,7 +388,7 @@ function isArrayInputDisabled(key: string, arrayIndex: number) {
                             </div>
                             <!-- Check that all array item properties are covered by JSON schema -->
                             <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
-                                <template v-for="itemKey in Object.keys(arrayItem)" >
+                                <template v-for="itemKey in Object.keys(arrayItem)" :key="itemKey" >
                                     <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
                                         <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                     </span>
