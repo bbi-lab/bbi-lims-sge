@@ -8,7 +8,6 @@ import  {
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
-import { amplificationPrimers, preseq1Primers } from '~/server/db/schema/sge/primer'
 
 const router = useRouter()
 const route = useRoute()
@@ -54,9 +53,6 @@ const displayWithClause = Object.freeze({
         columns: {id: true}
     },
     amplificationPrimers: {
-        columns: {id: true, name: true, sequence: true, sequenceType: true},
-    },
-    preseq1Primers: {
         columns: {id: true, name: true, sequence: true, sequenceType: true},
     },
     preseq2Primers: {
@@ -158,17 +154,6 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'amplificationPrimers.displayValue',
         exportValue: (x) => _.isArray(x.amplificationPrimers) ? _.join(_.map(x.amplificationPrimers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
-    },
-    preseq1Primers: {
-        format: (x) => _.isArray(x.preseq1Primers) ? _.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
-        type: 'element',
-        element: (x: any) => {
-            const value = _.isArray(x.preseq1Primers) ? _.join(_.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : ''
-            const href = `/sge/preseq-1-primers?targetId=${x.id}`
-            return value ? `${value}<a href="${href}" class="text-blue-500 hover:underline"><span class="iconify mdi--link-variant" /></a>` : ''
-        },
-        path: 'preseq1Primers.displayValue',
-        exportValue: (x) => _.isArray(x.preseq1Primers) ? _.join(_.map(x.preseq1Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`), ', ') : '',
     },
     preseq2Primers: {
         format: (x) => _.isArray(x.preseq2Primers) ? _.map(x.preseq2Primers, (y) => `${_.toUpper(y.sequenceType?.[0])}:${y.sequence}`) : '',
