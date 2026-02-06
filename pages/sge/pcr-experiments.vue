@@ -3,7 +3,6 @@
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
-import { RecordService } from '~/utils/service/RecordService'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const router = useRouter()
@@ -11,14 +10,6 @@ const config = useRuntimeConfig()
 const crudTable = useCrudTable()
 
 async function didAddRecord(event: any) {
-    // add corresponding plate
-    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
-        name: event.name,
-        sizeX: 12,
-        sizeY: 8,
-        plateType: event.pcrType,
-        pcrExperimentId: event.id,
-    })
     crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
     crudTable.state.showAddForm = false
 }
@@ -53,11 +44,10 @@ const columnDefs: ColumnDefinitions = {
         index: 1,
     },
     cycleTarget: {
-        header: 'Cycle: target',
+        header: 'Cycle: target(s)',
         format: (x: any) => {
-            return x.transfectTarget ?
-                `${x.transfectTarget?.experiment?.cycle?.name}: ${x.transfectTarget?.target?.name}` :
-                ''
+            return _.map(x.pcrExperimentTargets, (t: any) => {
+                return t.transfectTarget ? `${t.transfectTarget?.experiment?.cycle?.name}: ${t.transfectTarget?.target?.name}` : ''}).join('; ')
         },
         path: 'cycleTarget.displayValue',
     },
@@ -77,38 +67,29 @@ const fieldDefs = {
     plates: {
         display: false,
     },
-    transfectTargetId: {
-        label: 'Target',
-        component: 'NestedSelect',
-        display: (x: any) => {
-            return _.includes(['preseq-1','dna-preseq-1'], x.pcrType)
+    pcrType: {
+        events: {
+            change: async (record: any, recordOld: any) => {
+                // set or unset pcrExperimentTargets based on pcrType
+                if (_.includes(['rna-rt','dna-preseq-1'], record.pcrType) && !_.has(record, 'pcrExperimentTargets.0')) {
+                    _.set(record, 'pcrExperimentTargets', [{transfectTargetId: null}])
+                } else if (record.pcrType == 'dna-preseq-1' && _.size(_.get(record, 'pcrExperimentTargets', [])) > 1) {
+                    _.set(record, 'pcrExperimentTargets', _.slice(record.pcrExperimentTargets, 0, 1))
+                } else if (!_.includes(['rna-rt','dna-preseq-1'], record.pcrType)) {
+                    _.unset(record, 'pcrExperimentTargets')
+                }
+            },
         },
-        props: {
-            parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
-            parentSearchFields: ['cycle.name'],
-            parentValueField: 'id',
-            parentDisplayFields: ['cycle.name'],
-            parentIftaLabel: 'Experiment',
-            parentSearchWithClause: {
-                cycle: {columns: {name: true}},
-            },
-
-            searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
-            searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
-            valueField: 'id',
-            displayFormat: (x:any) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
-            parentKeyField: 'experimentId',
-            searchWithClause: {
-                target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
-            },
-        }
     },
     startedOn: {
         type: 'date',
     },
     pcrExperimentTargets: {
         display: (x: any) => {
-            return x.pcrType == 'rna-rt'
+            return _.includes(['rna-rt','dna-preseq-1'], x.pcrType)
+        },
+        fixedSize: (record: any) => {
+            return record.pcrType == 'dna-preseq-1'
         },
     },
     'pcrExperimentTargets.*': {
@@ -152,26 +133,6 @@ const fieldDefs = {
 const withClause = {
     plates: {columns: {id: true}},
     technician: {columns: {name: true}},
-    transfectTarget: {
-        columns: {},
-        with: {
-            target: {
-                columns: {
-                    name: true
-                },
-            },
-            experiment: {
-                columns: {},
-                with: {
-                    cycle: {
-                        columns: {
-                            name: true
-                        }
-                    }
-                }
-            }
-        }
-    },
     pcrExperimentTargets: {
         with: {
             transfectTarget: {
