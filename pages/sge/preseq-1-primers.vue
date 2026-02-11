@@ -71,6 +71,9 @@ const columnDefs = {
         },
         path: 'preseq1PrimerTargets.displayValue',
         index: 2,
+        exportValue: (x: any) => {
+            return _.map(x.preseq1PrimerTargets, 'target.name').join(', ')
+        },
     },
     project: {
         format: (x: any) => {
