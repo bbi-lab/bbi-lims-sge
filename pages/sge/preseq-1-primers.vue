@@ -3,8 +3,6 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
-import { preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
-import { targets } from '~/server/db/schema/sge/target'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -30,6 +28,13 @@ const displayWithClause = Object.freeze({
             target: {
                 columns: {
                     name: true
+                },
+                with: {
+                    project: {
+                        columns: {
+                            name: true
+                        }
+                    },
                 },
             },
         },
@@ -75,11 +80,12 @@ const columnDefs = {
             return _.map(x.preseq1PrimerTargets, 'target.name').join(', ')
         },
     },
-    project: {
+    projects: {
+        header: 'Project(s)',
         format: (x: any) => {
-            return x.target?.project?.name || ''
+            return _.uniq(_.map(x.preseq1PrimerTargets, 'target.project.name')).join(', ')
         },
-        path: 'project.displayValue',
+        path: 'projects.displayValue',
         index: 3,
     },
     wellContents: {
