@@ -51,6 +51,9 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'cycleTarget.displayValue',
     },
+    pcrExperimentTargets: {
+        display: false,
+    },
 }
 const rowActions = {
     plates: {
