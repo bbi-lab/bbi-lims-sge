@@ -199,36 +199,45 @@ editFormFieldDefs['transfectionCount'] = {
     },
     index: 1,
 }
-editFormFieldDefs['snvLib'] = {
+editFormFieldDefs['snvLibPlasmidId'] = {
     label: 'SNV library',
     component: 'AutoCompleter',
-    props: {
+    dynamicKey: (record: any) => {
+        return record.targetId ? `snvLibPlasmidId-${record.targetId}` : 'snvLibPlasmidId'
+    },
+    display: (record: any) => {
+        return !!record.targetId
+    },
+    props: (record: any) => ({
         searchBaseUrl: `${config.public.apiBase}/snv-lib-plasmids`,
         searchFields: ['name'],
         valueField: 'id',
         displayFields: ['name'],
         dropdown: true,
-    },
+        searchWhereClause: {"==" : [ {"var":"targetId"}, record.targetId] },
+    }),
     index: 5,
 }
-editFormFieldDefs['sgRna'] = {
+editFormFieldDefs['sgRnaPlasmidId'] = {
     label: 'sgRNA',
     component: 'AutoCompleter',
-    props: {
+    dynamicKey: (record: any) => {
+        return record.targetId ? `sgRnaPlasmidId-${record.targetId}` : 'sgRnaPlasmidId'
+    },
+    display: (record: any) => {
+        return !!record.targetId
+    },
+    props: (record: any) => ({
         searchBaseUrl: `${config.public.apiBase}/sg-rna-plasmids`,
         searchFields: ['name'],
         valueField: 'id',
         displayFields: ['name'],
         dropdown: true,
-    },
+        searchWhereClause: {"==" : [ {"var":"targetId"}, record.targetId] },
+    }),
     index: 8,
 }
-editFormFieldDefs['snvLibPlasmidId'] = {
-    display: false,
-}
-editFormFieldDefs['sgRnaPlasmidId'] = {
-    display: false,
-}
+
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
 _.set(addFormFieldDefs, 'snvLibraryQuantity.props.defaultValue', 5)
