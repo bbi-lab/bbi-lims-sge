@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RecordService } from '@/utils/service/RecordService'
-import { ne } from 'drizzle-orm'
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
@@ -68,55 +67,63 @@ const columnDefs = {
         header: 'SNV library conc. (ng/μL)',
         index: 6,
     },
-    snvLibraryTo3ugVol: {
-        header: 'Vol. of SNVlib to 3µg (μL)',
-        format: (x: any) => {
-            return x.snvLibraryConc ? _.round(3000 / x.snvLibraryConc, 1).toFixed(1) : ''
-        },
-        path: 'snvLibraryTo3ugVol.displayValue',
+    snvLibraryQuantity: {
+        header: 'SNV library quantity (μg)',
         index: 7,
+    },
+    snvLibraryToQuantityVol: {
+        header: 'Vol. of SNVlib to quantity (μL)',
+        format: (x: any) => {
+            return x.snvLibraryConc ? _.round((x.snvLibraryQuantity * 1000) / x.snvLibraryConc, 1).toFixed(1) : ''
+        },
+        path: 'snvLibraryToQuantityVol.displayValue',
+        index: 8,
     },
     sgRna: {
         header: 'sgRNA',
         format: (x: any) => { return x.sgRna?.name },
         path: 'sgRna.displayValue',
-        index: 8,
+        index: 9,
     },
     sgRnaConc: {
         header: 'Current sgRNA conc. (ng/μL)',
-        index: 9,
-    },
-    sgRnaTo12ugVol: {
-        header: 'Vol. of sgRNA to 12µg (μL)',
-        format: (x: any) => {
-            return x.sgRnaConc ? _.round(12000 / x.sgRnaConc, 1).toFixed(1) : ''
-        },
-        path: 'sgRnaTo12ugVol.displayValue',
         index: 10,
+    },
+    sgRnaQuantity: {
+        header: 'sgRNA quantity (μg)',
+        index: 11,
+    },
+    sgRnaToQuantityVol: {
+        header: 'Vol. of sgRNA to quantity (μL)',
+        format: (x: any) => {
+            return x.sgRnaConc ? _.round((x.sgRnaQuantity * 1000) / x.sgRnaConc, 1).toFixed(1) : ''
+        },
+        path: 'sgRnaToQuantityVol.displayValue',
+        index: 12,
     },
     sgRnaNegControl: {
         header: 'sgRNA negative control',
-        index: 11,
+        index: 13,
     },
     hprt1SgRnaConc: {
         header: 'HPRT1 sgRNA conc. (ng/μL)',
-        index: 12,
+        index: 14,
     },
-    hprt1SgRnaTo12ugVol: {
-        header: 'Vol. of HPRT1 sgRNA to 12µg (μL)',
+    hprt1SgRnaToQuantityVol: {
+        header: 'Vol. of HPRT1 sgRNA to quantity (μL)',
         format: (x: any) => {
-            return x.hprt1SgRnaConc ? _.round(12000 / x.hprt1SgRnaConc, 1).toFixed(1) : ''
+            return x.hprt1SgRnaConc ? _.round((x.sgRnaQuantity * 1000) / x.hprt1SgRnaConc, 1).toFixed(1) : ''
         },
-        path: 'hprt1SgRnaTo12ugVol.displayValue',
-        index: 13,
+        path: 'hprt1SgRnaToQuantityVol.displayValue',
+        index: 15,
     },
     xfectBuffer: {
         header: 'Xfect Buffer (μL)',
-        index: 14,
+        index: 16,
     },
     xfectPolymerPerTransfect: {
         header: 'Xfect polymer (μL) per transfection',
-        index: 15,
+        index: 17,
     },
     snvLibNeeded: {
         header: 'SNV library needed (μL)',
@@ -129,7 +136,7 @@ const columnDefs = {
             }
         },
         path: 'snvLibNeeded.displayValue',
-        index: 16,
+        index: 18,
     },
     sgRnaNeeded: {
         header: 'sgRNA needed (μL)',
@@ -142,10 +149,10 @@ const columnDefs = {
             }
         },
         path: 'sgRnaNeeded.displayValue',
-        index: 17,
+        index: 19,
     },
     notes: {
-        index: 18,
+        index: 20,
         header: 'Notes',
     },
     snvLibPlasmidId: {
@@ -224,6 +231,8 @@ editFormFieldDefs['sgRnaPlasmidId'] = {
 }
 const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
 _.set(addFormFieldDefs, 'targetId.readOnly', false)
+_.set(addFormFieldDefs, 'snvLibraryQuantity.props.defaultValue', 5)
+_.set(addFormFieldDefs, 'sgRnaQuantity.props.defaultValue', 10)
 _.set(addFormFieldDefs, 'xfectBuffer.props.defaultValue', 700)
 _.set(addFormFieldDefs, 'xfectPolymerPerTransfect.props.defaultValue', 9)
 
