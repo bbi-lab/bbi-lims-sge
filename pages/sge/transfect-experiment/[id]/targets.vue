@@ -128,9 +128,9 @@ const columnDefs = {
     snvLibNeeded: {
         header: 'SNV library needed (μL)',
         format: (x: any) => {
-            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount) {
+            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount && x.snvLibraryQuantity) {
                 const totalTransfections = x.experiment.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)
-                return _.round(3000 / x.snvLibraryConc * totalTransfections, 1).toFixed(1)
+                return _.round((x.snvLibraryQuantity * 1000) / x.snvLibraryConc * totalTransfections, 1).toFixed(1)
             } else {
                 return ''
             }
@@ -141,9 +141,9 @@ const columnDefs = {
     sgRnaNeeded: {
         header: 'sgRNA needed (μL)',
         format: (x: any) => {
-            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount) {
+            if (x.experiment.replicateCount && x.transfectionCount && x.sgRnaConc && x.transfectionCount && x.sgRnaQuantity) {
                 const totalTransfections = x.experiment.replicateCount * x.transfectionCount
-                return _.round(12000 / x.sgRnaConc * totalTransfections, 1).toFixed(1)
+                return _.round((x.sgRnaQuantity * 1000) / x.sgRnaConc * totalTransfections, 1).toFixed(1)
             } else {
                 return ''
             }
