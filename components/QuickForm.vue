@@ -12,14 +12,15 @@ const { loggedIn, fetch } = useUserSession()
 
 const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
-const formSchemPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
-const formSchemPropertiesComputedSorted = computed(() =>  _.sortBy(_.entries(formSchemPropertiesComputed.value), ([key, value]) => _.get(props.fieldDefs, [key, 'index'])))
+const formSchemaPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
+const formSchemaPropertiesComputedSorted = computed(() =>  _.sortBy(_.entries(formSchemaPropertiesComputed.value), ([key, value]) => _.get(props.fieldDefs, [key, 'index'])))
 
 interface FieldDefinition {
     label?: string | ((record: any, relatedRecords: Record<string, any>) => string),
     subtext?: string | ((record: any, relatedRecords: Record<string, any>) => string),
     component?: string,
-    props?: Record<string, any>,
+    dynamicKey?: (record: any) => string,  // used to force re-render of specific field when record changes, useful for fields that depend on other field values
+    props?: Record<string, any> | ((record: any) => Record<string, any>),
     display?: boolean | ((record: any) => boolean),
     readOnly?: boolean,
     canUpdate?: boolean,
@@ -248,6 +249,11 @@ function hasFixedSize(key: string) {
         return fixedSize
     }
 }
+function getBoundProps(key: string) {
+    const propsForKey = _.get(props.fieldDefs, [key, 'props'])
+    const boundProps = _.isFunction(propsForKey) ? propsForKey(record.value) : propsForKey
+    return _.omit(boundProps, ['defaultValue'])
+}
 </script>
 <template>
     <div class="m-2 w-full flex justify-center">
@@ -257,7 +263,7 @@ function hasFixedSize(key: string) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
-        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" :key="key" class="mt-5">
+        <div v-for="([key, val]) in formSchemaPropertiesComputedSorted" :key="_.isFunction(_.get(fieldDefs, [key, 'dynamicKey'])) ? _.get(fieldDefs, [key, 'dynamicKey'])!(record) : key" class="mt-5">
             <div class="mb-5" v-if="record && key in record && (_.isFunction(fieldDefs?.[key]?.display) ? fieldDefs[key].display(record)!==false : _.get(fieldDefs, [key, 'display'])!==false)">
                 <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                 <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">
@@ -265,7 +271,7 @@ function hasFixedSize(key: string) {
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                        v-bind="getBoundProps(key)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -274,7 +280,7 @@ function hasFixedSize(key: string) {
                     <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                        v-bind="getBoundProps(key)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -283,7 +289,7 @@ function hasFixedSize(key: string) {
                     <Select
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                        v-bind="getBoundProps(key)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -292,7 +298,7 @@ function hasFixedSize(key: string) {
                     <InputNumber
                         :id="key"
                         v-model="record[key]"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                        v-bind="getBoundProps(key)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -389,7 +395,7 @@ function hasFixedSize(key: string) {
                             <div  class="mb-5" v-if="_.get(fieldDefs, [`${key}.*`, 'component'])=='InputArray'">
                                 <InputArray
                                     v-model="record[key][arrayIndex]"
-                                    v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
+                                    v-bind="getBoundProps(`${key}.*`)"
                                     :disabled="isArrayInputDisabled(key, arrayIndex)"
                                     :canDelete="!hasFixedSize(key) && (_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
                                     @did-click-delete="record[key].splice(arrayIndex, 1)"
@@ -433,7 +439,7 @@ function hasFixedSize(key: string) {
                         v-model="record[key]"
                         class="w-80"
                         :disabled="isReadOnly(key)"
-                        v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                        v-bind="getBoundProps(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
                     <a v-if="getFieldType(val, key, fieldDefs)=='hyperlink' && isValidUrl(record[key])" :href="record[key]" target="_blank">
