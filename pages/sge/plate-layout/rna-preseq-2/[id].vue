@@ -457,6 +457,7 @@ const poolSelectedWellsContents = async () => {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 :selectionMode="selectionTableName.endsWith('-plate') ? 'single' : 'multiple'"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
