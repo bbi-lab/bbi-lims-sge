@@ -41,13 +41,13 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
+        plate: {
+            fields: [pcrExperiments.plateId],
+            referenceTable: plates,
+            references: [plates.id],
+        },
     },
     many: {
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.pcrExperimentId],
-        },
         pcrExperimentTargets: {
             table: pcrExperimentTargets,
             schema: createSelectSchema(pcrExperimentTargets),
@@ -319,23 +319,6 @@ const wellsRelationsConfig: RelationsConfig = {
 export const wellsRelations = relationsConfigToRelations(wells, wellsRelationsConfig)
 
 const platesRelationsConfig: RelationsConfig = {
-    one:{
-        pcrExperiment: {
-            fields: [plates.pcrExperimentId],
-            referenceTable: pcrExperiments,
-            references: [pcrExperiments.id],
-        },
-        sgRnaCloningExperiment: {
-            fields: [plates.sgRnaCloningExperimentId],
-            referenceTable: sgRnaCloningExperiments,
-            references: [sgRnaCloningExperiments.id],
-        },
-        // snvLibCloningExperiment: {
-        //     fields: [plates.snvLibCloningExperimentId],
-        //     referenceTable: snvLibCloningExperiments,
-        //     references: [snvLibCloningExperiments.id],
-        // },
-    },
     many: {
         wells: {
             table: wells,
@@ -634,14 +617,12 @@ const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
-    },
-    many: {
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.sgRnaCloningExperimentId],
+        plate: {
+            fields: [sgRnaCloningExperiments.plateId],
+            referenceTable: plates,
+            references: [plates.id],
         },
-    }
+    },
 }
 export const sgRnaCloningExperimentsRelations = relationsConfigToRelations(sgRnaCloningExperiments, sgRnaCloningExperimentsRelationsConfig)
 

@@ -244,9 +244,6 @@ const plateTypesCte = `with plate_types(plate_type_value, plate_type_label, plat
 
 export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   id: uuid('id'),
-  pcrExperimentId: uuid('pcr_experiment_id'),
-  sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id'),
-  // snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id'),
   name: varchar('name', { length: 255 }),
   sizeX: smallint('size_x'),
   sizeY: smallint('size_y'),
@@ -262,8 +259,6 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   wellsProcessedCount: smallint('wells_processed_count'),
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
-    ${plates.pcrExperimentId},
-    ${plates.sgRnaCloningExperimentId},
     ${plates.name},
     ${plates.sizeX},
     ${plates.sizeY},
@@ -281,7 +276,7 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     join ${wells} on ${eq(plates.id, wells.plateId)}
     left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
-    left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
+    left join ${pcrExperiments} on ${eq(plates.id, pcrExperiments.plateId)}
     left join ${pcrExperimentTargets} on ${eq(pcrExperiments.id, pcrExperimentTargets.pcrExperimentId)}
     left join ${transfectTargets} on ${eq(pcrExperimentTargets.transfectTargetId, transfectTargets.id)}
     left join ${targets} on ${eq(targets.id, transfectTargets.targetId)}
