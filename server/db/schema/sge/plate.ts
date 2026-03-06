@@ -26,7 +26,7 @@ export type PlateType = 'pellet-storage' |
  'dna-preseq-1' |
  'dna-preseq-2' |
  'dna-preseq-3' |
- 'rna-rt' |
+ 'rna-rt-storage' |
  'rna-preseq-1' |
  'rna-preseq-2' |
  'rna-preseq-3' |

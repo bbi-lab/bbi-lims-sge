@@ -84,9 +84,9 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'DNA PreSeq 3',
                 label: 'DNA PreSeq 3',
             },
-            'rna-rt': {
-                desc: 'RNA Reverse Transcription',
-                label: 'RNA RT',
+            'rna-rt-storage': {
+                desc: 'RNA Reverse Transcription storage',
+                label: 'RNA RT storage',
             },
             'rna-preseq-1': {
                 desc: 'RNA PreSeq 1',

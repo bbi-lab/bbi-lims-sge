@@ -1065,6 +1065,13 @@
       "when": 1772659847696,
       "tag": "0151_gigantic_grandmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 152,
+      "version": "7",
+      "when": 1772668246731,
+      "tag": "0152_soft_vulcan",
+      "breakpoints": true
     }
   ]
 }
