@@ -26,9 +26,6 @@ const columnDefs = {
     name: { index: 0},
     plateType: { display: false },
     plateTypeLabel: { header: 'Type', index: 1 },
-    pcrExperimentId: { display: false},
-    sgRnaCloningExperimentId: { display: false},
-    // snvLibCloningExperimentId: { display: false},
     sizeX: { display: false },
     sizeY: { display: false },
     cycleId: { display: false },
@@ -69,9 +66,6 @@ const rowActions = {
 }
 
 const fieldDefs = {
-    pcrExperimentId: { display: false },
-    sgRnaCloningExperimentId: { display: false },
-    // snvLibCloningExperimentId: { display: false },
     wells: { display: false },
     name: { index: 0 },
     plateType: {
@@ -80,7 +74,7 @@ const fieldDefs = {
         props: {
             options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
                 // disable PCR plate types that should only be generated on experiment creation
-                const pattern = /^preseq-|-pcr$|^rna-rt$|^[d|r]na-preseq-/
+                const pattern = /^preseq-|-pcr$|^[d|r]na-preseq-/
                 if (pattern.test(key)) {
                     return { label: value.label, code: key, disabled: true }
                 } else {

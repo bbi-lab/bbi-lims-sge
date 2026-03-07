@@ -16,7 +16,7 @@ const { user } = useUserSession()
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 const config = useRuntimeConfig()
-const selectionTableName = ref<'rna' | 'rna-rt-plate' | 'rna-preseq-1-plate'>('rna-rt-plate')
+const selectionTableName = ref<'rna' | 'rna-rt-storage' | 'rna-preseq-1-plate'>('rna-rt-storage')
 const selectionTableKey = ref(0)
 
 
@@ -24,7 +24,7 @@ const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
 
 const selectedSourcePlate = computed(() => {
-    return selectionTableName.value.endsWith('-plate') ? plateLayout.selectionTableRef.value?.selectedRecords : null
+    return (selectionTableName.value.endsWith('-plate') || selectionTableName.value.endsWith('-storage')) ? plateLayout.selectionTableRef.value?.selectedRecords : null
 })
 
 
@@ -339,7 +339,7 @@ const rowActions = computed(() => {
 })
 
 const selectionTableOptions = [
-    { label: 'RNA RT plates', value: 'rna-rt-plate' },
+    { label: 'RNA RT storage', value: 'rna-rt-storage' },
     { label: 'RNA PreSeq 1 plates', value: 'rna-preseq-1-plate' },
     { label: 'RNA samples', value: 'rna' },
 ]
@@ -350,7 +350,7 @@ watch(selectionTableName, (newValue, oldValue) => {
     }
 })
 const whereClause = computed(() => {
-    return (selectionTableName.value === 'rna-rt-plate') ? {"==": [{"var": "plateType"}, "rna-rt"]} : (selectionTableName.value === 'rna-preseq-1-plate') ? {"==": [{"var": "plateType"}, "rna-preseq-1"]} : {}
+    return (selectionTableName.value === 'rna-rt-storage') ? {"==": [{"var": "plateType"}, "rna-rt-storage"]} : (selectionTableName.value === 'rna-preseq-1-plate') ? {"==": [{"var": "plateType"}, "rna-preseq-1"]} : {}
 })
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
@@ -485,11 +485,11 @@ const poolSelectedWellsContents = async () => {
                         <template #button1>
                             <Button
                                 severity="secondary"
-                                v-tooltip="{value: sourcePlateWithWellSpecs.plateType === 'rna-rt' ? 'Pool selected wells to PreSeq 2 plate' : 'Transfer selected wells to PreSeq 2 plate', showDelay: 500}"
+                                v-tooltip="{value: sourcePlateWithWellSpecs.plateType === 'rna-rt-storage' ? 'Pool selected wells to PreSeq 2 plate' : 'Transfer selected wells to PreSeq 2 plate', showDelay: 500}"
                                 :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
-                                @click="() => {sourcePlateWithWellSpecs.plateType === 'rna-rt' ? poolSelectedWellsContents() : transferSelectedWellsContents()}" >
+                                @click="() => {sourcePlateWithWellSpecs.plateType === 'rna-rt-storage' ? poolSelectedWellsContents() : transferSelectedWellsContents()}" >
                                 <template #icon>
-                                    <HugeiconsLayerSendToBack v-if="sourcePlateWithWellSpecs.plateType === 'rna-rt'" />
+                                    <HugeiconsLayerSendToBack v-if="sourcePlateWithWellSpecs.plateType === 'rna-rt-storage'" />
                                     <IxMoveLayerDown v-else />
                                 </template>
                             </Button>

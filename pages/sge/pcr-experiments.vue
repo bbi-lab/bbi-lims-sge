@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 import _ from 'lodash'
+import { read } from 'xlsx'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
@@ -19,7 +20,7 @@ const columnDefs: ColumnDefinitions = {
         format: 'date-time',
         index: 2,
     },
-    plates: {
+    plate: {
         display: false,
     },
     technician: {
@@ -56,19 +57,23 @@ const columnDefs: ColumnDefinitions = {
     },
 }
 const rowActions = {
-    plates: {
-        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+    plate: {
+        label: (data: any) => { return `${data.plate ? 1 : 0}`},
         action: (data: any) => {
-            router.push({path:`/sge/plate-layout/${data.pcrType}/${data.plates[0].id}`})
+            const plateType = data.pcrType == 'rna-rt' ? 'rna-rt-storage' : data.pcrType
+            router.push({path:`/sge/plate-layout/${plateType}/${data.plate?.id}`})
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Plates',
     }
 }
-const fieldDefs = {
-    plates: {
-        display: false,
+const addFieldDefs = {
+    name: {
+        index: 1,
+    },
+    technician: {
+        index: 2,
     },
     pcrType: {
         events: {
@@ -83,6 +88,26 @@ const fieldDefs = {
                 }
             },
         },
+        index: 3,
+    },
+    plateId: {
+        // only display with widget for RNA RT experiments, all other PCR experiments have 96-well plates created automatically
+        display: (x: any) => {
+            return x.pcrType == 'rna-rt'
+        },
+        label: 'Storage Box',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/plates`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+            searchWhereClause: {
+                '==': [{'var': 'plateType'}, 'rna-rt-storage'],
+            },
+        },
+        index: 4,
     },
     startedOn: {
         type: 'date',
@@ -133,8 +158,16 @@ const fieldDefs = {
         },
     },
 }
+
+const editFieldDefs = {
+    ...addFieldDefs,
+    pcrType: {
+        readOnly: true,
+    },
+
+}
 const withClause = {
-    plates: {columns: {id: true}},
+    plate: {columns: {id: true}},
     technician: {columns: {name: true}},
     pcrExperimentTargets: {
         with: {
@@ -162,6 +195,12 @@ const withClause = {
 }
 
 const formWithClause = {
+    plate: {
+        columns: {
+            id: true,
+            name: true,
+        },
+    },
     pcrExperimentTargets: {
         with: {
             transfectTarget: {
@@ -208,7 +247,7 @@ const formWithClause = {
                 v-if="crudTable.state.showAddForm"
                 tableName="pcr-experiments"
                 schemaName="insert"
-                :fieldDefs="fieldDefs"
+                :fieldDefs="addFieldDefs"
                 :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="didAddRecord"
@@ -218,7 +257,7 @@ const formWithClause = {
                 :recordId="crudTable.state.editingRecordId"
                 tableName="pcr-experiments"
                 schemaName="update"
-                :fieldDefs="{...fieldDefs, pcrType: { readOnly: true }}"
+                :fieldDefs="editFieldDefs"
                 :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"

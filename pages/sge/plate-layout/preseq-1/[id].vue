@@ -41,15 +41,17 @@ const loadPlate = async () => {
 
     plateWithWellSpecs.value = plateLayout.plateWithPlateDiagramWells.value
 
-    pcrExperiment.value = await RecordService.getRecord(
+    pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
-        plateWithWellSpecs.value.pcrExperimentId as string,
         {
             transfectTarget: {
                 columns: {id: true},
             }
+        },
+        {
+            '==': [{'var': 'plateId'}, plateWithWellSpecs.value.id],
         }
-    )
+    ))
 
     whereClause.value = {
         '==':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.transfectTarget.id]

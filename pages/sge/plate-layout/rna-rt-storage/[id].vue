@@ -41,15 +41,17 @@ const loadPlate = async () => {
 
     plateWithWellSpecs.value = plateLayout.plateWithPlateDiagramWells.value
 
-    pcrExperiment.value = await RecordService.getRecord(
+    pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
-        plateWithWellSpecs.value.pcrExperimentId as string,
         {
             pcrExperimentTargets: {
                 columns: {id: true, transfectTargetId: true},
             }
+        },
+        {
+            '==': [{'var': 'plateId'},  plateWithWellSpecs.value.id],
         }
-    )
+    ))
 
     whereClause.value = {
         'in':[{'var': 'pellet.transfectTarget.id'}, pcrExperiment.value.pcrExperimentTargets.map((x: any) => x.transfectTargetId)]
@@ -284,7 +286,7 @@ const frozenRecordIds = computed(() => {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
-                emptyMessage=""
+                emptyMessage="No RNA samples associated with selected targets"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>

@@ -110,8 +110,6 @@ export function makePlateDiagram(plateType: PlateType, sizeX: number = 12, sizeY
     let plate: PlateWithPlateDiagramWells = {
         id: '',
         name: '',
-        sgRnaCloningExperimentId: null,
-        pcrExperimentId: null,
         sizeX: sizeX,
         sizeY: sizeY,
         plateType,

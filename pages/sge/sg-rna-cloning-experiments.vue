@@ -7,18 +7,18 @@ const crudTable = useCrudTable()
 const router = useRouter()
 const config = useRuntimeConfig()
 
-async function didAddRecord(event: any) {
-    // add corresponding plate
-    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
-        name: event.name,
-        sizeX: 12,
-        sizeY: 8,
-        plateType: 'sg-rna-oligo',
-        sgRnaCloningExperimentId: event.id,
-    })
-    crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
-    crudTable.state.showAddForm = false
-}
+// async function didAddRecord(event: any) {
+//     // add corresponding plate
+//     await RecordService.addRecord(`${config.public.apiBase}/plates`, {
+//         name: event.name,
+//         sizeX: 12,
+//         sizeY: 8,
+//         plateType: 'sg-rna-oligo',
+//         sgRnaCloningExperimentId: event.id,
+//     })
+//     crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
+//     crudTable.state.showAddForm = false
+// }
 
 const rowActions = {
     plates: {
@@ -76,7 +76,7 @@ const withClause = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
