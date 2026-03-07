@@ -5,7 +5,7 @@ import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
 import { homologyArmPrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
 import { plates } from '~/server/db/schema/sge/plate'
 import { deleteEmptyPlate } from '~/server/utils/sge'
-import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
+import { pcrExperiments, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -34,10 +34,7 @@ export default defineEventHandler(async (event) => {
             } else if (_.camelCase(recordType) == 'preseq1Primers') {
                 await tx.delete(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
             } else if (_.camelCase(recordType) == 'pcrExperiments') {
-                // delete associated plates if all wells are empty
-                for (const plate of await tx.select().from(plates).where(eq(plates.pcrExperimentId, id))) {
-                    await deleteEmptyPlate(plate.id, tx)
-                }
+
                 // delete assiociated targets
                 await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
             }
@@ -45,6 +42,12 @@ export default defineEventHandler(async (event) => {
             const deleteResult = await tx.delete(table)
                 .where(eq(table.id, id))
                 .returning()
+
+            if (_.camelCase(recordType) == 'pcrExperiments') {
+                // delete associated plates if all wells are empty
+                const plateId = _.get(deleteResult, '0.plateId')
+                if (plateId) await deleteEmptyPlate(plateId, tx)
+            }
             return _.get(deleteResult, '0')
         })
 

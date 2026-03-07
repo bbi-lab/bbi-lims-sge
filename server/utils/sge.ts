@@ -3,7 +3,7 @@ import { homologyArmPrimerTargets, preseq1PrimerTargets } from "../db/schema/sge
 import { pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
 import {eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
-import { wellContents, wells } from "../db/schema/sge/well"
+import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
 import { plates } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
 
@@ -79,7 +79,9 @@ export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, 
             statusMessage: 'Plate wells must be empty before deleting'
         })
     }
-    // delete wells then plate
+    // delete associated wellContentSources and wells then plate
+    const emptyWells = await (tx ?? db).select().from(wells).where(eq(wells.plateId, plateId))
+    await (tx ?? db).delete(wellContentSources).where(inArray(wellContentSources.sourceWellId, _.map(emptyWells, 'id')))
     await (tx ?? db).delete(wells).where(eq(wells.plateId, plateId))
     const deletedRecord = await deleteRecord(plates, plateId, tx)
     return deletedRecord
