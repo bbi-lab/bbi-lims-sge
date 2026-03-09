@@ -2,10 +2,9 @@
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'
-import type { Rna } from "~/server/db/schema/sge/nucleic-acid"
-import type { Pellet } from "~/server/db/schema/sge/pellet"
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
 import HugeiconsLayerSendToBack from '~icons/hugeicons/layer-send-to-back'
+import {v4 as uuidv4} from 'uuid'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -15,13 +14,13 @@ const { user } = useUserSession()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
-const config = useRuntimeConfig()
 const selectionTableName = ref<'rna' | 'rna-rt-storage' | 'rna-preseq-1-plate'>('rna-rt-storage')
 const selectionTableKey = ref(0)
 
-
 const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
+const sourcePlateDiagramKey = ref<string>()
+const plateDiagramKey = ref<string>()
 
 const selectedSourcePlate = computed(() => {
     return (selectionTableName.value.endsWith('-plate') || selectionTableName.value.endsWith('-storage')) ? plateLayout.selectionTableRef.value?.selectedRecords : null
@@ -73,7 +72,7 @@ watch (selectedSourcePlate, async (newValue) => {
             ...sourcePlateLayout.plateWithWellContents.value,
             wells: _.values(sourcePlateLayout.wellSpecs.value),
         }
-        // sourcePlateDiagramKey.value = newValue.id
+        sourcePlateDiagramKey.value = newValue.id
     } else {
         sourcePlateWithWellSpecs.value = null
     }
@@ -91,6 +90,7 @@ watch(selectionTableName, async (newValue) => {
         }
     }
     await loadPlate()
+    plateDiagramKey.value = uuidv4() // force plate diagram to re-render
 })
 
 onMounted(() => {
@@ -207,7 +207,7 @@ const displayWithClause = computed(() => {
     }
 })
 const columnDefs = computed(() => {
-    if (selectionTableName.value.endsWith('-plate')) {
+    if (selectionTableName.value.endsWith('-plate') || selectionTableName.value.endsWith('-storage')) {
         return {
             plateType: { display: false },
             plateTypeLabel: { header: 'Type' },
@@ -360,81 +360,50 @@ const transferSelectedWellsContents = async () => {
     const sourceWells = sourcePlateLayout!.selectedWells.value
     const destinationWells = plateLayout.selectedWells.value
 
+    console.log(selectedSourcePlate.value)
+
     if (_.isEmpty(sourceWells)) {
         toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
-    } else if (sourceWells.length !== destinationWells.length) {
+    } else if (selectedSourcePlate.value.plateType === 'rna-preseq-1' && sourceWells.length !== destinationWells.length) {
         toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells in destination plate', life: 3000})
+    } else if (selectedSourcePlate.value.plateType === 'rna-rt-storage' && (sourceWells.length * 4) !== destinationWells.length) {
+        toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells (x4) in destination plate', life: 3000})
     } else {
-        const sourceWellsSorted = _.sortBy(sourceWells, ['x', 'y'])
-        const destinationWellsSorted = _.sortBy(destinationWells, ['x', 'y'])
-
-        const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
-            const wellContents = well.data.wellContents
-            const destinationWell = destinationWellsSorted[index]
-            return _.map(wellContents, (wellContent) => {
-                return {
-                    wellableId: wellContent.wellableId,
-                    wellId: destinationWell.id,
-                    sourceWellIds: [well.id],
-                    createdBy: (user.value as User)?.id,
-                }
-            })
-        }))
-        await plateLayout.addWellContents(wellContentsToAdd.flat())
-    }
-}
-
-
-const poolSelectedWellsContents = async () => {
-    const sourceWells = sourcePlateLayout!.selectedWells.value
-    const destinationWells = plateLayout.selectedWells.value
-
-    if (_.isEmpty(sourceWells)) {
-        toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
-    } else {
-
-        let recordsToAdd: {
-            wellId: string;
-            wellableId: string;
-            sourceWellIds: String[];
-            createdBy: string | null;
-        }[]
-
-        type RnaWithPellet = Rna & {pellet: Pellet}
-        type RnaWithPelletAndWellIds = RnaWithPellet & {wellIds: String[]}
-
         // sort wells by x and inverse y coordinate to achieve the correct order
         const sourceWellsSorted = _.sortBy(sourceWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
         const destinationWellsSorted = _.sortBy(destinationWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
 
-        console.log('sourceWellsSorted:', sourceWellsSorted)
-        const pooledRna = _.sortBy(_.values(sourceWells.reduce((acc, well) => {
-            const rna = _.get(well, ['data', 'wellContents', 0, 'wellable', 'rna'])
-            if (rna?.id) {
-                const existingWellIds = _.get(acc, [rna.id, 'wellIds'], [])
-                _.set(acc, rna.id, {...rna, wellIds: [...existingWellIds, well.id]})
-            }
-            return acc
-        }, {})), (x) => {
-            return x.pellet.name
-        }) as RnaWithPelletAndWellIds[]
+        const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
+            const wellContents = well.data.wellContents
 
-        if (pooledRna.length > destinationWellsSorted.length) {
-            toast.add({severity: 'warn', summary: 'Number of destination wells is less than number of selected RNA', life: 3000})
-            return
-        } else {
-            const wellContentsAndSources = _.map(pooledRna, (value, index) => {
-                const userId = (user.value as User)?.id || null
-                return {
-                    wellId: destinationWellsSorted[index].id,
-                    wellableId: value.id,
-                    sourceWellIds: value.wellIds,
-                    createdBy: userId,
-                }
-            })
-            recordsToAdd = wellContentsAndSources
-        }
-        await plateLayout.addWellContents(recordsToAdd)
+            if (selectedSourcePlate.value.plateType === 'rna-rt-storage') {
+                // get next 4 sorted destination wells by index
+                const destinationWells = destinationWellsSorted.slice(index * 4, index * 4 + 4)
+
+                return _.map(wellContents, (wellContent) => {
+                    return _.map(destinationWells, (destinationWell) => {
+                        return {
+                            wellId: destinationWell.id,
+                            sourceWellIds: [well.id],
+                            wellableId: wellContent.wellableId,
+                            createdBy: (user.value as User)?.id,
+                        }
+                    })
+                })
+            } else {
+                // for rna-preseq-1 source plate, each source well corresponds to one destination well
+                const destinationWell = destinationWellsSorted[index]
+                return _.map(wellContents, (wellContent) => {
+                    return {
+                        wellableId: wellContent.wellableId,
+                        wellId: destinationWell.id,
+                        sourceWellIds: [well.id],
+                        createdBy: (user.value as User)?.id,
+                    }
+                })
+            }
+        }))
+        await plateLayout.addWellContents(wellContentsToAdd.flat())
     }
 }
 
@@ -445,7 +414,7 @@ const poolSelectedWellsContents = async () => {
             <QuickTable
                 :key="selectionTableKey"
                 :ref="plateLayout.setSelectionTableRef"
-                :tableName="selectionTableName.endsWith('-plate') ? 'view-plates-with-well-counts' : selectionTableName"
+                :tableName="selectionTableName.endsWith('-plate') || selectionTableName.endsWith('-storage') ? 'view-plates-with-well-counts' : selectionTableName"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"
@@ -456,7 +425,7 @@ const poolSelectedWellsContents = async () => {
                 :withClause="displayWithClause"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
-                :selectionMode="selectionTableName.endsWith('-plate') ? 'single' : 'multiple'"
+                :selectionMode="selectionTableName.endsWith('-plate') || selectionTableName.endsWith('-storage') ? 'single' : 'multiple'"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
@@ -467,8 +436,9 @@ const poolSelectedWellsContents = async () => {
         </SplitterPanel>
         <SplitterPanel :size="40" :minSize="25">
             <Splitter layout="vertical">
-                <SplitterPanel v-if="selectionTableName.endsWith('-plate')" class="flex justify-center overflow-scroll mt-10">
+                <SplitterPanel v-if="selectionTableName.endsWith('-plate') || selectionTableName.endsWith('-storage')" class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
+                        :key="sourcePlateDiagramKey"
                         :ref="sourcePlateLayout?.setPlateDiagramRef"
                         v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
                         v-model="sourcePlateWithWellSpecs"
@@ -487,7 +457,7 @@ const poolSelectedWellsContents = async () => {
                                 severity="secondary"
                                 v-tooltip="{value: sourcePlateWithWellSpecs.plateType === 'rna-rt-storage' ? 'Pool selected wells to PreSeq 2 plate' : 'Transfer selected wells to PreSeq 2 plate', showDelay: 500}"
                                 :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
-                                @click="() => {sourcePlateWithWellSpecs.plateType === 'rna-rt-storage' ? poolSelectedWellsContents() : transferSelectedWellsContents()}" >
+                                @click="transferSelectedWellsContents" >
                                 <template #icon>
                                     <HugeiconsLayerSendToBack v-if="sourcePlateWithWellSpecs.plateType === 'rna-rt-storage'" />
                                     <IxMoveLayerDown v-else />
@@ -501,6 +471,7 @@ const poolSelectedWellsContents = async () => {
                 </SplitterPanel>
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
+                        :key="plateDiagramKey"
                         :ref="plateLayout.setPlateDiagramRef"
                         v-if="plateWithWellSpecs"
                         v-model="plateWithWellSpecs"
