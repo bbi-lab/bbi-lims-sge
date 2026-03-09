@@ -3,6 +3,7 @@ import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { User } from '~/server/db/schema/user'
+import {v4 as uuidv4} from 'uuid'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -10,6 +11,8 @@ const plateLayout = usePlateLayout()
 const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
 const sourcePlateDiagramKey = ref<string>()
+const plateDiagramKey = ref<string>()
+
 const toast = useToast()
 const { user } = useUserSession()
 
@@ -87,6 +90,7 @@ watch(selectionTableName, async (newValue) => {
         }
     }
     await loadPlate()
+    plateDiagramKey.value = uuidv4() // force plate diagram to re-render
 })
 
 onMounted(() => {
@@ -458,6 +462,7 @@ const transferSelectedWellsContents = async () => {
                 </SplitterPanel>
                 <SplitterPanel class="flex justify-center overflow-scroll mt-10">
                     <PlateDiagram
+                        :key="plateDiagramKey"
                         :ref="plateLayout.setPlateDiagramRef"
                         v-if="plateWithWellSpecs"
                         v-model="plateWithWellSpecs"
