@@ -41,18 +41,18 @@ watch (selectedSourcePlate, async (newValue) => {
 
         if (newValue.plateType === 'preseq-2') {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
-                colorBy: ['nucleicAcid.id'],
+                colorBy: ['dna.id'],
                 selectionTableRecordIdPaths: [(wellable: any) => {
                     return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-                    const nucleicAcidName = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid', 'pellet', 'name'])
-                    return nucleicAcidName ? `${wellCoordinate}:<br>${nucleicAcidName} (DNA)` : wellCoordinate
+                    const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
+                    return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)` : wellCoordinate
                 },
             }
             await sourcePlateLayout.loadPlate({
-                nucleicAcid: {
+                dna: {
                     with: {
                         pellet: true
                     }
