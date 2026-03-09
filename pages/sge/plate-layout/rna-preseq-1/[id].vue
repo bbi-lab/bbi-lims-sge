@@ -2,11 +2,16 @@
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
+import type { User } from '~/server/db/schema/user'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
 const plateLayout = usePlateLayout()
+const sourcePlateLayout = usePlateLayout()
+const sourcePlateWithWellSpecs = ref()
+const sourcePlateDiagramKey = ref<string>()
 const toast = useToast()
+const { user } = useUserSession()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -14,6 +19,62 @@ const pcrExperiment = ref()
 const config = useRuntimeConfig()
 const selectionTableName = ref<string>('view-plates-with-well-counts')
 const selectionTableKey = ref(0)
+
+const selectedSourcePlate = computed(() => {
+    return selectionTableName.value === 'view-plates-with-well-counts' ? plateLayout.selectionTableRef.value?.selectedRecords : null
+})
+
+watch (selectedSourcePlate, async (newValue) => {
+    if (newValue) {
+        sourcePlateLayout.setPlateId(newValue.id)
+
+        if (newValue.plateType === 'rna-rt-storage') {
+            sourcePlateLayout.wellContentsDisplayConfig.value = {
+                colorBy: ['rna.id'],
+                selectionTableRecordIdPaths: [(wellable: any) => {
+                    return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
+                }],
+                tooltip: (well: any) => {
+                    const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
+                    const rnaName = _.get(well, ['wellContents', 0, 'wellable', 'rna', 'pellet', 'name'])
+                    return rnaName ? `${wellCoordinate}:<br>${rnaName} (RNA)` : wellCoordinate
+                },
+            }
+            await sourcePlateLayout.loadPlate({
+                rna: {
+                    with: {
+                        pellet: true
+                    }
+                },
+                wellContents: {
+                    with: {
+                        wellContentSources: {
+                            with: {
+                                sourceWell: {
+                                    columns: {},
+                                    with: {
+                                        plate: {
+                                            columns: {
+                                                id: true,
+                                            }
+                                        }
+                                    }
+                                },
+                            },
+                        },
+                    }
+                },
+            })
+        }
+        sourcePlateWithWellSpecs.value = {
+            ...sourcePlateLayout.plateWithWellContents.value,
+            wells: _.values(sourcePlateLayout.wellSpecs.value),
+        }
+        sourcePlateDiagramKey.value = newValue.id
+    } else {
+        sourcePlateWithWellSpecs.value = null
+    }
+})
 
 watch(selectionTableName, async (newValue) => {
     if (plateLayout.wellContentsDisplayConfig.value) {
@@ -84,11 +145,7 @@ const loadPlate = async () => {
 
     pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
-        {
-            transfectTarget: {
-                columns: {id: true},
-            }
-        },
+        {},
         {
             '==': [{'var': 'plateId'}, plateWithWellSpecs.value.id],
         }
@@ -170,7 +227,7 @@ const columnDefs = computed(() => {
             wellsProcessedCount: {
                 header: 'Wells processed',
                 format: (data: any) => {
-                    return _.includes(['rna-rt', 'rna-preseq-1'], data.plateType) ? data.wellsProcessedCount : ''
+                    return _.includes(['rna-rt-storage', 'rna-preseq-1'], data.plateType) ? data.wellsProcessedCount : ''
                 },
                 path: 'wellsProcessedCount.displayValue',
             },
@@ -257,34 +314,37 @@ const columnDefs = computed(() => {
     }
 })
 
-const rowActions = {
-    assign: {
-        label: '',
-        action: async (data: any) => {
-            if (plateLayout.selectedWells.value.length === 0) {
-                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
-                return
-            } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
-                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
-                return
-            } else {
-                if (selectionTableName.value === 'rna') {
-                    await plateLayout.assignIdToSelectedWells(data.id)
-                } else if (selectionTableName.value === 'view-plates-with-well-counts') {
-                    await plateLayout.poolRnaRtPlateToSelectedWells(data.id)
-                }
-            }
-        },
-        icon: 'pi pi-fw pi-arrow-right',
-        iconPos: 'right',
-        tooltip: 'Assign to selected wells',
-        disabled: (data: any) => {
-            return _.has(data, 'wellContents.well.id')
-        },
-    },
-}
+const rowActions = computed(() => {
+    if (selectionTableName.value == 'rna') {
+        return {
+            assign: {
+                label: '',
+                action: async (data: any) => {
+                    if (plateLayout.selectedWells.value.length === 0) {
+                        toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
+                        return
+                    } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
+                        toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
+                        return
+                    } else {
+                        await plateLayout.assignIdToSelectedWells(data.id)
+                    }
+                },
+                icon: 'pi pi-fw pi-arrow-right',
+                iconPos: 'right',
+                tooltip: 'Assign to selected wells',
+                disabled: (data: any) => {
+                    return _.has(data, 'wellContents.well.id')
+                },
+            },
+        }
+    } else {
+        return {}
+    }
+})
+
 const selectionTableOptions = [
-    { label: 'RNA RT plates', value: 'view-plates-with-well-counts' },
+    { label: 'RNA RT storage', value: 'view-plates-with-well-counts' },
     { label: 'RNA', value: 'rna' },
 ]
 watch(selectionTableName, (newValue, oldValue) => {
@@ -294,11 +354,47 @@ watch(selectionTableName, (newValue, oldValue) => {
     }
 })
 const whereClause = computed(() => {
-    return (selectionTableName.value === 'view-plates-with-well-counts') ? {"==": [{"var": "plateType"}, "rna-rt"]} : {}
+    return (selectionTableName.value === 'view-plates-with-well-counts') ? {"==": [{"var": "plateType"}, "rna-rt-storage"]} : {}
 })
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
 })
+
+const transferSelectedWellsContents = async () => {
+    const sourceWells = sourcePlateLayout!.selectedWells.value
+    const destinationWells = plateLayout.selectedWells.value
+
+    if (_.isEmpty(sourceWells)) {
+        toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
+    } else if (sourceWells.length * 4 !== destinationWells.length) {
+        toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells (x4) in destination plate', life: 3000})
+    } else {
+        // sort wells by x and inverse y coordinate to achieve the correct order
+        const sourceWellsSorted = _.sortBy(sourceWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
+        const destinationWellsSorted = _.sortBy(destinationWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
+
+        // add each source well contents to 4 destination wells (same x coordinate, y coordinate +/- 0.5)
+        const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
+            const wellContents = well.data.wellContents
+            // get next 4 sorted destination wells by index
+            const destinationWells = destinationWellsSorted.slice(index * 4, index * 4 + 4)
+
+            return _.map(wellContents, (wellContent) => {
+                return _.map(destinationWells, (destinationWell) => {
+                    return {
+                        wellId: destinationWell.id,
+                        sourceWellIds: [well.id],
+                        wellableId: wellContent.wellableId,
+                        createdBy: (user.value as User)?.id,
+                    }
+                })
+            })
+        }))
+        await plateLayout.addWellContents(wellContentsToAdd.flat())
+        plateLayout.selectionTableRef.value?.addOrRefreshRecordIds([selectedSourcePlate.value?.id])
+    }
+}
+
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -318,6 +414,7 @@ const frozenRecordIds = computed(() => {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :selectionMode="selectionTableName === 'view-plates-with-well-counts' ? 'single' : 'multiple'"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
@@ -326,29 +423,65 @@ const frozenRecordIds = computed(() => {
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">
-            <PlateDiagram
-                :ref="plateLayout.setPlateDiagramRef"
-                v-if="plateWithWellSpecs"
-                v-model="plateWithWellSpecs"
-                :plateType="plateWithWellSpecs.plateType"
-                :sizeX="plateWithWellSpecs.sizeX"
-                :sizeY="plateWithWellSpecs.sizeY"
-                @well-range-selected="plateLayout.wellRangeSelected"
-                @well-selection-cleared="plateLayout.wellSelectionCleared"
-                @all-wells-selected="plateLayout.selectedAllWells"
-                @well-contents-updated="plateLayout.updatedWellContents" >
-                <template #header>
-                    {{ plateWithWellSpecs.name }}
-                </template>
-                <template #button1>
-                    <Button
-                        class="p-button-secondary"
-                        icon="pi pi-trash"
-                        v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
-                        :disabled="_.isEmpty(plateLayout.selectedWells.value)"
-                        @click="plateLayout.emptySelectedWells" />
-                </template>
-            </PlateDiagram>
+            <Splitter layout="vertical">
+                <SplitterPanel v-if="selectionTableName === 'view-plates-with-well-counts'" class="flex justify-center overflow-scroll mt-10">
+                    <PlateDiagram
+                        :key="sourcePlateDiagramKey"
+                        :ref="sourcePlateLayout?.setPlateDiagramRef"
+                        v-if="selectedSourcePlate?.id && sourcePlateWithWellSpecs"
+                        v-model="sourcePlateWithWellSpecs"
+                        :plateType="sourcePlateWithWellSpecs.plateType"
+                        :sizeX="sourcePlateWithWellSpecs.sizeX"
+                        :sizeY="sourcePlateWithWellSpecs.sizeY"
+                        @well-range-selected="sourcePlateLayout?.wellRangeSelected"
+                        @well-selection-cleared="sourcePlateLayout?.wellSelectionCleared"
+                        @all-wells-selected="sourcePlateLayout?.selectedAllWells"
+                        @well-contents-updated="sourcePlateLayout?.updatedWellContents" >
+                        <template #header>
+                            {{ sourcePlateWithWellSpecs.name }}
+                        </template>
+                        <template #button1>
+                            <Button
+                                severity="secondary"
+                                v-tooltip="{value: 'Transfer well contents to External sample indexing plate', showDelay: 500}"
+                                :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
+                                @click="transferSelectedWellsContents">
+                                <template #icon>
+                                    <IxMoveLayerDown />
+                                </template>
+                            </Button>
+                        </template>
+                    </PlateDiagram>
+                    <div v-else>
+                        <span class="text-gray-500">No source plate selected</span>
+                    </div>
+                </SplitterPanel>
+                <SplitterPanel class="flex justify-center overflow-scroll mt-10">
+                    <PlateDiagram
+                        :ref="plateLayout.setPlateDiagramRef"
+                        v-if="plateWithWellSpecs"
+                        v-model="plateWithWellSpecs"
+                        :plateType="plateWithWellSpecs.plateType"
+                        :sizeX="plateWithWellSpecs.sizeX"
+                        :sizeY="plateWithWellSpecs.sizeY"
+                        @well-range-selected="plateLayout.wellRangeSelected"
+                        @well-selection-cleared="plateLayout.wellSelectionCleared"
+                        @all-wells-selected="plateLayout.selectedAllWells"
+                        @well-contents-updated="plateLayout.updatedWellContents" >
+                        <template #header>
+                            {{ plateWithWellSpecs.name }}
+                        </template>
+                        <template #button1>
+                            <Button
+                                class="p-button-secondary"
+                                icon="pi pi-trash"
+                                v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
+                                :disabled="_.isEmpty(plateLayout.selectedWells.value)"
+                                @click="plateLayout.emptySelectedWells" />
+                        </template>
+                    </PlateDiagram>
+                </SplitterPanel>
+            </Splitter>
         </SplitterPanel>
     </Splitter>
 </template>
