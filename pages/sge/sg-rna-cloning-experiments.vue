@@ -21,8 +21,8 @@ const config = useRuntimeConfig()
 // }
 
 const rowActions = {
-    plates: {
-        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+    plate: {
+        label: (data: any) => { return `${data.plateId ? 1 : 0}`},
         action: (data: any) => {
             router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
@@ -36,7 +36,7 @@ const columnDefs = {
     technician: {
         path: 'technician.name',
     },
-    plates: {
+    plateId: {
         display: false,
     },
     name: {
@@ -44,13 +44,12 @@ const columnDefs = {
     },
 }
 const fieldDefs = {
-    plates: {
+    plateId: {
         display: false,
     },
 }
 const withClause = {
     technician: { columns: { name: true } },
-    plates: { columns: { id: true } },
 }
 
 </script>
