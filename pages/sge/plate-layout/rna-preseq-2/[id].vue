@@ -370,9 +370,9 @@ const transferSelectedWellsContents = async () => {
     } else if (selectedSourcePlate.value.plateType === 'rna-rt-storage' && (sourceWells.length * 4) !== destinationWells.length) {
         toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells (x4) in destination plate', life: 3000})
     } else {
-        // sort wells by x and inverse y coordinate to achieve the correct order
-        const sourceWellsSorted = _.sortBy(sourceWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
-        const destinationWellsSorted = _.sortBy(destinationWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
+        // sort wells by x and y coordinate to achieve the correct order
+        const sourceWellsSorted = _.sortBy(sourceWells, ['x', 'y'])
+        const destinationWellsSorted = _.sortBy(destinationWells, ['x', 'y'])
 
         const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
             const wellContents = well.data.wellContents
@@ -456,12 +456,11 @@ const transferSelectedWellsContents = async () => {
                         <template #button1>
                             <Button
                                 severity="secondary"
-                                v-tooltip="{value: sourcePlateWithWellSpecs.plateType === 'rna-rt-storage' ? 'Pool selected wells to PreSeq 2 plate' : 'Transfer selected wells to PreSeq 2 plate', showDelay: 500}"
+                                v-tooltip="{value: 'Transfer selected samples to PreSeq 2 plate', showDelay: 500}"
                                 :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
                                 @click="transferSelectedWellsContents" >
                                 <template #icon>
-                                    <HugeiconsLayerSendToBack v-if="sourcePlateWithWellSpecs.plateType === 'rna-rt-storage'" />
-                                    <IxMoveLayerDown v-else />
+                                    <IxMoveLayerDown />
                                 </template>
                             </Button>
                         </template>

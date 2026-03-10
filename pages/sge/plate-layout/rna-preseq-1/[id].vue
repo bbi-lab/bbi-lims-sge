@@ -224,7 +224,6 @@ const columnDefs = computed(() => {
             cycleId: { display: false },
             pcrExperimentId: { display: false },
             sgRnaCloningExperimentId: { display: false },
-            // snvLibCloningExperimentId: { display: false },
             sizeX: { display: false },
             sizeY: { display: false },
             wellsCount: { display: false },
@@ -374,9 +373,9 @@ const transferSelectedWellsContents = async () => {
     } else if (sourceWells.length * 4 !== destinationWells.length) {
         toast.add({severity: 'warn', summary: 'Number of selected wells in source plate does not match number of selected wells (x4) in destination plate', life: 3000})
     } else {
-        // sort wells by x and inverse y coordinate to achieve the correct order
-        const sourceWellsSorted = _.sortBy(sourceWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
-        const destinationWellsSorted = _.sortBy(destinationWells, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`)
+        // sort wells by x and y coordinate to achieve the correct order
+        const sourceWellsSorted = _.sortBy(sourceWells, ['x', 'y'])
+        const destinationWellsSorted = _.sortBy(destinationWells, ['x', 'y'])
 
         // add each source well contents to 4 destination wells (same x coordinate, y coordinate +/- 0.5)
         const wellContentsToAdd = _.flatten(_.map(sourceWellsSorted, (well, index) => {
@@ -448,7 +447,7 @@ const transferSelectedWellsContents = async () => {
                         <template #button1>
                             <Button
                                 severity="secondary"
-                                v-tooltip="{value: 'Transfer well contents to External sample indexing plate', showDelay: 500}"
+                                v-tooltip="{value: 'Transfer selected samples to PreSeq 1 plate', showDelay: 500}"
                                 :disabled="_.isEmpty(sourcePlateLayout?.selectedWells.value)"
                                 @click="transferSelectedWellsContents">
                                 <template #icon>
