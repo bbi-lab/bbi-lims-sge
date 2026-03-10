@@ -71,7 +71,7 @@ const rowActions = {
         },
         iconComponent: PhGridNineFill,
         iconPos: 'right',
-        tooltip: 'Plates',
+        tooltip: 'Layout',
     }
 }
 const addFieldDefs = {
