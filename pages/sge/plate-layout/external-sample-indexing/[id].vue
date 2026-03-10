@@ -45,6 +45,7 @@ watch (selectedSourcePlate, async (newValue) => {
                 selectionTableRecordIdPaths: [(wellable: any) => {
                     return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
+                syncedPlateWellSpecs: plateLayout.wellSpecs.value,
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
@@ -80,6 +81,7 @@ watch (selectedSourcePlate, async (newValue) => {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
                 selectionTableRecordIdPaths: ['indexPrimer.id'],
+                syncedPlateWellSpecs: plateLayout.wellSpecs.value,
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')

@@ -61,6 +61,7 @@ watch (selectedSourcePlateId, async (newValue) => {
         sourcePlateLayout.wellContentsDisplayConfig.value = {
             colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPrimer.name'), /(_F|_R)$/g, '')],
             selectionTableRecordIdPaths: ['homologyArmPrimer.id'],
+            syncedPlateWellSpecs: plateLayout.wellSpecs.value,
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'name'])
