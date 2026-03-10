@@ -34,6 +34,8 @@ const columnDefs = {
     wellsCount: { display: false },
     wellsWithContentCount: { display: false },
     wellsProcessedCount: { display: false },
+    pcrExperimentId: { display: false},
+    sgRnaCloningExperimentId: { display: false},
     filled: {
         index: 3,
         format: (data: any) => {

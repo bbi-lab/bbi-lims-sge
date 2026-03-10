@@ -3,7 +3,7 @@ import { uuid, varchar, text, integer, timestamp, doublePrecision, pgView, boole
 import { users } from "../user"
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from "./oligos"
 import { haPuc19Plasmids } from "./plasmid"
-import { haCloningExperiments, snvLibCloningExperiments } from "./plasmid-experiment"
+import { haCloningExperiments, snvLibCloningExperiments, sgRnaCloningExperiments } from "./plasmid-experiment"
 import { plates } from "./plate"
 import { wellContents, wellContentSources, wells } from "./well"
 import { pcrExperiments, pcrExperimentTargets } from "./pcr-experiment"
@@ -257,6 +257,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   wellsCount: smallint('wells_count'),
   wellsWithContentCount: smallint('wells_with_content_count'),
   wellsProcessedCount: smallint('wells_processed_count'),
+  sgRnaCloningExperimentId: varchar('sg_rna_cloning_experiment_id'),
+  pcrExperimentId: varchar('pcr_experiment_id'),
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
     ${plates.name},
@@ -271,7 +273,9 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
     count(distinct(${wells.id})) as wells_count,
     count(distinct(${wellContents.wellId})) as wells_with_content_count,
-    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count
+    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count,
+    ${sgRnaCloningExperiments.id} as sg_rna_cloning_experiment_id,
+    ${pcrExperiments.id} as pcr_experiment_id
     from ${plates}
     join ${wells} on ${eq(plates.id, wells.plateId)}
     left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
@@ -282,7 +286,8 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     left join ${targets} on ${eq(targets.id, transfectTargets.targetId)}
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
     left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)}
-    group by ${plates.id}, ${cycles.id}`
+    left join ${sgRnaCloningExperiments} on ${eq(plates.id, sgRnaCloningExperiments.plateId)}
+    group by ${plates.id}, ${cycles.id}, ${sgRnaCloningExperiments.id}, ${pcrExperiments.id}`
 )
 
 export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_samples', {
