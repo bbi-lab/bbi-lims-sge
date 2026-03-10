@@ -52,6 +52,7 @@ interface wellContentDisplayConfig {
     selectionTableRecordIdPaths?: (_.PropertyPath | Function)[] // array of paths or functions to retrieve ids from well contents that correspond to selection table record IDs
     symbol?: Function | null
     tooltip?: Function | null
+    syncedPlateWellSpecs?: WellSpecs | null
 }
 
 interface ExportPlateLayoutColumnConfig {
@@ -149,7 +150,9 @@ export const usePlateLayout = () => {
 
     const nextColorToUse = computed(() => {
         const colorCounts = _.countBy(_.values(_.filter(wellSpecs.value, 'color')), 'color')
-        const unusedColors = _.difference(VALID_WELL_COLORS, _.keys(colorCounts))
+        const syncedColorCounts = _.countBy(_.values(_.filter(wellContentsDisplayConfig.value?.syncedPlateWellSpecs, 'color')), 'color')
+
+        const unusedColors = _.difference(VALID_WELL_COLORS, _.keys(colorCounts ), _.keys(syncedColorCounts))
         unusedColors.forEach((color) => {
             colorCounts[color] = 0
         })
@@ -186,7 +189,8 @@ export const usePlateLayout = () => {
 
             // if well contents foreign keys have not changed, leave color unchanged
             let wellColor
-            const wellSpecWithSameContentsToColorBy = _.find(_.values(wellSpecs.value), (x) => _.isEqual(x.colorByValues, contentsToColorBy))
+            const wellSpecWithSameContentsToColorBy = _.find(_.values(wellContentsDisplayConfig.value?.syncedPlateWellSpecs), (x) => _.isEqual(x.colorByValues, contentsToColorBy)) ||
+                _.find(_.values(wellSpecs.value), (x) => _.isEqual(x.colorByValues, contentsToColorBy))
             if (existingWellSpec && _.isEqual(contentsToColorBy, existingWellSpec.colorByValues)) {
                 wellColor = existingWellSpec.color
             } else if (wellSpecWithSameContentsToColorBy) {
