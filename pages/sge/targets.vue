@@ -196,7 +196,7 @@ const fieldDefs: FieldDefinitions = {
         },
         events: {
             change: async (record: any, recordOld: any) => {
-                if (record?.regionId && (record.regionId != recordOld?.regionId)) {
+                if (recordOld && record?.regionId && (record.regionId != recordOld?.regionId)) {
                     const region = await RecordService.getRecord(`${config.public.apiBase}/regions`, record.regionId as string, {
                         gene: {
                             columns: {symbol: true}
