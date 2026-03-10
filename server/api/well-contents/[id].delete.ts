@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
         const transactionResult = await db.transaction(async (tx) => {
             await db.delete(wellContentSources).where(eq(wellContentSources.wellContentId, id))
             const deletedRecord = await deleteRecord(wellContents, id)
-
             return deletedRecord
         })
 

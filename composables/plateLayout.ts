@@ -2,7 +2,7 @@ import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
-import type { NucleicAcid } from "~/server/db/schema/sge/nucleic-acid"
+import type { Dna, Rna } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
@@ -17,7 +17,10 @@ type WellWithContents = Well & {
             homologyArmPrimer: HomologyArmPrimer
             preseq1Primer: preseq1Primer
             preseq2Primer: preseq2Primer
-            nucleicAcid: NucleicAcid & {
+            dna: Dna & {
+                pellet: Pellet
+            },
+            rna: Rna & {
                 pellet: Pellet
             },
         }
@@ -49,6 +52,7 @@ interface wellContentDisplayConfig {
     selectionTableRecordIdPaths?: (_.PropertyPath | Function)[] // array of paths or functions to retrieve ids from well contents that correspond to selection table record IDs
     symbol?: Function | null
     tooltip?: Function | null
+    syncedPlateWellSpecs?: WellSpecs | null
 }
 
 interface ExportPlateLayoutColumnConfig {
@@ -146,7 +150,9 @@ export const usePlateLayout = () => {
 
     const nextColorToUse = computed(() => {
         const colorCounts = _.countBy(_.values(_.filter(wellSpecs.value, 'color')), 'color')
-        const unusedColors = _.difference(VALID_WELL_COLORS, _.keys(colorCounts))
+        const syncedColorCounts = _.countBy(_.values(_.filter(wellContentsDisplayConfig.value?.syncedPlateWellSpecs, 'color')), 'color')
+
+        const unusedColors = _.difference(VALID_WELL_COLORS, _.keys(colorCounts ), _.keys(syncedColorCounts))
         unusedColors.forEach((color) => {
             colorCounts[color] = 0
         })
@@ -183,7 +189,8 @@ export const usePlateLayout = () => {
 
             // if well contents foreign keys have not changed, leave color unchanged
             let wellColor
-            const wellSpecWithSameContentsToColorBy = _.find(_.values(wellSpecs.value), (x) => _.isEqual(x.colorByValues, contentsToColorBy))
+            const wellSpecWithSameContentsToColorBy = _.find(_.values(wellContentsDisplayConfig.value?.syncedPlateWellSpecs), (x) => _.isEqual(x.colorByValues, contentsToColorBy)) ||
+                _.find(_.values(wellSpecs.value), (x) => _.isEqual(x.colorByValues, contentsToColorBy))
             if (existingWellSpec && _.isEqual(contentsToColorBy, existingWellSpec.colorByValues)) {
                 wellColor = existingWellSpec.color
             } else if (wellSpecWithSameContentsToColorBy) {
@@ -301,7 +308,7 @@ export const usePlateLayout = () => {
         return newRecords
     }
 
-    const poolPreSeq1PlateToSelectedWells = async (preseq1PlateId: string) => {
+    const poolDnaPreSeq1PlateToSelectedWells = async (dnaPreSeq1PlateId: string) => {
         let recordsToAdd: {
             wellId: string;
             wellableId: string;
@@ -311,7 +318,7 @@ export const usePlateLayout = () => {
         // sort wells by x and inverse y coordinate to achieve the correct order
         const sortedWellIds = _.map(_.sortBy(selectedWells.value, (well) => `${_.padStart(_.toString(well.x), 2, '0')}_${(_.toString(100-well.y))}`), 'id')
 
-        const preseq1Plate = await RecordService.getRecord(`${config.public.apiBase}/plates`, preseq1PlateId, {
+        const dnaPreSeq1Plate = await RecordService.getRecord(`${config.public.apiBase}/plates`, dnaPreSeq1PlateId, {
             wells: {
                 columns: {id: true},
                 with: {
@@ -320,7 +327,7 @@ export const usePlateLayout = () => {
                         with: {
                             wellable: {
                                 with: {
-                                    nucleicAcid: {
+                                    dna: {
                                         columns: {id: true},
                                         with: {
                                             pellet: {
@@ -336,24 +343,24 @@ export const usePlateLayout = () => {
             }
         }) as PlateWithWellContents
 
-        type NucleicAcidWithPellet = NucleicAcid & {pellet: Pellet}
-        type NucleicAcidWithPelletAndWellIds = NucleicAcidWithPellet & {wellIds: String[]}
+        type DnaWithPellet = Dna & {pellet: Pellet}
+        type DnaWithPelletAndWellIds = DnaWithPellet & {wellIds: String[]}
 
-        const pooledNucleicAcids = _.sortBy(_.values(preseq1Plate.wells.reduce((acc, well: WellWithContents) => {
-            const nucleicAcid = _.get(well, ['wellContents', 0, 'wellable', 'nucleicAcid'])
-            if (nucleicAcid?.id) {
-                const existingWellIds = _.get(acc, [nucleicAcid.id, 'wellIds'], [])
-                _.set(acc, nucleicAcid.id, {...nucleicAcid, wellIds: [...existingWellIds, well.id]})
+        const pooledDna = _.sortBy(_.values(dnaPreSeq1Plate.wells.reduce((acc, well: WellWithContents) => {
+            const dna = _.get(well, ['wellContents', 0, 'wellable', 'dna'])
+            if (dna?.id) {
+                const existingWellIds = _.get(acc, [dna.id, 'wellIds'], [])
+                _.set(acc, dna.id, {...dna, wellIds: [...existingWellIds, well.id]})
             }
             return acc
         }, {})), (x) => {
             return x.pellet.name
-        }) as NucleicAcidWithPelletAndWellIds[]
+        }) as DnaWithPelletAndWellIds[]
 
-        if (pooledNucleicAcids.length > sortedWellIds.length) {
-            throw new Error('Number of selected wells is less than number of nucleic acids in the plate')
+        if (pooledDna.length > sortedWellIds.length) {
+            throw new Error('Number of selected wells is less than number of DNA in the plate')
         } else {
-            const wellContentsAndSources = _.map(pooledNucleicAcids, (value, index) => {
+            const wellContentsAndSources = _.map(pooledDna, (value, index) => {
                 const userId = (user.value as User)?.id || null
                 return {
                     wellId: sortedWellIds[index],
@@ -441,7 +448,7 @@ export const usePlateLayout = () => {
         // assign content to wells
         assignIdToSelectedWells,
         addWellContents,
-        poolPreSeq1PlateToSelectedWells,
+        poolDnaPreSeq1PlateToSelectedWells,
 
         // export plate layout
         exportPlateLayout,

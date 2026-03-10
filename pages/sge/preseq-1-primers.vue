@@ -22,27 +22,20 @@ watch(() => route.query, async (newValue, oldValue) => {
 }, { immediate: true })
 
 const displayWithClause = Object.freeze({
-    target: {
-        columns: {
-            name: true
-        },
+    preseq1PrimerTargets: {
+        columns: {},
         with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
+            target: {
                 columns: {
                     name: true
                 },
                 with: {
-                    gene: {
+                    project: {
                         columns: {
-                            symbol: true
+                            name: true
                         }
-                    }
-                }
+                    },
+                },
             },
         },
     },
@@ -76,20 +69,23 @@ const columnDefs = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
+    preseq1PrimerTargets: {
+        header: 'Target(s)',
         format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+            return _.map(x.preseq1PrimerTargets, 'target.name')
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'preseq1PrimerTargets.displayValue',
         index: 2,
-    },
-    project: {
-        format: (x: any) => {
-            return x.target?.project?.name || ''
+        exportValue: (x: any) => {
+            return _.map(x.preseq1PrimerTargets, 'target.name').join(', ')
         },
-        path: 'project.displayValue',
+    },
+    projects: {
+        header: 'Project(s)',
+        format: (x: any) => {
+            return _.uniq(_.map(x.preseq1PrimerTargets, 'target.project.name')).join(', ')
+        },
+        path: 'projects.displayValue',
         index: 3,
     },
     wellContents: {
@@ -111,16 +107,42 @@ const columnDefs = {
 }
 
 const fieldDefs: FieldDefinitions = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'preseq1PrimerTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['name'],
+                        valueField: 'id',
+                        displayFields: ['name'],
+                        dropdown: true,
+                    },
+                },
+            ]
         }
+    },
+}
+const formWithClause = {
+    preseq1PrimerTargets: {
+        columns: {
+            id: true,
+            targetId: true,
+        },
+        with: {
+            target: {
+                columns: {
+                    name: true
+                },
+            },
+        },
     },
 }
 </script>
@@ -138,6 +160,7 @@ const fieldDefs: FieldDefinitions = {
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
@@ -160,6 +183,7 @@ const fieldDefs: FieldDefinitions = {
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

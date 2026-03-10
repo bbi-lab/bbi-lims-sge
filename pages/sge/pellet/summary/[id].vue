@@ -6,10 +6,11 @@ import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 const route = useRoute()
-
-type NucleicAcidPcrEntry = Record<string, {plateName: string, plateType: string, plateTypeLabel: string, wells: {x: number, y: number}[]}>
+import { onMounted, ref } from 'vue'
+type PcrEntry = Record<string, {plateName: string, plateType: string, plateTypeLabel: string, wells: {x: number, y: number}[]}>
 const pellet = ref()
-const pcrEntries = ref<NucleicAcidPcrEntry>({})
+const dnaPcrEntries = ref<PcrEntry>({})
+const rnaPcrEntries = ref<PcrEntry>({})
 
 onMounted (async () => {
     pellet.value = await RecordService.getRecord(
@@ -53,7 +54,7 @@ onMounted (async () => {
                     }
                 }
             },
-            nucleicAcid: {
+            dna: {
                 with: {
                     extractionExperiment: {
                         with: {
@@ -64,6 +65,71 @@ onMounted (async () => {
                             }
                         },
                     },
+                    wellable: {
+                        with: {
+                            wellContents: {
+                                with: {
+                                    well: {
+                                        columns: {
+                                            id: true,
+                                            x: true,
+                                            y: true,
+                                        },
+                                        with: {
+                                            plate: {
+                                                columns: {
+                                                    id: true,
+                                                    name: true,
+                                                    plateType: true,
+                                                }
+                                            }
+                                        }
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }
+            },
+            rna: {
+                with: {
+                    extractionExperiment: {
+                        with: {
+                            technician: {
+                                columns: {
+                                    name: true
+                                }
+                            }
+                        },
+                    },
+                    wellable: {
+                        with: {
+                            wellContents: {
+                                with: {
+                                    well: {
+                                        columns: {
+                                            id: true,
+                                            x: true,
+                                            y: true,
+                                        },
+                                        with: {
+                                            plate: {
+                                                columns: {
+                                                    id: true,
+                                                    name: true,
+                                                    plateType: true,
+                                                }
+                                            }
+                                        }
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }
+            },
+            wellable: {
+                with: {
                     wellContents: {
                         with: {
                             well: {
@@ -84,32 +150,12 @@ onMounted (async () => {
                             },
                         },
                     },
-                }
-            },
-            wellContents: {
-                with: {
-                    well: {
-                        columns: {
-                            id: true,
-                            x: true,
-                            y: true,
-                        },
-                        with: {
-                            plate: {
-                                columns: {
-                                    id: true,
-                                    name: true,
-                                    plateType: true,
-                                }
-                            }
-                        }
-                    },
                 },
             },
         }
     )
 
-    pcrEntries.value = _.reduce(pellet.value.nucleicAcid?.wellContents || [], (acc: NucleicAcidPcrEntry, wellContent) => {
+    dnaPcrEntries.value = _.reduce(pellet.value.dna?.wellContents || [], (acc: PcrEntry, wellContent) => {
         const plateId = wellContent.well.plate.id
         if (!_.has(acc, plateId)) {
             _.set(acc, plateId, {
@@ -121,7 +167,22 @@ onMounted (async () => {
         } else {
             acc[plateId].wells.push(_.pick(wellContent.well, ['x', 'y']))
         }
-        return acc as NucleicAcidPcrEntry
+        return acc as PcrEntry
+    }, {})
+
+    rnaPcrEntries.value = _.reduce(pellet.value.rna?.wellContents || [], (acc: PcrEntry, wellContent) => {
+        const plateId = wellContent.well.plate.id
+        if (!_.has(acc, plateId)) {
+            _.set(acc, plateId, {
+                plateName: wellContent.well.plate.name,
+                plateType: wellContent.well.plate.plateType,
+                plateTypeLabel: ENUM_LOOKUPS.plates.plateType[wellContent.well.plate.plateType].label,
+                wells: [_.pick(wellContent.well, ['x', 'y'])]
+            })
+        } else {
+            acc[plateId].wells.push(_.pick(wellContent.well, ['x', 'y']))
+        }
+        return acc as PcrEntry
     }, {})
 
 })
@@ -174,61 +235,100 @@ onMounted (async () => {
             </div>
         </div>
         <div class="space-x-4 space-y-2">
-            <div class="text-lg font-bold">Nucleic Acid:</div>
+            <div class="text-lg font-bold">DNA:</div>
             <div>
-                <strong>Extracted:</strong> {{ pellet.nucleicAcid.id ? 'Yes' : 'No' }}
+                <strong>Extracted:</strong> {{ pellet.dna?.id ? 'Yes' : 'No' }}
             </div>
-            <template v-if="pellet.nucleicAcid.id">
+            <template v-if="pellet.dna?.id">
                 <div>
-                    <strong>Extraction Experiment:</strong> {{ pellet.nucleicAcid.extractionExperiment?.name }}
+                    <strong>Extraction Experiment:</strong> {{ pellet.dna.extractionExperiment?.name }}
                 </div>
                 <div>
-                    <strong>Extracted on:</strong> {{ pellet.nucleicAcid.extractionExperiment?.extractedOn ? new Date(pellet.nucleicAcid.extractionExperiment.extractedOn).toLocaleDateString() : '' }}
+                    <strong>Extracted on:</strong> {{ pellet.dna.extractionExperiment?.extractedOn ? new Date(pellet.dna.extractionExperiment.extractedOn).toLocaleDateString() : '' }}
                 </div>
                 <div>
-                    <strong>Extracted by:</strong> {{ pellet.nucleicAcid.extractionExperiment?.technician?.name }}
+                    <strong>Extracted by:</strong> {{ pellet.dna.extractionExperiment?.technician?.name }}
                 </div>
                 <div>
-                    <strong>DNA concentration:</strong> {{ pellet.nucleicAcid.dnaConcentration ? `${pellet.nucleicAcid.dnaConcentration} ng/µL` : '' }}
+                    <strong>Concentration:</strong> {{ pellet.dna.concentration ? `${pellet.dna.concentration} ng/µL` : '' }}
                 </div>
                 <div>
-                    <strong>DNA volume:</strong> {{ pellet.nucleicAcid.dnaVolume ? `${pellet.nucleicAcid.dnaVolume} µL` : '' }}
+                    <strong>Volume:</strong> {{ pellet.dna.volume ? `${pellet.dna.volume} µL` : '' }}
                 </div>
                 <div>
-                    <strong>DNA yield:</strong> {{ pellet.nucleicAcid.dnaYield ? `${pellet.nucleicAcid.dnaYield} ng` : '' }}
+                    <strong>Yield:</strong> {{ pellet.dna.yield ? `${pellet.dna.yield} ng` : '' }}
                 </div>
                 <div>
-                    <strong>RNA concentration:</strong> {{ pellet.nucleicAcid.rnaConcentration ? `${pellet.nucleicAcid.rnaConcentration} ng/µL` : '' }}
+                    <strong>Protocol:</strong> {{ pellet.dna.protocol }}
                 </div>
                 <div>
-                    <strong>RNA volume:</strong> {{ pellet.nucleicAcid.rnaVolume ? `${pellet.nucleicAcid.rnaVolume} µL` : '' }}
+                    <strong>Notes:</strong> {{ pellet.dna.notes }}
                 </div>
-                <div>
-                    <strong>RNA yield:</strong> {{ pellet.nucleicAcid.rnaYield ? `${pellet.nucleicAcid.rnaYield} ng` : '' }}
-                </div>
-                <div>
-                    <strong>Protocol:</strong> {{ pellet.nucleicAcid.protocol }}
-                </div>
-                <div>
-                    <strong>Notes:</strong> {{ pellet.nucleicAcid.notes }}
+                <div v-if="!_.isEmpty(pellet.dna?.wellContents)">
+                    <div class="text-lg font-bold">PCR:</div>
+                    <hr>
+                    <div v-for="pcrEntry of _.sortBy(_.values(dnaPcrEntries), 'plateType')">
+                        <div>
+                            <strong>Plate:</strong> {{ pcrEntry.plateName }}
+                        </div>
+                        <div>
+                            <strong>Plate type:</strong> {{ pcrEntry.plateTypeLabel }}
+                        </div>
+                        <div>
+                            <strong>Wells:</strong> {{ pcrEntry.wells.map((well) => `${wellCoordinateToChar(well.y)}${well.x}`).join(', ') }}
+                        </div>
+                        <hr>
+                    </div>
                 </div>
             </template>
         </div>
-        <div v-if="!_.isEmpty(pellet.nucleicAcid?.wellContents)" class="space-x-4 space-y-2">
-            <div class="text-lg font-bold">PCR:</div>
-            <hr>
-            <div v-for="pcrEntry of _.sortBy(_.values(pcrEntries), 'plateType')">
-                <div>
-                    <strong>Plate:</strong> {{ pcrEntry.plateName }}
-                </div>
-                <div>
-                    <strong>Plate type:</strong> {{ pcrEntry.plateTypeLabel }}
-                </div>
-                <div>
-                    <strong>Wells:</strong> {{ pcrEntry.wells.map((well) => `${wellCoordinateToChar(well.y)}${well.x}`).join(', ') }}
-                </div>
-                <hr>
+        <div class="space-x-4 space-y-2">
+            <div class="text-lg font-bold">RNA:</div>
+            <div>
+                <strong>Extracted:</strong> {{ pellet.rna?.id ? 'Yes' : 'No' }}
             </div>
+            <template v-if="pellet.rna?.id">
+                <div>
+                    <strong>Extraction Experiment:</strong> {{ pellet.rna.extractionExperiment?.name }}
+                </div>
+                <div>
+                    <strong>Extracted on:</strong> {{ pellet.rna.extractionExperiment?.extractedOn ? new Date(pellet.rna.extractionExperiment.extractedOn).toLocaleDateString() : '' }}
+                </div>
+                <div>
+                    <strong>Extracted by:</strong> {{ pellet.rna.extractionExperiment?.technician?.name }}
+                </div>
+                <div>
+                    <strong>Concentration:</strong> {{ pellet.rna.concentration ? `${pellet.rna.concentration} ng/µL` : '' }}
+                </div>
+                <div>
+                    <strong>Volume:</strong> {{ pellet.rna.volume ? `${pellet.rna.volume} µL` : '' }}
+                </div>
+                <div>
+                    <strong>Yield:</strong> {{ pellet.rna.yield ? `${pellet.rna.yield} ng` : '' }}
+                </div>
+                <div>
+                    <strong>Protocol:</strong> {{ pellet.rna.protocol }}
+                </div>
+                <div>
+                    <strong>Notes:</strong> {{ pellet.rna.notes }}
+                </div>
+                <div v-if="!_.isEmpty(pellet.rna?.wellContents)">
+                    <div class="text-lg font-bold">PCR:</div>
+                    <hr>
+                    <div v-for="pcrEntry of _.sortBy(_.values(rnaPcrEntries), 'plateType')">
+                        <div>
+                            <strong>Plate:</strong> {{ pcrEntry.plateName }}
+                        </div>
+                        <div>
+                            <strong>Plate type:</strong> {{ pcrEntry.plateTypeLabel }}
+                        </div>
+                        <div>
+                            <strong>Wells:</strong> {{ pcrEntry.wells.map((well) => `${wellCoordinateToChar(well.y)}${well.x}`).join(', ') }}
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </template>

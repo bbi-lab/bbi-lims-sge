@@ -3,10 +3,10 @@ import { uuid, varchar, text, integer, timestamp, doublePrecision, pgView, boole
 import { users } from "../user"
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, snvLibAmpProducts, snvLibGibsonProducts, snvLibLinProducts } from "./oligos"
 import { haPuc19Plasmids } from "./plasmid"
-import { haCloningExperiments, snvLibCloningExperiments } from "./plasmid-experiment"
+import { haCloningExperiments, snvLibCloningExperiments, sgRnaCloningExperiments } from "./plasmid-experiment"
 import { plates } from "./plate"
 import { wellContents, wellContentSources, wells } from "./well"
-import { pcrExperiments } from "./pcr-experiment"
+import { pcrExperiments, pcrExperimentTargets } from "./pcr-experiment"
 import { transfectExperiments, transfectTargets } from "./transfect-experiment"
 import { targets } from "./target"
 import { cycles } from "./cycle"
@@ -244,9 +244,6 @@ const plateTypesCte = `with plate_types(plate_type_value, plate_type_label, plat
 
 export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   id: uuid('id'),
-  pcrExperimentId: uuid('pcr_experiment_id'),
-  sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id'),
-  // snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id'),
   name: varchar('name', { length: 255 }),
   sizeX: smallint('size_x'),
   sizeY: smallint('size_y'),
@@ -260,10 +257,10 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
   wellsCount: smallint('wells_count'),
   wellsWithContentCount: smallint('wells_with_content_count'),
   wellsProcessedCount: smallint('wells_processed_count'),
+  sgRnaCloningExperimentId: varchar('sg_rna_cloning_experiment_id'),
+  pcrExperimentId: varchar('pcr_experiment_id'),
 }).as(sql`${sql.raw(plateTypesCte)} select
     ${plates.id},
-    ${plates.pcrExperimentId},
-    ${plates.sgRnaCloningExperimentId},
     ${plates.name},
     ${plates.sizeX},
     ${plates.sizeY},
@@ -276,17 +273,21 @@ export const viewPlatesWithWellCounts = pgView('view_plates_with_well_counts', {
     (select distinct on (plate_type_value) plate_type_label from plate_types where plate_type_value = ${plates.plateType}) as plate_type_label,
     count(distinct(${wells.id})) as wells_count,
     count(distinct(${wellContents.wellId})) as wells_with_content_count,
-    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count
+    count(distinct(${wellContentSources.sourceWellId})) as wells_processed_count,
+    ${sgRnaCloningExperiments.id} as sg_rna_cloning_experiment_id,
+    ${pcrExperiments.id} as pcr_experiment_id
     from ${plates}
     join ${wells} on ${eq(plates.id, wells.plateId)}
     left join ${wellContentSources} on ${eq(wells.id, wellContentSources.sourceWellId)}
     left join ${wellContents} on ${eq(wells.id, wellContents.wellId)}
-    left join ${pcrExperiments} on ${eq(plates.pcrExperimentId, pcrExperiments.id)}
-    left join ${transfectTargets} on ${eq(pcrExperiments.transfectTargetId, transfectTargets.id)}
+    left join ${pcrExperiments} on ${eq(plates.id, pcrExperiments.plateId)}
+    left join ${pcrExperimentTargets} on ${eq(pcrExperiments.id, pcrExperimentTargets.pcrExperimentId)}
+    left join ${transfectTargets} on ${eq(pcrExperimentTargets.transfectTargetId, transfectTargets.id)}
     left join ${targets} on ${eq(targets.id, transfectTargets.targetId)}
     left join ${transfectExperiments} on ${eq(transfectTargets.experimentId, transfectExperiments.id)}
     left join ${cycles} on ${eq(transfectExperiments.cycleId, cycles.id)}
-    group by ${plates.id}, ${cycles.id}`
+    left join ${sgRnaCloningExperiments} on ${eq(plates.id, sgRnaCloningExperiments.plateId)}
+    group by ${plates.id}, ${cycles.id}, ${sgRnaCloningExperiments.id}, ${pcrExperiments.id}`
 )
 
 export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_samples', {
@@ -294,7 +295,8 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   sampleName: varchar('sample_name'),
   sequencingRunId: uuid('sequencing_run_id'),
   sampleType: varchar('sample_type', { enum: ['internal', 'external'] }),
-  nucleicAcidId: uuid('nucleic_acid_id'),
+  dnaId: uuid('dna_id'),
+  rnaId: uuid('rna_id'),
   indexPrimer1Id: uuid('index_primer_1_id'),
   indexPrimer2Id: uuid('index_primer_2_id'),
   indexPrimer1Label: varchar('index_primer_1_label'),
@@ -311,10 +313,15 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   createdAt: timestamp('created_at'),
 }).as(sql`SELECT
   sequencing_run_samples.id AS id,
-  pellets.name AS sample_name,
+  CASE
+    WHEN dna_pellets.name IS NOT NULL THEN dna_pellets.name || '_DNA'
+    WHEN rna_pellets.name IS NOT NULL THEN rna_pellets.name || '_RNA'
+    ELSE null
+  END AS sample_name,
   sequencing_run_id,
   'internal' AS sample_type,
-  nucleic_acid_id,
+  dna_id,
+  rna_id,
   NULL AS external_sample_id,
   index_primer_1_id,
   index_primer_2_id,
@@ -337,19 +344,22 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   sequencing_run_samples.notes AS notes,
   created_at
   FROM sequencing_run_samples
-  JOIN nucleic_acids ON sequencing_run_samples.nucleic_acid_id = nucleic_acids.id
-  JOIN pellets ON nucleic_acids.pellet_id = pellets.id
-  JOIN index_primers AS primer1 ON sequencing_run_samples.index_primer_1_id = primer1.id
-  JOIN index_primers AS primer2 ON sequencing_run_samples.index_primer_2_id = primer2.id
-  JOIN wells ON sequencing_run_samples.source_well_id = wells.id
-  JOIN plates ON wells.plate_id = plates.id
+  LEFT JOIN dna ON sequencing_run_samples.dna_id = dna.id
+  LEFT JOIN rna ON sequencing_run_samples.rna_id = rna.id
+  LEFT JOIN pellets AS dna_pellets ON dna.pellet_id = dna_pellets.id
+  LEFT JOIN pellets AS rna_pellets ON rna.pellet_id = rna_pellets.id
+  LEFT JOIN index_primers AS primer1 ON sequencing_run_samples.index_primer_1_id = primer1.id
+  LEFT JOIN index_primers AS primer2 ON sequencing_run_samples.index_primer_2_id = primer2.id
+  LEFT JOIN wells ON sequencing_run_samples.source_well_id = wells.id
+  LEFT JOIN plates ON wells.plate_id = plates.id
   UNION
   SELECT
   sequencing_run_external_samples.id AS id,
   external_samples.name AS sample_name,
   sequencing_run_id,
   'external' AS sample_type,
-  NULL AS nucleic_acid_id,
+  NULL AS dna_id,
+  NULL AS rna_id,
   external_sample_id,
   index_primer_1_id,
   index_primer_2_id,
@@ -359,13 +369,13 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   wells.x AS source_well_x,
   wells.y AS source_well_y,
   plates.name AS source_plate_name,
-  custom_index_seq_1,
-  custom_index_seq_2,
+  sequencing_run_external_samples.custom_index_seq_1 as custom_index_seq_1,
+  sequencing_run_external_samples.custom_index_seq_2 as custom_index_seq_2,
   million_reads_required,
   CASE
-    WHEN (index_primer_1_id != NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(custom_index_seq_1), '') <> '' AND COALESCE(TRIM(custom_index_seq_2), '') <> '') THEN 'Y151;I10;I10;Y151'
-    WHEN (index_primer_1_id != NULL AND index_primer_2_id = NULL) OR (COALESCE(TRIM(custom_index_seq_1), '') <> '' AND COALESCE(TRIM(custom_index_seq_2), '') = '') THEN 'Y151;I10;N10;Y151'
-    WHEN (index_primer_1_id = NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(custom_index_seq_1), '') = '' AND COALESCE(TRIM(custom_index_seq_2), '') <> '') THEN 'Y151;N10;I10;Y151'
+    WHEN (index_primer_1_id != NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') <> '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') <> '') THEN 'Y151;I10;I10;Y151'
+    WHEN (index_primer_1_id != NULL AND index_primer_2_id = NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') <> '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') = '') THEN 'Y151;I10;N10;Y151'
+    WHEN (index_primer_1_id = NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') = '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') <> '') THEN 'Y151;N10;I10;Y151'
   ELSE
     NULL
   END AS override_cycles,

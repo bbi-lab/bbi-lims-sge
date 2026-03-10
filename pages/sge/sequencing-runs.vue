@@ -38,6 +38,9 @@ const fieldDefs: FieldDefinitions = {
     samples: {
         display: false,
     },
+    externalSamples: {
+        display: false,
+    },
 }
 const rowActions = {
     samples: {

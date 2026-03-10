@@ -82,15 +82,17 @@ const loadPlate = async () => {
         wells: _.values(plateLayout.wellSpecs.value),
     }
 
-    pcrExperiment.value = await RecordService.getRecord(
+    pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
-        plateWithWellSpecs.value.pcrExperimentId as string,
         {
             transfectTarget: {
                 columns: {id: true},
             }
+        },
+        {
+            '==': [{'var': 'plateId'}, plateWithWellSpecs.value.id],
         }
-    )
+    ))
 }
 
 const displayWithClause = computed(() => {
@@ -269,7 +271,7 @@ const rowActions = {
                 if (selectionTableName.value === 'nucleic-acids') {
                     await plateLayout.assignIdToSelectedWells(data.id)
                 } else if (selectionTableName.value === 'view-plates-with-well-counts') {
-                    await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
+                    // await plateLayout.poolPreSeq1PlateToSelectedWells(data.id)
                 }
             }
         },

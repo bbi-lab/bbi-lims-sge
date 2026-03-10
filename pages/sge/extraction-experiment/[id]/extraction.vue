@@ -1,28 +1,40 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { RecordService } from '~/utils/service/RecordService'
-import { type NucleicAcid } from '~/server/db/schema/sge/nucleic-acid'
+import type { Dna, Rna } from '~/server/db/schema/sge/nucleic-acid'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
 const pelletsCrudTable = useCrudTable()
-const nucleicAcidsCrudTable = useCrudTable()
+const dnaCrudTable = useCrudTable()
+const rnaCrudTable = useCrudTable()
 const showPelletsFromAllDays = ref(false)
+const protocol = ref('AllPrep')
 
 const pelletsWhereClause = computed(() => {
-    return showPelletsFromAllDays.value ? {'==':[{'var': 'nucleicAcid'}, null]} :
-    {
-        'and':[
-            {'==':[{'var': 'nucleicAcid'}, null]},
-            {'in':[{'var': 'harvestDay'}, [5, 13]]},
-        ]
-    }
+    return showPelletsFromAllDays.value ?
+        {
+            'and':[
+                {'==':[{'var': 'dna'}, null]},
+                {'==':[{'var': 'rna'}, null]},
+            ]
+        } :
+        {
+            'and':[
+                {'==':[{'var': 'dna'}, null]},
+                {'==':[{'var': 'rna'}, null]},
+                {'in':[{'var': 'harvestDay'}, [5, 13]]},
+            ]
+        }
 })
 const extractionExperiment = ref()
-const showNucleicAcidEditDialog = computed(() => {
-    return nucleicAcidsCrudTable.state.showEditForm || nucleicAcidsCrudTable.state.showMultipleEditForm
+const showDnaEditDialog = computed(() => {
+    return dnaCrudTable.state.showEditForm || dnaCrudTable.state.showMultipleEditForm
+})
+const showRnaEditDialog = computed(() => {
+    return rnaCrudTable.state.showEditForm || rnaCrudTable.state.showMultipleEditForm
 })
 
 onMounted(async() => {
@@ -31,32 +43,62 @@ onMounted(async() => {
 })
 
 const extractFromSelectedPellets = async () => {
-    const nucleicAcidsToAdd = _.map(pelletsCrudTable.tableRef.value.selectedRecords, (pellet) => {
+    const dnaToAdd = ['AllPrep', 'DNeasy'].includes(protocol.value) ? _.map(pelletsCrudTable.tableRef.value.selectedRecords, (pellet) => {
         return {
             pelletId: pellet.id,
             extractionExperimentId: route.params.id,
+            protocol: protocol.value,
         }
-    })
+    }) : []
+    const rnaToAdd =  ['AllPrep', 'RNeasy'].includes(protocol.value) ? _.map(pelletsCrudTable.tableRef.value.selectedRecords, (pellet) => {
+        return {
+            pelletId: pellet.id,
+            extractionExperimentId: route.params.id,
+            protocol: protocol.value,
+        }
+    }) : []
     try {
-        const nucleicAcidsAdded = await RecordService.addRecords(`${config.public.apiBase}/nucleic-acids`, nucleicAcidsToAdd) as NucleicAcid[]
-        if (!_.isEmpty(nucleicAcidsAdded)) {
+        const dnaAdded = !_.isEmpty(dnaToAdd) ? await RecordService.addRecords(`${config.public.apiBase}/dna`, dnaToAdd) as Dna[] : []
+        if (!_.isEmpty(dnaAdded)) {
             toast.add({
                 severity: 'success',
-                summary: 'Nucleic acids added',
-                detail: `${_.size(nucleicAcidsAdded)} nucleic acids added`,
+                summary: 'DNA added',
+                detail: `${_.size(dnaAdded)} DNA records added`,
                 life: 3000,
             })
-            // add nucleic acids to nucleic acids table and remove from pellets table
-            nucleicAcidsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(nucleicAcidsAdded, 'id'))
-            _.forEach(nucleicAcidsAdded, (x) => {
+            // add dna to dna table and remove from pellets table
+            dnaCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(dnaAdded, 'id'))
+            _.forEach(dnaAdded, (x) => {
                 pelletsCrudTable.tableRef.value.removeRecordId(x.pelletId)
             })
             pelletsCrudTable.tableRef.value.selectedRecords = []
-        } else {
+        } else if (!_.isEmpty(dnaToAdd)) {
             toast.add({
                 severity: 'error',
-                summary: 'Error adding nucleic acids',
-                detail: `Failed to add nucleic acids`,
+                summary: 'Error adding DNA',
+                detail: `Failed to add DNA records`,
+                life: 3000,
+            })
+        }
+        const rnaAdded = !_.isEmpty(rnaToAdd) ? await RecordService.addRecords(`${config.public.apiBase}/rna`, rnaToAdd) as Rna[] : []
+        if (!_.isEmpty(rnaAdded)) {
+            toast.add({
+                severity: 'success',
+                summary: 'RNA added',
+                detail: `${_.size(rnaAdded)} RNA records added`,
+                life: 3000,
+            })
+            // add dna to dna table and remove from pellets table
+            rnaCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(rnaAdded, 'id'))
+            _.forEach(rnaAdded, (x) => {
+                pelletsCrudTable.tableRef.value.removeRecordId(x.pelletId)
+            })
+            pelletsCrudTable.tableRef.value.selectedRecords = []
+        } else if (!_.isEmpty(rnaToAdd)) {
+            toast.add({
+                severity: 'error',
+                summary: 'Error adding RNA',
+                detail: `Failed to add RNA records`,
                 life: 3000,
             })
         }
@@ -70,7 +112,7 @@ const extractFromSelectedPellets = async () => {
     }
 }
 
-const didDeleteMultipleNucleicAcids = (event: any[]) => {
+const didDeleteMultipleDnaRna = (event: any[]) => {
     pelletsCrudTable.tableRef.value.addOrRefreshRecordIds(_.map(event, 'pelletId'))
 }
 const pelletsWithClause = Object.freeze({
@@ -104,7 +146,12 @@ const pelletsWithClause = Object.freeze({
             }
         }
     },
-    nucleicAcid: {
+    dna: {
+        columns: {
+            id: true
+        }
+    },
+    rna: {
         columns: {
             id: true
         }
@@ -128,14 +175,14 @@ const pelletsColumnDefs = {
     d3Confluency: {display: false},
 }
 
-const nucleicAcidsWithClause = {
+const dnaRnaWithClause = {
     pellet: {
         columns: {
             name: true,
         }
     }
 }
-const nucleicAcidsColumnDefs = {
+const dnaRnaColumnDefs = {
     name: {
         path: 'pellet.name',
         index: 0,
@@ -149,26 +196,17 @@ const nucleicAcidsColumnDefs = {
     pelletId: {
         display: false,
     },
-    dnaConcentration: {
-        header: 'DNA conc (ng/μL)',
+    concentration: {
+        header: 'Conc (ng/μL)',
     },
-    dnaVolume: {
-        header: 'DNA vol (μL)',
+    volume: {
+        header: 'Vol (μL)',
     },
-    dnaYield: {
-        header: 'DNA yield (μg)',
-    },
-    rnaConcentration: {
-        header: 'RNA conc (ng/μL)',
-    },
-    rnaVolume: {
-        header: 'RNA vol (μL)',
-    },
-    rnaYield: {
-        header: 'RNA yield (μg)',
+    yield: {
+        header: 'Yield (μg)',
     },
 }
-const nucleicAcidFieldDefs: FieldDefinitions = {
+const dnaRnaFieldDefs: FieldDefinitions = {
     extractionExperimentId: {
         display: false,
     },
@@ -184,23 +222,14 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
             inputClass: 'w-80',
         }
     },
-    dnaConcentration: {
-        label: 'DNA concentration (ng/μL)',
+    concentration: {
+        label: 'Concentration (ng/μL)',
     },
-    dnaVolume: {
-        label: 'DNA volume (μL)',
+    volume: {
+        label: 'Volume (μL)',
     },
-    dnaYield: {
-        label: 'DNA yield (μg)',
-    },
-    rnaConcentration: {
-        label: 'RNA concentration (ng/μL)',
-    },
-    rnaVolume: {
-        label: 'RNA volume (μL)',
-    },
-    rnaYield: {
-        label: 'RNA yield (μg)',
+    yield: {
+        label: 'Yield (μg)',
     },
 }
 </script>
@@ -224,18 +253,24 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                     :canEdit="false"
                     :canExport="false"
                     :hideSettings="true"
+                    :rowsPerPageOptions="[10, 25, 50, 100]"
                 >
                     <template #header-buttons>
+                        <SelectButton
+                            v-model="protocol"
+                            :allow-empty="false"
+                            class="protocol-select"
+                            :options="['AllPrep', 'DNeasy', 'RNeasy']"
+                        />
                         <Button
-                            size="large"
-                            icon="pi pi-bolt"
                             iconPos="right"
                             severity="warn"
                             class="flex-none"
-                            label="Extract"
+                            :label="protocol === 'AllPrep' ? 'Extract DNA+RNA' : (protocol === 'RNeasy' ? 'Extract RNA' : 'Extract DNA')"
                             :disabled="_.isEmpty(pelletsCrudTable.tableRef.value?.selectedRecords)"
                             @click="extractFromSelectedPellets" />
                             <span class="flex items-center space-x-2">
+                                <label>Day 5 & 13</label>
                                 <ToggleSwitch id="showPelletsFromAllDaysToggle" v-model="showPelletsFromAllDays" />
                                 <label for="showPelletsFromAllDaysToggle">
                                     All days
@@ -244,47 +279,96 @@ const nucleicAcidFieldDefs: FieldDefinitions = {
                     </template>
                 </QuickTable>
             </SplitterPanel>
-            <SplitterPanel :size="50" :minSize="25">
+            <SplitterPanel :size="25" :minSize="10">
                 <QuickTable
-                    :ref="nucleicAcidsCrudTable.setTableRef"
-                    tableName="nucleic-acids"
-                    title="Nucleic acids"
+                    :ref="dnaCrudTable.setTableRef"
+                    tableName="dna"
+                    title="DNA"
                     schemaName="select"
                     :where="{'==':[{'var': 'extractionExperimentId'}, route.params.id]}"
-                    :withClause="nucleicAcidsWithClause"
-                    :columnDefs="nucleicAcidsColumnDefs"
+                    :withClause="dnaRnaWithClause"
+                    :columnDefs="dnaRnaColumnDefs"
                     :canAdd="false"
                     :canDelete="true"
                     :canEdit="true"
                     :canEditMultiple="true"
                     :canExport="false"
                     :hideSettings="true"
-                    @clickedRecordEdit="nucleicAcidsCrudTable.didClickRecordEdit"
-                    @clickedMultipleRecordEdit="nucleicAcidsCrudTable.didClickMultipleRecordEdit"
-                    @didDeleteMultipleRecords="didDeleteMultipleNucleicAcids"
+                    @clickedRecordEdit="dnaCrudTable.didClickRecordEdit"
+                    @clickedMultipleRecordEdit="dnaCrudTable.didClickMultipleRecordEdit"
+                    @didDeleteMultipleRecords="didDeleteMultipleDnaRna"
+                />
+            </SplitterPanel>
+            <SplitterPanel :size="25" :minSize="10">
+                <QuickTable
+                    :ref="rnaCrudTable.setTableRef"
+                    tableName="rna"
+                    title="RNA"
+                    schemaName="select"
+                    :where="{'==':[{'var': 'extractionExperimentId'}, route.params.id]}"
+                    :withClause="dnaRnaWithClause"
+                    :columnDefs="dnaRnaColumnDefs"
+                    :canAdd="false"
+                    :canDelete="true"
+                    :canEdit="true"
+                    :canEditMultiple="true"
+                    :canExport="false"
+                    :hideSettings="true"
+                    @clickedRecordEdit="rnaCrudTable.didClickRecordEdit"
+                    @clickedMultipleRecordEdit="rnaCrudTable.didClickMultipleRecordEdit"
+                    @didDeleteMultipleRecords="didDeleteMultipleDnaRna"
                 />
             </SplitterPanel>
         </Splitter>
-        <Dialog v-model:visible="showNucleicAcidEditDialog" modal header="Edit" :style="{ width: 'auto' }" :closable="false">
+        <Dialog v-model:visible="showDnaEditDialog" modal header="Edit DNA" :style="{ width: 'auto' }" :closable="false">
             <QuickForm
-                v-if="nucleicAcidsCrudTable.state.editingRecordId && nucleicAcidsCrudTable.state.showEditForm"
-                :recordId="nucleicAcidsCrudTable.state.editingRecordId"
-                tableName="nucleic-acids"
+                v-if="dnaCrudTable.state.editingRecordId && dnaCrudTable.state.showEditForm"
+                :recordId="dnaCrudTable.state.editingRecordId"
+                tableName="dna"
                 schemaName="update"
-                :fieldDefs="nucleicAcidFieldDefs"
-                @cancel="nucleicAcidsCrudTable.didClickCancelEditForm"
-                @recordUpdate="nucleicAcidsCrudTable.didUpdateRecord"
-                @recordDelete="nucleicAcidsCrudTable.didDeleteRecord"
+                :fieldDefs="dnaRnaFieldDefs"
+                @cancel="dnaCrudTable.didClickCancelEditForm"
+                @recordUpdate="dnaCrudTable.didUpdateRecord"
+                @recordDelete="dnaCrudTable.didDeleteRecord"
             />
             <QuickFormMultiple
-                v-if="nucleicAcidsCrudTable.state.showMultipleEditForm"
-                tableName="nucleic-acids"
-                :recordIds="nucleicAcidsCrudTable.state.editingMultipleRecordsIds"
+                v-if="dnaCrudTable.state.showMultipleEditForm"
+                tableName="dna"
+                :recordIds="dnaCrudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
-                :fieldDefs="nucleicAcidFieldDefs"
-                @cancel="nucleicAcidsCrudTable.didClickCancelMultipleEditForm"
-                @records-update="nucleicAcidsCrudTable.didUpdateMultipleRecords"
+                :fieldDefs="dnaRnaFieldDefs"
+                @cancel="dnaCrudTable.didClickCancelMultipleEditForm"
+                @records-update="dnaCrudTable.didUpdateMultipleRecords"
+            />
+        </Dialog>
+        <Dialog v-model:visible="showRnaEditDialog" modal header="Edit RNA" :style="{ width: 'auto' }" :closable="false">
+            <QuickForm
+                v-if="rnaCrudTable.state.editingRecordId && rnaCrudTable.state.showEditForm"
+                :recordId="rnaCrudTable.state.editingRecordId"
+                tableName="rna"
+                schemaName="update"
+                :fieldDefs="dnaRnaFieldDefs"
+                @cancel="rnaCrudTable.didClickCancelEditForm"
+                @recordUpdate="rnaCrudTable.didUpdateRecord"
+                @recordDelete="rnaCrudTable.didDeleteRecord"
+            />
+            <QuickFormMultiple
+                v-if="rnaCrudTable.state.showMultipleEditForm"
+                tableName="rna"
+                :recordIds="rnaCrudTable.state.editingMultipleRecordsIds"
+                schemaName="update"
+                :fieldDefs="dnaRnaFieldDefs"
+                @cancel="rnaCrudTable.didClickCancelMultipleEditForm"
+                @records-update="rnaCrudTable.didUpdateMultipleRecords"
             />
         </Dialog>
     </div>
 </template>
+<style scoped>
+.protocol-select :deep(.p-togglebutton.p-togglebutton-checked::before) {
+    background-color: theme('colors.blue.500');
+}
+.protocol-select :deep(.p-togglebutton.p-togglebutton-checked .p-togglebutton-label) {
+    color: theme('colors.white');
+}
+</style>

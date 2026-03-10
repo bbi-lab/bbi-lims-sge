@@ -3,7 +3,6 @@ import { wellContents, wellContentSources, wells } from "~/server/db/schema/sge/
 import _ from "lodash"
 import { wellCoordinateToChar } from "~/lib/plate-diagram"
 import { sgRnaPlasmids } from "~/server/db/schema/sge/plasmid"
-import { sgRnaCloningExperiments } from "~/server/db/schema/sge/plasmid-experiment"
 import { plates } from "~/server/db/schema/sge/plate"
 
 

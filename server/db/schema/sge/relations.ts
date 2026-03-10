@@ -1,6 +1,6 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { pcrExperiments } from './pcr-experiment'
+import { pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
@@ -15,8 +15,8 @@ import { pellets } from './pellet'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { nucleicAcids } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { nucleicAcids, dna, rna } from './nucleic-acid'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
@@ -41,21 +41,37 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
-        transfectTarget: {
-            fields: [pcrExperiments.transfectTargetId],
-            referenceTable: transfectTargets,
-            references: [transfectTargets.id],
+        plate: {
+            fields: [pcrExperiments.plateId],
+            referenceTable: plates,
+            references: [plates.id],
         },
     },
     many: {
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.pcrExperimentId],
-        }
+        pcrExperimentTargets: {
+            table: pcrExperimentTargets,
+            schema: createSelectSchema(pcrExperimentTargets),
+            fields: [pcrExperimentTargets.pcrExperimentId],
+        },
     }
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
+
+const pcrExperimentTargetsRelationsConfig: RelationsConfig = {
+    one:{
+        pcrExperiment: {
+            fields: [pcrExperimentTargets.pcrExperimentId],
+            referenceTable: pcrExperiments,
+            references: [pcrExperiments.id],
+        },
+        transfectTarget: {
+            fields: [pcrExperimentTargets.transfectTargetId],
+            referenceTable: transfectTargets,
+            references: [transfectTargets.id],
+        },
+    }
+}
+export const pcrExperimentTargetsRelations = relationsConfigToRelations(pcrExperimentTargets, pcrExperimentTargetsRelationsConfig)
 
 const wellContentsRelationsConfig: RelationsConfig = {
     one:{
@@ -182,6 +198,16 @@ const wellablesRelationsConfig: RelationsConfig = {
             referenceTable: nucleicAcids,
             references: [nucleicAcids.id],
         },
+        dna: {
+            fields: [wellables.id],
+            referenceTable: dna,
+            references: [dna.id],
+        },
+        rna: {
+            fields: [wellables.id],
+            referenceTable: rna,
+            references: [rna.id],
+        },
         pellet: {
             fields: [wellables.id],
             referenceTable: pellets,
@@ -293,23 +319,6 @@ const wellsRelationsConfig: RelationsConfig = {
 export const wellsRelations = relationsConfigToRelations(wells, wellsRelationsConfig)
 
 const platesRelationsConfig: RelationsConfig = {
-    one:{
-        pcrExperiment: {
-            fields: [plates.pcrExperimentId],
-            referenceTable: pcrExperiments,
-            references: [pcrExperiments.id],
-        },
-        sgRnaCloningExperiment: {
-            fields: [plates.sgRnaCloningExperimentId],
-            referenceTable: sgRnaCloningExperiments,
-            references: [sgRnaCloningExperiments.id],
-        },
-        // snvLibCloningExperiment: {
-        //     fields: [plates.snvLibCloningExperimentId],
-        //     referenceTable: snvLibCloningExperiments,
-        //     references: [snvLibCloningExperiments.id],
-        // },
-    },
     many: {
         wells: {
             table: wells,
@@ -343,10 +352,15 @@ const sequencingRunSamplesRelationsConfig: RelationsConfig = {
             referenceTable: sequencingRuns,
             references: [sequencingRuns.id],
         },
-        nucleicAcid: {
-            fields: [sequencingRunSamples.nucleicAcidId],
-            referenceTable: nucleicAcids,
-            references: [nucleicAcids.id],
+        dna: {
+            fields: [sequencingRunSamples.dnaId],
+            referenceTable: dna,
+            references: [dna.id],
+        },
+        rna: {
+            fields: [sequencingRunSamples.rnaId],
+            referenceTable: rna,
+            references: [rna.id],
         },
         indexPrimer1: {
             fields: [sequencingRunSamples.indexPrimer1Id],
@@ -461,10 +475,10 @@ const targetsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(linearizationPrimers),
             fields: [linearizationPrimers.targetId],
         },
-        preseq1Primers: {
-            table: preseq1Primers,
-            schema: createSelectSchema(preseq1Primers),
-            fields: [preseq1Primers.targetId],
+        preseq1PrimerTargets: {
+            table: preseq1PrimerTargets,
+            schema: createSelectSchema(preseq1PrimerTargets),
+            fields: [preseq1PrimerTargets.targetId],
         },
         preseq2Primers: {
             table: preseq2Primers,
@@ -570,7 +584,12 @@ const transfectTargetsRelationsConfig: RelationsConfig = {
             table: pellets,
             schema: createSelectSchema(pellets),
             fields: [pellets.transfectTargetId]
-        }
+        },
+        pcrExperimentTargets: {
+            table: pcrExperimentTargets,
+            schema: createSelectSchema(pcrExperimentTargets),
+            fields: [pcrExperimentTargets.transfectTargetId],
+        },
     }
 }
 export const transfectTargetsRelations = relationsConfigToRelations(transfectTargets, transfectTargetsRelationsConfig)
@@ -598,14 +617,12 @@ const sgRnaCloningExperimentsRelationsConfig: RelationsConfig = {
             referenceTable: users,
             references: [users.id],
         },
-    },
-    many: {
-        plates: {
-            table: plates,
-            schema: createSelectSchema(plates),
-            fields: [plates.sgRnaCloningExperimentId],
+        plate: {
+            fields: [sgRnaCloningExperiments.plateId],
+            referenceTable: plates,
+            references: [plates.id],
         },
-    }
+    },
 }
 export const sgRnaCloningExperimentsRelations = relationsConfigToRelations(sgRnaCloningExperiments, sgRnaCloningExperimentsRelationsConfig)
 
@@ -988,10 +1005,15 @@ const extractionExperimentsRelationsConfig: RelationsConfig = {
         },
     },
     many: {
-        nucleicAcids: {
-            table: nucleicAcids,
-            schema: createSelectSchema(nucleicAcids),
-            fields: [nucleicAcids.extractionExperimentId],
+        dna: {
+            table: dna,
+            schema: createSelectSchema(dna),
+            fields: [dna.extractionExperimentId],
+        },
+        rna: {
+            table: rna,
+            schema: createSelectSchema(rna),
+            fields: [rna.extractionExperimentId],
         },
         extractionLotUsage: {
             table: extractionLotUsage,
@@ -1040,6 +1062,13 @@ const pelletsRelationsConfig: RelationsConfig = {
         nucleicAcid: {
             table: nucleicAcids
         },
+        dna: {
+            table: dna
+        },
+        rna: {
+            table: rna
+        },
+    // many: {
         // wellContents: {
         //     table: wellContents
         // },
@@ -1136,6 +1165,48 @@ const nucleicAcidsRelationsConfig: RelationsConfig = {
     // },
 }
 export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
+
+const dnaRelationsConfig: RelationsConfig = {
+    one: {
+        extractionExperiment: {
+            fields: [dna.extractionExperimentId],
+            referenceTable: extractionExperiments,
+            references: [extractionExperiments.id],
+        },
+        pellet: {
+            fields: [dna.pelletId],
+            referenceTable: pellets,
+            references: [pellets.id],
+        },
+        wellable: {
+            fields: [dna.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const dnaRelations = relationsConfigToRelations(dna, dnaRelationsConfig)
+
+const rnaRelationsConfig: RelationsConfig = {
+    one: {
+        extractionExperiment: {
+            fields: [rna.extractionExperimentId],
+            referenceTable: extractionExperiments,
+            references: [extractionExperiments.id],
+        },
+        pellet: {
+            fields: [rna.pelletId],
+            referenceTable: pellets,
+            references: [pellets.id],
+        },
+        wellable: {
+            fields: [rna.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+}
+export const rnaRelations = relationsConfigToRelations(rna, rnaRelationsConfig)
 
 const sgRnaOligosRelationsConfig: RelationsConfig = {
     one: {
@@ -1272,16 +1343,18 @@ export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, in
 
 const preseq1PrimersRelationsConfig: RelationsConfig = {
     one: {
-        target: {
-            fields: [preseq1Primers.targetId],
-            referenceTable: targets,
-            references: [targets.id],
-        },
         wellable: {
             fields: [preseq1Primers.id],
             referenceTable: wellables,
             references: [wellables.id],
         },
+    },
+    many: {
+        preseq1PrimerTargets: {
+            table: preseq1PrimerTargets,
+            schema: createSelectSchema(preseq1PrimerTargets),
+            fields: [preseq1PrimerTargets.preseq1PrimerId],
+        }
     },
     // oneToOne: {
     //     wellContents: {
@@ -1290,6 +1363,22 @@ const preseq1PrimersRelationsConfig: RelationsConfig = {
     // },
 }
 export const preseq1PrimersRelations = relationsConfigToRelations(preseq1Primers, preseq1PrimersRelationsConfig)
+
+const preseq1PrimerTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [preseq1PrimerTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        preseq1Primer: {
+            fields: [preseq1PrimerTargets.preseq1PrimerId],
+            referenceTable: preseq1Primers,
+            references: [preseq1Primers.id],
+        },
+    },
+}
+export const preseq1PrimerTargetsRelations = relationsConfigToRelations(preseq1PrimerTargets, preseq1PrimerTargetsRelationsConfig)
 
 const preseq2PrimersRelationsConfig: RelationsConfig = {
     one: {
@@ -1324,10 +1413,12 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     genes: genesRelationsConfig,
     sgRnaPlasmids: sgRnaPlasmidsRelationsConfig,
     snvLibPlasmids: snvLibPlasmidsRelationsConfig,
-    nucleicAcids: nucleicAcidsRelationsConfig,
+    dna: dnaRelationsConfig,
+    rna: rnaRelationsConfig,
     sgRnaOligos: sgRnaOligosRelationsConfig,
     cycles: cyclesRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
+    pcrExperimentTargets: pcrExperimentTargetsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
     haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
     haCloningExperiments: haCloningExperimentsRelationsConfig,
@@ -1347,6 +1438,7 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     linearizationPrimers: linearizationPrimersRelationsConfig,
     homologyArmPrimers: homologyArmPrimersRelationsConfig,
     preseq1Primers: preseq1PrimersRelationsConfig,
+    preseq1PrimerTargets: preseq1PrimerTargetsRelationsConfig,
     preseq2Primers: preseq2PrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,

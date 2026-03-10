@@ -20,7 +20,8 @@ const displayWithClause = Object.freeze({
             },
         }
     },
-    nucleicAcids: {columns: {id: true}},
+    dna: {columns: {id: true}},
+    rna: {columns: {id: true}},
 })
 
 const columnDefs: ColumnDefinitions = {
@@ -30,7 +31,10 @@ const columnDefs: ColumnDefinitions = {
     technician: {
         path: 'technician.name'
     },
-    nucleicAcids: {
+    dna: {
+        display: false,
+    },
+    rna: {
         display: false,
     },
     extractionLotUsage: {
@@ -44,14 +48,23 @@ const columnDefs: ColumnDefinitions = {
 }
 
 const rowActions = {
-    nucleicAcids: {
-        label: (data: any) => { return `${_.size(data.nucleicAcids)}`},
+    dna: {
+        label: (data: any) => { return `${_.size(data.dna)}`},
         action: (data: any) => {
-            router.push({path:'/sge/nucleic-acids', query: {'extractionExperimentId': data.id}})
+            router.push({path:'/sge/dna', query: {'extractionExperimentId': data.id}})
         },
         iconComponent: Molecule,
         iconPos: 'right',
-        tooltip: 'Nucleic acids',
+        tooltip: 'DNA',
+    },
+    rna: {
+        label: (data: any) => { return `${_.size(data.rna)}`},
+        action: (data: any) => {
+            router.push({path:'/sge/rna', query: {'extractionExperimentId': data.id}})
+        },
+        iconComponent: Molecule,
+        iconPos: 'right',
+        tooltip: 'RNA',
     },
     reagents: {
         label: (data: any) => { return `${data.extractionLotUsage?.length || 0}`},
@@ -76,7 +89,10 @@ const fieldDefs = {
     extractedOn: {
         type: 'date'
     },
-    nucleicAcids: {
+    dna: {
+        display: false,
+    },
+    rna: {
         display: false,
     },
     extractionLotUsage: {

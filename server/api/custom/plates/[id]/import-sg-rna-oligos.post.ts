@@ -91,47 +91,49 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const newOligoRecords = await insertRecords(sgRnaOligos, recordsMapped)
+        // wrap inserts into transaction to automatically roll back if any fail
+        const newOligos = await db.transaction(async (tx) => {
+            const newOligoRecords = await insertRecords(sgRnaOligos, recordsMapped, tx)
 
-        const plateWells = await db.query.wells.findMany({
-            columns: {
-                id: true,
-                x: true,
-                y: true,
-            },
-            where: eq(wells.plateId, plateId),
-        })
+            const plateWells = await tx.query.wells.findMany({
+                columns: {
+                    id: true,
+                    x: true,
+                    y: true,
+                },
+                where: eq(wells.plateId, plateId),
+            })
 
-        // assign oligo ids to wells by coordinates
-        const plateWellsByCoordinates = _.keyBy(plateWells, (x) => `${x.x}_${x.y}`)
-        const oligoWells = _.map(recordsMapped, (x) => {
-            const wellKey = `${x.xCoordinate}_${x.yCoordinate}`
-            const wellRecord = plateWellsByCoordinates[wellKey]
-            if (!wellRecord) {
+            // assign oligo ids to wells by coordinates
+            const plateWellsByCoordinates = _.keyBy(plateWells, (x) => `${x.x}_${x.y}`)
+            const oligoWells = _.map(recordsMapped, (x) => {
+                const wellKey = `${x.xCoordinate}_${x.yCoordinate}`
+                const wellRecord = plateWellsByCoordinates[wellKey]
+                if (!wellRecord) {
+                    throw createError({
+                        statusCode: 400,
+                        statusMessage: `No well found for coordinates ${wellKey} for oligo ${x.name}`,
+                    })
+                }
+                return {
+                    wellId: wellRecord.id,
+                    wellableId: x.id,
+                }
+            })
+
+            // insert well content records
+            try {
+                await insertRecords(wellContents, oligoWells, tx)
+            } catch (e: any) {
                 throw createError({
                     statusCode: 400,
-                    statusMessage: `No well found for coordinates ${wellKey} for oligo ${x.name}`,
+                    statusMessage: `Failed to insert well contents for oligos: ${e.message}`,
                 })
             }
-            return {
-                wellId: wellRecord.id,
-                sgRnaOligoId: x.id,
-            }
+            return newOligoRecords
         })
 
-        // insert well content records
-        try {
-            await insertRecords(wellContents, oligoWells)
-        } catch (e: any) {
-            await db.delete(sgRnaOligos).where(inArray(sgRnaOligos.id, _.map(newOligoRecords, 'id')))
-            throw createError({
-                statusCode: 400,
-                statusMessage: `Failed to insert well contents for oligos: ${e.message}`,
-            })
-        }
-
-        return newOligoRecords
-
+        return newOligos
     } catch (e: any) {
         const { error, data } = parsePutPostError(e, 'sgRnaOligos')
 

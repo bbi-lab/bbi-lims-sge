@@ -29,7 +29,12 @@ const model = ref([
                 ]
             },
             { label: 'Pellets', iconComponent: DotsTriangle, to: '/sge/pellets' },
-            { label: 'Nucleic Acids', iconComponent: Molecule, to: '/sge/nucleic-acids' },
+            { label: 'Nucleic Acids', iconComponent: Molecule,
+                items: [
+                    { label: 'DNA', to: '/sge/dna' },
+                    { label: 'RNA', to: '/sge/rna' },
+                ]
+            },
             { label: 'Oligos', iconComponent: FluentMolecule16Filled,
                 items: [
                     { label: 'sgRNA', to: '/sge/sg-rna-oligos' },

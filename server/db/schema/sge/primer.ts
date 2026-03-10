@@ -62,7 +62,6 @@ export const homologyArmPuc19Primers = pgTable('homology_arm_puc19_primers', {
 
 export const preseq1Primers = pgTable('preseq_1_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
-    targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
@@ -70,6 +69,14 @@ export const preseq1Primers = pgTable('preseq_1_primers', {
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
+export const preseq1PrimerTargets = pgTable('preseq_1_primer_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  preseq1PrimerId: uuid('preseq_1_primer_id').references(() => preseq1Primers.id).notNull(),
+  targetId: uuid('target_id').references(() => targets.id).notNull(),
+}, (t) => [
+  uniqueIndex('unique_preseq1_primer_target').on(t.preseq1PrimerId, t.targetId),
 ])
 
 export const preseq2Primers = pgTable('preseq_2_primers', {

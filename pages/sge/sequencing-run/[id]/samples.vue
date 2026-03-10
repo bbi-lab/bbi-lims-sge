@@ -34,12 +34,11 @@ const frozenRecordIds = computed(() => {
 })
 
 const invalidRecords = computed(() => {
-    const nucleicAcidIdCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'nucleicAcidId')
-    const recordsWithRepeatedNucleicAcids = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
-        return _.get(nucleicAcidIdCounts, record.nucleicAcidId) > 1
-    }).map((record) => ({id: record.id, count: nucleicAcidIdCounts[record.nucleicAcidId]}))
-
-    return _.mapValues(_.keyBy(recordsWithRepeatedNucleicAcids, 'id'), (val, id) => {
+    const sampleNameCounts = _.countBy(sequencingRunAllSamplesTable.value?.records || [], 'sampleName')
+    const recordsWithRepeatedDna = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        return _.get(sampleNameCounts, record.sampleName) > 1
+    }).map((record) => ({id: record.id, count: sampleNameCounts[record.sampleName]}))
+    return _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
         return {messages: [`Repeated (${val?.count}x)`]}
     })
 })
@@ -52,9 +51,9 @@ watch (selectedPlateId, async (newValue) => {
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const wellContentsText = _.map(well.wellContents, (wellContent) => {
-                    const nucleicAcid = wellContent?.wellable?.nucleicAcid
-                    if (nucleicAcid) {
-                        return nucleicAcid.pellet ? `${nucleicAcid.pellet.name} (DNA)` : '?? (DNA)'
+                    const dna = wellContent?.wellable?.dna
+                    if (dna) {
+                        return dna.pellet ? `${dna.pellet.name} (DNA)` : '?? (DNA)'
                     } else if (wellContent?.wellable?.indexPrimer) {
                         return `${wellContent.wellable.indexPrimer.indexSequence} (${wellContent.wellable.indexPrimer.primerType} INDEX)`
                     } else {
@@ -68,7 +67,12 @@ watch (selectedPlateId, async (newValue) => {
             },
         }
         await plateLayout.loadPlate({
-            nucleicAcid: {
+            dna: {
+                with: {
+                    pellet: true
+                }
+            },
+            rna: {
                 with: {
                     pellet: true
                 }
@@ -146,39 +150,41 @@ const didDeleteRecord = (record: any) => {
 const removeSelectedSamplesFromRun = () => {
     const sequencingRunInternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'internal'), 'id')
 
-    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSampleIds, {sequencingRunId: null})
-        .then((result: any) => {
-            if (_.isEmpty(result)) return
-            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} internal samples removed`, life: 3000 })
-            for (const id of sequencingRunInternalSampleIds) {
-                sequencingRunAllSamplesTable.value.removeRecordId(id)
-            }
-        })
-        .catch((error: any) => {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.data?.statusMessage || error.data?.message,
+    if (!_.isEmpty(sequencingRunInternalSampleIds)) {
+        RecordService.deleteRecordsById(`${config.public.apiBase}/sequencing-run-samples`, sequencingRunInternalSampleIds)
+            .then((result: any) => {
+                if (_.isEmpty(result)) return
+                toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} internal samples removed`, life: 3000 })
+                for (const id of sequencingRunInternalSampleIds) {
+                    sequencingRunAllSamplesTable.value.removeRecordId(id)
+                }
             })
-        })
-
+            .catch((error: any) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.data?.statusMessage || error.data?.message,
+                })
+            })
+    }
     const sequencingRunExternalSampleIds = _.map(_.filter(sequencingRunSelectedRecords.value, (x) => x.sampleType == 'external'), 'id')
-    RecordService.updateRecords(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds, {sequencingRunId: null})
-        .then((result: any) => {
-            if (_.isEmpty(result)) return
-            toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
-            for (const id of sequencingRunExternalSampleIds) {
-                sequencingRunAllSamplesTable.value.removeRecordId(id)
-            }
-        })
-        .catch((error: any) => {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.data?.statusMessage || error.data?.message,
+    if (!_.isEmpty(sequencingRunExternalSampleIds)) {
+        RecordService.deleteRecordsById(`${config.public.apiBase}/sequencing-run-external-samples`, sequencingRunExternalSampleIds)
+            .then((result: any) => {
+                if (_.isEmpty(result)) return
+                toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} external samples removed`, life: 3000 })
+                for (const id of sequencingRunExternalSampleIds) {
+                    sequencingRunAllSamplesTable.value.removeRecordId(id)
+                }
             })
-        })
-
+            .catch((error: any) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.data?.statusMessage || error.data?.message,
+                })
+            })
+    }
 }
 const addSelectedExternalSamples = async () => {
     const sequencingRunSamplesToAdd = _.map(selectedExternalSampleRecords.value, (selectedSample) => {
@@ -209,19 +215,21 @@ const addToSequencingRun = async (selectedWells: any) => {
         const sequencingRunSamplesToAdd = _.compact(_.map(selectedWells, ({data}) => {
             if (_.isEmpty(data.wellContents)) return null
 
-            const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P7')
-            const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.indexPrimer?.primerType == 'P5')
-            const nucleicAcidWellContents = _.filter(data.wellContents, (x) => x.nucleicAcidId)
-            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && nucleicAcidWellContents.length == 1) {
+            const indexPrimerContentsP7 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P7')
+            const indexPrimerContentsP5 = _.filter(data.wellContents, (x) => x.wellable?.indexPrimer?.primerType == 'P5')
+            const dnaWellContents = _.filter(data.wellContents, (x) => x.wellable?.dna?.id)
+            const rnaWellContents = _.filter(data.wellContents, (x) => x.wellable?.rna?.id)
+            const sampleField = dnaWellContents.length == 1 ? 'dnaId' : (rnaWellContents.length == 1 ? 'rnaId' : null)
+            if (indexPrimerContentsP7.length == 1 && indexPrimerContentsP5.length == 1 && sampleField) {
                 return {
                     sequencingRunId: sequencingRun.value.id,
-                    nucleicAcidId: nucleicAcidWellContents[0].nucleicAcidId,
-                    indexPrimer1Id: indexPrimerContentsP7[0].indexPrimerId,
-                    indexPrimer2Id: indexPrimerContentsP5[0].indexPrimerId,
+                    [sampleField]: sampleField == 'dnaId' ? dnaWellContents[0].wellable.id : rnaWellContents[0].wellable.id,
+                    indexPrimer1Id: indexPrimerContentsP7[0].wellable.id,
+                    indexPrimer2Id: indexPrimerContentsP5[0].wellable.id,
                     sourceWellId: data.id,
                 }
             } else {
-                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one nucleic acid.')
+                throw new Error('Invalid well contents: selected wells must contain exactly one P5 index primer, one P7 index primer, and one sample.')
             }
         }))
         if (sequencingRunSamplesToAdd.length > 0) {
@@ -237,10 +245,11 @@ const addToSequencingRun = async (selectedWells: any) => {
             }
         }
     } catch (error: any) {
+        console.log(error)
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.data?.statusMessage || error.data?.message,
+            detail: error.data?.statusMessage || error.data?.message || error,
             life: 10000,
         })
     }
@@ -250,7 +259,8 @@ const columnDefs = {
     projectName: {index: 0, header: 'Project name (sequencing)'},
     sequencingRunId: { display: false},
     createdAt: { display: false },
-    nucleicAcidId: { display: false },
+    dnaId: { display: false },
+    rnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     indexPrimer1Label: { display: false },
@@ -261,7 +271,7 @@ const columnDefs = {
     sourceWellX: { display: false },
     sourceWellY: { display: false },
     sourcePlateName: { display: false },
-    nucleicAcid: { display: false},
+    dna: { display: false},
     sampleName: { index: 1 },
     sampleType: { index: 2 },
     indexPrimer1: {
@@ -284,7 +294,7 @@ const columnDefs = {
 }
 const internalSampleFieldDefs = {
     sequencingRunId: { display: false },
-    nucleicAcidId: { display: false },
+    dnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     sourceWellId: { display: false },
@@ -359,7 +369,7 @@ const externalSamplesColumnDefs = {
                         <AutoCompleter
                             v-model="selectedPlateId"
                             :searchBaseUrl="`${config.public.apiBase}/plates`"
-                            :searchWhereClause="{'==': [{'var': 'plateType'}, 'preseq-3']}"
+                            :searchWhereClause="{'in': [{'var': 'plateType'}, ['dna-preseq-3', 'rna-preseq-3']]}"
                             iftaLabel="Plate"
                             dropdown
                             hideClearButton

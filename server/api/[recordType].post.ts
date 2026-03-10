@@ -4,7 +4,9 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import { updateHomologyArmPrimerTargets } from '../utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets } from '../utils/sge'
+import { insertPlate } from '../services/plate-services'
+import { assert } from 'node:console'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -24,13 +26,41 @@ export default defineEventHandler(async (event) => {
             return insertSchema.parse(record)
         })
 
-        const newRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records)
+        const newRecords = await db.transaction(async (tx) => {
+            if (body.length == 1) {
+                if (['pcrExperiments', 'sgRnaCloningExperiments'].includes(_.camelCase(recordType)) && records[0].pcrType != 'rna-rt') {
+                    // add corresponding plate with same name as experiment
+                    const plateType = _.camelCase(recordType) == 'pcrExperiments' ?  records[0].pcrType : 'sg-rna-oligo'
+                    const plate = {
+                        name: body[0].name,
+                        sizeX: 12,
+                        sizeY: 8,
+                        plateType: plateType,
+                    }
+                    const newPlate = await insertPlate(plate, tx)
 
-        // handle single HA primer inserts that include 1:M targets
-        if (_.camelCase(recordType) == 'homologyArmPrimers' && body.length == 1 && _.isArray(body[0].targets) && newRecords?.length == 1) {
-           const targets = await updateHomologyArmPrimerTargets(newRecords[0].id, _.map(body[0].targets, 'targetId'))
-            _.set(newRecords, '0.targets', targets)
-        }
+                    // set plateId of experiment to new plate
+                    if (newPlate) _.set(records, '0.plateId', newPlate.id)
+                }
+            }
+            const insertedRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records, tx)
+
+            // handle single HA primer, PCR experiment, and Preseq 1 primer inserts that include array of targets
+            if (body.length == 1 && insertedRecords?.length == 1) {
+                if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
+                    const targetIds = _.compact(_.map(body[0].targets, 'targetId'))
+                    const targets = await updateHomologyArmPrimerTargets(insertedRecords[0].id, targetIds, tx)
+                    _.set(insertedRecords, '0.targets', targets)
+                } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
+                    const transfectTargetIds = _.compact(_.map(body[0].pcrExperimentTargets, 'transfectTargetId'))
+                    await updatePcrExperimentTransfectTargets(insertedRecords[0].id, transfectTargetIds, tx)
+                } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
+                    const preseq1PrimerTargetIds = _.compact(_.map(body[0].preseq1PrimerTargets, 'targetId'))
+                    await updatePreseq1PrimerTargets(insertedRecords[0].id, preseq1PrimerTargetIds, tx)
+                }
+            }
+            return insertedRecords
+        })
 
         return newRecords
     } catch (e: any) {

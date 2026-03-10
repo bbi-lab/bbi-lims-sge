@@ -1,9 +1,11 @@
-// import { deleteRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { parseDeleteError } from '~/server/utils/restApi'
 import { eq } from 'drizzle-orm'
 import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
-import { homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
+import { homologyArmPrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
+import { plates } from '~/server/db/schema/sge/plate'
+import { deleteEmptyPlate } from '~/server/utils/sge'
+import { pcrExperiments, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -29,11 +31,23 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(transfectTargets).where(eq(transfectTargets.experimentId, id))
             } else if (_.camelCase(recordType) == 'homologyArmPrimers') {
                 await tx.delete(homologyArmPrimerTargets).where(eq(homologyArmPrimerTargets.homologyArmPrimerId, id))
+            } else if (_.camelCase(recordType) == 'preseq1Primers') {
+                await tx.delete(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
+            } else if (_.camelCase(recordType) == 'pcrExperiments') {
+
+                // delete assiociated targets
+                await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
             }
 
             const deleteResult = await tx.delete(table)
                 .where(eq(table.id, id))
                 .returning()
+
+            if (_.camelCase(recordType) == 'pcrExperiments') {
+                // delete associated plates if all wells are empty
+                const plateId = _.get(deleteResult, '0.plateId')
+                if (plateId) await deleteEmptyPlate(plateId, tx)
+            }
             return _.get(deleteResult, '0')
         })
 

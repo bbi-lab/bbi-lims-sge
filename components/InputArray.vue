@@ -30,7 +30,7 @@ onMounted(() => {
 </script>
 <template>
     <div class="flex flex-wrap">
-        <template v-for="c of components" :key="modelValue![c.variableField]">
+        <template v-for="(c, index) in components" :key="index">
             <span v-if="c.component=='Checkbox'">
                 <label :for="c.variableField">
                     {{ c.label || c.variableField}}
@@ -48,6 +48,16 @@ onMounted(() => {
                     v-model="modelValue![c.variableField]"
                     v-bind="_.omit(c.componentProps, 'searchBaseUrl')"
                     :search-base-url="_.get(c.componentProps, 'searchBaseUrl', '')"
+                    :hide-clear-button="true"
+                    :disabled="disabled"
+                />
+                <NestedSelect
+                    v-if="c.component=='NestedSelect'"
+                    v-model="modelValue![c.variableField]"
+                    v-bind="_.omit(c.componentProps, ['parentSearchBaseUrl', 'searchBaseUrl', 'parentKeyField'])"
+                    :search-base-url="_.get(c.componentProps, 'searchBaseUrl', '')"
+                    :parent-search-base-url="_.get(c.componentProps, 'parentSearchBaseUrl', '')"
+                    :parent-key-field="_.get(c.componentProps, 'parentKeyField')"
                     :hide-clear-button="true"
                     :disabled="disabled"
                 />

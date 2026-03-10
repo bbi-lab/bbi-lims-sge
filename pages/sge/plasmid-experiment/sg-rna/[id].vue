@@ -54,13 +54,14 @@ const plamidPlateDisplayConfig = {
 const sgRnaOligoPlateDisplayConfig = {
     colorBy: ['sgRnaOligo.targetId'],
     selectionTableRecordIdPaths: ['sgRnaOligoId'],
+    syncedPlateWellSpecs: plateLayout.wellSpecs.value,
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
         const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
         return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
     },
     symbol: (well: any) => {
-        const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))
+        const oligos = _.compact(_.map(well.wellContents, 'wellable.sgRnaOligo'))
         return oligos ? _.size(oligos) : ''
     },
 }
@@ -110,13 +111,15 @@ onMounted(async() => {
         `${config.public.apiBase}/sg-rna-cloning-experiments`,
         route.params.id as string,
         {
-            plates: true
+            plate: true
         },
     )
 
-    const plateId = _.get(sgRnaCloningExperiment.value, 'plates[0].id')
+    const plateId = _.get(sgRnaCloningExperiment.value, 'plateId')
 
-    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : sgRnaOligoPlateDisplayConfig
+    // set display config based on whether the plate has been transformed or not
+    // if showing the oligo plate (not transformed), omit the syncedPlateWellSpecs property since that is only relevant to source plates
+    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : _.omit(sgRnaOligoPlateDisplayConfig, 'syncedPlateWellSpecs')
 
     plateLayout.setExportPlateLayoutConfig({
         columns: transformed.value ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
@@ -176,7 +179,7 @@ const transformOligos = async () => {
         `${config.public.apiBase}/sg-rna-cloning-experiments`,
             route.params.id as string,
             {
-                plates: true
+                plate: true
             },
         )
         // refresh the plate if transformation was successful

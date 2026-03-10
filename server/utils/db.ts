@@ -4,7 +4,7 @@ import pg from 'pg'
 import { type PgTable, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import {users, userGroups, userGroupMemberships} from '../db/schema/user'
 
-import {pcrExperiments} from '../db/schema/sge/pcr-experiment'
+import {pcrExperiments, pcrExperimentTargets} from '../db/schema/sge/pcr-experiment'
 import {plates} from '../db/schema/sge/plate'
 import {wellContents, wells, wellContentSources, wellables} from '../db/schema/sge/well'
 import {projects} from '../db/schema/sge/project'
@@ -14,7 +14,7 @@ import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
 import {haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
-import {nucleicAcids} from '../db/schema/sge/nucleic-acid'
+import {nucleicAcids, dna, rna} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
 import { haCloningExperiments, haCloningExperimentTargets, sgRnaCloningExperiments, snvLibCloningExperiments } from '../db/schema/sge/plasmid-experiment'
@@ -23,7 +23,7 @@ import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets, preseq1PrimerTargets } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibClonalDnaProducts, snvLibGoldenGateProducts } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
@@ -41,6 +41,7 @@ export const schema = {
   userGroups,
   userGroupMemberships,
   pcrExperiments,
+  pcrExperimentTargets,
   plates,
   wells,
   wellContents,
@@ -54,6 +55,8 @@ export const schema = {
   snvLibPlasmids,
   sgRnaPlasmids,
   nucleicAcids,
+  dna,
+  rna,
   sgRnaOligos,
   pellets,
   lots,
@@ -84,6 +87,7 @@ export const schema = {
   homologyArmPrimerTargets,
   homologyArmPuc19Primers,
   preseq1Primers,
+  preseq1PrimerTargets,
   preseq2Primers,
   indexPrimers,
   sequencingRuns,

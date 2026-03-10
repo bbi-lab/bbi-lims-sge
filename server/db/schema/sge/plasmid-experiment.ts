@@ -1,12 +1,15 @@
-import { pgTable, timestamp, unique, uuid, varchar, } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, unique, uuid, varchar, text } from 'drizzle-orm/pg-core'
 import { users } from '../user'
 import { targets } from './target'
+import { plates } from './plate'
 
 export const sgRnaCloningExperiments = pgTable('sg_rna_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }),
   technician: uuid('technician').references(() => users.id),
   transformedOn: timestamp('transformed_on'),
+  plateId: uuid('plate_id').references(() => plates.id),
+  notes: text('notes'),
 })
 
 export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
@@ -16,6 +19,7 @@ export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
   targetId: uuid('target_id').references(() => targets.id).notNull(),
   startedOn: timestamp('started_on').defaultNow(),
   endedOn: timestamp('ended_on'),
+  notes: text('notes'),
 })
 
 export const haCloningExperiments = pgTable('ha_cloning_experiments', {
@@ -23,6 +27,7 @@ export const haCloningExperiments = pgTable('ha_cloning_experiments', {
   name: varchar('name', { length: 255 }).notNull().unique(),
   startedOn: timestamp('started_on').defaultNow(),
   endedOn: timestamp('ended_on'),
+  notes: text('notes'),
 })
 
 export const haCloningExperimentTargets = pgTable('ha_cloning_experiment_targets', {

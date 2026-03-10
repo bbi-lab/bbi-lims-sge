@@ -7,22 +7,22 @@ const crudTable = useCrudTable()
 const router = useRouter()
 const config = useRuntimeConfig()
 
-async function didAddRecord(event: any) {
-    // add corresponding plate
-    await RecordService.addRecord(`${config.public.apiBase}/plates`, {
-        name: event.name,
-        sizeX: 12,
-        sizeY: 8,
-        plateType: 'sg-rna-oligo',
-        sgRnaCloningExperimentId: event.id,
-    })
-    crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
-    crudTable.state.showAddForm = false
-}
+// async function didAddRecord(event: any) {
+//     // add corresponding plate
+//     await RecordService.addRecord(`${config.public.apiBase}/plates`, {
+//         name: event.name,
+//         sizeX: 12,
+//         sizeY: 8,
+//         plateType: 'sg-rna-oligo',
+//         sgRnaCloningExperimentId: event.id,
+//     })
+//     crudTable.tableRef.value.addOrRefreshRecordIds([event.id])
+//     crudTable.state.showAddForm = false
+// }
 
 const rowActions = {
-    plates: {
-        label: (data: any) => { return `${data.plates?.length || 0}`},  // for this to work, we need to expand plates
+    plate: {
+        label: (data: any) => { return `${data.plateId ? 1 : 0}`},
         action: (data: any) => {
             router.push({path:`/sge/plasmid-experiment/sg-rna/${data.id}`})
         },
@@ -36,21 +36,23 @@ const columnDefs = {
     technician: {
         path: 'technician.name',
     },
-    plates: {
+    plateId: {
         display: false,
     },
     name: {
         index: 1,
     },
+    notes: {
+        display: false
+    },
 }
 const fieldDefs = {
-    plates: {
+    plateId: {
         display: false,
     },
 }
 const withClause = {
     technician: { columns: { name: true } },
-    plates: { columns: { id: true } },
 }
 
 </script>
@@ -76,7 +78,7 @@ const withClause = {
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 @cancel="crudTable.didClickCancelAddForm"
-                @recordAdd="didAddRecord"
+                @recordAdd="crudTable.didAddRecord"
             />
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
