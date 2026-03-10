@@ -36,6 +36,12 @@ const columnDefs: ColumnDefinitions = {
     name: {
         index: 0,
     },
+    plateId: {
+        display: false,
+    },
+    notes: {
+        display: false,
+    },
     pcrTypeLabel: {
         header: 'Type',
         format: (x: any) => {

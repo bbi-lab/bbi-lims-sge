@@ -68,6 +68,7 @@ const columnDefs: ColumnDefinitions = {
         index: 0,
     },
     targetId: { display: false },
+    notes: { display: false },
     target: {
         path: 'target.name',
         index: 1,

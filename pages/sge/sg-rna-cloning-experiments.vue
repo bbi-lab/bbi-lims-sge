@@ -42,6 +42,9 @@ const columnDefs = {
     name: {
         index: 1,
     },
+    notes: {
+        display: false
+    },
 }
 const fieldDefs = {
     plateId: {

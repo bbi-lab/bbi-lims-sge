@@ -63,6 +63,9 @@ const columnDefs = {
         },
         path: 'haCloningExperimentTargets.displayValue'
     },
+    notes: {
+        display: false
+    },
     haPcrProducts: {
         header: 'HA PCR Product',
         type: 'element',
