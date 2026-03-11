@@ -33,7 +33,8 @@ const columnDefs = {
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
         format: (data: any) => {
-            return data.wellContents?.[0]?.well.plate?.sgRnaCloningExperiment?.name || ''
+            // each sgRNA plasmid should only be associated with one well and one cloning experiment
+            return data.wellable?.wellContents?.[0]?.well.plate?.sgRnaCloningExperiments?.[0]?.name || ''
         },
         path: 'sgRnaCloningExperiment.displayValue',
         index: 2,
@@ -47,16 +48,6 @@ const columnDefs = {
     wellContents: { display: false },
 }
 const fieldDefs: FieldDefinitions = {
-    // sgRnaCloningExperimentId: {
-    //     label: 'Experiment',
-    //     component: 'AutoCompleter',
-    //     props: {
-    //         searchBaseUrl: `${config.public.apiBase}/sg-rna-cloning-experiments`,
-    //         searchFields: ['name'],
-    //         valueField: 'id',
-    //         displayFields: ['name'],
-    //     }
-    // },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -97,7 +88,7 @@ const displayWithClause = {
                             plate: {
                                 columns: {id: true, name: true},
                                 with: {
-                                    sgRnaCloningExperiment: {columns: {id: true, name: true}}
+                                    sgRnaCloningExperiments: {columns: {id: true, name: true}}
                                 }
                             }
                         }
