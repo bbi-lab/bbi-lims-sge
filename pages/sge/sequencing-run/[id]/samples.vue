@@ -245,7 +245,6 @@ const addToSequencingRun = async (selectedWells: any) => {
             }
         }
     } catch (error: any) {
-        console.log(error)
         toast.add({
             severity: 'error',
             summary: 'Error',

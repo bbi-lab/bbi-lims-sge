@@ -220,7 +220,6 @@ const emptySelectedWells = async () => {
         return plate.plateType === 'dna-preseq-2'
     }), 'id'))
 
-    console.log(associatedDnaPreseq2PlateIds)
     await plateLayout.emptySelectedWells()
     plateLayout.selectionTableRef.value?.addOrRefreshRecordIds(associatedDnaPreseq2PlateIds)
 }
