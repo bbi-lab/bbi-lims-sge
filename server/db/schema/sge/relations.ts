@@ -324,7 +324,17 @@ const platesRelationsConfig: RelationsConfig = {
             table: wells,
             schema: createSelectSchema(wells),
             fields: [wells.plateId],
-        }
+        },
+        pcrExperiments: {
+            table: pcrExperiments,
+            schema: createSelectSchema(pcrExperiments),
+            fields: [pcrExperiments.plateId],
+        },
+        sgRnaCloningExperiments: {
+            table: sgRnaCloningExperiments,
+            schema: createSelectSchema(sgRnaCloningExperiments),
+            fields: [sgRnaCloningExperiments.plateId],
+        },
     }
 }
 export const platesRelations = relationsConfigToRelations(plates, platesRelationsConfig)
