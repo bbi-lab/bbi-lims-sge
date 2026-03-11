@@ -23,7 +23,7 @@ const sgRnaCloningExperiment = ref()
 const crudTable = useCrudTable()
 
 const transformed = computed(() => {
-    return sgRnaCloningExperiment.value?.plates?.[0]?.plateType == 'sg-rna-plasmid'
+    return sgRnaCloningExperiment.value?.plate?.plateType == 'sg-rna-plasmid'
 })
 const showSgRnaPlasmidEditDialog = computed(() => {
     return crudTable.state.showEditForm || crudTable.state.showMultipleEditForm
@@ -37,7 +37,7 @@ const plamidPlateDisplayConfig = {
     selectionTableRecordIdPaths: ['sgRnaPlasmidId'],
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-        const sgRnaPlasmid = _.get(well.wellContents, [0, 'sgRnaPlasmid'])
+        const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
         return sgRnaPlasmid ? `${wellCoordinate}:<br>` + _.get(sgRnaPlasmid, 'name') : wellCoordinate
     },
     symbol: (well: any) => {
@@ -77,7 +77,7 @@ const sgRnaOligoExportColumns = [
     },
     {
         header: 'sgRNA Oligo 2',
-        data: (well: any) => _.get(well, 'wellContents.1.sgRnaOligo.name')
+        data: (well: any) => _.get(well, 'wellContents.1.wellable.sgRnaOligo.name')
     },
 ]
 const sgRnaPlasmidExportColumns = [
@@ -271,30 +271,34 @@ const sgRnaPlasmidDisplayWithClause = {
             name: true,
         },
     },
-    wellContents: {
-        columns: {
-            id: true,
-        },
+    wellable: {
         with: {
-            well: {
+            wellContents: {
                 columns: {
                     id: true,
-                    x: true,
-                    y: true,
-                    plateId: true,
                 },
                 with: {
-                    plate: {
+                    well: {
                         columns: {
                             id: true,
-                            name: true,
-                            plateType: true,
+                            x: true,
+                            y: true,
+                            plateId: true,
+                        },
+                        with: {
+                            plate: {
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
+                                }
+                            }
                         }
-                    }
-                }
+                    },
+                },
             },
-        },
-    },
+        }
+    }
 }
 const sgRnaPlasmidTableColumnDefs = {
     targetId: { display: false },
@@ -307,7 +311,7 @@ const sgRnaPlasmidTableColumnDefs = {
     wellContents: { display: false },
     wellCoordinates: {
         format: (data: any) => {
-            return data.wellContents?.map((wellContent: any) => {
+            return data.wellable?.wellContents?.map((wellContent: any) => {
                 return `${wellContent.well?.plate?.name}: ${wellCoordinateToChar(wellContent.well?.y)}${wellContent.well?.x}`
             }).join(', ') || '-'
         },
@@ -359,7 +363,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 :where="whereClause"
                 :columnDefs="plateTableColumnDefs"
                 :sortBy="['name']"
-                selectionMode="single"
+                :selectionMode="transformed ? 'none' : 'single'"
                 :showColumnFilters="true"
                 emptyMessage="">
             </QuickTable>
@@ -441,7 +445,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 </SplitterPanel>
             </Splitter>
         </SplitterPanel>
-        <SplitterPanel v-if="transformed && sgRnaCloningExperiment?.plates?.[0]?.id" class="overflow-scroll" :size="60" :minSize="25">
+        <SplitterPanel v-if="transformed && sgRnaCloningExperiment?.plate?.id" class="overflow-scroll" :size="60" :minSize="25">
             <div class="text-2xl font-bold mt-4 ml-4">sgRNA Cloning: {{ sgRnaCloningExperiment?.name }}</div>
             <QuickTable
                 :key="selectionTableKey"

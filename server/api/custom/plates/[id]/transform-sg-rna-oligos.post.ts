@@ -26,7 +26,11 @@ export default defineEventHandler(async (event) => {
             with: {
                 wellContents: {
                    with: {
-                        sgRnaOligo: true,
+                        wellable: {
+                            with: {
+                                sgRnaOligo: true,
+                            }
+                        }
                    }
                }
             },
@@ -35,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
 
         const plasmidsToCreate: plasmidsToCreate[] = _.compact(_.map(_.filter(wellsWithOligoContents, (x) => !_.isEmpty(x.wellContents)), (well) => {
-            const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))
+            const oligos = _.compact(_.map(well.wellContents, (wc: any) => wc.wellable?.sgRnaOligo))
             const wellCoordinates = `${wellCoordinateToChar(well.y)}${well.x}`
 
             if (oligos.length === 0) {
@@ -63,7 +67,7 @@ export default defineEventHandler(async (event) => {
                         name: oligosCombined[0].name,
                         targetId: oligosCombined[0].targetId,
                         wellId: well.id,
-                        wellContentIds: _.map(well.wellContents, 'id'),
+                        wellContentIds: _.map(well.wellContents, (wc: any) => wc.id),
                     }
                 }
             }
@@ -79,7 +83,7 @@ export default defineEventHandler(async (event) => {
                     await tx.delete(wellContents).where(eq(wellContents.wellId, plasmid.wellId))
                     await tx.insert(wellContents).values({
                         wellId: plasmid.wellId,
-                        sgRnaPlasmidId: newPlasmid[0].id,
+                        wellableId: newPlasmid[0].id,
                     })
                 } catch (error: any) {
                     throw new Error(`Failed to create plasmid ${plasmid.name}: ${error.message}`)
