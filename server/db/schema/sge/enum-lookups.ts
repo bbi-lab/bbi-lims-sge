@@ -112,13 +112,25 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Sequencing index plate',
                 label: 'Seq index',
             },
-            'pcr1-primer-storage': {
-                desc: 'PreSeq 1 primer storage',
-                label: 'PreSeq 1 primer storage',
+            'dna-preseq-1-primer-storage': {
+                desc: 'DNA PreSeq 1 primer storage',
+                label: 'DNA PreSeq 1 primer storage',
             },
-            'pcr2-primer-storage': {
-                desc: 'PreSeq 2 primer storage',
-                label: 'PreSeq 2 primer storage',
+            'dna-preseq-2-primer-storage': {
+                desc: 'DNA PreSeq 2 primer storage',
+                label: 'DNA PreSeq 2 primer storage',
+            },
+            'rna-rt-primer-storage': {
+                desc: 'RNA RT primer storage',
+                label: 'RNA RT primer storage',
+            },
+            'rna-preseq-1-primer-storage': {
+                desc: 'RNA PreSeq 1 primer storage',
+                label: 'RNA PreSeq 1 primer storage',
+            },
+            'rna-preseq-2-primer-storage': {
+                desc: 'RNA PreSeq 2 primer storage',
+                label: 'RNA PreSeq 2 primer storage',
             },
             'external-sample-indexing': {
                 desc: 'External sample indexing',
