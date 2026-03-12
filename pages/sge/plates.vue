@@ -100,6 +100,8 @@ const fieldDefs = {
             }
         },
     },
+    pcrExperiments: {display: false},
+    sgRnaCloningExperiments: {display: false},
 }
 </script>
 <template>
