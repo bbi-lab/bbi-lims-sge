@@ -16,7 +16,7 @@ import { lots } from './lots'
 import { reagents } from './reagents'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
 import { nucleicAcids, dna, rna } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
@@ -235,6 +235,18 @@ const updatepreseq1PrimerSchema = insertpreseq1PrimerSchema
 const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {orderedOn: nullableDateSchema})
 const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
+
+const selectRnaRtPrimerSchema = createSelectSchema(rnaRtPrimers, {orderedOn: nullableDateSchema})
+const insertRnaRtPrimerSchema = createSelectSchema(rnaRtPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const updateRnaRtPrimerSchema = insertRnaRtPrimerSchema
+
+const selectRnaPreseq1PrimerSchema = createSelectSchema(rnaPreseq1Primers, {orderedOn: nullableDateSchema})
+const insertRnaPreseq1PrimerSchema = createSelectSchema(rnaPreseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const updateRnaPreseq1PrimerSchema = insertRnaPreseq1PrimerSchema
+
+const selectRnaPreseq2PrimerSchema = createSelectSchema(rnaPreseq2Primers, {orderedOn: nullableDateSchema})
+const insertRnaPreseq2PrimerSchema = createSelectSchema(rnaPreseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const updateRnaPreseq2PrimerSchema = insertRnaPreseq2PrimerSchema
 
 // views
 const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWellCounts)
@@ -478,6 +490,21 @@ export const schemas = {
         select: selectpreseq2PrimerSchema,
         insert: insertpreseq2PrimerSchema,
         update: updatepreseq2PrimerSchema,
+    },
+    rnaRtPrimers: {
+        select: selectRnaRtPrimerSchema,
+        insert: insertRnaRtPrimerSchema,
+        update: updateRnaRtPrimerSchema,
+    },
+    rnaPreseq1Primers: {
+        select: selectRnaPreseq1PrimerSchema,
+        insert: insertRnaPreseq1PrimerSchema,
+        update: updateRnaPreseq1PrimerSchema,
+    },
+    rnaPreseq2Primers: {
+        select: selectRnaPreseq2PrimerSchema,
+        insert: insertRnaPreseq2PrimerSchema,
+        update: updateRnaPreseq2PrimerSchema,
     },
     // views
     viewPlatesWithWellCounts: {

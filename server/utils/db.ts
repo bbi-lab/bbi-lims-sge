@@ -23,7 +23,7 @@ import * as sgeRelations from '../db/schema/sge/relations'
 import {usersRelations, userGroupsRelations, userGroupMembershipsRelations} from '../db/schema/relations'
 import {ZodObject} from 'zod'
 import { reagents } from '../db/schema/sge/reagents'
-import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets, preseq1PrimerTargets } from '../db/schema/sge/primer'
+import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets, preseq1PrimerTargets, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibClonalDnaProducts, snvLibGoldenGateProducts } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
@@ -89,6 +89,11 @@ export const schema = {
   preseq1Primers,
   preseq1PrimerTargets,
   preseq2Primers,
+  rnaRtPrimers,
+  rnaPreseq1Primers,
+  rnaPreseq1PrimerTargets,
+  rnaPreseq2Primers,
+  rnaPreseq2PrimerTargets,
   indexPrimers,
   sequencingRuns,
   sequencingRunSamples,
