@@ -16,7 +16,7 @@ import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { nucleicAcids, dna, rna } from './nucleic-acid'
-import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers } from './primer'
+import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets, rnaRtPrimers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
@@ -29,7 +29,12 @@ const genesRelationsConfig: RelationsConfig = {
             table: regions,
             schema: createSelectSchema(regions),
             fields: [regions.geneId]
-        }
+        },
+        rnaRtPrimers: {
+            table: rnaRtPrimers,
+            schema: createSelectSchema(rnaRtPrimers),
+            fields: [rnaRtPrimers.geneId],
+        },
     }
 }
 export const genesRelations = relationsConfigToRelations(genes, genesRelationsConfig)
@@ -187,6 +192,21 @@ const wellablesRelationsConfig: RelationsConfig = {
             fields: [wellables.id],
             referenceTable: preseq2Primers,
             references: [preseq2Primers.id],
+        },
+        rnaPreseq1Primer: {
+            fields: [wellables.id],
+            referenceTable: rnaPreseq1Primers,
+            references: [rnaPreseq1Primers.id],
+        },
+        rnaPreseq2Primer: {
+            fields: [wellables.id],
+            referenceTable: rnaPreseq2Primers,
+            references: [rnaPreseq2Primers.id],
+        },
+        rnaRtPrimer: {
+            fields: [wellables.id],
+            referenceTable: rnaRtPrimers,
+            references: [rnaRtPrimers.id],
         },
         indexPrimer: {
             fields: [wellables.id],
@@ -1341,13 +1361,6 @@ const indexPrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    // many: {
-    //     wellContents: {
-    //         table: wellContents,
-    //         schema: createSelectSchema(wellContents),
-    //         fields: [wellContents.indexPrimerId],
-    //     },
-    // },
 }
 export const indexPrimersRelations = relationsConfigToRelations(indexPrimers, indexPrimersRelationsConfig)
 
@@ -1366,11 +1379,6 @@ const preseq1PrimersRelationsConfig: RelationsConfig = {
             fields: [preseq1PrimerTargets.preseq1PrimerId],
         }
     },
-    // oneToOne: {
-    //     wellContents: {
-    //         table: wellContents
-    //     }
-    // },
 }
 export const preseq1PrimersRelations = relationsConfigToRelations(preseq1Primers, preseq1PrimersRelationsConfig)
 
@@ -1403,13 +1411,92 @@ const preseq2PrimersRelationsConfig: RelationsConfig = {
             references: [wellables.id],
         },
     },
-    // oneToOne: {
-    //     wellContents: {
-    //         table: wellContents
-    //     }
-    // },
 }
 export const preseq2PrimersRelations = relationsConfigToRelations(preseq2Primers, preseq2PrimersRelationsConfig)
+
+const rnaPreseq1PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [rnaPreseq1Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    many: {
+        rnaPreseq1PrimerTargets: {
+            table: rnaPreseq1PrimerTargets,
+            schema: createSelectSchema(rnaPreseq1PrimerTargets),
+            fields: [rnaPreseq1PrimerTargets.rnaPreseq1PrimerId],
+        }
+    },
+}
+export const rnaPreseq1PrimersRelations = relationsConfigToRelations(rnaPreseq1Primers, rnaPreseq1PrimersRelationsConfig)
+
+const rnaPreseq1PrimerTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [rnaPreseq1PrimerTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        rnaPreseq1Primer: {
+            fields: [rnaPreseq1PrimerTargets.rnaPreseq1PrimerId],
+            referenceTable: rnaPreseq1Primers,
+            references: [rnaPreseq1Primers.id],
+        },
+    },
+}
+export const rnaPreseq1PrimerTargetsRelations = relationsConfigToRelations(rnaPreseq1PrimerTargets, rnaPreseq1PrimerTargetsRelationsConfig)
+
+const rnaPreseq2PrimersRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [rnaPreseq2Primers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
+    many: {
+        rnaPreseq2PrimerTargets: {
+            table: rnaPreseq2PrimerTargets,
+            schema: createSelectSchema(rnaPreseq2PrimerTargets),
+            fields: [rnaPreseq2PrimerTargets.rnaPreseq2PrimerId],
+        }
+    }
+}
+export const rnaPreseq2PrimersRelations = relationsConfigToRelations(rnaPreseq2Primers, rnaPreseq2PrimersRelationsConfig)
+
+const rnaPreseq2PrimerTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [rnaPreseq2PrimerTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+        rnaPreseq2Primer: {
+            fields: [rnaPreseq2PrimerTargets.rnaPreseq2PrimerId],
+            referenceTable: rnaPreseq2Primers,
+            references: [rnaPreseq2Primers.id],
+        },
+    },
+}
+export const rnaPreseq2PrimerTargetsRelations = relationsConfigToRelations(rnaPreseq2PrimerTargets, rnaPreseq2PrimerTargetsRelationsConfig)
+
+const rnaRtPrimersRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [rnaRtPrimers.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+        gene: {
+            fields: [rnaRtPrimers.geneId],
+            referenceTable: genes,
+            references: [genes.id],
+        },
+    },
+}
+export const rnaRtPrimersRelations = relationsConfigToRelations(rnaRtPrimers, rnaRtPrimersRelationsConfig)
 
 export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     wellContents: wellContentsRelationsConfig,
@@ -1450,6 +1537,11 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     preseq1Primers: preseq1PrimersRelationsConfig,
     preseq1PrimerTargets: preseq1PrimerTargetsRelationsConfig,
     preseq2Primers: preseq2PrimersRelationsConfig,
+    rnaPreseq1Primers: rnaPreseq1PrimersRelationsConfig,
+    rnaPreseq1PrimerTargets: rnaPreseq1PrimerTargetsRelationsConfig,
+    rnaPreseq2Primers: rnaPreseq2PrimersRelationsConfig,
+    rnaPreseq2PrimerTargets: rnaPreseq2PrimerTargetsRelationsConfig,
+    rnaRtPrimers: rnaRtPrimersRelationsConfig,
     indexPrimers: indexPrimersRelationsConfig,
     sequencingRuns: sequencingRunsRelationsConfig,
     sequencingRunSamples: sequencingRunSamplesRelationsConfig,
