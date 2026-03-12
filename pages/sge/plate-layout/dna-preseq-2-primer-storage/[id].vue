@@ -13,15 +13,15 @@ const plateWithWellSpecs = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['preseq1Primer.targetId'],
-        selectionTableRecordIdPaths: ['preseq1Primer.id'],
+        colorBy: ['preseq2Primer.targetId'],
+        selectionTableRecordIdPaths: ['preseq2Primer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'name'])
-            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR1)` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR2)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -32,15 +32,15 @@ onMounted(async() => {
                 return `${wellCoordinateToChar(well.y)}${well.x}`
             }},
             { header: 'Primer', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name']) || ''
             }},
             { header: 'Project', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'target', 'project', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'project', 'name']) || ''
             }},
-            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'target', 'name']) || '' },
+            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name']) || '' },
         ],
         sortBy: (well: any) => {
-            return _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'target', 'name'])
+            return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name'])
         }
     })
     loadPlate()
@@ -49,7 +49,7 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            preseq1Primer: {
+            preseq2Primer: {
                 with: {
                     target: {
                         with: {
@@ -100,7 +100,7 @@ const displayWithClause = {
                     },
                 },
             },
-        }
+        },
     },
     target: {
         columns: {
@@ -177,7 +177,7 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 4,
     },
 }
 const rowActions = {
@@ -215,7 +215,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="preseq-1-primers"
+                tableName="preseq-2-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"

@@ -13,15 +13,15 @@ const plateWithWellSpecs = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['preseq2Primer.targetId'],
-        selectionTableRecordIdPaths: ['preseq2Primer.id'],
+        colorBy: ['preseq1Primer.preseq1PrimerTargets'],
+        selectionTableRecordIdPaths: ['preseq1Primer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name'])
-            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR2)` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR1)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -32,15 +32,15 @@ onMounted(async() => {
                 return `${wellCoordinateToChar(well.y)}${well.x}`
             }},
             { header: 'Primer', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'name']) || ''
             }},
             { header: 'Project', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'project', 'name']) || ''
+                return _.uniq(_.map(_.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'preseq1PrimerTargets']) || [], 'target.project.name')).join(', ')
             }},
-            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name']) || '' },
+            { header: 'Target', data: (well: any) => _.map(_.get(well, ['wellContents', 0, 'wellable', 'preseq1Primer', 'preseq1PrimerTargets']) || [], 'target.name').join(', ') },
         ],
         sortBy: (well: any) => {
-            return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name'])
+            return `${wellCoordinateToChar(well.y)}${well.x}`
         }
     })
     loadPlate()
@@ -49,18 +49,22 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            preseq2Primer: {
+            preseq1Primer: {
                 with: {
-                    target: {
+                    preseq1PrimerTargets: {
                         with: {
-                            project: {
-                                columns: {
-                                    name: true,
+                            target: {
+                                with: {
+                                    project: {
+                                        columns: {
+                                            name: true,
+                                        },
+                                    },
                                 },
                             },
                         },
-                    },
-                },
+                    }
+                }
             },
         },
     )
@@ -100,32 +104,36 @@ const displayWithClause = {
                     },
                 },
             },
-        },
+        }
     },
-    target: {
-        columns: {
-            name: true
-        },
+    preseq1PrimerTargets: {
         with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
+            target: {
                 columns: {
                     name: true
                 },
                 with: {
-                    gene: {
+                    project: {
                         columns: {
-                            symbol: true
+                            name: true
                         }
-                    }
-                }
+                    },
+                    region: {
+                        columns: {
+                            name: true
+                        },
+                        with: {
+                            gene: {
+                                columns: {
+                                    symbol: true
+                                }
+                            }
+                        }
+                    },
+                },
             },
-        },
-    },
+        }
+    }
 }
 const columnDefs = {
     colorTile:{
@@ -147,20 +155,23 @@ const columnDefs = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
+    preseq1PrimerTargets: {
+        header: 'Target(s)',
         format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+            return _.map(x.preseq1PrimerTargets, 'target.name')
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'preseq1PrimerTargets.displayValue',
         index: 2,
-    },
-    project: {
-        format: (x: any) => {
-            return x.target?.project?.name || ''
+        exportValue: (x: any) => {
+            return _.map(x.preseq1PrimerTargets, 'target.name').join(', ')
         },
-        path: 'project.displayValue',
+    },
+    projects: {
+        header: 'Project(s)',
+        format: (x: any) => {
+            return _.uniq(_.map(x.preseq1PrimerTargets, 'target.project.name')).join(', ')
+        },
+        path: 'projects.displayValue',
         index: 3,
     },
     wellContents: {
@@ -177,7 +188,7 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 4,
     },
 }
 const rowActions = {
@@ -215,7 +226,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="preseq-2-primers"
+                tableName="preseq-1-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"
