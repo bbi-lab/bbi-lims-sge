@@ -55,8 +55,11 @@ const model = ref([
                         { label: 'Linearization primers', to: '/sge/linearization-primers' },
                         { label: 'Homology Arm primers', to: '/sge/homology-arm-primers' },
                         { label: 'Homology Arm pUC19 primers', to: '/sge/homology-arm-puc-19-primers' },
-                        { label: 'PreSeq 1 primers', to: '/sge/preseq-1-primers' },
-                        { label: 'PreSeq 2 primers', to: '/sge/preseq-2-primers' },
+                        { label: 'DNA PreSeq 1 primers', to: '/sge/preseq-1-primers' },
+                        { label: 'DNA PreSeq 2 primers', to: '/sge/preseq-2-primers' },
+                        { label: 'RNA RT primers', to: '/sge/rna-rt-primers' },
+                        { label: 'RNA PreSeq 1 primers', to: '/sge/rna-preseq-1-primers' },
+                        { label: 'RNA PreSeq 2 primers', to: '/sge/rna-preseq-2-primers' },
                         { label: 'Index primers', to: '/sge/index-primers' },
                     ]},
                 ]
