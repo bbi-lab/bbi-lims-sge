@@ -115,7 +115,6 @@ export const rnaPreseq1PrimerTargets = pgTable('rna_preseq_1_primer_targets', {
 
 export const rnaPreseq2Primers = pgTable('rna_preseq_2_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
-    targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),

@@ -1093,6 +1093,13 @@
       "when": 1773350396117,
       "tag": "0155_curvy_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 156,
+      "version": "7",
+      "when": 1773435837438,
+      "tag": "0156_smart_tyrannus",
+      "breakpoints": true
     }
   ]
 }
