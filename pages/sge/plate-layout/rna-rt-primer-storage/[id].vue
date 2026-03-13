@@ -121,6 +121,7 @@ const columnDefs = {
     name: {
         index: 1
     },
+    geneId: {display: false},
     gene: {
         format: (x: any) => {
             return x.gene?.name || ''
