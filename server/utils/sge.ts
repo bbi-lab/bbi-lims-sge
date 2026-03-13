@@ -1,11 +1,12 @@
 import _ from "lodash"
 import { homologyArmPrimerTargets, preseq1PrimerTargets } from "../db/schema/sge/primer"
-import { pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
+import { pcrExperiments, pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
 import {eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
 import { plates } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
+import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
 
 
 export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
@@ -79,6 +80,23 @@ export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, 
             statusMessage: 'Plate wells must be empty before deleting'
         })
     }
+
+    // check if plate is associated with any PCR or sgRNA cloning experiments and throw error if it is
+    const associatedPcrExperiments = await (tx ?? db).select().from(pcrExperiments).where(eq(pcrExperiments.plateId, plateId))
+    if (associatedPcrExperiments.length > 0) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'This plate is associated with a PCR experiment and will be deleted when the experiment is deleted.'
+        })
+    }
+    const associatedsgRnaCloningExperiments = await (tx ?? db).select().from(sgRnaCloningExperiments).where(eq(sgRnaCloningExperiments.plateId, plateId))
+    if (associatedsgRnaCloningExperiments.length > 0) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'This plate is associated with an sgRNA cloning experiment and will be deleted when the experiment is deleted.'
+        })
+    }
+
     // delete associated wellContentSources and wells then plate
     const emptyWells = await (tx ?? db).select().from(wells).where(eq(wells.plateId, plateId))
     await (tx ?? db).delete(wellContentSources).where(inArray(wellContentSources.sourceWellId, _.map(emptyWells, 'id')))
