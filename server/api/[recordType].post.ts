@@ -4,7 +4,7 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets } from '../utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets, updateRnaPreseq1PrimerTargets, updateRnaPreseq2PrimerTargets } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
 import { assert } from 'node:console'
 
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
             }
             const insertedRecords = await insertRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), records, tx)
 
-            // handle single HA primer, PCR experiment, and Preseq 1 primer inserts that include array of targets
+            // handle single HA primer, PCR experiment, and DNA and RNA Preseq primer inserts that include array of targets
             if (body.length == 1 && insertedRecords?.length == 1) {
                 if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
                     const targetIds = _.compact(_.map(body[0].targets, 'targetId'))
@@ -57,6 +57,12 @@ export default defineEventHandler(async (event) => {
                 } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
                     const preseq1PrimerTargetIds = _.compact(_.map(body[0].preseq1PrimerTargets, 'targetId'))
                     await updatePreseq1PrimerTargets(insertedRecords[0].id, preseq1PrimerTargetIds, tx)
+                } else if (_.camelCase(recordType) == 'rnaPreseq1Primers' && _.isArray(body[0].rnaPreseq1PrimerTargets)) {
+                    const rnaPreseq1PrimerTargetIds = _.compact(_.map(body[0].rnaPreseq1PrimerTargets, 'targetId'))
+                    await updateRnaPreseq1PrimerTargets(insertedRecords[0].id, rnaPreseq1PrimerTargetIds, tx)
+                } else if (_.camelCase(recordType) == 'rnaPreseq2Primers' && _.isArray(body[0].rnaPreseq2PrimerTargets)) {
+                    const rnaPreseq2PrimerTargetIds = _.compact(_.map(body[0].rnaPreseq2PrimerTargets, 'targetId'))
+                    await updateRnaPreseq2PrimerTargets(insertedRecords[0].id, rnaPreseq2PrimerTargetIds, tx)
                 }
             }
             return insertedRecords
