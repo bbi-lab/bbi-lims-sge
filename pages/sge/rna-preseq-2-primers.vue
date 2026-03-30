@@ -16,9 +16,17 @@ const toast = useToast()
 
 const submitRnaPreseq2Primers = async (data: any[]) => {
     try {
+        // remove items with "Sample row" in the notes field as these are template row
+        const filteredData = _.filter(data, (item) => {
+            return !_.includes(_.toLower(item.notes || ''), 'sample row')
+        })
+        if (_.isEmpty(filteredData)) {
+            toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
+            return
+        }
         const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/rna-pcr2-primer-import`, {
             method: 'POST',
-            body: data,
+            body: filteredData,
         })
         crudTable.didAddRecords(response.primers)
         toast.add({ severity: 'success', summary: 'Success', detail: `Successfully imported ${response.insertedCount} RNA PreSeq 2 Primers.`, life: 5000 })
