@@ -1,12 +1,13 @@
 import _ from "lodash"
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from "../db/schema/sge/primer"
 import { pcrExperiments, pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
-import {eq, inArray} from "drizzle-orm"
+import {and, eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
 import { plates } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
 import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
+import { targets } from "../db/schema/sge/target"
 
 
 export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
@@ -139,4 +140,40 @@ export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, 
     await (tx ?? db).delete(wells).where(eq(wells.plateId, plateId))
     const deletedRecord = await deleteRecord(plates, plateId, tx)
     return deletedRecord
+}
+
+export async function plateStorageBoxNamesToIdsMap(plateStorageBoxNames: string[], tx?: PgTransaction<any, any, any>) {
+    const plateRecords = await (tx ?? db).select().from(plates).where(inArray(plates.name, plateStorageBoxNames))
+    const plateNameToIdMap = _.keyBy(plateRecords, 'name')
+    return _.mapValues(plateNameToIdMap, 'id')
+}
+
+export async function targetNamesToIdsMap(targetNames: string[], tx?: PgTransaction<any, any, any>) {
+    const targetRecords = await (tx ?? db).select().from(targets).where(inArray(targets.name, targetNames))
+    const targetNameToIdMap = _.keyBy(targetRecords, 'name')
+    return _.mapValues(targetNameToIdMap, 'id')
+}
+
+export const getWellIdFromPlateNameAndWellLocation = async (plateName: string, wellLocation: string, tx?: PgTransaction<any, any, any>) => {
+    const plateRecord = await (tx ?? db).select().from(plates).where(eq(plates.name, plateName)).limit(1)
+
+    if (plateRecord.length !== 1) {
+        throw new Error(`Could not find plate with name ${plateName}`)
+    }
+
+    // convert well location from A1 format to row/column
+    const match = wellLocation.match(/^([A-Za-z]+)(\d+)$/)
+    if (!match) {
+        throw new Error(`Invalid well location format: ${wellLocation}`)
+    }
+    const yCoord = match[1].toLowerCase().charCodeAt(0) - 96
+    const xCoord = parseInt(match[2])
+
+    const wellRecord = await (tx ?? db).select().from(wells).where(and(eq(wells.plateId, plateRecord[0].id), eq(wells.x, xCoord), eq(wells.y, yCoord))).limit(1)
+
+    if (wellRecord.length !== 1) {
+        throw new Error(`Could not find well with location ${wellLocation} in plate ${plateName}`)
+    }
+
+    return wellRecord[0].id
 }
