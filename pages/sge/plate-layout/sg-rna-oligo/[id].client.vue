@@ -16,7 +16,7 @@ const plateDiagramKey = ref(0)
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['sgRnaOligo.targetId'],
+        colorBy: ['sgRnaOligo.id'],
         selectionTableRecordIdPaths: ['sgRnaOligo.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
@@ -114,9 +114,13 @@ const displayWithClause = {
             },
         }
     },
-    target: {
-        columns: {
-            name: true,
+    sgRnaOligoTargets: {
+        with: {
+            target: {
+                columns: {
+                    name: true,
+                },
+            },
         },
     },
 }
@@ -142,24 +146,49 @@ const columnDefs = {
     name: {
         index: 1,
     },
-    target: {
-        header: 'Target',
+    sgRnaOligoTargets: {
+        header: 'Target(s)',
         format: (x: any) => {
-            return x.target ? x.target.name : ''
+            return _.map(x.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target.name
+            })
         },
-        path: 'target.displayValue',
+        path: 'sgRnaOligoTargets.displayValue',
         index: 2,
     },
-    targetId: { display: false },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
-            return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            const wellContents = _.filter(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
+            return (!_.isEmpty(wellContents) ?
+                _.map(wellContents, (content) => ` ${_.get(content, 'well.plate.name')}: ${wellCoordinateToChar(content.well?.y)}${content.well?.x}`) :
+                []).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 3,
+    },
+}
+const rowActions = {
+    assign: {
+        label: '',
+        action: async (data: any) => {
+            if (plateLayout.selectedWells.value.length === 0) {
+                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
+                return
+            } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
+                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
+                return
+            } else {
+                await plateLayout.assignIdToSelectedWells(data.id)
+            }
+        },
+        icon: 'pi pi-fw pi-arrow-right',
+        iconPos: 'right',
+        tooltip: 'Assign to selected wells',
+        disabled: (data: any) => {
+            return _.has(data, 'wellContents.well.id')
+        },
     },
 }
 const frozenRecordIds = computed(() => {
@@ -179,6 +208,7 @@ const frozenRecordIds = computed(() => {
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
                 :showColumnFilters="true"
+                :rowActions="rowActions"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds"
             />
