@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets, updateRnaPreseq1PrimerTargets, updateRnaPreseq2PrimerTargets } from '~/server/utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets, updateRnaPreseq1PrimerTargets, updateRnaPreseq2PrimerTargets, updateSgRnaOligoTargets } from '~/server/utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -39,6 +39,9 @@ export default defineEventHandler(async (event) => {
             } else if (_.camelCase(recordType) == 'rnaPreseq2Primers' && _.isArray(body.rnaPreseq2PrimerTargets)) {
                 const rnaPreseq2PrimerTargetIds = _.compact(_.map(body.rnaPreseq2PrimerTargets, 'targetId'))
                 await updateRnaPreseq2PrimerTargets(id, rnaPreseq2PrimerTargetIds, tx)
+            } else if (_.camelCase(recordType) == 'sgRnaOligos' && _.isArray(body.sgRnaOligoTargets)) {
+                const sgRnaOligoTargetIds = _.compact(_.map(body.sgRnaOligoTargets, 'targetId'))
+                await updateSgRnaOligoTargets(id, sgRnaOligoTargetIds, tx)
             }
 
             return recordUpdated

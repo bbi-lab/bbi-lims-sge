@@ -8,6 +8,7 @@ import { plates, PlateType } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
 import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
 import { targets } from "../db/schema/sge/target"
+import { sgRnaOligoTargets } from "../db/schema/sge/oligos"
 
 
 export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
@@ -99,6 +100,24 @@ export const updateRnaPreseq2PrimerTargets = async (id: string, targetIds: strin
             existingRnaPreseq2PrimerTargets.push(...await tx.insert(rnaPreseq2PrimerTargets).values(rnaPreseq2PrimerTargetsToInsert.map(targetId => ({ targetId, rnaPreseq2PrimerId: id }))).returning())
         }
         return existingRnaPreseq2PrimerTargets
+    }
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
+    return result
+}
+
+export const updateSgRnaOligoTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
+        const existingSgRnaOligoTargets = await tx.select().from(sgRnaOligoTargets).where(eq(sgRnaOligoTargets.sgRnaOligoId, id))
+
+        // delete targets that are not in the incoming list
+        const missingSgRnaOligoTargetIds = _.difference(_.map(existingSgRnaOligoTargets, 'targetId'), targetIds)
+        await tx.delete(sgRnaOligoTargets).where(inArray(sgRnaOligoTargets.targetId, missingSgRnaOligoTargetIds))
+        // insert targets that are in the incoming list and don't already exist
+        const sgRnaOligoTargetsToInsert = _.difference(targetIds, _.map(existingSgRnaOligoTargets, 'targetId'))
+        if (!_.isEmpty(sgRnaOligoTargetsToInsert)) {
+            existingSgRnaOligoTargets.push(...await tx.insert(sgRnaOligoTargets).values(sgRnaOligoTargetsToInsert.map(targetId => ({ targetId, sgRnaOligoId: id }))).returning())
+        }
+        return existingSgRnaOligoTargets
     }
     const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
     return result
