@@ -19,8 +19,8 @@ export const sgRnaOligos = pgTable('sg_rna_oligos', {
 
 export const sgRnaOligoTargets = pgTable('sg_rna_oligo_targets', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
-    sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id),
-    targetId: uuid('target_id').references(() => targets.id),
+    sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id).notNull(),
+    targetId: uuid('target_id').references(() => targets.id).notNull(),
 }, (t) => [
     uniqueIndex('unique_sg_rna_oligo_target').on(t.sgRnaOligoId, t.targetId),
 ])
