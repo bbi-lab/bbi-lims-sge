@@ -1,60 +1,76 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import { sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
-const rowActions = {}
 const columnDefs = {
-    targetId: {
-        header: 'Target',
-        format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+    sgRnaOligoTargets: {
+        header: 'Targets',
+        format: (data: any) => {
+            console.log(data.sgRnaOligoTargets)
+            return _.map(data.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target.name
+            })
         },
-        path: 'targetId.displayValue',
-        type: 'string',
-        index: 2,
+        path: 'sgRnaOligoTargets.displayValue',
     },
     wellContents: {display: false},
 }
 const fieldDefs = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'sgRnaOligoTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        }
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['name'],
+                        valueField: 'id',
+                        displayFields: ['name'],
+                        dropdown: true,
+                    },
+                },
+            ]
+        },
     },
     wellContents: {
         display: false,
     },
 }
 const displayWithClause = {
-    target: {
-        columns: {
-            name: true
-        },
+    sgRnaOligoTargets: {
         with: {
-            project: {
+            target: {
                 columns: {
-                    name: true
-                }
-            },
-            region: {
-                columns: {
-                    name: true
+                    name: true,
                 },
                 with: {
-                    gene: {
+                    project: {
                         columns: {
-                            symbol: true
+                            name: true
                         }
-                    }
-                }
+                    },
+                    region: {
+                        columns: {
+                            name: true
+                        },
+                        with: {
+                            gene: {
+                                columns: {
+                                    symbol: true
+                                }
+                            }
+                        }
+                    },
+                },
             },
         },
     },
@@ -83,6 +99,17 @@ const displayWithClause = {
         }
     },
 }
+const formWithClause = {
+    sgRnaOligoTargets: {
+        with: {
+            target: {
+                columns: {
+                    name: true,
+                },
+            },
+        },
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -92,7 +119,6 @@ const displayWithClause = {
                 tableName="sg-rna-oligos"
                 schemaName="select"
                 title="sgRNA Oligos"
-                :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
@@ -115,6 +141,7 @@ const displayWithClause = {
                 schemaName="update"
                 :recordId="crudTable.state.editingRecordId"
                 :fieldDefs="fieldDefs"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
             />
