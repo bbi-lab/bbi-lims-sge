@@ -13,15 +13,15 @@ const plateWithWellSpecs = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['preseq2Primer.targetId'],
-        selectionTableRecordIdPaths: ['preseq2Primer.id'],
+        colorBy: ['rnaRtPrimer.geneId'],
+        selectionTableRecordIdPaths: ['rnaRtPrimer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name'])
-            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR2)` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'rnaRtPrimer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (RNA RT)` : wellCoordinate
         },
         symbol: (well: any) => {
-            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'sequenceType'])
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'rnaRtPrimer', 'sequenceType'])
             return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
@@ -32,15 +32,12 @@ onMounted(async() => {
                 return `${wellCoordinateToChar(well.y)}${well.x}`
             }},
             { header: 'Primer', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name']) || ''
+                return _.get(well, ['wellContents', 0, 'wellable', 'rnaRtPrimer', 'name']) || ''
             }},
-            { header: 'Project', data: (well: any) => {
-                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'project', 'name']) || ''
-            }},
-            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name']) || '' },
+            { header: 'Gene', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'rnaRtPrimer', 'gene', 'name']) || '' },
         ],
         sortBy: (well: any) => {
-            return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name'])
+            return _.get(well, ['wellContents', 0, 'wellable', 'rnaRtPrimer', 'gene', 'name'])
         }
     })
     loadPlate()
@@ -49,15 +46,11 @@ onMounted(async() => {
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            preseq2Primer: {
+            rnaRtPrimer: {
                 with: {
-                    target: {
-                        with: {
-                            project: {
-                                columns: {
-                                    name: true,
-                                },
-                            },
+                    gene: {
+                        columns: {
+                            name: true,
                         },
                     },
                 },
@@ -102,28 +95,9 @@ const displayWithClause = {
             },
         },
     },
-    target: {
+    gene: {
         columns: {
             name: true
-        },
-        with: {
-            project: {
-                columns: {
-                    name: true
-                }
-            },
-            region: {
-                columns: {
-                    name: true
-                },
-                with: {
-                    gene: {
-                        columns: {
-                            symbol: true
-                        }
-                    }
-                }
-            },
         },
     },
 }
@@ -147,26 +121,17 @@ const columnDefs = {
     name: {
         index: 1
     },
-    targetId: {
-        header: 'Target',
+    geneId: {display: false},
+    gene: {
         format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+            return x.gene?.name || ''
         },
-        path: 'targetId.displayValue',
-        type: 'string',
+        path: 'gene.displayValue',
         index: 2,
-    },
-    project: {
-        format: (x: any) => {
-            return x.target?.project?.name || ''
-        },
-        path: 'project.displayValue',
-        index: 3,
     },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            // return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''
             if (!_.isEmpty(x?.wellable?.wellContents)) {
                 return _.map(x.wellable.wellContents, (wellContent) => {
                     return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
@@ -177,7 +142,7 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 3,
     },
 }
 const rowActions = {
@@ -215,7 +180,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="preseq-2-primers"
+                tableName="rna-rt-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"

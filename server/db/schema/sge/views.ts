@@ -301,6 +301,7 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   indexPrimer2Id: uuid('index_primer_2_id'),
   indexPrimer1Label: varchar('index_primer_1_label'),
   indexPrimer2Label: varchar('index_primer_2_label'),
+  indexPlateWellLabel: varchar('index_plate_well_label'),
   sourceWellId: uuid('source_well_id'),
   sourceWellX: integer('source_well_x'),
   sourceWellY: integer('source_well_y'),
@@ -311,7 +312,25 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   overrideCycles: varchar('override_cycles'),
   notes: text('notes'),
   createdAt: timestamp('created_at'),
-}).as(sql`SELECT
+}).as(sql`
+WITH index_plate_well (source_well_id, index_plate_well_label) AS (
+    SELECT
+        source_well_id,
+        string_agg(plate_well_label, ', ') as index_plate_well_label
+    FROM (
+        SELECT DISTINCT ON (wells.id)
+            sequencing_run_samples.source_well_id,
+            plates.name || ': ' || CHR(wells.y + 64) || wells.x AS plate_well_label
+        FROM sequencing_run_samples
+            JOIN well_contents on well_contents.well_id = source_well_id
+            JOIN well_content_sources ON well_content_id = well_contents.id
+            JOIN wells ON well_content_sources.source_well_id = wells.id
+            JOIN plates ON wells.plate_id = plates.id
+        WHERE plate_type = 'seq-index'
+    )
+    GROUP BY source_well_id
+)
+SELECT
   sequencing_run_samples.id AS id,
   CASE
     WHEN dna_pellets.name IS NOT NULL THEN dna_pellets.name || '_DNA'
@@ -327,7 +346,8 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   index_primer_2_id,
   primer1.index_sequence || ' (' || primer1.primer_type || ')' AS index_primer_1_label,
   primer2.index_sequence || ' (' || primer2.primer_type || ')' AS index_primer_2_label,
-  source_well_id,
+  index_plate_well_label,
+  sequencing_run_samples.source_well_id,
   wells.x AS source_well_x,
   wells.y AS source_well_y,
   plates.name AS source_plate_name,
@@ -352,6 +372,7 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   LEFT JOIN index_primers AS primer2 ON sequencing_run_samples.index_primer_2_id = primer2.id
   LEFT JOIN wells ON sequencing_run_samples.source_well_id = wells.id
   LEFT JOIN plates ON wells.plate_id = plates.id
+  LEFT JOIN index_plate_well ON sequencing_run_samples.source_well_id = index_plate_well.source_well_id
   UNION
   SELECT
   sequencing_run_external_samples.id AS id,
@@ -365,6 +386,7 @@ export const viewSequencingRunAllSamples = pgView('view_sequencing_run_all_sampl
   index_primer_2_id,
   primer1.index_sequence || ' (' || primer1.primer_type || ')' AS index_primer_1_label,
   primer2.index_sequence || ' (' || primer2.primer_type || ')' AS index_primer_2_label,
+  NULL AS index_plate_well_label,
   source_well_id,
   wells.x AS source_well_x,
   wells.y AS source_well_y,

@@ -13,31 +13,49 @@ const plateWithWellSpecs = ref()
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['pellet.transfectTarget.target.name'],
-        selectionTableRecordIdPaths: ['pellet.id'],
+        colorBy: ['preseq2Primer.targetId'],
+        selectionTableRecordIdPaths: ['preseq2Primer.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const pelletName = _.get(well, ['wellContents', 0, 'wellable', 'pellet', 'name'])
-            return pelletName ? `${wellCoordinate}:<br>${pelletName}` : wellCoordinate
+            const primerName = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name'])
+            return primerName ? `${wellCoordinate}:<br>${primerName} (PCR2)` : wellCoordinate
+        },
+        symbol: (well: any) => {
+            const primerDirection = _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'sequenceType'])
+            return primerDirection ? _.upperCase(primerDirection[0]) : ''
         },
     }
+
+    plateLayout.setExportPlateLayoutConfig({
+        columns: [
+            { header: 'Well Position', data: (well: any) => {
+                return `${wellCoordinateToChar(well.y)}${well.x}`
+            }},
+            { header: 'Primer', data: (well: any) => {
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'name']) || ''
+            }},
+            { header: 'Project', data: (well: any) => {
+                return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'project', 'name']) || ''
+            }},
+            { header: 'Target', data: (well: any) => _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name']) || '' },
+        ],
+        sortBy: (well: any) => {
+            return _.get(well, ['wellContents', 0, 'wellable', 'preseq2Primer', 'target', 'name'])
+        }
+    })
     loadPlate()
 })
 
 const loadPlate = async () => {
     await plateLayout.loadPlate(
         {
-            pellet: {
+            preseq2Primer: {
                 with: {
-                    transfectTarget: {
+                    target: {
                         with: {
-                            target: {
-                                with: {
-                                    region: {
-                                        with: {
-                                            gene: true,
-                                        },
-                                    },
+                            project: {
+                                columns: {
+                                    name: true,
                                 },
                             },
                         },
@@ -82,36 +100,32 @@ const displayWithClause = {
                     },
                 },
             },
-        }
+        },
     },
-    transfectTarget: {
+    target: {
+        columns: {
+            name: true
+        },
         with: {
-            target: {
+            project: {
+                columns: {
+                    name: true
+                }
+            },
+            region: {
                 columns: {
                     name: true
                 },
                 with: {
-                    project: {
+                    gene: {
                         columns: {
-                            name: true
+                            symbol: true
                         }
-                    },
-                    region: {
-                        columns: {
-                            name: true
-                        },
-                        with: {
-                            gene: {
-                                columns: {
-                                    symbol: true
-                                }
-                            }
-                        }
-                    },
-                },
+                    }
+                }
             },
         },
-    }
+    },
 }
 const columnDefs = {
     colorTile:{
@@ -131,13 +145,23 @@ const columnDefs = {
         exportable: false,
     },
     name: {
-        index: 1,
+        index: 1
     },
-    transfectTargetId: {
-        display: false,
+    targetId: {
+        header: 'Target',
+        format: (x: any) => {
+            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
+        },
+        path: 'targetId.displayValue',
+        type: 'string',
+        index: 2,
     },
-    harvestedBy: {
-        display: false,
+    project: {
+        format: (x: any) => {
+            return x.target?.project?.name || ''
+        },
+        path: 'project.displayValue',
+        index: 3,
     },
     wellContents: {
         header: 'Location',
@@ -153,7 +177,7 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 4,
     },
 }
 const rowActions = {
@@ -161,13 +185,13 @@ const rowActions = {
         label: '',
         action: async (data: any) => {
             if (plateLayout.selectedWells.value.length === 0) {
-                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select wells to assign pellets to.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select wells to assign primers to.', life: 3000 })
                 return
             } else if (plateLayout.selectedWells.value.length > 1) {
-                toast.add({ severity: 'warn', summary: 'Multiple wells selected', detail: 'Please select only one well to assign a pellet.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'Multiple wells selected', detail: 'Please select only one well to assign a primer.', life: 3000 })
                 return
             } else if (!_.isEmpty(plateLayout.selectedWells.value[0].data.wellContents)) {
-                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a pellet.', life: 3000 })
+                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select an empty well to assign a primer.', life: 3000 })
                 return
             } else {
                 await plateLayout.assignIdToSelectedWells(data.id)
@@ -191,7 +215,7 @@ const frozenRecordIds = computed(() => {
         <SplitterPanel class="overflow-scroll" :size="60">
             <QuickTable
                 :ref="plateLayout.setSelectionTableRef"
-                tableName="pellets"
+                tableName="preseq-2-primers"
                 schemaName="select"
                 :canAdd="false"
                 :canDelete="false"
@@ -202,7 +226,6 @@ const frozenRecordIds = computed(() => {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
-                :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
@@ -215,10 +238,12 @@ const frozenRecordIds = computed(() => {
                 :plateType="plateWithWellSpecs.plateType"
                 :sizeX="plateWithWellSpecs.sizeX"
                 :sizeY="plateWithWellSpecs.sizeY"
+                :showExportButton="true"
                 @well-range-selected="plateLayout.wellRangeSelected"
                 @well-selection-cleared="plateLayout.wellSelectionCleared"
                 @all-wells-selected="plateLayout.selectedAllWells"
-                @well-contents-updated="plateLayout.updatedWellContents" >
+                @well-contents-updated="plateLayout.updatedWellContents"
+                @did-click-export-plate-layout="plateLayout.exportPlateLayout" >
                 <template #header>
                     {{ plateWithWellSpecs.name }}
                 </template>

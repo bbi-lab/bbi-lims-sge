@@ -34,7 +34,9 @@ export const useCrudTable = () => {
         state.editingRecordId = null
         state.showEditForm = false
     }
-
+    const didAddRecords = (event: any[]) => {
+        tableRef.value.addOrRefreshRecordIds(event.map((record: any) => record.id))
+    }
     const didAddRecord = (event: any) => {
         tableRef.value.addOrRefreshRecordIds([event.id])
         state.showAddForm = false
@@ -74,6 +76,7 @@ export const useCrudTable = () => {
         didClickCancelAddForm,
         didClickCancelEditForm,
         didAddRecord,
+        didAddRecords,
         didUpdateRecord,
         didDeleteRecord,
         didClickMultipleRecordEdit,

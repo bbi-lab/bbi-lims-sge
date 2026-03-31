@@ -55,7 +55,6 @@ const loadPlate = async () => {
 
 watch (selectedSourcePlateId, async (newValue) => {
     if (newValue) {
-        console.log('Loading source plate', newValue)
         sourcePlateLayout.setPlateId(newValue)
 
         sourcePlateLayout.wellContentsDisplayConfig.value = {
@@ -201,7 +200,6 @@ const transferSelectedWellsContents = async () => {
         const sourceWellsSorted = _.sortBy(sourceWells, ['x', 'y'])
         const destinationWellsSorted = _.sortBy(destinationWells, ['x', 'y'])
 
-        console.log(sourceWellsSorted)
         const haPrimersToConvert = _.map(sourceWellsSorted, (well, index) => {
             const haPrimer = _.get(well, 'data.wellContents.0.wellable.homologyArmPrimer')
             const destinationWell = destinationWellsSorted[index]

@@ -14,7 +14,7 @@ const readonlyValues = ref<Record<string, any>>({})
 const importDialogVisible = ref(false)
 const toast = useToast()
 
-const submitDnaPreseq1Primers = async (data: any[]) => {
+const submitRnaPreseq2Primers = async (data: any[]) => {
     try {
         // remove items with "Sample row" in the notes field as these are template row
         const filteredData = _.filter(data, (item) => {
@@ -24,12 +24,12 @@ const submitDnaPreseq1Primers = async (data: any[]) => {
             toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
             return
         }
-        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/preseq1-primers/pcr-primer-import`, {
+        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/rna-preseq2-primers/pcr-primer-import`, {
             method: 'POST',
             body: filteredData,
         })
         crudTable.didAddRecords(response.primers)
-        toast.add({ severity: 'success', summary: 'Success', detail: `Successfully imported ${response.insertedCount} DNA PreSeq 1 Primers.`, life: 5000 })
+        toast.add({ severity: 'success', summary: 'Success', detail: `Successfully imported ${response.insertedCount} RNA PreSeq 2 Primers.`, life: 5000 })
         importDialogVisible.value = false
     } catch (error: any) {
         const userMessage =  _.isArray(error?.data?.data) ? convertErrorDataToUserMessage(error.data.data) : error.statusMessage ?? 'An unexpected error occurred during import. Please try again.'
@@ -37,14 +37,14 @@ const submitDnaPreseq1Primers = async (data: any[]) => {
     }
 }
 
-const importDnaPreseq1Primers = (event: any) => {
+const importRnaPreseq2Primers = (event: any) => {
     try {
         const files = event.files
         const f = files[0]
 
-        fileToSheet(f, submitDnaPreseq1Primers)
+        fileToSheet(f, submitRnaPreseq2Primers)
     } catch (error) {
-        console.error('Error importing DNA PreSeq 1 Primers:', error)
+        console.error('Error importing RNA PreSeq 2 Primers:', error)
     }
 }
 
@@ -58,7 +58,7 @@ watch(() => route.query, async (newValue, oldValue) => {
 }, { immediate: true })
 
 const displayWithClause = Object.freeze({
-    preseq1PrimerTargets: {
+    rnaPreseq2PrimerTargets: {
         columns: {},
         with: {
             target: {
@@ -105,21 +105,21 @@ const columnDefs = {
     name: {
         index: 1
     },
-    preseq1PrimerTargets: {
+    rnaPreseq2PrimerTargets: {
         header: 'Target(s)',
         format: (x: any) => {
-            return _.map(x.preseq1PrimerTargets, 'target.name')
+            return _.map(x.rnaPreseq2PrimerTargets, 'target.name')
         },
-        path: 'preseq1PrimerTargets.displayValue',
+        path: 'rnaPreseq2PrimerTargets.displayValue',
         index: 2,
         exportValue: (x: any) => {
-            return _.map(x.preseq1PrimerTargets, 'target.name').join(', ')
+            return _.map(x.rnaPreseq2PrimerTargets, 'target.name').join(', ')
         },
     },
     projects: {
         header: 'Project(s)',
         format: (x: any) => {
-            return _.uniq(_.map(x.preseq1PrimerTargets, 'target.project.name')).join(', ')
+            return _.uniq(_.map(x.rnaPreseq2PrimerTargets, 'target.project.name')).join(', ')
         },
         path: 'projects.displayValue',
         index: 3,
@@ -143,7 +143,7 @@ const columnDefs = {
 }
 
 const fieldDefs: FieldDefinitions = {
-    'preseq1PrimerTargets.*': {
+    'rnaPreseq2PrimerTargets.*': {
         label: 'Targets',
         component: 'InputArray',
         canDelete: true,
@@ -167,7 +167,7 @@ const fieldDefs: FieldDefinitions = {
     },
 }
 const formWithClause = {
-    preseq1PrimerTargets: {
+    rnaPreseq2PrimerTargets: {
         columns: {
             id: true,
             targetId: true,
@@ -188,9 +188,9 @@ const formWithClause = {
             <QuickTable
                 :key="tableKey"
                 :ref="crudTable.setTableRef"
-                tableName="preseq-1-primers"
+                tableName="rna-preseq-2-primers"
                 schemaName="select"
-                title="PreSeq 1 Primers"
+                title="RNA PreSeq 2 Primers"
                 :withClause="displayWithClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"
@@ -214,7 +214,7 @@ const formWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="preseq-1-primers"
+                tableName="rna-preseq-2-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -224,7 +224,7 @@ const formWithClause = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="preseq-1-primers"
+                tableName="rna-preseq-2-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -235,7 +235,7 @@ const formWithClause = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="preseq-1-primers"
+                tableName="rna-preseq-2-primers"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
@@ -245,6 +245,7 @@ const formWithClause = {
             />
         </SplitterPanel>
     </Splitter>
+
     <Dialog v-model:visible="importDialogVisible" modal :closable="false" :style="{ width: '35' }">
         <slot name="closebutton">
             <div class="flex justify-end">
@@ -252,9 +253,9 @@ const formWithClause = {
             </div>
         </slot>
         <slot name="header">
-            <span class="flex justify-center mt-3 font-bold">Import DNA PreSeq 1 Primers</span>
+            <span class="flex justify-center mt-3 font-bold">Import RNA PreSeq 2 Primers</span>
         </slot>
-        <a href="/templates/pcr1_primer_import_template.xlsx" download class="flex justify-center mt-3 mb-5 text-primary">Download template</a>
+        <a href="/templates/pcr2_primer_import_template.xlsx" download class="flex justify-center mt-3 mb-5 text-primary">Download template</a>
         <FileUpload
             mode="basic"
             accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
@@ -262,9 +263,9 @@ const formWithClause = {
             :maxFileSize="1000000"
             :customUpload="true"
             :auto="true"
-            @uploader="importDnaPreseq1Primers"
+            @uploader="importRnaPreseq2Primers"
             chooseLabel="Upload"
-            v-tooltip="{value: 'Upload DNA PreSeq 1 Primers', showDelay: 500}"
+            v-tooltip="{value: 'Upload RNA PreSeq 2 Primers', showDelay: 500}"
         >
             <template #chooseicon>
                 <i class="pi pi-upload"></i>

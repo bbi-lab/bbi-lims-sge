@@ -245,7 +245,6 @@ const addToSequencingRun = async (selectedWells: any) => {
             }
         }
     } catch (error: any) {
-        console.log(error)
         toast.add({
             severity: 'error',
             summary: 'Error',
@@ -284,12 +283,13 @@ const columnDefs = {
         path: 'indexPrimer2.displayValue',
         index: 4,
     },
+    indexPlateWellLabel: { index: 5, header: 'Index plate: well' },
     sourceWell: {
         format: (data: any) => {
             return data.sourceWellId ? `${data.sourcePlateName}: ${wellCoordinateToChar(data.sourceWellY)}${data.sourceWellX}` : ''
         },
         path: 'sourceWell.displayValue',
-        index: 5,
+        index: 6,
     },
 }
 const internalSampleFieldDefs = {

@@ -232,7 +232,6 @@ function hasFixedSize(key: string) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
-        {{ combinedRecord }}
         <div v-for="(val, key) in formSchemPropertiesComputed" :key="key" class="mt-5">
             <div class="mb-5" v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>

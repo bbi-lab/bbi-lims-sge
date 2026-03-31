@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { parseDeleteError } from '~/server/utils/restApi'
 import { eq } from 'drizzle-orm'
 import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
-import { homologyArmPrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
+import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
 import { plates } from '~/server/db/schema/sge/plate'
 import { deleteEmptyPlate } from '~/server/utils/sge'
 import { pcrExperiments, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
@@ -33,6 +33,10 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(homologyArmPrimerTargets).where(eq(homologyArmPrimerTargets.homologyArmPrimerId, id))
             } else if (_.camelCase(recordType) == 'preseq1Primers') {
                 await tx.delete(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
+            } else if (_.camelCase(recordType) == 'rnaPreseq1Primers') {
+                await tx.delete(rnaPreseq1PrimerTargets).where(eq(rnaPreseq1PrimerTargets.rnaPreseq1PrimerId, id))
+            } else if (_.camelCase(recordType) == 'rnaPreseq2Primers') {
+                await tx.delete(rnaPreseq2PrimerTargets).where(eq(rnaPreseq2PrimerTargets.rnaPreseq2PrimerId, id))
             } else if (_.camelCase(recordType) == 'pcrExperiments') {
 
                 // delete assiociated targets

@@ -361,8 +361,6 @@ const transferSelectedWellsContents = async () => {
     const sourceWells = sourcePlateLayout!.selectedWells.value
     const destinationWells = plateLayout.selectedWells.value
 
-    console.log(selectedSourcePlate.value)
-
     if (_.isEmpty(sourceWells)) {
         toast.add({severity: 'warn', summary: 'No wells selected for transfer', life: 3000})
     } else if (selectedSourcePlate.value.plateType === 'rna-preseq-1' && sourceWells.length !== destinationWells.length) {

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets } from '~/server/utils/sge'
+import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets, updateRnaPreseq1PrimerTargets, updateRnaPreseq2PrimerTargets } from '~/server/utils/sge'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -33,6 +33,12 @@ export default defineEventHandler(async (event) => {
             } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body.preseq1PrimerTargets)) {
                 const preseq1PrimerTargetIds = _.map(body.preseq1PrimerTargets, 'targetId')
                 await updatePreseq1PrimerTargets(id, preseq1PrimerTargetIds, tx)
+            } else if (_.camelCase(recordType) == 'rnaPreseq1Primers' && _.isArray(body.rnaPreseq1PrimerTargets)) {
+                const rnaPreseq1PrimerTargetIds = _.compact(_.map(body.rnaPreseq1PrimerTargets, 'targetId'))
+                await updateRnaPreseq1PrimerTargets(id, rnaPreseq1PrimerTargetIds, tx)
+            } else if (_.camelCase(recordType) == 'rnaPreseq2Primers' && _.isArray(body.rnaPreseq2PrimerTargets)) {
+                const rnaPreseq2PrimerTargetIds = _.compact(_.map(body.rnaPreseq2PrimerTargets, 'targetId'))
+                await updateRnaPreseq2PrimerTargets(id, rnaPreseq2PrimerTargetIds, tx)
             }
 
             return recordUpdated
@@ -40,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
         return updatedRecord
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, recordType)
+        const { error, data } = parsePutPostError(e)
 
         throw createError({
             statusCode: 400,

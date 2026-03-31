@@ -1,11 +1,13 @@
 import _ from "lodash"
-import { homologyArmPrimerTargets, preseq1PrimerTargets } from "../db/schema/sge/primer"
-import { pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
-import {eq, inArray} from "drizzle-orm"
+import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from "../db/schema/sge/primer"
+import { pcrExperiments, pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
+import {and, eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
-import { plates } from "../db/schema/sge/plate"
+import { plates, PlateType } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
+import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
+import { targets } from "../db/schema/sge/target"
 
 
 export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
@@ -66,6 +68,42 @@ export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[]
     return result
 }
 
+export const updateRnaPreseq1PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
+        const existingRnaPreseq1PrimerTargets = await tx.select().from(rnaPreseq1PrimerTargets).where(eq(rnaPreseq1PrimerTargets.rnaPreseq1PrimerId, id))
+
+        // delete targets that are not in the incoming list
+        const missingRnaPreseq1PrimerTargetIds = _.difference(_.map(existingRnaPreseq1PrimerTargets, 'targetId'), targetIds)
+        await tx.delete(rnaPreseq1PrimerTargets).where(inArray(rnaPreseq1PrimerTargets.targetId, missingRnaPreseq1PrimerTargetIds))
+        // insert targets that are in the incoming list and don't already exist
+        const rnaPreseq1PrimerTargetsToInsert = _.difference(targetIds, _.map(existingRnaPreseq1PrimerTargets, 'targetId'))
+        if (!_.isEmpty(rnaPreseq1PrimerTargetsToInsert)) {
+            existingRnaPreseq1PrimerTargets.push(...await tx.insert(rnaPreseq1PrimerTargets).values(rnaPreseq1PrimerTargetsToInsert.map(targetId => ({ targetId, rnaPreseq1PrimerId: id }))).returning())
+        }
+        return existingRnaPreseq1PrimerTargets
+    }
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
+    return result
+}
+
+export const updateRnaPreseq2PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
+        const existingRnaPreseq2PrimerTargets = await tx.select().from(rnaPreseq2PrimerTargets).where(eq(rnaPreseq2PrimerTargets.rnaPreseq2PrimerId, id))
+
+        // delete targets that are not in the incoming list
+        const missingRnaPreseq2PrimerTargetIds = _.difference(_.map(existingRnaPreseq2PrimerTargets, 'targetId'), targetIds)
+        await tx.delete(rnaPreseq2PrimerTargets).where(inArray(rnaPreseq2PrimerTargets.targetId, missingRnaPreseq2PrimerTargetIds))
+        // insert targets that are in the incoming list and don't already exist
+        const rnaPreseq2PrimerTargetsToInsert = _.difference(targetIds, _.map(existingRnaPreseq2PrimerTargets, 'targetId'))
+        if (!_.isEmpty(rnaPreseq2PrimerTargetsToInsert)) {
+            existingRnaPreseq2PrimerTargets.push(...await tx.insert(rnaPreseq2PrimerTargets).values(rnaPreseq2PrimerTargetsToInsert.map(targetId => ({ targetId, rnaPreseq2PrimerId: id }))).returning())
+        }
+        return existingRnaPreseq2PrimerTargets
+    }
+    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
+    return result
+}
+
 export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, any, any>) {
     const nonEmptyWells = await (tx ?? db).select()
         .from(wells)
@@ -79,10 +117,68 @@ export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, 
             statusMessage: 'Plate wells must be empty before deleting'
         })
     }
+
+    // check if plate is associated with any PCR or sgRNA cloning experiments and throw error if it is
+    const associatedPcrExperiments = await (tx ?? db).select().from(pcrExperiments).where(eq(pcrExperiments.plateId, plateId))
+    if (associatedPcrExperiments.length > 0) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'This plate is associated with a PCR experiment and will be deleted when the experiment is deleted.'
+        })
+    }
+    const associatedsgRnaCloningExperiments = await (tx ?? db).select().from(sgRnaCloningExperiments).where(eq(sgRnaCloningExperiments.plateId, plateId))
+    if (associatedsgRnaCloningExperiments.length > 0) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'This plate is associated with an sgRNA cloning experiment and will be deleted when the experiment is deleted.'
+        })
+    }
+
     // delete associated wellContentSources and wells then plate
     const emptyWells = await (tx ?? db).select().from(wells).where(eq(wells.plateId, plateId))
     await (tx ?? db).delete(wellContentSources).where(inArray(wellContentSources.sourceWellId, _.map(emptyWells, 'id')))
     await (tx ?? db).delete(wells).where(eq(wells.plateId, plateId))
     const deletedRecord = await deleteRecord(plates, plateId, tx)
     return deletedRecord
+}
+
+export async function plateStorageBoxNamesToIdsMap(plateStorageBoxNames: string[], plateType: PlateType, tx?: PgTransaction<any, any, any>) {
+    const plateRecords = await (tx ?? db).select().from(plates).where(and(inArray(plates.name, plateStorageBoxNames), eq(plates.plateType, plateType)))
+    const plateNameToIdMap = _.keyBy(plateRecords, 'name')
+    return _.mapValues(plateNameToIdMap, 'id')
+}
+
+export async function targetNamesToIdsMap(targetNames: string[], tx?: PgTransaction<any, any, any>) {
+    const targetRecords = await (tx ?? db).select().from(targets).where(inArray(targets.name, targetNames))
+    const targetNameToIdMap = _.keyBy(targetRecords, 'name')
+    return _.mapValues(targetNameToIdMap, 'id')
+}
+
+export const getWellIdFromPlateNameAndWellLocation = async (plateName: string, wellLocation: string, tx?: PgTransaction<any, any, any>) => {
+    const plateRecord = await (tx ?? db).select().from(plates).where(eq(plates.name, plateName)).limit(1)
+
+    if (plateRecord.length !== 1) {
+        throw new Error(`Could not find plate with name ${plateName}`)
+    }
+
+    // convert well location from A1 format to row/column
+    const match = wellLocation.match(/^([A-Za-z]+)(\d+)$/)
+    if (!match) {
+        throw new Error(`Invalid well location format: ${wellLocation}`)
+    }
+    const yCoord = match[1].toLowerCase().charCodeAt(0) - 96
+    const xCoord = parseInt(match[2])
+
+    const wellRecord = await (tx ?? db).select().from(wells).where(and(eq(wells.plateId, plateRecord[0].id), eq(wells.x, xCoord), eq(wells.y, yCoord))).limit(1)
+
+    if (wellRecord.length !== 1) {
+        throw new Error(`Could not find well with location ${wellLocation} in plate ${plateName}`)
+    }
+
+    return wellRecord[0].id
+}
+
+export const wellContentsCount = async (wellId: string, tx?: PgTransaction<any, any, any>) => {
+    const wellContent = await (tx ?? db).select().from(wellContents).where(eq(wellContents.wellId, wellId))
+    return wellContent.length
 }

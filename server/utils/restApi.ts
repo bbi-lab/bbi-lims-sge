@@ -66,7 +66,7 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
     return result
 }
 
-export function parsePutPostError(error: any, recordType: string) {
+export function parsePutPostError(error: any) {
     let data
 
     const regex = /^Key \(([^)]*)\)=\(([^)]*)\) already exists[.]$/

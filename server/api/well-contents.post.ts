@@ -22,7 +22,7 @@ export default defineEventHandler<{ body: WellContentWithSource[] }>(async (even
         const newRecords = await insertWellContentsAndSources(records)
         return newRecords
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, 'wellContents')
+        const { error, data } = parsePutPostError(e)
 
         throw createError({
             statusCode: 400,

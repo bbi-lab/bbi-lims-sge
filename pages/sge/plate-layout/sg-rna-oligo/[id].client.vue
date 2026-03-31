@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
-import { read as readXlsx, utils as XlsxUtils } from 'xlsx'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
@@ -43,20 +42,6 @@ const loadPlate = async () => {
         ...plateLayout.plateWithWellContents.value,
         wells: _.values(plateLayout.wellSpecs.value),
     }
-}
-const fileToSheet = (file: any, callback: any) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer)
-        const workbook = readXlsx(data, { type: "array" })
-        const sheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[sheetName]
-
-        const jsonData = XlsxUtils.sheet_to_json(worksheet)
-        callback(_.map(jsonData, (data: JSON) => _.mapKeys(data, (value, key) => _.camelCase(key))))
-    }
-    reader.readAsArrayBuffer(file)
 }
 
 const importSgRnaOligos = (e: any) => {

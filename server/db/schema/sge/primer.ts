@@ -3,6 +3,7 @@ import { pgTable, uuid, varchar, text, check, smallint, uniqueIndex, timestamp} 
 import _ from 'lodash'
 import { targets } from './target'
 import { type InferSelectModel } from 'drizzle-orm/table'
+import { genes } from './gene'
 
 export const linearizationPrimers = pgTable('linearization_primers', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -91,6 +92,58 @@ export const preseq2Primers = pgTable('preseq_2_primers', {
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
   check("adapter_sequence_check", sql`${table.adapterSequence} ~* '^[actg]*$'`),
+])
+
+export const rnaPreseq1Primers = pgTable('rna_preseq_1_primers', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    sequence: varchar('sequence', { length: 255 }),
+    sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    orderedOn: timestamp('ordered_on'),
+    notes: text('notes'),
+}, (table) => [
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
+export const rnaPreseq1PrimerTargets = pgTable('rna_preseq_1_primer_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  rnaPreseq1PrimerId: uuid('rna_preseq_1_primer_id').references(() => rnaPreseq1Primers.id).notNull(),
+  targetId: uuid('target_id').references(() => targets.id).notNull(),
+}, (t) => [
+  uniqueIndex('unique_rna_preseq1_primer_target').on(t.rnaPreseq1PrimerId, t.targetId),
+])
+
+export const rnaPreseq2Primers = pgTable('rna_preseq_2_primers', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    sequence: varchar('sequence', { length: 255 }),
+    sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    adapterSequence: varchar('adapter_sequence', { length: 255 }),
+    orderedOn: timestamp('ordered_on'),
+    notes: text('notes'),
+}, (table) => [
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+  check("adapter_sequence_check", sql`${table.adapterSequence} ~* '^[actg]*$'`),
+])
+
+export const rnaPreseq2PrimerTargets = pgTable('rna_preseq_2_primer_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  rnaPreseq2PrimerId: uuid('rna_preseq_2_primer_id').references(() => rnaPreseq2Primers.id).notNull(),
+  targetId: uuid('target_id').references(() => targets.id).notNull(),
+}, (t) => [
+  uniqueIndex('unique_rna_preseq2_primer_target').on(t.rnaPreseq2PrimerId, t.targetId),
+])
+
+export const rnaRtPrimers = pgTable('rna_rt_primers', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    geneId: uuid('gene_id').references(() => genes.id),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    sequence: varchar('sequence', { length: 255 }),
+    sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
+    orderedOn: timestamp('ordered_on'),
+    notes: text('notes'),
+}, (table) => [
+  check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
 ])
 
 export const indexPrimers = pgTable('index_primers', {

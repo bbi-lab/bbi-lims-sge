@@ -179,7 +179,6 @@ const columnDefs: ColumnDefinitions = {
             return href ? `<a href="${href}" class="text-blue-500 hover:underline">${product.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
         elementClick: (data: any) => {
-            console.log('data', data)
             if (data?.cloningStrategy == 'Gibson' && _.isEmpty(data.snvLibGibsonProducts)) {
                 addFormReadOnlyValues.value = {
                     name: `${_.replace(data.name, /_SNVlib/gi , '')}_Gibson`,

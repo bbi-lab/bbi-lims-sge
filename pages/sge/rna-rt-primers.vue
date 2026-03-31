@@ -1,8 +1,8 @@
-
 <script setup lang="ts">
-import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -21,80 +21,78 @@ watch(() => route.query, async (newValue, oldValue) => {
     tableKey.value = uuidv4()
 }, { immediate: true })
 
-const columnDefs = {
-    name: {
-        index: 0,
-    },
-    target: {
-        path: 'target.name',
-        type: 'string',
-        index: 1,
-    },
-    sgRnaCloningExperiment: {
-        header: 'sgRNA Cloning Experiment',
-        format: (data: any) => {
-            // each sgRNA plasmid should only be associated with one well and one cloning experiment
-            return data.wellable?.wellContents?.[0]?.well.plate?.sgRnaCloningExperiments?.[0]?.name || ''
+const displayWithClause = Object.freeze({
+    gene: {
+        columns: {
+            id: true,
+            name: true
         },
-        path: 'sgRnaCloningExperiment.displayValue',
-        index: 2,
-    },
-    externalLink: {
-        format: 'hyperlink',
-        index: 3,
-    },
-    // sgRnaCloningExperimentId: { display: false},
-    targetId: { display: false},
-    wellContents: { display: false },
-}
-const fieldDefs: FieldDefinitions = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
-        props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name', 'region.gene.symbol', 'region.name'],
-            searchWithClause: {
-                region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}},
-            },
-            valueField: 'id',
-            displayFields: ['name', 'region.gene.symbol', 'region.name'],
-        }
-    },
-    externalLink: {
-        type: 'hyperlink',
-    },
-}
-const displayWithClause = {
-    target: {
-        columns: {name: true},
-        with: {
-            region: {
-                columns: {name: true},
-                with: {
-                    gene: {columns: {symbol: true}}
-                }
-            }
-        }
     },
     wellable: {
         with: {
             wellContents: {
-                columns: {id: true, name: true},
                 with: {
                     well: {
-                        columns: {id: true, name: true},
+                        columns: {
+                            id: true,
+                            x: true,
+                            y: true,
+                        },
                         with: {
                             plate: {
-                                columns: {id: true, name: true},
-                                with: {
-                                    sgRnaCloningExperiments: {columns: {id: true, name: true}}
+                                columns: {
+                                    id: true,
+                                    name: true,
+                                    plateType: true,
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                },
             },
+        }
+    }
+})
+
+const columnDefs = {
+    name: {
+        index: 1
+    },
+    geneId: {display: false},
+    gene: {
+        path: 'gene.name',
+        index: 2,
+    },
+    wellContents: {
+        header: 'Location',
+        format: (x: any) => {
+            if (!_.isEmpty(x?.wellable?.wellContents)) {
+                return _.map(x.wellable.wellContents, (wellContent) => {
+                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
+                }).join(', ')
+            } else {
+                return ''
+            }
+        },
+        path: 'wellContents.displayValue',
+        type: 'string',
+        index: 5,
+    },
+}
+
+const fieldDefs: FieldDefinitions = {
+    name: {index: 1},
+
+    geneId: {
+        label: 'Gene',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/sge-valid-genes`,
+            searchFields: ['symbol', 'ncbiAccession'],
+            valueField: 'id',
+            displayFields: ['symbol', 'ncbiAccession'],
+            displayFormat: (x: any) => `${x.symbol} (${x.ncbiAccession})`,
+            searchMode: 'simple',
         }
     },
 }
@@ -104,15 +102,17 @@ const displayWithClause = {
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
+                :key="tableKey"
                 :ref="crudTable.setTableRef"
-                tableName="sg-rna-plasmids"
+                tableName="rna-rt-primers"
                 schemaName="select"
-                title="sgRNA Plasmids"
-                :columnDefs="columnDefs"
+                title="RNA RT Primers"
                 :withClause="displayWithClause"
                 :where="whereClauses"
+                :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
@@ -121,10 +121,9 @@ const displayWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="sg-rna-plasmids"
+                tableName="rna-rt-primers"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{sgRnaCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -132,7 +131,7 @@ const displayWithClause = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="sg-rna-plasmids"
+                tableName="rna-rt-primers"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
@@ -142,7 +141,7 @@ const displayWithClause = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="sg-rna-plasmids"
+                tableName="rna-rt-primers"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"

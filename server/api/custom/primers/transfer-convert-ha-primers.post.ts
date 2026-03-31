@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
         return result
 
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, 'homologyArmPuc19Primers')
+        const { error, data } = parsePutPostError(e)
         throw createError({
             statusCode: 400,
             statusMessage: error.message,
