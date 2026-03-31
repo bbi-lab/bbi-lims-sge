@@ -4,7 +4,7 @@ import { pcrExperiments, pcrExperimentTargets } from "../db/schema/sge/pcr-exper
 import {and, eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
-import { plates } from "../db/schema/sge/plate"
+import { plates, PlateType } from "../db/schema/sge/plate"
 import type { PgTransaction } from "drizzle-orm/pg-core"
 import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
 import { targets } from "../db/schema/sge/target"
@@ -142,8 +142,8 @@ export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, 
     return deletedRecord
 }
 
-export async function plateStorageBoxNamesToIdsMap(plateStorageBoxNames: string[], tx?: PgTransaction<any, any, any>) {
-    const plateRecords = await (tx ?? db).select().from(plates).where(inArray(plates.name, plateStorageBoxNames))
+export async function plateStorageBoxNamesToIdsMap(plateStorageBoxNames: string[], plateType: PlateType, tx?: PgTransaction<any, any, any>) {
+    const plateRecords = await (tx ?? db).select().from(plates).where(and(inArray(plates.name, plateStorageBoxNames), eq(plates.plateType, plateType)))
     const plateNameToIdMap = _.keyBy(plateRecords, 'name')
     return _.mapValues(plateNameToIdMap, 'id')
 }
@@ -176,4 +176,9 @@ export const getWellIdFromPlateNameAndWellLocation = async (plateName: string, w
     }
 
     return wellRecord[0].id
+}
+
+export const wellContentsCount = async (wellId: string, tx?: PgTransaction<any, any, any>) => {
+    const wellContent = await (tx ?? db).select().from(wellContents).where(eq(wellContents.wellId, wellId))
+    return wellContent.length
 }

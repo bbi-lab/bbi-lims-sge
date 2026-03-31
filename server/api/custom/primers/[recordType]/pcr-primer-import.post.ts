@@ -3,36 +3,48 @@ import { v4 as uuid } from 'uuid'
 import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { insertRecords } from '~/server/services/generic-services'
-import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets, updateRnaPreseq1PrimerTargets, updatePreseq1PrimerTargets } from '~/server/utils/sge'
+import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets, updateRnaPreseq1PrimerTargets, updatePreseq1PrimerTargets, wellContentsCount } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
 import { PgTable } from 'drizzle-orm/pg-core'
-import { record } from 'zod'
+import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
+
+const RECORD_TYPE_CONFIG_MAP = {
+    'rna-preseq1-primers': {
+        table: rnaPreseq1Primers,
+        zodSchema: schemas.rnaPreseq1Primers.insert,
+        targetRelationshipUpdater: updateRnaPreseq1PrimerTargets,
+        plateType: 'rna-preseq-1-primer-storage'
+    },
+    'rna-preseq2-primers': {
+        table: rnaPreseq2Primers,
+        zodSchema: schemas.rnaPreseq2Primers.insert,
+        targetRelationshipUpdater: updateRnaPreseq2PrimerTargets,
+        plateType: 'rna-preseq-2-primer-storage'
+    },
+    'preseq1-primers': {
+        table: preseq1Primers,
+        zodSchema: schemas.preseq1Primers.insert,
+        targetRelationshipUpdater: updatePreseq1PrimerTargets,
+        plateType: 'dna-preseq-1-primer-storage'
+    },
+    'preseq2-primers': {
+        table: preseq2Primers,
+        zodSchema: schemas.preseq2Primers.insert,
+        targetRelationshipUpdater: null, // No targets for preseq2 primers
+        plateType: 'dna-preseq-2-primer-storage'
+    },
+}
 
 export default defineEventHandler(async (event) => {
     try {
         const { recordType } = event.context.params as {recordType: string}
 
-        const recordTypeMap = {
-            'rna-preseq1-primers': {
-                table: rnaPreseq1Primers,
-                zodSchema: schemas.rnaPreseq1Primers.insert,
-                targetRelationshipUpdater: updateRnaPreseq1PrimerTargets,
-            },
-            'rna-preseq2-primers': {
-                table: rnaPreseq2Primers,
-                zodSchema: schemas.rnaPreseq2Primers.insert,
-                targetRelationshipUpdater: updateRnaPreseq2PrimerTargets,
-            },
-            'preseq1-primers': {
-                table: preseq1Primers,
-                zodSchema: schemas.preseq1Primers.insert,
-                targetRelationshipUpdater: updatePreseq1PrimerTargets,
-            },
-            'preseq2-primers': {
-                table: preseq2Primers,
-                zodSchema: schemas.preseq2Primers.insert,
-                targetRelationshipUpdater: null, // No targets for preseq2 primers
-            },
+        const recordTypeConfig = _.get(RECORD_TYPE_CONFIG_MAP, recordType)
+        if (!recordTypeConfig) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: `Invalid record type: ${recordType}.`
+            })
         }
 
         const body = await readBody(event)
@@ -83,14 +95,15 @@ export default defineEventHandler(async (event) => {
                 .filter(Boolean)
         )
 
-        const plateIdsByName = plateNames.length > 0 ? await plateStorageBoxNamesToIdsMap(plateNames) : {}
+        const plateIdsByName = plateNames.length > 0 ? await plateStorageBoxNamesToIdsMap(plateNames, recordTypeConfig.plateType) : {}
 
         // Check for missing plates
         const missingPlates = _.difference(plateNames, _.keys(plateIdsByName))
         if (missingPlates.length > 0) {
+            const plateTypeName = _.get(ENUM_LOOKUPS.plates.plateType, [recordTypeConfig.plateType, 'label'])
             throw createError({
                 statusCode: 400,
-                statusMessage: `Plate/storage box names not found in database: ${missingPlates.join(', ')}`,
+                statusMessage: `${plateTypeName} not found in database: ${missingPlates.join(', ')}`,
             })
         }
 
@@ -159,9 +172,8 @@ export default defineEventHandler(async (event) => {
         const recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates'))
 
         try {
-            const zodSchema = _.get(recordTypeMap, [recordType, 'zodSchema'])
             _.forEach(recordsForValidation, (record) => {
-                zodSchema.parse(record)
+                recordTypeConfig.zodSchema.parse(record)
             })
         } catch (zodError: any) {
             throw createError({
@@ -173,8 +185,8 @@ export default defineEventHandler(async (event) => {
 
         // Perform bulk insert in transaction
         const result = await db.transaction(async (tx) => {
-            const primerTable: PgTable<any> = _.get(recordTypeMap, [recordType, 'table'])
-            const primerTargetRelationshipUpdater: Function | null = _.get(recordTypeMap, [recordType, 'targetRelationshipUpdater'])
+            const primerTable: PgTable<any> = recordTypeConfig.table
+            const primerTargetRelationshipUpdater: Function | null = recordTypeConfig.targetRelationshipUpdater
 
             // Insert primer records (without targetNames field)
             const insertedPrimers = await insertRecords(primerTable, recordsForValidation, tx)
@@ -200,8 +212,14 @@ export default defineEventHandler(async (event) => {
                 const wellLocation = _.get(insertedPrimerOrig, 'wellTubeCoordinates')
 
                 if (plateName && wellLocation) {
-                    const wellId = await getWellIdFromPlateNameAndWellLocation(plateName, wellLocation)
-
+                    const wellId = await getWellIdFromPlateNameAndWellLocation(plateName, wellLocation, tx)
+                    const wellContentCount = await wellContentsCount(wellId, tx)
+                    if (wellContentCount > 0) {
+                        throw createError({
+                            statusCode: 400,
+                            statusMessage: `Well '${wellLocation}' in '${plateName}' is already occupied. Please assign a different well or remove the existing contents, then try again.`
+                        })
+                    }
                     if (wellId) {
                         await insertRecords(wellContents, [{
                             wellId,
@@ -225,10 +243,12 @@ export default defineEventHandler(async (event) => {
         }
 
     } catch (e: any) {
+        const  { error, data } = parsePutPostError(e)
+
         throw createError({
-            statusCode: e.statusCode || 400,
-            statusMessage: e.statusMessage || e.message,
-            message: e.message,
+            statusCode: 400,
+            statusMessage: error.message,
+            data: data
         })
     }
 })
