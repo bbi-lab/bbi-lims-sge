@@ -135,7 +135,7 @@ export default defineEventHandler(async (event) => {
 
         return newOligos
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, 'sgRnaOligos')
+        const { error, data } = parsePutPostError(e)
 
         throw createError({
             statusCode: 400,

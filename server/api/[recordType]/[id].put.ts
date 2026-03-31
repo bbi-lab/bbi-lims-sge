@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
         return updatedRecord
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, recordType)
+        const { error, data } = parsePutPostError(e)
 
         throw createError({
             statusCode: 400,
