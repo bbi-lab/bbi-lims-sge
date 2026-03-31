@@ -6,6 +6,7 @@ import { insertRecords } from '~/server/services/generic-services'
 import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets, updateRnaPreseq1PrimerTargets, updatePreseq1PrimerTargets } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
 import { PgTable } from 'drizzle-orm/pg-core'
+import { record } from 'zod'
 
 export default defineEventHandler(async (event) => {
     try {
@@ -102,18 +103,22 @@ export default defineEventHandler(async (event) => {
                 (name) => _.trim(name)
             ).filter(Boolean)
 
-            return {
+            const primerRecord = {
                 id: uuid(),
                 name: _.trim(row.primerName || row.name || ''),
                 sequence: _.trim(row.sequence || ''),
                 sequenceType: _.toLower(row.forwardReverse),
-                adapterSequence: _.trim(row.adapterSequence || ''),
                 orderedOn: row.orderedOn ? new Date(row.orderedOn) : null,
                 notes: _.trim(row.notes || ''),
                 targetNames: primerTargetNames,  // Keep for target relationship creation
                 plateStorageBoxName: _.trim(row.plateStorageBoxName || ''), // Keep for assiging well contents
                 wellTubeCoordinates: _.trim(row.wellTubeCoordinates || ''), // Keep for assigning well contents
             }
+            // preseq1 primers do not include adapter sequences, so only set if present in the row
+            if (_.has(row, 'adapterSequence')) {
+                _.set(primerRecord, 'adapterSequence', _.trim(row.adapterSequence || ''))
+            }
+            return primerRecord
         })
 
         // Validate primer names are unique
