@@ -22,6 +22,8 @@ export const convertErrorDataToUserMessage = (data: any[]) => {
             return `${_.startCase(err.path.join(' '))} must be unique: ${err.description}`
         } else if (err.code == 'invalid_type') {
             return `${_.startCase(err.path.join(' '))} has an invalid type: ${err.message}`
+        } else if (err.code == 'invalid_string') {
+            return `${_.startCase(err.path.join(' '))} has an invalid value`
         } else {
             return err.message
         }

@@ -168,10 +168,17 @@ export default defineEventHandler(async (event) => {
                 if (plateName && wellLocation) {
                     const wellId = await getWellIdFromPlateNameAndWellLocation(plateName, wellLocation)
 
-                    await insertRecords(wellContents, [{
-                        wellId,
-                        wellableId: insertedPrimers[i].id,
-                    }], tx)
+                    if (wellId) {
+                        await insertRecords(wellContents, [{
+                            wellId,
+                            wellableId: insertedPrimers[i].id,
+                        }], tx)
+                    } else {
+                        throw createError({
+                            statusCode: 400,
+                            statusMessage: `Could not find well for plate/storage box '${plateName}' and well location '${wellLocation}''`
+                        })
+                    }
                 }
             }
             return insertedPrimers
