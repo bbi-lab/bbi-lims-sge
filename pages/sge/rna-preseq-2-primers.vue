@@ -24,7 +24,7 @@ const submitRnaPreseq2Primers = async (data: any[]) => {
             toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
             return
         }
-        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/rna-pcr2-primer-import`, {
+        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/rna-preseq2-primers/pcr-primer-import`, {
             method: 'POST',
             body: filteredData,
         })

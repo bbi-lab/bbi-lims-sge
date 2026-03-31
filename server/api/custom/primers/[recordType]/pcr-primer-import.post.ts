@@ -1,14 +1,39 @@
 import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { rnaPreseq2Primers } from '~/server/db/schema/sge/primer'
+import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { insertRecords } from '~/server/services/generic-services'
-import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets } from '~/server/utils/sge'
-import { parsePutPostError } from '~/server/utils/restApi'
+import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets, updateRnaPreseq1PrimerTargets, updatePreseq1PrimerTargets } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
+import { PgTable } from 'drizzle-orm/pg-core'
 
 export default defineEventHandler(async (event) => {
     try {
+        const { recordType } = event.context.params as {recordType: string}
+
+        const recordTypeMap = {
+            'rna-preseq1-primers': {
+                table: rnaPreseq1Primers,
+                zodSchema: schemas.rnaPreseq1Primers.insert,
+                targetRelationshipUpdater: updateRnaPreseq1PrimerTargets,
+            },
+            'rna-preseq2-primers': {
+                table: rnaPreseq2Primers,
+                zodSchema: schemas.rnaPreseq2Primers.insert,
+                targetRelationshipUpdater: updateRnaPreseq2PrimerTargets,
+            },
+            'preseq1-primers': {
+                table: preseq1Primers,
+                zodSchema: schemas.preseq1Primers.insert,
+                targetRelationshipUpdater: updatePreseq1PrimerTargets,
+            },
+            'preseq2-primers': {
+                table: preseq2Primers,
+                zodSchema: schemas.preseq2Primers.insert,
+                targetRelationshipUpdater: null, // No targets for preseq2 primers
+            },
+        }
+
         const body = await readBody(event)
 
         if (!Array.isArray(body) || body.length === 0) {
@@ -129,8 +154,9 @@ export default defineEventHandler(async (event) => {
         const recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates'))
 
         try {
+            const zodSchema = _.get(recordTypeMap, [recordType, 'zodSchema'])
             _.forEach(recordsForValidation, (record) => {
-                schemas.rnaPreseq2Primers.insert.parse(record)
+                zodSchema.parse(record)
             })
         } catch (zodError: any) {
             throw createError({
@@ -142,19 +168,22 @@ export default defineEventHandler(async (event) => {
 
         // Perform bulk insert in transaction
         const result = await db.transaction(async (tx) => {
+            const primerTable: PgTable<any> = _.get(recordTypeMap, [recordType, 'table'])
+            const primerTargetRelationshipUpdater: Function | null = _.get(recordTypeMap, [recordType, 'targetRelationshipUpdater'])
+
             // Insert primer records (without targetNames field)
-            const insertedPrimers = await insertRecords(rnaPreseq2Primers, recordsForValidation, tx)
+            const insertedPrimers = await insertRecords(primerTable, recordsForValidation, tx)
 
             // Create target relationships for each primer
             for (let i = 0; i < insertedPrimers.length; i++) {
                 const primer = insertedPrimers[i]
                 const targetNames = primerRecords[i].targetNames || []
 
-                if (targetNames.length > 0) {
+                if (targetNames.length > 0 && _.isFunction(primerTargetRelationshipUpdater)) {
                     const targetIds = _.map(targetNames, (name) => targetIdsByName[name]).filter(Boolean)
 
                     if (targetIds.length > 0) {
-                        await updateRnaPreseq2PrimerTargets(primer.id, targetIds, tx)
+                        await primerTargetRelationshipUpdater(primer.id, targetIds, tx)
                     }
                 }
             }
@@ -191,12 +220,10 @@ export default defineEventHandler(async (event) => {
         }
 
     } catch (e: any) {
-        const { error, data } = parsePutPostError(e, 'rnaPreseq2Primers')
-
         throw createError({
-            statusCode: error.statusCode || 400,
-            statusMessage: error.message,
-            data
+            statusCode: e.statusCode || 400,
+            statusMessage: e.statusMessage || e.message,
+            message: e.message,
         })
     }
 })
