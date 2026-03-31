@@ -253,7 +253,7 @@ const formWithClause = {
             </div>
         </slot>
         <slot name="header">
-            <span class="flex justify-center mt-3 font-bold">Import RNA PreSeq 1 Primers from CSV</span>
+            <span class="flex justify-center mt-3 font-bold">Import RNA PreSeq 1 Primers</span>
         </slot>
         <a href="/templates/pcr1_primer_import_template.xlsx" download class="flex justify-center mt-3 mb-5 text-primary">Download template</a>
         <FileUpload
