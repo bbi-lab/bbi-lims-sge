@@ -3,7 +3,10 @@ import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { updateHomologyArmPrimerTargets, updatePcrExperimentTransfectTargets, updatePreseq1PrimerTargets, updateRnaPreseq1PrimerTargets, updateRnaPreseq2PrimerTargets, updateSgRnaOligoTargets } from '~/server/utils/sge'
+import { updateRelatedTargets } from '~/server/utils/sge'
+import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
+import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
+import { sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -26,22 +29,28 @@ export default defineEventHandler(async (event) => {
             // many-to-many
             if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body.targets)) {
                 const haPrimerTargetIds = _.map(body.targets, 'targetId')
-                await updateHomologyArmPrimerTargets(id, haPrimerTargetIds, tx)
+                const targets = await updateRelatedTargets(homologyArmPrimerTargets, 'homologyArmPrimerId', 'targetId', id, haPrimerTargetIds, tx)
+                _.set(recordUpdated, 'targets', targets)
             } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body.pcrExperimentTargets)) {
                 const transfectTargetIds = _.map(body.pcrExperimentTargets, 'transfectTargetId')
-                await updatePcrExperimentTransfectTargets(id, transfectTargetIds, tx)
+                const targets = await updateRelatedTargets(pcrExperimentTargets, 'pcrExperimentId', 'transfectTargetId', id, transfectTargetIds, tx)
+                _.set(recordUpdated, 'pcrExperimentTargets', targets)
             } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body.preseq1PrimerTargets)) {
                 const preseq1PrimerTargetIds = _.map(body.preseq1PrimerTargets, 'targetId')
-                await updatePreseq1PrimerTargets(id, preseq1PrimerTargetIds, tx)
+                const targets = await updateRelatedTargets(preseq1PrimerTargets, 'preseq1PrimerId', 'targetId', id, preseq1PrimerTargetIds, tx)
+                _.set(recordUpdated, 'preseq1PrimerTargets', targets)
             } else if (_.camelCase(recordType) == 'rnaPreseq1Primers' && _.isArray(body.rnaPreseq1PrimerTargets)) {
                 const rnaPreseq1PrimerTargetIds = _.compact(_.map(body.rnaPreseq1PrimerTargets, 'targetId'))
-                await updateRnaPreseq1PrimerTargets(id, rnaPreseq1PrimerTargetIds, tx)
+                const targets = await updateRelatedTargets(rnaPreseq1PrimerTargets, 'rnaPreseq1PrimerId', 'targetId', id, rnaPreseq1PrimerTargetIds, tx)
+                _.set(recordUpdated, 'rnaPreseq1PrimerTargets', targets)
             } else if (_.camelCase(recordType) == 'rnaPreseq2Primers' && _.isArray(body.rnaPreseq2PrimerTargets)) {
                 const rnaPreseq2PrimerTargetIds = _.compact(_.map(body.rnaPreseq2PrimerTargets, 'targetId'))
-                await updateRnaPreseq2PrimerTargets(id, rnaPreseq2PrimerTargetIds, tx)
+                const targets = await updateRelatedTargets(rnaPreseq2PrimerTargets, 'rnaPreseq2PrimerId', 'targetId', id, rnaPreseq2PrimerTargetIds, tx)
+                _.set(recordUpdated, 'rnaPreseq2PrimerTargets', targets)
             } else if (_.camelCase(recordType) == 'sgRnaOligos' && _.isArray(body.sgRnaOligoTargets)) {
                 const sgRnaOligoTargetIds = _.compact(_.map(body.sgRnaOligoTargets, 'targetId'))
-                await updateSgRnaOligoTargets(id, sgRnaOligoTargetIds, tx)
+                const targets = await updateRelatedTargets(sgRnaOligoTargets, 'sgRnaOligoId', 'targetId', id, sgRnaOligoTargetIds, tx)
+                _.set(recordUpdated, 'sgRnaOligoTargets', targets)
             }
 
             return recordUpdated

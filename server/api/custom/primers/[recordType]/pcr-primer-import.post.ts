@@ -1,36 +1,48 @@
 import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers } from '~/server/db/schema/sge/primer'
+import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { insertRecords } from '~/server/services/generic-services'
-import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRnaPreseq2PrimerTargets, updateRnaPreseq1PrimerTargets, updatePreseq1PrimerTargets, wellContentsCount } from '~/server/utils/sge'
+import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRelatedTargets, wellContentsCount } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
 import { PgTable } from 'drizzle-orm/pg-core'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 
+// Configuration for processing different primer record types
 const RECORD_TYPE_CONFIG_MAP = {
     'rna-preseq1-primers': {
         table: rnaPreseq1Primers,
         zodSchema: schemas.rnaPreseq1Primers.insert,
-        targetRelationshipUpdater: updateRnaPreseq1PrimerTargets,
+        updateRelatedTargetParams: {
+            table: rnaPreseq1PrimerTargets,
+            parentIdKey: 'rnaPreseq1PrimerId',
+            targetIdKey: 'targetId',
+        },
         plateType: 'rna-preseq-1-primer-storage'
     },
     'rna-preseq2-primers': {
         table: rnaPreseq2Primers,
         zodSchema: schemas.rnaPreseq2Primers.insert,
-        targetRelationshipUpdater: updateRnaPreseq2PrimerTargets,
+        updateRelatedTargetParams: {
+            table: rnaPreseq2PrimerTargets,
+            parentIdKey: 'rnaPreseq2PrimerId',
+            targetIdKey: 'targetId',
+        },
         plateType: 'rna-preseq-2-primer-storage'
     },
     'preseq1-primers': {
         table: preseq1Primers,
         zodSchema: schemas.preseq1Primers.insert,
-        targetRelationshipUpdater: updatePreseq1PrimerTargets,
+        updateRelatedTargetParams: {
+            table: preseq1PrimerTargets,
+            parentIdKey: 'preseq1PrimerId',
+            targetIdKey: 'targetId',
+        },
         plateType: 'dna-preseq-1-primer-storage'
     },
     'preseq2-primers': {
         table: preseq2Primers,
         zodSchema: schemas.preseq2Primers.insert,
-        targetRelationshipUpdater: null, // No targets for preseq2 primers
         plateType: 'dna-preseq-2-primer-storage'
     },
 }
@@ -186,7 +198,7 @@ export default defineEventHandler(async (event) => {
         // Perform bulk insert in transaction
         const result = await db.transaction(async (tx) => {
             const primerTable: PgTable<any> = recordTypeConfig.table
-            const primerTargetRelationshipUpdater: Function | null = recordTypeConfig.targetRelationshipUpdater
+            // const primerTargetRelationshipUpdater: Function | null = recordTypeConfig.targetRelationshipUpdater
 
             // Insert primer records (without targetNames field)
             const insertedPrimers = await insertRecords(primerTable, recordsForValidation, tx)
@@ -196,11 +208,18 @@ export default defineEventHandler(async (event) => {
                 const primer = insertedPrimers[i]
                 const targetNames = primerRecords[i].targetNames || []
 
-                if (targetNames.length > 0 && _.isFunction(primerTargetRelationshipUpdater)) {
+                if (targetNames.length > 0 && _.has(recordTypeConfig, 'updateRelatedTargetParams')) {
                     const targetIds = _.map(targetNames, (name) => targetIdsByName[name]).filter(Boolean)
 
                     if (targetIds.length > 0) {
-                        await primerTargetRelationshipUpdater(primer.id, targetIds, tx)
+                        await updateRelatedTargets(
+                            recordTypeConfig.updateRelatedTargetParams.table,
+                            recordTypeConfig.updateRelatedTargetParams.parentIdKey,
+                            recordTypeConfig.updateRelatedTargetParams.targetIdKey,
+                            primer.id,
+                            targetIds,
+                            tx
+                        )
                     }
                 }
             }

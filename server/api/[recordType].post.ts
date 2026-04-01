@@ -4,15 +4,11 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import {
-    updateHomologyArmPrimerTargets,
-    updatePcrExperimentTransfectTargets,
-    updatePreseq1PrimerTargets,
-    updateRnaPreseq1PrimerTargets,
-    updateRnaPreseq2PrimerTargets,
-    updateSgRnaOligoTargets } from '../utils/sge'
+import { updateRelatedTargets } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
-import { assert } from 'node:console'
+import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
+import { sgRnaOligoTargets } from '../db/schema/sge/oligos'
+import { pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -55,23 +51,28 @@ export default defineEventHandler(async (event) => {
             if (body.length == 1 && insertedRecords?.length == 1) {
                 if (_.camelCase(recordType) == 'homologyArmPrimers' && _.isArray(body[0].targets)) {
                     const targetIds = _.compact(_.map(body[0].targets, 'targetId'))
-                    const targets = await updateHomologyArmPrimerTargets(insertedRecords[0].id, targetIds, tx)
+                    const targets = await updateRelatedTargets(homologyArmPrimerTargets, 'homologyArmPrimerId', 'targetId', insertedRecords[0].id, targetIds, tx)
                     _.set(insertedRecords, '0.targets', targets)
                 } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
                     const transfectTargetIds = _.compact(_.map(body[0].pcrExperimentTargets, 'transfectTargetId'))
-                    await updatePcrExperimentTransfectTargets(insertedRecords[0].id, transfectTargetIds, tx)
+                    const targets = await updateRelatedTargets(pcrExperimentTargets, 'pcrExperimentId', 'transfectTargetId', insertedRecords[0].id, transfectTargetIds, tx)
+                    _.set(insertedRecords, '0.pcrExperimentTargets', targets)
                 } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
                     const preseq1PrimerTargetIds = _.compact(_.map(body[0].preseq1PrimerTargets, 'targetId'))
-                    await updatePreseq1PrimerTargets(insertedRecords[0].id, preseq1PrimerTargetIds, tx)
+                    const targets = await updateRelatedTargets(preseq1PrimerTargets, 'preseq1PrimerId', 'targetId', insertedRecords[0].id, preseq1PrimerTargetIds, tx)
+                    _.set(insertedRecords, '0.preseq1PrimerTargets', targets)
                 } else if (_.camelCase(recordType) == 'rnaPreseq1Primers' && _.isArray(body[0].rnaPreseq1PrimerTargets)) {
                     const rnaPreseq1PrimerTargetIds = _.compact(_.map(body[0].rnaPreseq1PrimerTargets, 'targetId'))
-                    await updateRnaPreseq1PrimerTargets(insertedRecords[0].id, rnaPreseq1PrimerTargetIds, tx)
+                    const targets = await updateRelatedTargets(rnaPreseq1PrimerTargets, 'rnaPreseq1PrimerId', 'targetId', insertedRecords[0].id, rnaPreseq1PrimerTargetIds, tx)
+                    _.set(insertedRecords, '0.rnaPreseq1PrimerTargets', targets)
                 } else if (_.camelCase(recordType) == 'rnaPreseq2Primers' && _.isArray(body[0].rnaPreseq2PrimerTargets)) {
                     const rnaPreseq2PrimerTargetIds = _.compact(_.map(body[0].rnaPreseq2PrimerTargets, 'targetId'))
-                    await updateRnaPreseq2PrimerTargets(insertedRecords[0].id, rnaPreseq2PrimerTargetIds, tx)
+                    const targets = await updateRelatedTargets(rnaPreseq2PrimerTargets, 'rnaPreseq2PrimerId', 'targetId', insertedRecords[0].id, rnaPreseq2PrimerTargetIds, tx)
+                    _.set(insertedRecords, '0.rnaPreseq2PrimerTargets', targets)
                 } else if (_.camelCase(recordType) == 'sgRnaOligos' && _.isArray(body[0].sgRnaOligoTargets)) {
                     const sgRnaOligoTargetIds = _.compact(_.map(body[0].sgRnaOligoTargets, 'targetId'))
-                    await updateSgRnaOligoTargets(insertedRecords[0].id, sgRnaOligoTargetIds, tx)
+                    const targets = await updateRelatedTargets(sgRnaOligoTargets, 'sgRnaOligoId', 'targetId', insertedRecords[0].id, sgRnaOligoTargetIds, tx)
+                    _.set(insertedRecords, '0.sgRnaOligoTargets', targets)
                 }
             }
             return insertedRecords

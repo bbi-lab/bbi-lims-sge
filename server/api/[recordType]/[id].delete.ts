@@ -3,9 +3,9 @@ import { parseDeleteError } from '~/server/utils/restApi'
 import { eq } from 'drizzle-orm'
 import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
-import { plates } from '~/server/db/schema/sge/plate'
+import { sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 import { deleteEmptyPlate } from '~/server/utils/sge'
-import { pcrExperiments, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
+import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -37,9 +37,9 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(rnaPreseq1PrimerTargets).where(eq(rnaPreseq1PrimerTargets.rnaPreseq1PrimerId, id))
             } else if (_.camelCase(recordType) == 'rnaPreseq2Primers') {
                 await tx.delete(rnaPreseq2PrimerTargets).where(eq(rnaPreseq2PrimerTargets.rnaPreseq2PrimerId, id))
+            } else if (_.camelCase(recordType) == 'sgRnaOligos') {
+                await tx.delete(sgRnaOligoTargets).where(eq(sgRnaOligoTargets.sgRnaOligoId, id))
             } else if (_.camelCase(recordType) == 'pcrExperiments') {
-
-                // delete assiociated targets
                 await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
             }
 
