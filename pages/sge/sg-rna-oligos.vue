@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
 const columnDefs = {
+    name: {index: 1},
     sgRnaOligoTargets: {
         header: 'Targets',
+        index: 2,
         format: (data: any) => {
-            console.log(data.sgRnaOligoTargets)
             return _.map(data.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
                 return sgRnaOligoTarget.target.name
             })
