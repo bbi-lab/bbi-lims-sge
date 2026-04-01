@@ -1121,6 +1121,13 @@
       "when": 1774997916932,
       "tag": "0159_purple_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 160,
+      "version": "7",
+      "when": 1775081193717,
+      "tag": "0160_polite_supernaut",
+      "breakpoints": true
     }
   ]
 }
