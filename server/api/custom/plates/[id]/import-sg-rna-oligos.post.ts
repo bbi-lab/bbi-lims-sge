@@ -49,8 +49,10 @@ export default defineEventHandler(async (event) => {
                 xCoordinate: _.inRange(xCoord, 1, 13) ? xCoord : null,
                 yCoordinate: _.inRange(yCoord, 1, 9) ? yCoord : null,
                 direction: _.get(directionMap, _.last(_.split(x.sequenceName, '_')) || ''),
+                notes: x.notes || null,
             }
         })
+
         if (_.some(recordsMapped, (x) => !x.targetId)) {
             throw createError({
                 statusCode: 400,

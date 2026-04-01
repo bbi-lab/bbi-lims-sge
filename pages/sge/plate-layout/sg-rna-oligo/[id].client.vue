@@ -12,6 +12,7 @@ const toast = useToast()
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
+const importDialogVisible = ref(false)
 
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
@@ -57,12 +58,21 @@ const importSgRnaOligos = (e: any) => {
 
 const submitSgRnaOligos = async (data: any[]) => {
     try {
+        // remove items with "Sample row" in the notes field as these are template row
+        const filteredData = _.filter(data, (item) => {
+            return _.toLower(item.notes) !== 'sample row'
+        })
+        if (_.isEmpty(filteredData)) {
+            toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
+            return
+        }
+
         const result = await $fetch(`${config.public.apiBase}/custom/plates/${route.params.id}/import-sg-rna-oligos`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: data,
+            body: filteredData,
         })
         if (!_.isEmpty(result)) {
             toast.add({
@@ -85,7 +95,8 @@ const submitSgRnaOligos = async (data: any[]) => {
         if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
             showLoginModal()
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
+            const userMessage =  _.isArray(error?.data?.data) ? convertErrorDataToUserMessage(error.data.data) : error.statusMessage ?? 'An unexpected error occurred during import. Please try again.'
+            toast.add({ severity: 'error', summary: 'Error', detail: userMessage, life: 5000 })
         }
     }
 }
@@ -230,24 +241,11 @@ const frozenRecordIds = computed(() => {
                     {{ plateWithWellSpecs.name }}
                 </template>
                 <template #button1>
-                    <FileUpload
-                        mode="basic"
-                        accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
-                        class="p-button-icon-only p-button-info"
-                        :maxFileSize="1000000"
-                        :customUpload="true"
-                        :auto="true"
-                        @uploader="importSgRnaOligos"
-                        chooseLabel=""
-                        v-tooltip="{value: 'Upload sgRNA oligos', showDelay: 500}"
-                    >
-                        <template #chooseicon>
-                            <i class="pi pi-upload"></i>
-                        </template>
-                        <template #uploadicon>
-                            <i class="pi pi-upload"></i>
-                        </template>
-                    </FileUpload>
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-upload"
+                        v-tooltip="{value: 'Import sgRNA oligos', showDelay: 500}"
+                        @click="importDialogVisible = true" />
                 </template>
                 <template #button2>
                     <Button
@@ -260,4 +258,33 @@ const frozenRecordIds = computed(() => {
             </PlateDiagram>
         </SplitterPanel>
     </Splitter>
+    <Dialog v-model:visible="importDialogVisible" modal :closable="false" :style="{ width: '35' }">
+        <slot name="closebutton">
+            <div class="flex justify-end">
+                 <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-plain ml-auto mr-0" @click="importDialogVisible = false" />
+            </div>
+        </slot>
+        <slot name="header">
+            <span class="flex justify-center mt-3 font-bold">Import sgRNA Oligos</span>
+        </slot>
+        <a href="/templates/sg_rna_oligo_plate_import_template.xlsx" download class="flex justify-center mt-3 mb-5 text-primary">Download template</a>
+        <FileUpload
+            mode="basic"
+            accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
+            class="p-button-info"
+            :maxFileSize="1000000"
+            :customUpload="true"
+            :auto="true"
+            @uploader="importSgRnaOligos"
+            chooseLabel="Upload"
+            v-tooltip="{value: 'Upload sgRNA oligos', showDelay: 500}"
+        >
+            <template #chooseicon>
+                <i class="pi pi-upload"></i>
+            </template>
+            <template #uploadicon>
+                <i class="pi pi-upload"></i>
+            </template>
+        </FileUpload>
+    </Dialog>
 </template>
