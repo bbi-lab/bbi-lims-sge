@@ -2,13 +2,11 @@
 
 import { inArray, eq } from 'drizzle-orm'
 import _ from 'lodash'
-import { ZodObject } from 'zod'
 import { wellCharToCoordinate } from '~/lib/plate-diagram'
-import { sgRnaOligos } from '~/server/db/schema/sge/oligos'
+import { sgRnaOligos, sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 import { targets } from '~/server/db/schema/sge/target'
 import { wellContents, wells } from '~/server/db/schema/sge/well'
-import { schemas } from '~/server/db/schema/sge/zod'
-import { insertRecords, selectRecords } from '~/server/services/generic-services'
+import { insertRecords } from '~/server/services/generic-services'
 import { v4 as uuid } from 'uuid'
 
 export default defineEventHandler(async (event) => {
@@ -94,6 +92,15 @@ export default defineEventHandler(async (event) => {
         // wrap inserts into transaction to automatically roll back if any fail
         const newOligos = await db.transaction(async (tx) => {
             const newOligoRecords = await insertRecords(sgRnaOligos, recordsMapped, tx)
+
+            // insert target Ids into related table
+            const newOligosTargets = _.map(newOligoRecords, (record) => {
+                return {
+                    sgRnaOligoId: record.id,
+                    targetId: _.find(recordsMapped, { name: record.name })?.targetId,
+                }
+            })
+            await insertRecords(sgRnaOligoTargets, newOligosTargets, tx)
 
             const plateWells = await tx.query.wells.findMany({
                 columns: {
