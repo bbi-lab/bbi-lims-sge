@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
 
         const newRecords = await db.transaction(async (tx) => {
             if (body.length == 1) {
-                if (['pcrExperiments', 'sgRnaCloningExperiments'].includes(_.camelCase(recordType)) && records[0].pcrType != 'rna-rt') {
+                // if plateId not included in PCR experiment or sgRNA cloning experiment, add plate with same name as experiment and set plateId to new plate
+                if (!_.get(records, '0.plateId') &&['pcrExperiments', 'sgRnaCloningExperiments'].includes(_.camelCase(recordType)) && records[0].pcrType != 'rna-rt') {
                     // add corresponding plate with same name as experiment
                     const plateType = _.camelCase(recordType) == 'pcrExperiments' ?  records[0].pcrType : 'sg-rna-oligo'
                     const plate = {

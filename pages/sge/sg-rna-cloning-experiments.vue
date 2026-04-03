@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { RecordService } from '~/utils/service/RecordService'
+import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const crudTable = useCrudTable()
@@ -46,9 +46,31 @@ const columnDefs = {
         display: false
     },
 }
-const fieldDefs = {
+const fieldDefs: FieldDefinitions = {
     plateId: {
-        display: false,
+        label: 'Plate',
+        component: 'AutoCompleter',
+        props: {
+            placeholderValue: '(Create a new plate)',
+            searchBaseUrl: `${config.public.apiBase}/plates`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+            searchWhereClause: {
+                'and': [
+                    {'==': [{'var': 'plateType'}, 'sg-rna-oligo']},
+                    {'==': [{'var': 'sgRnaCloningExperiments'}, '']}
+                ],
+            },
+            searchWithClause: {
+                sgRnaCloningExperiments: {
+                    columns: {
+                        id: true,
+                    },
+                },
+            }
+        },
     },
 }
 const withClause = {
