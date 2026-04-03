@@ -16,6 +16,16 @@ const columnDefs = {
         },
         path: 'sgRnaOligoTargets.displayValue',
     },
+    project: {
+        header: 'Project',
+        index: 3,
+        format: (data: any) => {
+            return _.uniq(_.map(data.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target?.project?.name
+            })).join(', ')
+        },
+        path: 'project.displayValue',
+    },
     wellContents: {display: false},
 }
 const fieldDefs = {
