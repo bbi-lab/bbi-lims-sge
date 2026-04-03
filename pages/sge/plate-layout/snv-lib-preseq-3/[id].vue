@@ -245,6 +245,7 @@ const whereClause ={
                 :sortBy="['plateTypeLabel', 'name']"
                 selectionMode="single"
                 :showColumnFilters="true"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage="">
             </QuickTable>
         </SplitterPanel>

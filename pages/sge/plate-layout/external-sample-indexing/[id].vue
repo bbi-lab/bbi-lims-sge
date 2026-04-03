@@ -393,6 +393,7 @@ const frozenRecordIds = computed(() => {
                 :showColumnFilters="true"
                 :selectionMode="selectionTableName === 'view-plates-with-well-counts' ? 'single' : 'multiple'"
                 emptyMessage=""
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
