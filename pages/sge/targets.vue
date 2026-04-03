@@ -252,7 +252,10 @@ const fieldDefs: FieldDefinitions = {
     },
     'skipPositions.*': {
         canUpdate: true,
-    }
+    },
+    preseq1PrimerTargets: {
+        display: false,
+    },
 }
 </script>
 <template>
