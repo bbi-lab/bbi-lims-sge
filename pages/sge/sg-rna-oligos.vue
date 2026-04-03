@@ -121,6 +121,7 @@ const formWithClause = {
                 title="sgRNA Oligos"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
