@@ -9,6 +9,7 @@ import { insertPlate } from '../services/plate-services'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
 import { sgRnaOligoTargets } from '../db/schema/sge/oligos'
 import { pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
+import { sgRnaPlasmidTargets } from '../db/schema/sge/plasmid'
 
 export default defineEventHandler(async (event) => {
     const { recordType } = event.context.params as {recordType: string}
@@ -74,6 +75,10 @@ export default defineEventHandler(async (event) => {
                     const sgRnaOligoTargetIds = _.compact(_.map(body[0].sgRnaOligoTargets, 'targetId'))
                     const targets = await updateRelatedTargets(sgRnaOligoTargets, 'sgRnaOligoId', 'targetId', insertedRecords[0].id, sgRnaOligoTargetIds, tx)
                     _.set(insertedRecords, '0.sgRnaOligoTargets', targets)
+                } else if (_.camelCase(recordType) == 'sgRnaPlasmids' && _.isArray(body[0].sgRnaPlasmidTargets)) {
+                    const sgRnaPlasmidTargetIds = _.compact(_.map(body[0].sgRnaPlasmidTargets, 'targetId'))
+                    const targets = await updateRelatedTargets(sgRnaPlasmidTargets, 'sgRnaPlasmidId', 'targetId', insertedRecords[0].id, sgRnaPlasmidTargetIds, tx)
+                    _.set(insertedRecords, '0.sgRnaPlasmidTargets', targets)
                 }
             }
             return insertedRecords

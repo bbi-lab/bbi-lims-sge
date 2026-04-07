@@ -2,13 +2,13 @@ import { eq, inArray } from "drizzle-orm"
 import { wellContents, wellContentSources, wells } from "~/server/db/schema/sge/well"
 import _ from "lodash"
 import { wellCoordinateToChar } from "~/lib/plate-diagram"
-import { sgRnaPlasmids } from "~/server/db/schema/sge/plasmid"
+import { sgRnaPlasmids, sgRnaPlasmidTargets } from "~/server/db/schema/sge/plasmid"
 import { plates } from "~/server/db/schema/sge/plate"
 
 
 interface plasmidsToCreate {
     name: string,
-    targetId: string,
+    targetIds: string[],
     wellId: string,
     wellContentIds: string[],
 }
@@ -28,7 +28,13 @@ export default defineEventHandler(async (event) => {
                    with: {
                         wellable: {
                             with: {
-                                sgRnaOligo: true,
+                                sgRnaOligo: {
+                                    with: {
+                                        sgRnaOligoTargets: {
+                                            columns: { targetId: true }
+                                        }
+                                    }
+                                }
                             }
                         }
                    }
@@ -44,18 +50,18 @@ export default defineEventHandler(async (event) => {
 
             if (oligos.length === 0) {
                 return null
-            }  if (oligos.length !== 2) {
+            }  if (oligos.length > 2) {
                 throw createError({
                     statusCode: 400,
-                    statusMessage: `Expected 2 oligos in well ${wellCoordinates}, found ${oligos.length}`,
+                    statusMessage: `Expected 1 or 2 oligos in well ${wellCoordinates}, found ${oligos.length}`,
                 })
             } else {
                 const oligosCombined = _.uniqBy(_.map(oligos, (x) => {
                     return {
                         name: x.name.replace(/_[W|C]$/, ''),
-                        targetId: x.targetId,
+                        targetIds: _.map(x.sgRnaOligoTargets, 'targetId').sort(),
                     }
-                }), ['name', 'targetId'])
+                }), ['name', 'targetIds'])
 
                 if (oligosCombined.length !== 1) {
                     throw createError({
@@ -65,7 +71,7 @@ export default defineEventHandler(async (event) => {
                 } else {
                     return {
                         name: oligosCombined[0].name,
-                        targetId: oligosCombined[0].targetId,
+                        targetIds: oligosCombined[0].targetIds,
                         wellId: well.id,
                         wellContentIds: _.map(well.wellContents, (wc: any) => wc.id),
                     }
@@ -78,7 +84,11 @@ export default defineEventHandler(async (event) => {
             for (const plasmid of plasmidsToCreate) {
                 try {
                     if (!plasmid) continue
-                    const newPlasmid = await tx.insert(sgRnaPlasmids).values({name: plasmid.name, targetId: plasmid.targetId}).returning({ id: sgRnaPlasmids.id })
+                    const newPlasmid = await tx.insert(sgRnaPlasmids).values({name: plasmid.name}).returning({ id: sgRnaPlasmids.id })
+                    for (const targetId of plasmid.targetIds) {
+                        await tx.insert(sgRnaPlasmidTargets).values({ sgRnaPlasmidId: newPlasmid[0].id, targetId })
+                    }
+
                     await tx.delete(wellContentSources).where(inArray(wellContentSources.wellContentId, plasmid.wellContentIds))
                     await tx.delete(wellContents).where(eq(wellContents.wellId, plasmid.wellId))
                     await tx.insert(wellContents).values({
