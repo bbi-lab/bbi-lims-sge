@@ -218,6 +218,8 @@ const frozenRecordIds = computed(() => {
                 :canExport="true"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :sortBy="['wellContents.displayValue']"
+                :sortByOrder="['desc']"
                 :showColumnFilters="true"
                 :rowActions="rowActions"
                 :rowsPerPageOptions="[10, 25, 50, 100]"

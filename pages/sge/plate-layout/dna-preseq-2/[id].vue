@@ -318,6 +318,8 @@ const frozenRecordIds = computed(() => {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :sortBy="selectionTableName === 'dna' ? ['wellContents.displayValue'] : undefined"
+                :sortByOrder="selectionTableName === 'dna' ? ['desc'] : undefined"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>

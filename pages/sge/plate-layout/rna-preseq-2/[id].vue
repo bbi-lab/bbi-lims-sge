@@ -424,6 +424,8 @@ const transferSelectedWellsContents = async () => {
                 :withClause="displayWithClause"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
+                :sortBy="selectionTableName == 'rna' ? ['wellContents.displayValue']: undefined"
+                :sortByOrder="selectionTableName == 'rna' ? ['desc']: undefined"
                 :selectionMode="selectionTableName.endsWith('-plate') || selectionTableName.endsWith('-storage') ? 'single' : 'multiple'"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
