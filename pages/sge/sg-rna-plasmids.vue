@@ -13,11 +13,8 @@ const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -25,10 +22,12 @@ const columnDefs = {
     name: {
         index: 0,
     },
-    target: {
-        path: 'target.name',
-        type: 'string',
+    sgRnaPlasmidTargets: {
+        format: (data: any) => {
+            return _.map(data.sgRnaPlasmidTargets, 'target.name')
+        },
         index: 1,
+        path: 'sgRnaPlasmidTargets.displayValue',
     },
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
@@ -43,36 +42,48 @@ const columnDefs = {
         format: 'hyperlink',
         index: 3,
     },
-    // sgRnaCloningExperimentId: { display: false},
     targetId: { display: false},
     wellContents: { display: false },
 }
 const fieldDefs: FieldDefinitions = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'sgRnaPlasmidTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name', 'region.gene.symbol', 'region.name'],
-            searchWithClause: {
-                region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}},
-            },
-            valueField: 'id',
-            displayFields: ['name', 'region.gene.symbol', 'region.name'],
-        }
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['name'],
+                        valueField: 'id',
+                        displayFields: ['name'],
+                        dropdown: true,
+                    },
+                },
+            ]
+        },
     },
     externalLink: {
         type: 'hyperlink',
     },
 }
 const displayWithClause = {
-    target: {
-        columns: {name: true},
+    sgRnaPlasmidTargets: {
         with: {
-            region: {
-                columns: {name: true},
+            target: {
+                columns: {name: true, id: true},
                 with: {
-                    gene: {columns: {symbol: true}}
+                    region: {
+                        columns: {name: true},
+                        with: {
+                            gene: {columns: {symbol: true}}
+                        }
+                    }
                 }
             }
         }
