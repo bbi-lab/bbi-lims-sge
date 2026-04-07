@@ -52,7 +52,7 @@ const plamidPlateDisplayConfig = {
 }
 const sgRnaOligoPlateDisplayConfig = {
     colorBy: ['sgRnaOligo.id'],
-    syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+    syncedPlateWellSpecs: plateLayout.wellSpecs,
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
         const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
@@ -116,8 +116,11 @@ onMounted(async() => {
     const plateId = _.get(sgRnaCloningExperiment.value, 'plateId')
 
     // set display config based on whether the plate has been transformed or not
-    // if showing the oligo plate (not transformed), omit the syncedPlateWellSpecs property since that is only relevant to source plates
-    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : _.omit(sgRnaOligoPlateDisplayConfig, 'syncedPlateWellSpecs')
+    // experiment plate syncs with source plate's well specs for consistent coloring
+    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : {
+        ..._.omit(sgRnaOligoPlateDisplayConfig, 'syncedPlateWellSpecs'),
+        syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
+    }
 
     plateLayout.setExportPlateLayoutConfig({
         columns: transformed.value ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,

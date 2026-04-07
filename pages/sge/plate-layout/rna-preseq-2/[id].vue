@@ -37,7 +37,7 @@ watch (selectedSourcePlate, async (newValue) => {
             selectionTableRecordIdPaths: [(wellable: any) => {
                 return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
             }],
-            syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+            syncedPlateWellSpecs: plateLayout.wellSpecs,
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const rnaName = _.get(well, ['wellContents', 0, 'wellable', 'rna', 'pellet', 'name'])
@@ -98,6 +98,7 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['rna.id'],
+        syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const rnaName = _.get(well, ['wellContents', 0, 'wellable', 'rna', 'pellet', 'name'])

@@ -22,6 +22,7 @@ onMounted(async() => {
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPuc19Primer.name'), /(_F|_R)$/g, '')],
         selectionTableRecordIdPaths: ['homologyArmPuc19Primer.id'],
+        syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPuc19Primer', 'name'])
@@ -60,7 +61,7 @@ watch (selectedSourcePlateId, async (newValue) => {
         sourcePlateLayout.wellContentsDisplayConfig.value = {
             colorBy: [(wellContent: any) => _.replace(_.get(wellContent, 'homologyArmPrimer.name'), /(_F|_R)$/g, '')],
             selectionTableRecordIdPaths: ['homologyArmPrimer.id'],
-            syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+            syncedPlateWellSpecs: plateLayout.wellSpecs,
             tooltip: (well: any) => {
                 const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                 const primerName = _.get(well, ['wellContents', 0, 'wellable', 'homologyArmPrimer', 'name'])
