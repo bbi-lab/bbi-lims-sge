@@ -33,8 +33,7 @@ const selectedSourcePlate = computed(() => {
 })
 
 const plamidPlateDisplayConfig = {
-    colorBy: ['sgRnaPlasmid.targetId'],
-    selectionTableRecordIdPaths: ['sgRnaPlasmidId'],
+    colorBy: ['sgRnaPlasmid.id'],
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
         const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
@@ -52,8 +51,7 @@ const plamidPlateDisplayConfig = {
     },
 }
 const sgRnaOligoPlateDisplayConfig = {
-    colorBy: ['sgRnaOligo.targetId'],
-    selectionTableRecordIdPaths: ['sgRnaOligoId'],
+    colorBy: ['sgRnaOligo.id'],
     syncedPlateWellSpecs: plateLayout.wellSpecs.value,
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
