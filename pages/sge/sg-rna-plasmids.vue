@@ -23,6 +23,7 @@ const columnDefs = {
         index: 0,
     },
     sgRnaPlasmidTargets: {
+        header: 'Targets',
         format: (data: any) => {
             return _.map(data.sgRnaPlasmidTargets, 'target.name')
         },

@@ -62,9 +62,11 @@ const displayWithClause = {
             },
         }
     },
-    target: {
-        columns: {
-            name: true,
+    sgRnaPlasmidTargets: {
+        with: {
+            target: {
+                columns: {id: true, name: true},
+            }
         },
     },
 }
@@ -90,20 +92,21 @@ const columnDefs = {
     name: {
         index: 1,
     },
-    target: {
-        header: 'Target',
-        format: (x: any) => {
-            return x.target ? x.target.name : ''
+    sgRnaPlasmidTargets: {
+        header: 'Targets',
+        format: (data: any) => {
+            return _.map(data.sgRnaPlasmidTargets, 'target.name')
         },
-        path: 'target.displayValue',
         index: 2,
+        path: 'sgRnaPlasmidTargets.displayValue',
     },
-    targetId: { display: false },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
-            return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            return _.map(x.wellable.wellContents, (content) => {
+                const wellCoordinate = `${wellCoordinateToChar(content.well.y)}${content.well.x}`
+                return `${content.well.plate.name}: ${wellCoordinate}`
+            }).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
