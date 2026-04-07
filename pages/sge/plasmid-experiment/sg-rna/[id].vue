@@ -266,10 +266,14 @@ const sgRnaPlasmidTableFrozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
 })
 const sgRnaPlasmidDisplayWithClause = {
-    target: {
-        columns: {
-            id: true,
-            name: true,
+    sgRnaPlasmidTargets: {
+        with: {
+            target: {
+                columns: {
+                    id: true,
+                    name: true,
+                }
+            }
         },
     },
     wellable: {
@@ -302,12 +306,16 @@ const sgRnaPlasmidDisplayWithClause = {
     }
 }
 const sgRnaPlasmidTableColumnDefs = {
-    targetId: { display: false },
-    target: {
+    sgRnaPlasmidTargets: {
         format: (data: any) => {
-            return data.target?.name || '-'
+            const targets = _.get(data, 'sgRnaPlasmidTargets', [])
+            if (_.isEmpty(targets)) {
+                return '-'
+            } else {
+                return _.map(targets, 'target.name')
+            }
         },
-        path: 'target.displayValue',
+        path: 'sgRnaPlasmidTargets.displayValue',
     },
     wellContents: { display: false },
     wellCoordinates: {
