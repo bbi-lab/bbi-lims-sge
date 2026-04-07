@@ -13,7 +13,7 @@ import {genes} from '../db/schema/sge/gene'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
-import {haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids} from '../db/schema/sge/plasmid'
+import {haPuc19Plasmids, sgRnaPlasmids, sgRnaPlasmidTargets, snvLibPlasmids} from '../db/schema/sge/plasmid'
 import {nucleicAcids, dna, rna} from '../db/schema/sge/nucleic-acid'
 import {lots} from '../db/schema/sge/lots'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from '../db/schema/sge/transfect-experiment'
@@ -54,6 +54,7 @@ export const schema = {
   cycles,
   snvLibPlasmids,
   sgRnaPlasmids,
+  sgRnaPlasmidTargets,
   nucleicAcids,
   dna,
   rna,
