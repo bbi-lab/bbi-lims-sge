@@ -146,7 +146,6 @@ const columnDefs = {
             return wellSpec ? `<span
                 class="inline-block w-6 h-6 rounded-sm text-center"
                 style="color: ${getWellTextColor(wellSpec.color)}; background-color:${wellSpec.color}">
-                ${wellSpec.symbol}
             </span>` : ''
         },
         searchable: false,
