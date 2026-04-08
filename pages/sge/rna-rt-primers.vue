@@ -66,13 +66,7 @@ const columnDefs = {
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            if (!_.isEmpty(x?.wellable?.wellContents)) {
-                return _.map(x.wellable.wellContents, (wellContent) => {
-                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
-                }).join(', ')
-            } else {
-                return ''
-            }
+            return combinedWellLocations(x) as string
         },
         path: 'wellContents.displayValue',
         type: 'string',

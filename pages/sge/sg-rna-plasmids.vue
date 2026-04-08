@@ -110,7 +110,7 @@ const displayWithClause = {
         }
     },
 }
-
+const rowActions = {}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">

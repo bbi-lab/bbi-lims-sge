@@ -12,7 +12,6 @@ const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 const pcrExperiment = ref()
 const config = useRuntimeConfig()
-const whereClause = ref()
 
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
@@ -22,7 +21,7 @@ onMounted(async() => {
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const plasmidName = _.get(well, ['wellContents', 0, 'wellable', 'snvLibPlasmid', 'name'])
-            return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : plasmidName
+            return plasmidName ? `${wellCoordinate}:<br>${plasmidName} (plasmid)` : wellCoordinate
         },
     }
     loadPlate()
@@ -106,27 +105,18 @@ const columnDefs = {
     wellContents: {
         header: 'Wells',
         format: (x: any) => {
-            const wellCoordinates = _.map(_.filter(x?.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
-                return {x: wellContent.well.x, y: wellContent.well.y,}
-            })
-            const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
-            const yRanges = _.mapValues(contentsGroupedByX, (coordinates) => {
-                const sortedByY = _.sortBy(coordinates, 'y')
-                const consecutiveYRanges = _.reduce(sortedByY, (acc, coordinate) => {
-                    if (acc.length === 0 || acc[acc.length - 1].maxY + 1 < coordinate.y) {
-                        acc.push({ x: coordinate.x, minY: coordinate.y, maxY: coordinate.y })
-                    } else {
-                        acc[acc.length - 1].maxY = Math.max(acc[acc.length - 1].maxY, coordinate.y)
-                    }
-                    return acc
-                }, [] as Array<{ x: number; minY: number; maxY: number }>)
-                return consecutiveYRanges
-            })
-            return _.map(_.flatten(_.values(yRanges)), (val) => {
-                return val.minY == val.maxY ? `${wellCoordinateToChar(val.minY)}${val.x}` : `${wellCoordinateToChar(val.minY)}${val.x}-${wellCoordinateToChar(val.maxY)}${val.x}`
-            }).join(', ')
+            return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
         },
         path: 'wellContents.displayValue',
+        type: 'string',
+        index: 2,
+    },
+    otherLocations: {
+        header: 'Locations',
+        format: (x: any) => {
+            return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+        },
+        path: 'otherLocations.displayValue',
         type: 'string',
         index: 2,
     },
@@ -140,9 +130,9 @@ const columnDefs = {
         path: 'target.displayValue',
         index: 1,
     },
-    // snvLibCloningExperimentId: {
-    //     display: false,
-    // },
+    snvLibCloningExperimentId: {
+        display: false,
+    },
     // snvLibCloningExperiment: {
     //     header: 'SNV-lib Cloning Experiment',
     //     format: (x: any) => {

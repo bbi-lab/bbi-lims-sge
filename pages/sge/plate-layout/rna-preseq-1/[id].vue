@@ -268,29 +268,20 @@ const columnDefs = computed(() => {
             wellContents: {
                 header: 'Wells',
                 format: (x: any) => {
-                    const wellCoordinates = _.map(_.filter(x.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
-                        return {x: wellContent.well.x, y: wellContent.well.y,}
-                    })
-                    const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
-                    const yRanges = _.mapValues(contentsGroupedByX, (coordinates) => {
-                        const sortedByY = _.sortBy(coordinates, 'y')
-                        const consecutiveYRanges = _.reduce(sortedByY, (acc, coordinate) => {
-                            if (acc.length === 0 || acc[acc.length - 1].maxY + 1 < coordinate.y) {
-                                acc.push({ x: coordinate.x, minY: coordinate.y, maxY: coordinate.y })
-                            } else {
-                                acc[acc.length - 1].maxY = Math.max(acc[acc.length - 1].maxY, coordinate.y)
-                            }
-                            return acc
-                        }, [] as Array<{ x: number; minY: number; maxY: number }>)
-                        return consecutiveYRanges
-                    })
-                    return _.map(_.flatten(_.values(yRanges)), (val) => {
-                        return val.minY == val.maxY ? `${wellCoordinateToChar(val.minY)}${val.x}` : `${wellCoordinateToChar(val.minY)}${val.x}-${wellCoordinateToChar(val.maxY)}${val.x}`
-                    }).join(', ')
+                    return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
                 },
                 path: 'wellContents.displayValue',
                 type: 'string',
                 index: 2,
+            },
+            otherLocations: {
+                header: 'Other locations',
+                format: (x: any) => {
+                    return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+                },
+                path: 'otherLocations.displayValue',
+                type: 'string',
+                index: 3,
             },
             extractionExperimentId: { display: false},
             pelletId: { display: false},

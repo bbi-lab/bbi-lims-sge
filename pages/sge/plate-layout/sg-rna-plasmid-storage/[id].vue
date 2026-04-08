@@ -101,17 +101,23 @@ const columnDefs = {
         path: 'sgRnaPlasmidTargets.displayValue',
     },
     wellContents: {
-        header: 'Location',
+        header: 'Wells',
         format: (x: any) => {
-            return _.map(x.wellable.wellContents, (content) => {
-                const wellCoordinate = `${wellCoordinateToChar(content.well.y)}${content.well.x}`
-                return `${content.well.plate.name}: ${wellCoordinate}`
-            }).join(', ')
+            return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 3,
     },
+    otherLocations: {
+        header: 'Other locations',
+        format: (x: any) => {
+            return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+        },
+        path: 'otherLocations.displayValue',
+        type: 'string',
+        index: 4,
+     },
 }
 const rowActions = {
     assign: {
