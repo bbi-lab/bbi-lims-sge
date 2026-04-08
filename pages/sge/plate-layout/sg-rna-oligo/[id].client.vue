@@ -12,11 +12,12 @@ const toast = useToast()
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
+const importDialogVisible = ref(false)
 
 onMounted(async() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
-        colorBy: ['sgRnaOligo.targetId'],
+        colorBy: ['sgRnaOligo.id'],
         selectionTableRecordIdPaths: ['sgRnaOligo.id'],
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
@@ -57,12 +58,21 @@ const importSgRnaOligos = (e: any) => {
 
 const submitSgRnaOligos = async (data: any[]) => {
     try {
+        // remove items with "Sample row" in the notes field as these are template row
+        const filteredData = _.filter(data, (item) => {
+            return _.toLower(item.notes) !== 'sample row'
+        })
+        if (_.isEmpty(filteredData)) {
+            toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
+            return
+        }
+
         const result = await $fetch(`${config.public.apiBase}/custom/plates/${route.params.id}/import-sg-rna-oligos`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: data,
+            body: filteredData,
         })
         if (!_.isEmpty(result)) {
             toast.add({
@@ -85,7 +95,8 @@ const submitSgRnaOligos = async (data: any[]) => {
         if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
             showLoginModal()
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
+            const userMessage =  _.isArray(error?.data?.data) ? convertErrorDataToUserMessage(error.data.data) : error.statusMessage ?? 'An unexpected error occurred during import. Please try again.'
+            toast.add({ severity: 'error', summary: 'Error', detail: userMessage, life: 5000 })
         }
     }
 }
@@ -114,9 +125,13 @@ const displayWithClause = {
             },
         }
     },
-    target: {
-        columns: {
-            name: true,
+    sgRnaOligoTargets: {
+        with: {
+            target: {
+                columns: {
+                    name: true,
+                },
+            },
         },
     },
 }
@@ -142,24 +157,49 @@ const columnDefs = {
     name: {
         index: 1,
     },
-    target: {
-        header: 'Target',
+    sgRnaOligoTargets: {
+        header: 'Target(s)',
         format: (x: any) => {
-            return x.target ? x.target.name : ''
+            return _.map(x.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target.name
+            })
         },
-        path: 'target.displayValue',
+        path: 'sgRnaOligoTargets.displayValue',
         index: 2,
     },
-    targetId: { display: false },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
-            return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            const wellContents = _.filter(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
+            return (!_.isEmpty(wellContents) ?
+                _.map(wellContents, (content) => ` ${_.get(content, 'well.plate.name')}: ${wellCoordinateToChar(content.well?.y)}${content.well?.x}`) :
+                []).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 3,
+    },
+}
+const rowActions = {
+    assign: {
+        label: '',
+        action: async (data: any) => {
+            if (plateLayout.selectedWells.value.length === 0) {
+                toast.add({ severity: 'warn', summary: 'No wells selected', detail: 'Please select well(s) to fill.', life: 3000 })
+                return
+            } else if (_.some(plateLayout.selectedWells.value, (x) => !_.isEmpty(x.data.wellContents))) {
+                toast.add({ severity: 'warn', summary: 'Well already has contents', detail: 'Please select empty wells only.', life: 3000 })
+                return
+            } else {
+                await plateLayout.assignIdToSelectedWells(data.id)
+            }
+        },
+        icon: 'pi pi-fw pi-arrow-right',
+        iconPos: 'right',
+        tooltip: 'Assign to selected wells',
+        disabled: (data: any) => {
+            return _.has(data, 'wellContents.well.id')
+        },
     },
 }
 const frozenRecordIds = computed(() => {
@@ -178,7 +218,11 @@ const frozenRecordIds = computed(() => {
                 :canExport="true"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                :sortBy="['wellContents.displayValue']"
+                :sortByOrder="['desc']"
                 :showColumnFilters="true"
+                :rowActions="rowActions"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds"
             />
@@ -200,24 +244,11 @@ const frozenRecordIds = computed(() => {
                     {{ plateWithWellSpecs.name }}
                 </template>
                 <template #button1>
-                    <FileUpload
-                        mode="basic"
-                        accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
-                        class="p-button-icon-only p-button-info"
-                        :maxFileSize="1000000"
-                        :customUpload="true"
-                        :auto="true"
-                        @uploader="importSgRnaOligos"
-                        chooseLabel=""
-                        v-tooltip="{value: 'Upload sgRNA oligos', showDelay: 500}"
-                    >
-                        <template #chooseicon>
-                            <i class="pi pi-upload"></i>
-                        </template>
-                        <template #uploadicon>
-                            <i class="pi pi-upload"></i>
-                        </template>
-                    </FileUpload>
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-upload"
+                        v-tooltip="{value: 'Import sgRNA oligos', showDelay: 500}"
+                        @click="importDialogVisible = true" />
                 </template>
                 <template #button2>
                     <Button
@@ -230,4 +261,33 @@ const frozenRecordIds = computed(() => {
             </PlateDiagram>
         </SplitterPanel>
     </Splitter>
+    <Dialog v-model:visible="importDialogVisible" modal :closable="false" :style="{ width: '35' }">
+        <slot name="closebutton">
+            <div class="flex justify-end">
+                 <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-plain ml-auto mr-0" @click="importDialogVisible = false" />
+            </div>
+        </slot>
+        <slot name="header">
+            <span class="flex justify-center mt-3 font-bold">Import sgRNA Oligos</span>
+        </slot>
+        <a href="/templates/sg_rna_oligo_plate_import_template.xlsx" download class="flex justify-center mt-3 mb-5 text-primary">Download template</a>
+        <FileUpload
+            mode="basic"
+            accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
+            class="p-button-info"
+            :maxFileSize="1000000"
+            :customUpload="true"
+            :auto="true"
+            @uploader="importSgRnaOligos"
+            chooseLabel="Upload"
+            v-tooltip="{value: 'Upload sgRNA oligos', showDelay: 500}"
+        >
+            <template #chooseicon>
+                <i class="pi pi-upload"></i>
+            </template>
+            <template #uploadicon>
+                <i class="pi pi-upload"></i>
+            </template>
+        </FileUpload>
+    </Dialog>
 </template>

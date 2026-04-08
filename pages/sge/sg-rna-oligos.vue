@@ -4,57 +4,83 @@ import _ from 'lodash'
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 
-const rowActions = {}
 const columnDefs = {
-    targetId: {
-        header: 'Target',
-        format: (x: any) => {
-            return x.target?.name || (x.target?.region ? `${_.get(x, 'target.region.gene.symbol')} : ${_.get(x, 'target.region.name')}` : '')
-        },
-        path: 'targetId.displayValue',
-        type: 'string',
+    name: {index: 1},
+    sgRnaOligoTargets: {
+        header: 'Targets',
         index: 2,
+        format: (data: any) => {
+            return _.map(data.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target.name
+            })
+        },
+        path: 'sgRnaOligoTargets.displayValue',
+    },
+    project: {
+        header: 'Project',
+        index: 3,
+        format: (data: any) => {
+            return _.uniq(_.map(data.sgRnaOligoTargets, (sgRnaOligoTarget: any) => {
+                return sgRnaOligoTarget.target?.project?.name
+            })).join(', ')
+        },
+        path: 'project.displayValue',
     },
     wellContents: {display: false},
 }
 const fieldDefs = {
-    targetId: {
-        label: 'Target',
-        component: 'AutoCompleter',
+    'sgRnaOligoTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
         props: {
-            searchBaseUrl: `${config.public.apiBase}/targets`,
-            searchFields: ['name'],
-            valueField: 'id',
-            displayFields: ['name'],
-            dropdown: true,
-        }
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['name'],
+                        valueField: 'id',
+                        displayFields: ['name'],
+                        dropdown: true,
+                    },
+                },
+            ]
+        },
     },
     wellContents: {
         display: false,
     },
 }
 const displayWithClause = {
-    target: {
-        columns: {
-            name: true
-        },
+    sgRnaOligoTargets: {
         with: {
-            project: {
+            target: {
                 columns: {
-                    name: true
-                }
-            },
-            region: {
-                columns: {
-                    name: true
+                    name: true,
                 },
                 with: {
-                    gene: {
+                    project: {
                         columns: {
-                            symbol: true
+                            name: true
                         }
-                    }
-                }
+                    },
+                    region: {
+                        columns: {
+                            name: true
+                        },
+                        with: {
+                            gene: {
+                                columns: {
+                                    symbol: true
+                                }
+                            }
+                        }
+                    },
+                },
             },
         },
     },
@@ -83,6 +109,17 @@ const displayWithClause = {
         }
     },
 }
+const formWithClause = {
+    sgRnaOligoTargets: {
+        with: {
+            target: {
+                columns: {
+                    name: true,
+                },
+            },
+        },
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
@@ -92,9 +129,9 @@ const displayWithClause = {
                 tableName="sg-rna-oligos"
                 schemaName="select"
                 title="sgRNA Oligos"
-                :rowActions="rowActions"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
@@ -115,6 +152,7 @@ const displayWithClause = {
                 schemaName="update"
                 :recordId="crudTable.state.editingRecordId"
                 :fieldDefs="fieldDefs"
+                :withClause="formWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
             />

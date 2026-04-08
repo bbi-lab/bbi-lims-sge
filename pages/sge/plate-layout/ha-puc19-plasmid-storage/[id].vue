@@ -214,6 +214,9 @@ const frozenRecordIds = computed(() => {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
+                :sortBy="['wellContents.displayValue']"
+                :sortByOrder="['desc']"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>

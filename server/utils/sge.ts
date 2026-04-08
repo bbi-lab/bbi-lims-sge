@@ -1,107 +1,41 @@
 import _ from "lodash"
-import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from "../db/schema/sge/primer"
-import { pcrExperiments, pcrExperimentTargets } from "../db/schema/sge/pcr-experiment"
+import { pcrExperiments } from "../db/schema/sge/pcr-experiment"
 import {and, eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
 import { plates, PlateType } from "../db/schema/sge/plate"
-import type { PgTransaction } from "drizzle-orm/pg-core"
+import type { PgTable, PgTransaction } from "drizzle-orm/pg-core"
 import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
 import { targets } from "../db/schema/sge/target"
 
 
-export const updateHomologyArmPrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
+export const updateRelatedTargets = async (
+    table: PgTable<any>,
+    parentIdKey: string,
+    targetIdKey: string,
+    id: string,
+    targetIds: string[],
+    tx?: PgTransaction<any, any, any>
+) => {
+    const parentIdCol = (table as any)[parentIdKey]
+    const targetIdCol = (table as any)[targetIdKey]
+
     const updateFunction = async (tx: PgTransaction<any, any, any>) => {
-        const existingTargets = await tx.select().from(homologyArmPrimerTargets).where(eq(homologyArmPrimerTargets.homologyArmPrimerId, id))
+        const existing = await tx.select().from(table).where(eq(parentIdCol, id))
 
-        // delete targets that are not in the incoming list
-        const missingTargetIds = _.difference(_.map(existingTargets, 'targetId'), targetIds)
-        await tx.delete(homologyArmPrimerTargets).where(inArray(homologyArmPrimerTargets.targetId, missingTargetIds))
+        const missingIds = _.difference(_.map(existing, targetIdKey), targetIds)
+        await tx.delete(table).where(inArray(targetIdCol, missingIds))
 
-        // insert targets that are in the incoming list and don't already exist
-        const targetsToInsert = _.difference(targetIds, _.map(existingTargets, 'targetId'))
-        if (!_.isEmpty(targetsToInsert)) {
-            existingTargets.push(...await tx.insert(homologyArmPrimerTargets).values(targetsToInsert.map(targetId => ({ targetId, homologyArmPrimerId: id }))).returning())
+        const idsToInsert = _.difference(targetIds, _.map(existing, targetIdKey))
+        if (!_.isEmpty(idsToInsert)) {
+            existing.push(...await tx.insert(table).values(
+                idsToInsert.map(tId => ({ [targetIdKey]: tId, [parentIdKey]: id }))
+            ).returning())
         }
-        return existingTargets
+        return existing
     }
 
-    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
-    return result
-}
-
-export const updatePcrExperimentTransfectTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
-    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
-        const existingTransfectTargets = await tx.select().from(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
-
-        // delete targets that are not in the incoming list
-        const missingTransfectTargetIds = _.difference(_.map(existingTransfectTargets, 'transfectTargetId'), targetIds)
-        await tx.delete(pcrExperimentTargets).where(inArray(pcrExperimentTargets.transfectTargetId, missingTransfectTargetIds))
-
-        // insert targets that are in the incoming list and don't already exist
-        const transfectTargetsToInsert = _.difference(targetIds, _.map(existingTransfectTargets, 'transfectTargetId'))
-        if (!_.isEmpty(transfectTargetsToInsert)) {
-            existingTransfectTargets.push(...await tx.insert(pcrExperimentTargets).values(transfectTargetsToInsert.map(targetId => ({ transfectTargetId: targetId, pcrExperimentId: id }))).returning())
-        }
-        return existingTransfectTargets
-    }
-
-    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
-    return result
-}
-
-export const updatePreseq1PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
-    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
-        const existingPreseq1PrimerTargets = await tx.select().from(preseq1PrimerTargets).where(eq(preseq1PrimerTargets.preseq1PrimerId, id))
-
-        // delete targets that are not in the incoming list
-        const missingPreseq1PrimerTargetIds = _.difference(_.map(existingPreseq1PrimerTargets, 'targetId'), targetIds)
-        await tx.delete(preseq1PrimerTargets).where(inArray(preseq1PrimerTargets.targetId, missingPreseq1PrimerTargetIds))
-        // insert targets that are in the incoming list and don't already exist
-        const preseq1PrimerTargetsToInsert = _.difference(targetIds, _.map(existingPreseq1PrimerTargets, 'targetId'))
-        if (!_.isEmpty(preseq1PrimerTargetsToInsert)) {
-            existingPreseq1PrimerTargets.push(...await tx.insert(preseq1PrimerTargets).values(preseq1PrimerTargetsToInsert.map(targetId => ({ targetId, preseq1PrimerId: id }))).returning())
-        }
-        return existingPreseq1PrimerTargets
-    }
-    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
-    return result
-}
-
-export const updateRnaPreseq1PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
-    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
-        const existingRnaPreseq1PrimerTargets = await tx.select().from(rnaPreseq1PrimerTargets).where(eq(rnaPreseq1PrimerTargets.rnaPreseq1PrimerId, id))
-
-        // delete targets that are not in the incoming list
-        const missingRnaPreseq1PrimerTargetIds = _.difference(_.map(existingRnaPreseq1PrimerTargets, 'targetId'), targetIds)
-        await tx.delete(rnaPreseq1PrimerTargets).where(inArray(rnaPreseq1PrimerTargets.targetId, missingRnaPreseq1PrimerTargetIds))
-        // insert targets that are in the incoming list and don't already exist
-        const rnaPreseq1PrimerTargetsToInsert = _.difference(targetIds, _.map(existingRnaPreseq1PrimerTargets, 'targetId'))
-        if (!_.isEmpty(rnaPreseq1PrimerTargetsToInsert)) {
-            existingRnaPreseq1PrimerTargets.push(...await tx.insert(rnaPreseq1PrimerTargets).values(rnaPreseq1PrimerTargetsToInsert.map(targetId => ({ targetId, rnaPreseq1PrimerId: id }))).returning())
-        }
-        return existingRnaPreseq1PrimerTargets
-    }
-    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
-    return result
-}
-
-export const updateRnaPreseq2PrimerTargets = async (id: string, targetIds: string[], tx?: PgTransaction<any, any, any>) => {
-    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
-        const existingRnaPreseq2PrimerTargets = await tx.select().from(rnaPreseq2PrimerTargets).where(eq(rnaPreseq2PrimerTargets.rnaPreseq2PrimerId, id))
-
-        // delete targets that are not in the incoming list
-        const missingRnaPreseq2PrimerTargetIds = _.difference(_.map(existingRnaPreseq2PrimerTargets, 'targetId'), targetIds)
-        await tx.delete(rnaPreseq2PrimerTargets).where(inArray(rnaPreseq2PrimerTargets.targetId, missingRnaPreseq2PrimerTargetIds))
-        // insert targets that are in the incoming list and don't already exist
-        const rnaPreseq2PrimerTargetsToInsert = _.difference(targetIds, _.map(existingRnaPreseq2PrimerTargets, 'targetId'))
-        if (!_.isEmpty(rnaPreseq2PrimerTargetsToInsert)) {
-            existingRnaPreseq2PrimerTargets.push(...await tx.insert(rnaPreseq2PrimerTargets).values(rnaPreseq2PrimerTargetsToInsert.map(targetId => ({ targetId, rnaPreseq2PrimerId: id }))).returning())
-        }
-        return existingRnaPreseq2PrimerTargets
-    }
-    const result = tx ? await updateFunction(tx) : await db.transaction(async (tx) => { return await updateFunction(tx) })
-    return result
+    return tx ? await updateFunction(tx) : await db.transaction(async (tx) => await updateFunction(tx))
 }
 
 export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, any, any>) {

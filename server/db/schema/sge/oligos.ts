@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm/sql'
-import { pgTable, uuid, varchar, text, check, integer, timestamp, doublePrecision, boolean} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, check, integer, timestamp, doublePrecision, boolean, uniqueIndex} from 'drizzle-orm/pg-core'
 import { targets } from './target'
 import { haCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, linearizationPrimers } from './primer'
@@ -9,13 +9,20 @@ import { haPuc19Plasmids } from './plasmid'
 
 export const sgRnaOligos = pgTable('sg_rna_oligos', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
-    targetId: uuid('target_id').references(() => targets.id),
     name: varchar('name', { length: 255 }).notNull().unique(),
     sequence: varchar('sequence', { length: 255 }),
     direction: varchar('direction', {enum: ['forward', 'reverse']}),
     notes: text('notes'),
 }, (table) => [
   check("sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
+export const sgRnaOligoTargets = pgTable('sg_rna_oligo_targets', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    sgRnaOligoId: uuid('sg_rna_oligo_id').references(() => sgRnaOligos.id).notNull(),
+    targetId: uuid('target_id').references(() => targets.id).notNull(),
+}, (t) => [
+    uniqueIndex('unique_sg_rna_oligo_target').on(t.sgRnaOligoId, t.targetId),
 ])
 
 export const haPcrProducts = pgTable('ha_pcr_products', {

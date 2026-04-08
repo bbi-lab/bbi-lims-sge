@@ -204,7 +204,7 @@ const formWithClause = {
                 <template #header-buttons>
                     <Button
                         v-if="!crudTable.state.showAddForm && !crudTable.state.showEditForm && !crudTable.state.showMultipleEditForm"
-                        label="Import from CSV"
+                        label="Import"
                         icon="pi pi-file-import"
                         @click="importDialogVisible = true"
                     />

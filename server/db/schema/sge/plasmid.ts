@@ -11,7 +11,7 @@ export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   name: varchar('name', { length: 255 }).notNull().unique(),
   volume: doublePrecision('volume'),
   quant: doublePrecision('quant'),
-  targetId: uuid('target_id').references(() => targets.id).notNull(),
+  // targetId: uuid('target_id').references(() => targets.id).notNull(),
   // sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
   verificationStatus: varchar('verification_status', {enum: ['passed', 'failed']}),
   externalLink: text('external_link'),
@@ -19,6 +19,12 @@ export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
 }, (table) => [
   check("external_link_check", sql`${table.externalLink} ~* '^https?://.+$'`),
 ])
+
+export const sgRnaPlasmidTargets = pgTable('sg_rna_plasmid_targets', {
+  id: uuid('id').notNull().primaryKey().defaultRandom(),
+  sgRnaPlasmidId: uuid('sg_rna_plasmid_id').references(() => sgRnaPlasmids.id).notNull(),
+  targetId: uuid('target_id').references(() => targets.id).notNull(),
+})
 
 export const snvLibPlasmids = pgTable('snv_lib_plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

@@ -45,7 +45,7 @@ const loadTableData = async () => {
 
     refreshFormattedValues()
 
-    if (props.sortBy) records.value = _.sortBy(records.value, props.sortBy)
+    if (props.sortBy) records.value = _.orderBy(records.value, props.sortBy, props.sortByOrder)
 
     // calculate column definitions from JSON Schema properties and merge with columnDefs from props
     const tableColumnDefinitions =  _.mapValues(
@@ -95,6 +95,7 @@ const props = defineProps({
   columnDefs: {type: Object}, // if set, only included columns will be shown
   withClause: {type: Object},
   sortBy: {type: Array as PropType<Array<string>>},
+  sortByOrder: {type: Array as PropType<Array<'asc' | 'desc'>>},
   where: {type: Object},
   canAdd: {type: Boolean, default: true},
   canEdit: {type: Boolean, default: true},

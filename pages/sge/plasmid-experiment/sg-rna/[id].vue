@@ -33,8 +33,7 @@ const selectedSourcePlate = computed(() => {
 })
 
 const plamidPlateDisplayConfig = {
-    colorBy: ['sgRnaPlasmid.targetId'],
-    selectionTableRecordIdPaths: ['sgRnaPlasmidId'],
+    colorBy: ['sgRnaPlasmid.id'],
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
         const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
@@ -52,9 +51,8 @@ const plamidPlateDisplayConfig = {
     },
 }
 const sgRnaOligoPlateDisplayConfig = {
-    colorBy: ['sgRnaOligo.targetId'],
-    selectionTableRecordIdPaths: ['sgRnaOligoId'],
-    syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+    colorBy: ['sgRnaOligo.id'],
+    syncedPlateWellSpecs: plateLayout.wellSpecs,
     tooltip: (well: any) => {
         const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
         const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
@@ -118,8 +116,11 @@ onMounted(async() => {
     const plateId = _.get(sgRnaCloningExperiment.value, 'plateId')
 
     // set display config based on whether the plate has been transformed or not
-    // if showing the oligo plate (not transformed), omit the syncedPlateWellSpecs property since that is only relevant to source plates
-    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : _.omit(sgRnaOligoPlateDisplayConfig, 'syncedPlateWellSpecs')
+    // experiment plate syncs with source plate's well specs for consistent coloring
+    plateLayout.wellContentsDisplayConfig.value = transformed.value ? plamidPlateDisplayConfig : {
+        ..._.omit(sgRnaOligoPlateDisplayConfig, 'syncedPlateWellSpecs'),
+        syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
+    }
 
     plateLayout.setExportPlateLayoutConfig({
         columns: transformed.value ? sgRnaPlasmidExportColumns : sgRnaOligoExportColumns,
@@ -265,10 +266,14 @@ const sgRnaPlasmidTableFrozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
 })
 const sgRnaPlasmidDisplayWithClause = {
-    target: {
-        columns: {
-            id: true,
-            name: true,
+    sgRnaPlasmidTargets: {
+        with: {
+            target: {
+                columns: {
+                    id: true,
+                    name: true,
+                }
+            }
         },
     },
     wellable: {
@@ -301,12 +306,16 @@ const sgRnaPlasmidDisplayWithClause = {
     }
 }
 const sgRnaPlasmidTableColumnDefs = {
-    targetId: { display: false },
-    target: {
+    sgRnaPlasmidTargets: {
         format: (data: any) => {
-            return data.target?.name || '-'
+            const targets = _.get(data, 'sgRnaPlasmidTargets', [])
+            if (_.isEmpty(targets)) {
+                return '-'
+            } else {
+                return _.map(targets, 'target.name')
+            }
         },
-        path: 'target.displayValue',
+        path: 'sgRnaPlasmidTargets.displayValue',
     },
     wellContents: { display: false },
     wellCoordinates: {

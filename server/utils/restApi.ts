@@ -69,16 +69,22 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
 export function parsePutPostError(error: any) {
     let data
 
-    const regex = /^Key \(([^)]*)\)=\(([^)]*)\) already exists[.]$/
-    const match = error?.cause?.detail ? error.cause.detail.match(regex) : null
-    if (error?.cause?.routine == '_bt_check_unique' && match) {
-        const fieldName = match[1]
-        data = fieldName ? [{
-            code: 'duplicate_key_value',
-            path: [fieldName],
-            message: 'Must be unique',
-            description: `${match[2]} already exists`
-        }] : undefined
+    if (error?.cause?.routine == '_bt_check_unique' && error.cause.detail) {
+        const sqlModifiersRegex = /^(.*)lower\(trim\(both from ([^\s]*)\)\)(.*)$/i
+        const errorCauseDetail = error.cause.detail.replace(sqlModifiersRegex, "$1$2$3")
+
+        const regex = /^Key \(([^)]*)\)=\(([^)]*)\) already exists[.]$/
+        const match = errorCauseDetail.match(regex)
+
+        if (match) {
+            const fieldName = match[1]
+            data = fieldName ? [{
+                code: 'duplicate_key_value',
+                path: [fieldName],
+                message: 'Must be unique',
+                description: `${match[2]} already exists`
+            }] : undefined
+        }
     }
 
     if (!data) {

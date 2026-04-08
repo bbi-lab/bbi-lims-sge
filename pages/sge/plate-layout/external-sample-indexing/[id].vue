@@ -45,7 +45,7 @@ watch (selectedSourcePlate, async (newValue) => {
                 selectionTableRecordIdPaths: [(wellable: any) => {
                     return _.uniq(_.values(_.map(_.get(wellable, 'wellContents.0.wellContentSources', []), (wellContentSource) => _.get(wellContentSource, 'sourceWell.plate.id'))))
                 }],
-                syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+                syncedPlateWellSpecs: plateLayout.wellSpecs,
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
@@ -81,7 +81,7 @@ watch (selectedSourcePlate, async (newValue) => {
             sourcePlateLayout.wellContentsDisplayConfig.value = {
                 colorBy: [() => true],
                 selectionTableRecordIdPaths: ['indexPrimer.id'],
-                syncedPlateWellSpecs: plateLayout.wellSpecs.value,
+                syncedPlateWellSpecs: plateLayout.wellSpecs,
                 tooltip: (well: any) => {
                     const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
                     const indexPrimers = _.map(well.wellContents, 'wellable.indexPrimer')
@@ -128,6 +128,7 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [() => true],
+        syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
         selectionTableRecordIdPaths: [(x: any) => {
             return _.uniq(_.map(x.wellContentSources, (wellContentSource) => {
                 return _.get(wellContentSource, 'sourceWell.plate.id')
@@ -393,7 +394,11 @@ const frozenRecordIds = computed(() => {
                 :showColumnFilters="true"
                 :selectionMode="selectionTableName === 'view-plates-with-well-counts' ? 'single' : 'multiple'"
                 emptyMessage=""
-                v-model:frozenRecordIds="frozenRecordIds">
+                :rowsPerPageOptions="[10, 25, 50, 100]"
+                :sortBy="selectionTableName === 'external-samples' ? ['wellContents.displayValue'] : undefined"
+                :sortByOrder="selectionTableName === 'external-samples' ? ['desc'] : undefined"
+                v-model:frozenRecordIds="frozenRecordIds"
+            >
                 <template #header-buttons>
                     <SelectButton v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
                 </template>

@@ -2,9 +2,7 @@
 import { RecordService } from '@/utils/service/RecordService'
 import _ from 'lodash'
 import DotsTriangle from '~icons/mdi/dots-triangle'
-import  {
-    Target,
-} from '~/shared/sge/target'
+import  { Target } from '~/shared/sge/target'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
@@ -46,8 +44,12 @@ const displayWithClause = Object.freeze({
             pellets: true
         }
     },
-    sgRnaPlasmids: {
-        columns: {id: true}
+    sgRnaPlasmidTargets: {
+        with: {
+            target: {
+                columns: {id: true, name: true}
+            }
+        },
     },
     snvLibPlasmids: {
         columns: {id: true}
@@ -62,9 +64,9 @@ const displayWithClause = Object.freeze({
 
 const rowActions = {
     sgRnaPlasmids: {
-        label: (data: any) => { return `${data.sgRnaPlasmids?.length || 0} sgRNA`},
+        label: (data: any) => { return `${_.uniq(_.map(data.sgRnaPlasmidTargets, 'sgRnaPlasmidId')).length || 0} sgRNA`},
         action: (data: any) => {
-            router.push({path:'/sge/sg-rna-plasmids', query: {'targetId': data.id}})
+            router.push({path:'/sge/sg-rna-plasmids', query: {'sgRnaPlasmidTargets[].targetId': data.id}})
         },
         tooltip: 'sgRNA',
     },
@@ -172,7 +174,10 @@ const columnDefs: ColumnDefinitions = {
     homologyArmPrimers: {
         display: false,
     },
-    sgRnaPlasmids: {
+    preseq1PrimerTargets: {
+        display: false,
+    },
+    sgRnaPlasmidTargets: {
         display: false,
     },
     snvLibPlasmids: {
@@ -232,7 +237,7 @@ const fieldDefs: FieldDefinitions = {
     homologyArmPrimers: {
         display: false,
     },
-    sgRnaPlasmids: {
+    sgRnaPlasmidTargets: {
         display: false,
     },
     snvLibPlasmids: {
@@ -252,7 +257,10 @@ const fieldDefs: FieldDefinitions = {
     },
     'skipPositions.*': {
         canUpdate: true,
-    }
+    },
+    preseq1PrimerTargets: {
+        display: false,
+    },
 }
 </script>
 <template>

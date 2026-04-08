@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, integer, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, integer, uniqueIndex } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm/sql'
 import _ from 'lodash'
 import {genes} from './gene'
 
@@ -12,5 +13,5 @@ export const regions = pgTable('regions', {
   snvLibraryStart: integer('snv_library_start'),
   snvLibraryEnd: integer('snv_library_end'),
 }, (t) => [
-  unique('unique_target_name_gene').on(t.name, t.geneId),
+  uniqueIndex('unique_region_name_gene_id').on(sql`lower(trim(${t.name}))`, t.geneId),
 ])
