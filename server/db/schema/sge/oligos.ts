@@ -140,3 +140,21 @@ export const snvLibGoldenGateProducts = pgTable('snv_lib_golden_gate_products', 
     goldenGateProductVectorAmount: doublePrecision('golden_gate_product_vector_amount').default(50),
     notes: text('notes'),
 })
+
+export const clonalHas = pgTable('clonal_has', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    orderNumber: varchar('order_number', { length: 255 }),
+    orderedOn: timestamp('ordered_on'),
+    start: integer('start'),
+    end: integer('end'),
+    notes: text('notes'),
+})
+
+export const clonalHaTargets = pgTable('clonal_ha_targets', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    clonalHaId: uuid('clonal_ha_id').references(() => clonalHas.id).notNull(),
+    targetId: uuid('target_id').references(() => targets.id).notNull(),
+}, (t) => [
+    uniqueIndex('unique_clonal_ha_target').on(t.clonalHaId, t.targetId),
+])

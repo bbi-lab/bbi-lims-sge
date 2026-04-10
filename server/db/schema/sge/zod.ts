@@ -19,7 +19,7 @@ import { nucleicAcids, dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -97,6 +97,10 @@ const updateHaPuc19GibsonProductsSchema = insertHaPuc19GibsonProductsSchema
 const selectHaPuc19PlasmidsSchema = createSelectSchema(haPuc19Plasmids, {transformedOn: nullableDateSchema, colonyPickedOn: nullableDateSchema, preppedOn: nullableDateSchema})
 const insertHaPuc19PlasmidsSchema = selectHaPuc19PlasmidsSchema.omit({id: true})
 const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
+
+const selectClonalHasSchema = createSelectSchema(clonalHas, {orderedOn: nullableDateSchema})
+const insertClonalHasSchema = selectClonalHasSchema.omit({id: true})
+const updateClonalHasSchema = insertClonalHasSchema
 
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
@@ -325,6 +329,11 @@ export const schemas = {
         select: selectHaPuc19PlasmidsSchema,
         insert: insertHaPuc19PlasmidsSchema,
         update: updateHaPuc19PlasmidsSchema,
+    },
+    clonalHas: {
+        select: selectClonalHasSchema,
+        insert: insertClonalHasSchema,
+        update: updateClonalHasSchema,
     },
     snvLibCloningExperiments: {
         select: selectSnvLibCloningExperimentsSchema,
