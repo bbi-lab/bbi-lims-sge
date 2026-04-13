@@ -3,8 +3,6 @@ import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from '~/server/db/schema/sge/oligos'
-import { snvLibPlasmids } from '~/server/db/schema/sge/plasmid'
 
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
@@ -25,12 +23,14 @@ const readonlyValues = ref<Record<string, any>>({})
 const currentSnvLibCloningExperimentId = ref<string>()
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
-    tableKey.value = uuidv4()
+    if (!_.isEqual(newValue, oldValue)) {
+        const queryParamFilters = _.map(newValue, (val, key) => {
+            return {"==": [{"var": key}, val] }
+        })
+        whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
+        readonlyValues.value = newValue
+        tableKey.value = uuidv4()
+    }
 }, { immediate: true })
 
 const updateCurrentSnvLibCloningExperiment = (data: any) => {
@@ -684,6 +684,7 @@ const goldenGateProductFieldDefinitions: FieldDefinitions = {
                 :withClause="withClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
