@@ -38,6 +38,7 @@ const model = ref([
             { label: 'Oligos', iconComponent: FluentMolecule16Filled,
                 items: [
                     { label: 'sgRNA', to: '/sge/sg-rna-oligos' },
+                    { label: 'Clonal HA', to: '/sge/clonal-has' },
                     { label: 'HA products', items: [
                         { label: 'HA PCR products', to: '/sge/ha-pcr-products' },
                         { label: 'HA pUC19 PCR products', to: '/sge/ha-puc-19-pcr-products' },
