@@ -303,7 +303,7 @@ const withClause = {
     snvLibLinProducts: true,
     snvLibGibsonProducts: true,
     snvLibPlasmids: true,
-    snvLibClonalDnaProducts: true,
+    // snvLibClonalDnaProducts: true,
     snvLibGoldenGateProducts: true,
 }
 const ampProductFieldDefinitions: FieldDefinitions = {
