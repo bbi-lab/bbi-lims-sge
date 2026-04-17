@@ -829,7 +829,12 @@ const clonalHasRelationsConfig: RelationsConfig = {
             table: clonalHaTargets,
             schema: createSelectSchema(clonalHaTargets),
             fields: [clonalHaTargets.clonalHaId],
-        }
+        },
+        snvLibCloningExperiments: {
+            table: snvLibCloningExperiments,
+            schema: createSelectSchema(snvLibCloningExperiments),
+            fields: [snvLibCloningExperiments.clonalHaId],
+        },
     }
 }
 export const clonalHasRelations = relationsConfigToRelations(clonalHas, clonalHasRelationsConfig)
@@ -856,6 +861,11 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             fields: [snvLibCloningExperiments.targetId],
             referenceTable: targets,
             references: [targets.id],
+        },
+        clonalHa: {
+            fields: [snvLibCloningExperiments.clonalHaId],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
         },
     },
     many: {

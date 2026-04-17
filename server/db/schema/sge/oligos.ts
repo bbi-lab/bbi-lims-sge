@@ -148,6 +148,7 @@ export const clonalHas = pgTable('clonal_has', {
     orderedOn: timestamp('ordered_on'),
     start: integer('start'),
     end: integer('end'),
+    quant: doublePrecision('quant'),
     notes: text('notes'),
 })
 

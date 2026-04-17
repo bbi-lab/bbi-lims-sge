@@ -2,6 +2,7 @@ import { pgTable, timestamp, unique, uuid, varchar, text } from 'drizzle-orm/pg-
 import { users } from '../user'
 import { targets } from './target'
 import { plates } from './plate'
+import { clonalHas } from './oligos'
 
 export const sgRnaCloningExperiments = pgTable('sg_rna_cloning_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -17,6 +18,7 @@ export const snvLibCloningExperiments = pgTable('snv_lib_cloning_experiments', {
   name: varchar('name', { length: 255 }).notNull().unique(),
   cloningStrategy: varchar('cloning_strategy', {enum: ['Gibson', 'Golden Gate']}).notNull(),
   targetId: uuid('target_id').references(() => targets.id).notNull(),
+  clonalHaId: uuid('clonal_ha_id').references(() => clonalHas.id),
   startedOn: timestamp('started_on').defaultNow(),
   endedOn: timestamp('ended_on'),
   notes: text('notes'),
