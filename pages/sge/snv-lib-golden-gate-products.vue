@@ -52,19 +52,19 @@ const columnDefs: ColumnDefinitions = {
         index: 2,
     },
     snvLibAmpProductId: { display: false },
-    snvLibClonalDnaProduct: {
-        header: 'Associated SNVlib Clonal DNA Product',
+    clonalHa: {
+        header: 'Associated SNVlib Clonal HA',
         type: 'element',
         element: (data: any) => {
-            const href = data.snvLibClonalDnaProduct?.id ? `/sge/snv-lib-clonal-dna-products?id=${data.snvLibClonalDnaProduct?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.snvLibClonalDnaProduct?.name}</a>` : ''
+            const href = data.clonalHa?.id ? `/sge/clonal-has?id=${data.clonalHa?.id}` : null
+            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.clonalHa?.name}</a>` : ''
         },
         exportValue: (data: any) => {
-            return _.get(data.snvLibClonalDnaProduct, 'name', '')
+            return _.get(data.clonalHa, 'name', '')
         },
         index: 3,
     },
-    snvLibClonalDnaProductId: { display: false },
+    clonalHaId: { display: false },
     goldenGateProductVectorAmount: {
         header: 'Golden Gate Product Vector Amount (ng)',
     },
@@ -100,11 +100,11 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
             },
             index: 2,
         },
-        snvLibClonalDnaProductId: {
-            label: 'SNVlib Clonal DNA Product',
+        clonalHaId: {
+            label: 'SNVlib Clonal HA',
             component: 'AutoCompleter',
             props: {
-                searchBaseUrl: `${config.public.apiBase}/snv-lib-clonal-dna-products`,
+                searchBaseUrl: `${config.public.apiBase}/clonal-has`,
                 searchFields: ['name'],
                 valueField: 'id',
                 displayFields: ['name'],
@@ -121,7 +121,7 @@ const displayWithClause = {
     snvLibAmpProduct: {
         columns: {id: true, name: true},
     },
-    snvLibClonalDnaProduct: {
+    clonalHa: {
         columns: {id: true, name: true},
     },
 }

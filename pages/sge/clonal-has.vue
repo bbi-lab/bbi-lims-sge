@@ -32,6 +32,7 @@ const columnDefs = {
         path: 'clonalHaTargets.displayValue',
         index: 2,
     },
+    snvLibCloningExperiments: {display: false},
 }
 
 const fieldDefs: FieldDefinitions = {
