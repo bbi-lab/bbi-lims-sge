@@ -835,6 +835,11 @@ const clonalHasRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(snvLibCloningExperiments),
             fields: [snvLibCloningExperiments.clonalHaId],
         },
+        snvLibGoldenGateProducts: {
+            table: snvLibGoldenGateProducts,
+            schema: createSelectSchema(snvLibGoldenGateProducts),
+            fields: [snvLibGoldenGateProducts.clonalHaId],
+        },
     }
 }
 export const clonalHasRelations = relationsConfigToRelations(clonalHas, clonalHasRelationsConfig)
@@ -1054,10 +1059,10 @@ const snvLibGoldenGateProductsRelationsConfig: RelationsConfig = {
             referenceTable: snvLibAmpProducts,
             references: [snvLibAmpProducts.id],
         },
-        snvLibClonalDnaProduct: {
-            fields: [snvLibGoldenGateProducts.snvLibClonalDnaProductId],
-            referenceTable: snvLibClonalDnaProducts,
-            references: [snvLibClonalDnaProducts.id],
+        clonalHa: {
+            fields: [snvLibGoldenGateProducts.clonalHaId],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
         },
     },
 }

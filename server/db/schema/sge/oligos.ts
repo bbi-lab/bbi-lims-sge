@@ -136,7 +136,7 @@ export const snvLibGoldenGateProducts = pgTable('snv_lib_golden_gate_products', 
     name: varchar('name', { length: 255 }).notNull().unique(),
     snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
     snvLibAmpProductId: uuid('snv_lib_amp_product_id').references(() => snvLibAmpProducts.id).notNull().unique(),
-    snvLibClonalDnaProductId: uuid('snv_lib_clonal_dna_product_id').references(() => snvLibClonalDnaProducts.id).notNull().unique(),
+    clonalHaId: uuid('clonal_ha_id').references(() => clonalHas.id).notNull().unique(),
     goldenGateProductVectorAmount: doublePrecision('golden_gate_product_vector_amount').default(50),
     notes: text('notes'),
 })
