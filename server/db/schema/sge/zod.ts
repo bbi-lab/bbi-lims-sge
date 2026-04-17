@@ -19,7 +19,7 @@ import { nucleicAcids, dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -118,9 +118,9 @@ const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts
 const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
 const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
-const selectSnvLibClonalDnaProductsSchema = createSelectSchema(snvLibClonalDnaProducts, {gelExtractedOn: nullableDateSchema})
-const insertSnvLibClonalDnaProductsSchema = selectSnvLibClonalDnaProductsSchema.omit({id: true})
-const updateSnvLibClonalDnaProductsSchema = insertSnvLibClonalDnaProductsSchema
+// const selectSnvLibClonalDnaProductsSchema = createSelectSchema(snvLibClonalDnaProducts, {gelExtractedOn: nullableDateSchema})
+// const insertSnvLibClonalDnaProductsSchema = selectSnvLibClonalDnaProductsSchema.omit({id: true})
+// const updateSnvLibClonalDnaProductsSchema = insertSnvLibClonalDnaProductsSchema
 
 const selectSnvLibGoldenGateProductsSchema = createSelectSchema(snvLibGoldenGateProducts)
 const insertSnvLibGoldenGateProductsSchema = selectSnvLibGoldenGateProductsSchema.omit({id: true})
@@ -355,11 +355,11 @@ export const schemas = {
         insert: insertSnvLibGibsonProductsSchema,
         update: updateSnvLibGibsonProductsSchema,
     },
-    snvLibClonalDnaProducts: {
-        select: selectSnvLibClonalDnaProductsSchema,
-        insert: insertSnvLibClonalDnaProductsSchema,
-        update: updateSnvLibClonalDnaProductsSchema,
-    },
+    // snvLibClonalDnaProducts: {
+    //     select: selectSnvLibClonalDnaProductsSchema,
+    //     insert: insertSnvLibClonalDnaProductsSchema,
+    //     update: updateSnvLibClonalDnaProductsSchema,
+    // },
     snvLibGoldenGateProducts: {
         select: selectSnvLibGoldenGateProductsSchema,
         insert: insertSnvLibGoldenGateProductsSchema,

@@ -25,7 +25,7 @@ import {ZodObject} from 'zod'
 import { reagents } from '../db/schema/sge/reagents'
 import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPrimers, preseq1Primers, preseq2Primers, homologyArmPuc19Primers, homologyArmPrimerTargets, preseq1PrimerTargets, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibClonalDnaProducts, snvLibGoldenGateProducts, sgRnaOligoTargets, clonalHas, clonalHaTargets } from '../db/schema/sge/oligos'
+import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, sgRnaOligoTargets, clonalHas, clonalHaTargets } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from '../db/schema/sge/views'
 
@@ -81,7 +81,7 @@ export const schema = {
   snvLibAmpProducts,
   snvLibLinProducts,
   snvLibGibsonProducts,
-  snvLibClonalDnaProducts,
+  // snvLibClonalDnaProducts,
   snvLibGoldenGateProducts,
   extractionExperiments,
   extractionLotUsage,
