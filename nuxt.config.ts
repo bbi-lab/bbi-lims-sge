@@ -7,6 +7,15 @@ export default defineNuxtConfig({
     css: ['@/assets/styles/tailwind.css', '@/assets/styles/base.css', '@/assets/styles/styles.scss'],
 
     vite: {
+        server: {
+            warmup: {
+                // Pre-transform PrimeVue async component stubs so they don't stall API
+                // calls behind 250 simultaneous module requests in dev mode
+                clientFiles: [
+                    './node_modules/primevue/*/index.mjs',
+                ],
+            },
+        },
         css: {
             preprocessorOptions: {
                 scss: {
