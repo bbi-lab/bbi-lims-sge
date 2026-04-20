@@ -33,6 +33,8 @@ const columnDefs = {
         index: 2,
     },
     snvLibCloningExperiments: {display: false},
+    snvLibGoldenGateProducts: {display: false},
+
 }
 
 const fieldDefs: FieldDefinitions = {
@@ -61,6 +63,8 @@ const fieldDefs: FieldDefinitions = {
             ]
         }
     },
+    snvLibCloningExperiments: {display: false},
+    snvLibGoldenGateProducts: {display: false},
 }
 const displayWithClause = {
     clonalHaTargets: {
