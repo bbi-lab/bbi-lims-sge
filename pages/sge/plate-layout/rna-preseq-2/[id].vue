@@ -99,10 +99,16 @@ onMounted(() => {
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['rna.id'],
         syncedPlateWellSpecs: sourcePlateLayout.wellSpecs,
+        symbol: (well: any) => {
+            const count = well.wellContents?.length
+            return count > 0 ? String(count) : ''
+        },
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const rnaName = _.get(well, ['wellContents', 0, 'wellable', 'rna', 'pellet', 'name'])
-            return rnaName ? `${wellCoordinate}:<br>${rnaName} (RNA)` : wellCoordinate
+            const rnaName = _.get(_.find(well.wellContents, (wc: any) => _.get(wc, 'wellable.rna')), 'wellable.rna.pellet.name')
+            const primerNames = _.compact(_.map(well.wellContents, (wc: any) => _.get(wc, 'wellable.rnaPreseq2Primer.name')))
+            const primerLines = primerNames.map((n: string) => `<br>${n}`).join('')
+            return rnaName ? `${wellCoordinate}:<br>${rnaName} (RNA)${primerLines}` : wellCoordinate
         },
     }
     if (selectionTableName.value === 'rna') {
@@ -123,6 +129,7 @@ const loadPlate = async () => {
                     pellet: true
                 }
             },
+            rnaPreseq2Primer: true,
             wellContents: {
                 with: {
                     wellContentSources: {
@@ -398,6 +405,13 @@ const transferSelectedWellsContents = async () => {
     }
 }
 
+const assignPrimers = async () => {
+    const result = await plateLayout.assignPreseqPrimers('rna-preseq-2')
+    if (result && _.isEmpty(result.affectedWellIds)) {
+        toast.add({ severity: 'info', summary: 'No changes needed', detail: 'All wells already have correct primers', life: 3000 })
+    }
+}
+
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -484,6 +498,13 @@ const transferSelectedWellsContents = async () => {
                                 v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
                                 :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                                 @click="plateLayout.emptySelectedWells" />
+                        </template>
+                        <template #button2>
+                            <Button
+                                class="p-button-secondary"
+                                icon="pi pi-tag"
+                                v-tooltip="{value: 'Assign primers to wells', showDelay: 500}"
+                                @click="assignPrimers" />
                         </template>
                     </PlateDiagram>
                 </SplitterPanel>

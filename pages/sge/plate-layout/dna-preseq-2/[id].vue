@@ -32,10 +32,16 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['dna.id'],
+        symbol: (well: any) => {
+            const count = well.wellContents?.length
+            return count > 0 ? String(count) : ''
+        },
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
-            return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)` : wellCoordinate
+            const dnaName = _.get(_.find(well.wellContents, (wc: any) => _.get(wc, 'wellable.dna')), 'wellable.dna.pellet.name')
+            const primerNames = _.compact(_.map(well.wellContents, (wc: any) => _.get(wc, 'wellable.preseq2Primer.name')))
+            const primerLines = primerNames.map((n: string) => `<br>${n}`).join('')
+            return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)${primerLines}` : wellCoordinate
         },
     }
     if (selectionTableName.value === 'dna') {
@@ -56,6 +62,7 @@ const loadPlate = async () => {
                     pellet: true
                 }
             },
+            preseq2Primer: true,
             wellContents: {
                 with: {
                     wellContentSources: {
@@ -290,6 +297,13 @@ const whereClause = computed(() => {
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
 })
+
+const assignPrimers = async () => {
+    const result = await plateLayout.assignPreseqPrimers('dna-preseq-2')
+    if (result && _.isEmpty(result.affectedWellIds)) {
+        toast.add({ severity: 'info', summary: 'No changes needed', detail: 'All wells already have correct primers', life: 3000 })
+    }
+}
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -340,6 +354,13 @@ const frozenRecordIds = computed(() => {
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
                         :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
+                </template>
+                <template #button2>
+                    <Button
+                        class="p-button-secondary"
+                        icon="pi pi-tag"
+                        v-tooltip="{value: 'Assign primers to wells', showDelay: 500}"
+                        @click="assignPrimers" />
                 </template>
             </PlateDiagram>
         </SplitterPanel>

@@ -296,6 +296,28 @@ export const usePlateLayout = () => {
         return newRecords
     }
 
+    const assignPreseqPrimers = async (primerType: string) => {
+        let result: { affectedWellIds: string[] }
+        try {
+            result = await $fetch(`${config.public.apiBase}/custom/plates/${plateId.value}/assign-preseq-primers`, {
+                method: 'POST',
+                body: { primerType },
+            }) as { affectedWellIds: string[] }
+        } catch (error: any) {
+            toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
+            return
+        }
+
+        if (!_.isEmpty(result.affectedWellIds)) {
+            const oldValues = _.values(_.pick(wellSpecs.value, result.affectedWellIds))
+            await reloadPlate()
+            const updatedWells = _.values(_.pick(wellSpecs.value, result.affectedWellIds))
+            plateDiagramRef.value.updateWells(updatedWells, oldValues)
+        }
+
+        return result
+    }
+
     const assignIdToSelectedWells = async (id: string) => {
         const oldValues = _.values(_.pick(wellSpecs.value, _.map(selectedWells.value, 'id')))
         const recordsToAdd = _.map(selectedWells.value, (well) => {
@@ -448,6 +470,7 @@ export const usePlateLayout = () => {
         // assign content to wells
         assignIdToSelectedWells,
         addWellContents,
+        assignPreseqPrimers,
         poolDnaPreSeq1PlateToSelectedWells,
 
         // export plate layout
