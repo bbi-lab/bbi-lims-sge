@@ -25,7 +25,8 @@ const displayWithClause = Object.freeze({
     gene: {
         columns: {
             id: true,
-            name: true
+            symbol: true,
+            ncbiAccession: true,
         },
     },
     wellable: {
@@ -60,7 +61,10 @@ const columnDefs = {
     },
     geneId: {display: false},
     gene: {
-        path: 'gene.name',
+        format: (x: any) => {
+            return `${x.gene?.symbol} (${x.gene?.ncbiAccession})`
+        },
+        path: 'gene.displayValue',
         index: 2,
     },
     wellContents: {
