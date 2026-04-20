@@ -20,6 +20,7 @@ logs
 .github/
 .vscode/
 .planning/
+.playwright-mcp/
 
 # Local env files
 .env
