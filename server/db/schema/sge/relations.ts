@@ -904,11 +904,6 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(snvLibPlasmids),
             fields: [snvLibPlasmids.snvLibCloningExperimentId],
         },
-        // snvLibClonalDnaProducts: {
-        //     table: snvLibClonalDnaProducts,
-        //     schema: createSelectSchema(snvLibClonalDnaProducts),
-        //     fields: [snvLibClonalDnaProducts.snvLibCloningExperimentId],
-        // },
         snvLibGoldenGateProducts: {
             table: snvLibGoldenGateProducts,
             schema: createSelectSchema(snvLibGoldenGateProducts),
@@ -1030,27 +1025,6 @@ const snvLibGibsonProductsRelationsConfig: RelationsConfig = {
     },
 }
 export const snvLibGibsonProductsRelations = relationsConfigToRelations(snvLibGibsonProducts, snvLibGibsonProductsRelationsConfig)
-
-// const snvLibClonalDnaProductsRelationsConfig: RelationsConfig = {
-//     one: {
-//         gelExtractedBy: {
-//             fields: [snvLibClonalDnaProducts.gelExtractedBy],
-//             referenceTable: users,
-//             references: [users.id],
-//         },
-//         snvLibCloningExperiment: {
-//             fields: [snvLibClonalDnaProducts.snvLibCloningExperimentId],
-//             referenceTable: snvLibCloningExperiments,
-//             references: [snvLibCloningExperiments.id],
-//         },
-//         wellable: {
-//             fields: [snvLibClonalDnaProducts.id],
-//             referenceTable: wellables,
-//             references: [wellables.id],
-//         },
-//     },
-// }
-// export const snvLibClonalDnaProductsRelations = relationsConfigToRelations(snvLibClonalDnaProducts, snvLibClonalDnaProductsRelationsConfig)
 
 const snvLibGoldenGateProductsRelationsConfig: RelationsConfig = {
     one: {
@@ -1610,7 +1584,6 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     snvLibAmpProducts: snvLibAmpProductsRelationsConfig,
     snvLibLinProducts: snvLibLinProductsRelationsConfig,
     snvLibGibsonProducts: snvLibGibsonProductsRelationsConfig,
-    // snvLibClonalDnaProducts: snvLibClonalDnaProductsRelationsConfig,
     snvLibGoldenGateProducts: snvLibGoldenGateProductsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,

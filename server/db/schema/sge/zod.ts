@@ -118,10 +118,6 @@ const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts
 const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
 const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
 
-// const selectSnvLibClonalDnaProductsSchema = createSelectSchema(snvLibClonalDnaProducts, {gelExtractedOn: nullableDateSchema})
-// const insertSnvLibClonalDnaProductsSchema = selectSnvLibClonalDnaProductsSchema.omit({id: true})
-// const updateSnvLibClonalDnaProductsSchema = insertSnvLibClonalDnaProductsSchema
-
 const selectSnvLibGoldenGateProductsSchema = createSelectSchema(snvLibGoldenGateProducts)
 const insertSnvLibGoldenGateProductsSchema = selectSnvLibGoldenGateProductsSchema.omit({id: true})
 const updateSnvLibGoldenGateProductsSchema = insertSnvLibGoldenGateProductsSchema
@@ -357,11 +353,6 @@ export const schemas = {
         insert: insertSnvLibGibsonProductsSchema,
         update: updateSnvLibGibsonProductsSchema,
     },
-    // snvLibClonalDnaProducts: {
-    //     select: selectSnvLibClonalDnaProductsSchema,
-    //     insert: insertSnvLibClonalDnaProductsSchema,
-    //     update: updateSnvLibClonalDnaProductsSchema,
-    // },
     snvLibGoldenGateProducts: {
         select: selectSnvLibGoldenGateProductsSchema,
         insert: insertSnvLibGoldenGateProductsSchema,

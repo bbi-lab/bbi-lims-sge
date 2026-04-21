@@ -81,7 +81,6 @@ export const schema = {
   snvLibAmpProducts,
   snvLibLinProducts,
   snvLibGibsonProducts,
-  // snvLibClonalDnaProducts,
   snvLibGoldenGateProducts,
   extractionExperiments,
   extractionLotUsage,
