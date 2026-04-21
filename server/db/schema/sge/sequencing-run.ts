@@ -47,6 +47,7 @@ export const sequencingRunExternalSamples = pgTable('sequencing_run_external_sam
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => [
   uniqueIndex('unique_custom_index_seqs_per_sequencing_run').on(t.sequencingRunId, sql`least(${t.customIndexSeq1}, ${t.customIndexSeq2})`, sql`greatest(${t.customIndexSeq1}, ${t.customIndexSeq2})`),
+  uniqueIndex('unique_index_primers_per_ext_sequencing_run').on(t.sequencingRunId, sql`least(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`, sql`greatest(${t.indexPrimer1Id}, ${t.indexPrimer2Id})`).where(sql`${t.indexPrimer1Id} IS NOT NULL`),
   // check that either two internal index primers are present, or at least one custom index sequences is present, but not both types
   check("external_sample_primer_check", sql`
     ((COALESCE(TRIM(${t.customIndexSeq1}), '') <> '' OR COALESCE(TRIM(${t.customIndexSeq2}), '') <> '') AND ${t.indexPrimer1Id} IS NULL AND ${t.indexPrimer2Id} IS NULL) OR

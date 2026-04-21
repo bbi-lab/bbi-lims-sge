@@ -382,22 +382,22 @@ SELECT
   NULL AS dna_id,
   NULL AS rna_id,
   external_sample_id,
-  index_primer_1_id,
-  index_primer_2_id,
-  primer1.index_sequence || ' (' || primer1.primer_type || ')' AS index_primer_1_label,
-  primer2.index_sequence || ' (' || primer2.primer_type || ')' AS index_primer_2_label,
+  COALESCE(sequencing_run_external_samples.index_primer_1_id, external_samples.index_primer_1_id) AS index_primer_1_id,
+  COALESCE(sequencing_run_external_samples.index_primer_2_id, external_samples.index_primer_2_id) AS index_primer_2_id,
+  COALESCE(primer1.index_sequence, ext_primer1.index_sequence) || ' (' || COALESCE(primer1.primer_type, ext_primer1.primer_type) || ')' AS index_primer_1_label,
+  COALESCE(primer2.index_sequence, ext_primer2.index_sequence) || ' (' || COALESCE(primer2.primer_type, ext_primer2.primer_type) || ')' AS index_primer_2_label,
   NULL AS index_plate_well_label,
   source_well_id,
   wells.x AS source_well_x,
   wells.y AS source_well_y,
   plates.name AS source_plate_name,
-  sequencing_run_external_samples.custom_index_seq_1 as custom_index_seq_1,
-  sequencing_run_external_samples.custom_index_seq_2 as custom_index_seq_2,
+  COALESCE(sequencing_run_external_samples.custom_index_seq_1, external_samples.custom_index_seq_1) as custom_index_seq_1,
+  COALESCE(sequencing_run_external_samples.custom_index_seq_2, external_samples.custom_index_seq_2) as custom_index_seq_2,
   million_reads_required,
   CASE
-    WHEN (index_primer_1_id != NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') <> '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') <> '') THEN 'Y151;I10;I10;Y151'
-    WHEN (index_primer_1_id != NULL AND index_primer_2_id = NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') <> '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') = '') THEN 'Y151;I10;N10;Y151'
-    WHEN (index_primer_1_id = NULL AND index_primer_2_id != NULL) OR (COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_1), '') = '' AND COALESCE(TRIM(sequencing_run_external_samples.custom_index_seq_2), '') <> '') THEN 'Y151;N10;I10;Y151'
+    WHEN (COALESCE(sequencing_run_external_samples.index_primer_1_id, external_samples.index_primer_1_id) IS NOT NULL AND COALESCE(sequencing_run_external_samples.index_primer_2_id, external_samples.index_primer_2_id) IS NOT NULL) OR (COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_1, external_samples.custom_index_seq_1)), '') <> '' AND COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_2, external_samples.custom_index_seq_2)), '') <> '') THEN 'Y151;I10;I10;Y151'
+    WHEN (COALESCE(sequencing_run_external_samples.index_primer_1_id, external_samples.index_primer_1_id) IS NOT NULL AND COALESCE(sequencing_run_external_samples.index_primer_2_id, external_samples.index_primer_2_id) IS NULL) OR (COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_1, external_samples.custom_index_seq_1)), '') <> '' AND COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_2, external_samples.custom_index_seq_2)), '') = '') THEN 'Y151;I10;N10;Y151'
+    WHEN (COALESCE(sequencing_run_external_samples.index_primer_1_id, external_samples.index_primer_1_id) IS NULL AND COALESCE(sequencing_run_external_samples.index_primer_2_id, external_samples.index_primer_2_id) IS NOT NULL) OR (COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_1, external_samples.custom_index_seq_1)), '') = '' AND COALESCE(TRIM(COALESCE(sequencing_run_external_samples.custom_index_seq_2, external_samples.custom_index_seq_2)), '') <> '') THEN 'Y151;N10;I10;Y151'
   ELSE
     NULL
   END AS override_cycles,
@@ -407,5 +407,7 @@ SELECT
   JOIN external_samples ON sequencing_run_external_samples.external_sample_id = external_samples.id
   LEFT JOIN index_primers AS primer1 ON sequencing_run_external_samples.index_primer_1_id = primer1.id
   LEFT JOIN index_primers AS primer2 ON sequencing_run_external_samples.index_primer_2_id = primer2.id
+  LEFT JOIN index_primers AS ext_primer1 ON external_samples.index_primer_1_id = ext_primer1.id
+  LEFT JOIN index_primers AS ext_primer2 ON external_samples.index_primer_2_id = ext_primer2.id
   LEFT JOIN wells ON sequencing_run_external_samples.source_well_id = wells.id
   LEFT JOIN plates ON wells.plate_id = plates.id`)

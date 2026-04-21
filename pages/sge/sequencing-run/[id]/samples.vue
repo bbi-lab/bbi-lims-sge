@@ -193,6 +193,8 @@ const addSelectedExternalSamples = async () => {
             sequencingRunId: sequencingRun.value.id,
             customIndexSeq1: selectedSample.customIndexSeq1,
             customIndexSeq2: selectedSample.customIndexSeq2,
+            indexPrimer1Id: selectedSample.indexPrimer1Id,
+            indexPrimer2Id: selectedSample.indexPrimer2Id,
         }
     })
 
@@ -274,12 +276,12 @@ const columnDefs = {
     sampleName: { index: 1 },
     sampleType: { index: 2 },
     indexPrimer1: {
-        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer1Label : data.customIndexSeq1,
+        format: (data: any) => data.indexPrimer1Label || data.customIndexSeq1,
         path: 'indexPrimer1.displayValue',
         index: 3,
     },
     indexPrimer2: {
-        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer2Label : data.customIndexSeq2,
+        format: (data: any) => data.indexPrimer2Label || data.customIndexSeq2,
         path: 'indexPrimer2.displayValue',
         index: 4,
     },
@@ -295,6 +297,7 @@ const columnDefs = {
 const internalSampleFieldDefs = {
     sequencingRunId: { display: false },
     dnaId: { display: false },
+    rnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     sourceWellId: { display: false },
@@ -302,9 +305,13 @@ const internalSampleFieldDefs = {
 }
 const externalSampleFieldDefs = {
     sequencingRunId: { display: false },
-    customIndexSeq1: { label: 'Custom Index Sequence 1' },
-    customIndexSeq2: { label: 'Custom Index Sequence 2' },
+    customIndexSeq1: { display: false },
+    customIndexSeq2: { display: false },
     createdAt: { display: false },
+    externalSampleId: { display: false },
+    indexPrimer1Id: { display: false },
+    indexPrimer2Id: { display: false },
+    sourceWellId: { display: false },
 }
 const externalSamplesColumnDefs = {
     sequencingRuns: { display: false },

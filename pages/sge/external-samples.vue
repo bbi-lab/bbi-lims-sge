@@ -13,11 +13,23 @@ const columnDefs: ColumnDefinitions = {
     sequencingRuns: { display: false },
     createdAt: { display: false },
     createdBy: { display: false },
+    indexPrimer1Id: { display: false },
+    indexPrimer2Id: { display: false },
     customIndexSeq1: {
         header: 'Custom Index Sequence 1'
     },
     customIndexSeq2: {
         header: 'Custom Index Sequence 2'
+    },
+    indexPrimer1: {
+        header: 'Index Primer 1',
+        format: (x: any) => `${x.indexPrimer1?.indexSequence} (${x.indexPrimer1?.primerType})`,
+        path: 'indexPrimer1.displayValue',
+    },
+    indexPrimer2: {
+        header: 'Index Primer 2',
+        format: (x: any) => `${x.indexPrimer2?.indexSequence} (${x.indexPrimer2?.primerType})`,
+        path: 'indexPrimer2.displayValue',
     },
 }
 
@@ -31,17 +43,34 @@ const fieldDefs: FieldDefinitions = {
     customIndexSeq2: {
         label: 'Custom Index Sequence 2'
     },
+    indexPrimer1Id: {
+        label: 'Index Primer 1',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/index-primers`,
+            searchFields: ['name', 'indexSequence'],
+            valueField: 'id',
+            inputClass: 'w-80',
+            displayFormat: (x: any) => `${x.name}: ${x.indexSequence} (${x.primerType})`,
+        }
+    },
+    indexPrimer2Id: {
+        label: 'Index Primer 2',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/index-primers`,
+            searchFields: ['name', 'indexSequence'],
+            valueField: 'id',
+            inputClass: 'w-80',
+            displayFormat: (x: any) => `${x.name}: ${x.indexSequence} (${x.primerType})`,
+        }
+    },
 }
 
 const withClause = {
     sequencingRuns: true,
-    // sourceWell: {
-    //     with: {
-    //         plate: true
-    //     }
-    // },
-    // indexPrimer1: true,
-    // indexPrimer2: true
+    indexPrimer1: true,
+    indexPrimer2: true,
 }
 </script>
 <template>

@@ -1163,6 +1163,13 @@
       "when": 1776468241831,
       "tag": "0165_curved_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 166,
+      "version": "7",
+      "when": 1776745849046,
+      "tag": "0166_ordinary_stick",
+      "breakpoints": true
     }
   ]
 }

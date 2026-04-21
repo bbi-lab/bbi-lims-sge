@@ -417,7 +417,17 @@ const externalSamplesRelationsConfig: RelationsConfig = {
             fields: [externalSamples.id],
             referenceTable: wellables,
             references: [wellables.id],
-        }
+        },
+        indexPrimer1: {
+            fields: [externalSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [externalSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
     },
     many: {
         sequencingRuns: {
