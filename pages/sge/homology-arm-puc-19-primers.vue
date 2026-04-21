@@ -7,6 +7,38 @@ import { RecordService } from '~/utils/service/RecordService'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
+const toast = useToast()
+const importDialogVisible = ref(false)
+
+const submitHaPuc19Primers = async (data: any[]) => {
+    try {
+        const filteredData = _.filter(data, (item) => {
+            return !_.includes(_.toLower(item.notes || ''), 'sample row')
+        })
+        if (_.isEmpty(filteredData)) {
+            toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
+            return
+        }
+        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/ha-puc19-primers/import`, {
+            method: 'POST',
+            body: filteredData,
+        })
+        crudTable.didAddRecords(response.primers)
+        toast.add({ severity: 'success', summary: 'Success', detail: `Successfully imported ${response.insertedCount} Homology Arm PUC 19 Primers.`, life: 5000 })
+        importDialogVisible.value = false
+    } catch (error: any) {
+        const userMessage = _.isArray(error?.data?.data) ? convertErrorDataToUserMessage(error.data.data) : error.statusMessage ?? 'An unexpected error occurred during import. Please try again.'
+        toast.add({ severity: 'error', summary: 'Error', detail: userMessage, life: 5000 })
+    }
+}
+
+const importHaPuc19Primers = (event: any) => {
+    try {
+        fileToSheet(event.files[0], submitHaPuc19Primers)
+    } catch (error) {
+        console.error('Error importing Homology Arm PUC 19 Primers:', error)
+    }
+}
 
 const withClause = Object.freeze({
     homologyArmPrimer: {
@@ -124,7 +156,16 @@ const fieldDefs: FieldDefinitions = {
                 :column-defs="columnDefs"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
-            />
+            >
+                <template #header-buttons>
+                    <Button
+                        v-if="!crudTable.state.showAddForm && !crudTable.state.showEditForm"
+                        label="Import"
+                        icon="pi pi-file-import"
+                        @click="importDialogVisible = true"
+                    />
+                </template>
+            </QuickTable>
         </SplitterPanel>
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm">
             <QuickForm
@@ -148,4 +189,33 @@ const fieldDefs: FieldDefinitions = {
             />
         </SplitterPanel>
     </Splitter>
+    <Dialog v-model:visible="importDialogVisible" modal :closable="false" :style="{ width: '35rem' }">
+        <slot name="closebutton">
+            <div class="flex justify-end">
+                <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-plain ml-auto mr-0" @click="importDialogVisible = false" />
+            </div>
+        </slot>
+        <slot name="header">
+            <span class="flex justify-center mt-3 font-bold">Import Homology Arm PUC 19 Primers</span>
+        </slot>
+        <p class="text-sm text-center mt-3 mb-5 text-surface-500">
+            Expected columns: HA Primer Name, Name (optional), Sequence (optional), Ordered On, Notes, Plate Storage Box Name, Well Tube Coordinates
+        </p>
+        <div class="flex justify-center">
+            <FileUpload
+                mode="basic"
+                accept="application/msexcel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
+                class="p-button-info"
+                :maxFileSize="1000000"
+                :customUpload="true"
+                :auto="true"
+                @uploader="importHaPuc19Primers"
+                chooseLabel="Upload"
+            >
+                <template #chooseicon>
+                    <i class="pi pi-upload"></i>
+                </template>
+            </FileUpload>
+        </div>
+    </Dialog>
 </template>

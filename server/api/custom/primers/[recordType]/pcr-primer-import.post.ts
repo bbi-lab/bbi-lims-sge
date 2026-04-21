@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
+import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets, homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { insertRecords } from '~/server/services/generic-services'
 import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRelatedTargets, wellContentsCount } from '~/server/utils/sge'
@@ -44,6 +44,16 @@ const RECORD_TYPE_CONFIG_MAP = {
         table: preseq2Primers,
         zodSchema: schemas.preseq2Primers.insert,
         plateType: 'dna-preseq-2-primer-storage'
+    },
+    'ha-primers': {
+        table: homologyArmPrimers,
+        zodSchema: schemas.homologyArmPrimers.insert,
+        updateRelatedTargetParams: {
+            table: homologyArmPrimerTargets,
+            parentIdKey: 'homologyArmPrimerId',
+            targetIdKey: 'targetId',
+        },
+        plateType: 'ha-primer-storage'
     },
 }
 
@@ -142,6 +152,10 @@ export default defineEventHandler(async (event) => {
             // preseq1 primers do not include adapter sequences, so only set if present in the row
             if (_.has(row, 'adapterSequence')) {
                 _.set(primerRecord, 'adapterSequence', _.trim(row.adapterSequence || ''))
+            }
+            // ha-primers optionally include cloning strategy
+            if (_.has(row, 'cloningStrategy') && row.cloningStrategy) {
+                _.set(primerRecord, 'cloningStrategy', _.toLower(_.trim(row.cloningStrategy || '')))
             }
             return primerRecord
         })
