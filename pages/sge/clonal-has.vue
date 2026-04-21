@@ -3,7 +3,8 @@
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
-import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
+import { RecordService } from '~/utils/service/RecordService'
+import { clonalHaTargets } from '~/server/db/schema/sge/oligos'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -14,90 +15,78 @@ const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
-const columnDefs: ColumnDefinitions = {
+const columnDefs = {
     name: {
-        index: 0,
-    },
-    snvLibCloningExperiment: {
-        header: 'SNV Library Cloning Experiment',
-        type: 'element',
-        element: (data: any) => {
-            const href = data.snvLibCloningExperiment?.id ? `/sge/snv-lib-cloning-experiments?id=${data.snvLibCloningExperiment?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${data.snvLibCloningExperiment?.name}</a>` : ''
-        },
-        exportValue: (data: any) => {
-            return _.get(data.snvLibCloningExperiment, 'name', '')
-        },
         index: 1,
     },
-    snvLibCloningExperimentId: { display: false },
-    quant: {
-        header: 'Quant (ng/µL)',
-    },
-    gelExtractedBy: {
-        path: 'gelExtractedBy.name'
-    },
-}
-// fieldDefs is computed so we can access crudTable.state.editingRecord and crudTable.state.editingMultipleRecordsIds
-// to apply additional logic to certain properties (e.g. readOnly, searchWhereClause)
-const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
-    return {
-        name: {
-            index: 0,
+    clonalHaTargets: {
+        header: 'Targets',
+        format: (data: any) => {
+            return _.map(data.clonalHaTargets, 'target.name')
         },
-        snvLibCloningExperimentId: {
-            label: 'SNV Library Cloning Experiment',
-            component: 'AutoCompleter',
-            props: {
-                searchBaseUrl: `${config.public.apiBase}/snv-lib-cloning-experiments`,
-                searchFields: ['name'],
-                valueField: 'id',
-                displayFields: ['name'],
-                dropdown: true,
-            },
-            index: 1,
-        },
-        quant: {
-            label: 'Quant (ng/µL)',
-        },
-        gelExtractedBy: {
-            component: 'AutoCompleter',
-            props: {
-                searchBaseUrl: `${config.public.apiBase}/users`,
-                searchFields: ['name'],
-                valueField: 'id',
-                displayFields: ['name'],
-                dropdown: true,
-            }
-        },
-    }
-})
-const displayWithClause = {
-    gelExtractedBy: {
-        columns: {id: true, name: true},
+        path: 'clonalHaTargets.displayValue',
+        index: 2,
     },
-    snvLibCloningExperiment: {
-        columns: {id: true, name: true},
-    },
+    snvLibCloningExperiments: {display: false},
+    snvLibGoldenGateProducts: {display: false},
+
 }
 
+const fieldDefs: FieldDefinitions = {
+    'clonalHaTargets.*': {
+        label: 'Targets',
+        component: 'InputArray',
+        canDelete: true,
+        canUpdate: true,
+        props: {
+            components: [
+                {
+                    variableField: 'targetId',
+                    label: 'Target',
+                    component: 'AutoCompleter',
+                    componentProps: {
+                        searchBaseUrl: `${config.public.apiBase}/targets`,
+                        searchFields: ['region.gene.symbol', 'region.name', 'name'],
+                        valueField: 'id',
+                        inputClass: 'w-64',
+                        displayFormat: (x: any) => {
+                            return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
+                        },
+                        searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+                    },
+                },
+            ]
+        }
+    },
+    snvLibCloningExperiments: {display: false},
+    snvLibGoldenGateProducts: {display: false},
+}
+const displayWithClause = {
+    clonalHaTargets: {
+        with: {
+            target: {
+                columns: {
+                    id: true,
+                    name: true,
+                }
+            },
+        }
+    },
+}
 </script>
 <template>
     <Splitter class="h-full overflow-y-hidden">
         <SplitterPanel :size="50">
             <QuickTable
                 :ref="crudTable.setTableRef"
-                tableName="snv-lib-clonal-dna-products"
+                tableName="clonal-has"
                 schemaName="select"
-                title="Clonal DNA products"
+                title="Clonal Homology Arms"
                 :columnDefs="columnDefs"
                 :withClause="displayWithClause"
                 :where="whereClauses"
@@ -111,10 +100,9 @@ const displayWithClause = {
          <SplitterPanel v-if="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm">
             <QuickForm
                 v-if="crudTable.state.showAddForm"
-                tableName="snv-lib-clonal-dna-products"
+                tableName="clonal-has"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{snvLibCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -122,9 +110,10 @@ const displayWithClause = {
             <QuickForm
                 v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"
                 :recordId="crudTable.state.editingRecordId"
-                tableName="snv-lib-clonal-dna-products"
+                tableName="clonal-has"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :withClause="{clonalHaTargets: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
@@ -132,10 +121,11 @@ const displayWithClause = {
             />
             <QuickFormMultiple
                 v-if="crudTable.state.showMultipleEditForm"
-                tableName="snv-lib-clonal-dna-products"
+                tableName="clonal-has"
                 :recordIds="crudTable.state.editingMultipleRecordsIds"
                 schemaName="update"
                 :fieldDefs="fieldDefs"
+                :withClause="{clonalHaTargets: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelMultipleEditForm"
                 @records-update="crudTable.didUpdateMultipleRecords"

@@ -168,16 +168,22 @@ const columnDefs = {
         index: 2,
     },
     wellContents: {
-        header: 'Location',
+        header: 'Wells',
         format: (x: any) => {
-            const wellContents = _.filter(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
-            return (!_.isEmpty(wellContents) ?
-                _.map(wellContents, (content) => ` ${_.get(content, 'well.plate.name')}: ${wellCoordinateToChar(content.well?.y)}${content.well?.x}`) :
-                []).join(', ')
+            return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 3,
+    },
+    otherLocations: {
+        header: 'Other locations',
+        format: (x: any) => {
+            return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+        },
+        path: 'otherLocations.displayValue',
+        type: 'string',
+        index: 4,
     },
 }
 const rowActions = {

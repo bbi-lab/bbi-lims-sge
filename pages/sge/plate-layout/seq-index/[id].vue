@@ -89,15 +89,23 @@ const columnDefs = {
         index: 1,
     },
     wellContents: {
-        header: 'Location',
+        header: 'Wells',
         format: (x: any) => {
-            const wellContents = _.find(x?.wellable?.wellContents || [], (content) => content.well.plate.id == route.params.id)
-            return wellContents ? ` ${_.get(wellContents, 'well.plate.name')}: ${wellCoordinateToChar(wellContents.well?.y)}${wellContents.well?.x}` : ''
+            return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
         index: 2,
     },
+    otherLocations: {
+        header: 'Other locations',
+        format: (x: any) => {
+            return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+        },
+        path: 'otherLocations.displayValue',
+        type: 'string',
+        index: 3,
+     },
 }
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))

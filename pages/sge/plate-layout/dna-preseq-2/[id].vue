@@ -32,10 +32,16 @@ onMounted(() => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: ['dna.id'],
+        symbol: (well: any) => {
+            const count = well.wellContents?.length
+            return count > 0 ? String(count) : ''
+        },
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
-            const dnaName = _.get(well, ['wellContents', 0, 'wellable', 'dna', 'pellet', 'name'])
-            return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)` : wellCoordinate
+            const dnaName = _.get(_.find(well.wellContents, (wc: any) => _.get(wc, 'wellable.dna')), 'wellable.dna.pellet.name')
+            const primerNames = _.compact(_.map(well.wellContents, (wc: any) => _.get(wc, 'wellable.preseq2Primer.name')))
+            const primerLines = primerNames.map((n: string) => `<br>${n}`).join('')
+            return dnaName ? `${wellCoordinate}:<br>${dnaName} (DNA)${primerLines}` : wellCoordinate
         },
     }
     if (selectionTableName.value === 'dna') {
@@ -56,6 +62,7 @@ const loadPlate = async () => {
                     pellet: true
                 }
             },
+            preseq2Primer: true,
             wellContents: {
                 with: {
                     wellContentSources: {
@@ -206,29 +213,20 @@ const columnDefs = computed(() => {
             wellContents: {
                 header: 'Wells',
                 format: (x: any) => {
-                    const wellCoordinates = _.map(_.filter(x.wellable?.wellContents || [], (val) => _.get(val, 'well.plate.id') == route.params.id), (wellContent) => {
-                        return {x: wellContent.well.x, y: wellContent.well.y,}
-                    })
-                    const contentsGroupedByX = _.groupBy(wellCoordinates, 'x')
-                    const yRanges = _.mapValues(contentsGroupedByX, (coordinates) => {
-                        const sortedByY = _.sortBy(coordinates, 'y')
-                        const consecutiveYRanges = _.reduce(sortedByY, (acc, coordinate) => {
-                            if (acc.length === 0 || acc[acc.length - 1].maxY + 1 < coordinate.y) {
-                                acc.push({ x: coordinate.x, minY: coordinate.y, maxY: coordinate.y })
-                            } else {
-                                acc[acc.length - 1].maxY = Math.max(acc[acc.length - 1].maxY, coordinate.y)
-                            }
-                            return acc
-                        }, [] as Array<{ x: number; minY: number; maxY: number }>)
-                        return consecutiveYRanges
-                    })
-                    return _.map(_.flatten(_.values(yRanges)), (val) => {
-                        return val.minY == val.maxY ? `${wellCoordinateToChar(val.minY)}${val.x}` : `${wellCoordinateToChar(val.minY)}${val.x}-${wellCoordinateToChar(val.maxY)}${val.x}`
-                    }).join(', ')
+                    return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
                 },
                 path: 'wellContents.displayValue',
                 type: 'string',
                 index: 2,
+            },
+            otherLocations: {
+                header: 'Other locations',
+                format: (x: any) => {
+                    return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+                },
+                path: 'otherLocations.displayValue',
+                type: 'string',
+                index: 3,
             },
             extractionExperimentId: { display: false},
             pelletId: { display: false},
@@ -299,6 +297,13 @@ const whereClause = computed(() => {
 const frozenRecordIds = computed(() => {
     return _.compact(_.flatten(_.map(plateLayout.selectedWells.value, 'selectionTableRecordIds')))
 })
+
+const assignPrimers = async () => {
+    const result = await plateLayout.assignPreseqPrimers('dna-preseq-2')
+    if (result && _.isEmpty(result.affectedWellIds)) {
+        toast.add({ severity: 'info', summary: 'No changes needed', detail: 'All wells already have correct primers', life: 3000 })
+    }
+}
 </script>
 <template>
     <Splitter class="h-full mb-8" :layout="smallerThanLg ? 'vertical' : 'horizontal'">
@@ -349,6 +354,13 @@ const frozenRecordIds = computed(() => {
                         v-tooltip="{value: 'Empty selected wells', showDelay: 500}"
                         :disabled="_.isEmpty(plateLayout.selectedWells.value)"
                         @click="plateLayout.emptySelectedWells" />
+                </template>
+                <template #button2>
+                    <Button
+                        class="p-button-secondary"
+                        icon="pi pi-tag"
+                        v-tooltip="{value: 'Assign primers to wells', showDelay: 500}"
+                        @click="assignPrimers" />
                 </template>
             </PlateDiagram>
         </SplitterPanel>

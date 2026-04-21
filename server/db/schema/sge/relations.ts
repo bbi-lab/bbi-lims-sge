@@ -18,7 +18,7 @@ import { reagents } from './reagents'
 import { nucleicAcids, dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets, rnaRtPrimers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, sgRnaOligoTargets, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, clonalHaTargets, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, sgRnaOligoTargets, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, sgRnaPlasmidTargets, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
@@ -417,7 +417,17 @@ const externalSamplesRelationsConfig: RelationsConfig = {
             fields: [externalSamples.id],
             referenceTable: wellables,
             references: [wellables.id],
-        }
+        },
+        indexPrimer1: {
+            fields: [externalSamples.indexPrimer1Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
+        indexPrimer2: {
+            fields: [externalSamples.indexPrimer2Id],
+            referenceTable: indexPrimers,
+            references: [indexPrimers.id],
+        },
     },
     many: {
         sequencingRuns: {
@@ -823,12 +833,54 @@ const haPuc19PlasmidsRelationsConfig: RelationsConfig = {
 }
 export const haPuc19PlasmidsRelations = relationsConfigToRelations(haPuc19Plasmids, haPuc19PlasmidsRelationsConfig)
 
+const clonalHasRelationsConfig: RelationsConfig = {
+    many: {
+        clonalHaTargets: {
+            table: clonalHaTargets,
+            schema: createSelectSchema(clonalHaTargets),
+            fields: [clonalHaTargets.clonalHaId],
+        },
+        snvLibCloningExperiments: {
+            table: snvLibCloningExperiments,
+            schema: createSelectSchema(snvLibCloningExperiments),
+            fields: [snvLibCloningExperiments.clonalHaId],
+        },
+        snvLibGoldenGateProducts: {
+            table: snvLibGoldenGateProducts,
+            schema: createSelectSchema(snvLibGoldenGateProducts),
+            fields: [snvLibGoldenGateProducts.clonalHaId],
+        },
+    }
+}
+export const clonalHasRelations = relationsConfigToRelations(clonalHas, clonalHasRelationsConfig)
+
+const clonalHaTargetsRelationsConfig: RelationsConfig = {
+    one: {
+        clonalHa: {
+            fields: [clonalHaTargets.clonalHaId],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
+        },
+        target: {
+            fields: [clonalHaTargets.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    }
+}
+export const clonalHaTargetsRelations = relationsConfigToRelations(clonalHaTargets, clonalHaTargetsRelationsConfig)
+
 const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
     one:{
         target: {
             fields: [snvLibCloningExperiments.targetId],
             referenceTable: targets,
             references: [targets.id],
+        },
+        clonalHa: {
+            fields: [snvLibCloningExperiments.clonalHaId],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
         },
     },
     many: {
@@ -851,11 +903,6 @@ const snvLibCloningExperimentsRelationsConfig: RelationsConfig = {
             table: snvLibPlasmids,
             schema: createSelectSchema(snvLibPlasmids),
             fields: [snvLibPlasmids.snvLibCloningExperimentId],
-        },
-        snvLibClonalDnaProducts: {
-            table: snvLibClonalDnaProducts,
-            schema: createSelectSchema(snvLibClonalDnaProducts),
-            fields: [snvLibClonalDnaProducts.snvLibCloningExperimentId],
         },
         snvLibGoldenGateProducts: {
             table: snvLibGoldenGateProducts,
@@ -979,36 +1026,15 @@ const snvLibGibsonProductsRelationsConfig: RelationsConfig = {
 }
 export const snvLibGibsonProductsRelations = relationsConfigToRelations(snvLibGibsonProducts, snvLibGibsonProductsRelationsConfig)
 
-const snvLibClonalDnaProductsRelationsConfig: RelationsConfig = {
-    one: {
-        gelExtractedBy: {
-            fields: [snvLibClonalDnaProducts.gelExtractedBy],
-            referenceTable: users,
-            references: [users.id],
-        },
-        snvLibCloningExperiment: {
-            fields: [snvLibClonalDnaProducts.snvLibCloningExperimentId],
-            referenceTable: snvLibCloningExperiments,
-            references: [snvLibCloningExperiments.id],
-        },
-        wellable: {
-            fields: [snvLibClonalDnaProducts.id],
-            referenceTable: wellables,
-            references: [wellables.id],
-        },
-    },
-}
-export const snvLibClonalDnaProductsRelations = relationsConfigToRelations(snvLibClonalDnaProducts, snvLibClonalDnaProductsRelationsConfig)
-
 const snvLibGoldenGateProductsRelationsConfig: RelationsConfig = {
     one: {
         snvLibCloningExperiment: {
-            fields: [snvLibClonalDnaProducts.snvLibCloningExperimentId],
+            fields: [snvLibGoldenGateProducts.snvLibCloningExperimentId],
             referenceTable: snvLibCloningExperiments,
             references: [snvLibCloningExperiments.id],
         },
         wellable: {
-            fields: [snvLibClonalDnaProducts.id],
+            fields: [snvLibGoldenGateProducts.id],
             referenceTable: wellables,
             references: [wellables.id],
         },
@@ -1017,10 +1043,10 @@ const snvLibGoldenGateProductsRelationsConfig: RelationsConfig = {
             referenceTable: snvLibAmpProducts,
             references: [snvLibAmpProducts.id],
         },
-        snvLibClonalDnaProduct: {
-            fields: [snvLibGoldenGateProducts.snvLibClonalDnaProductId],
-            referenceTable: snvLibClonalDnaProducts,
-            references: [snvLibClonalDnaProducts.id],
+        clonalHa: {
+            fields: [snvLibGoldenGateProducts.clonalHaId],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
         },
     },
 }
@@ -1543,6 +1569,12 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     sgRnaOligos: sgRnaOligosRelationsConfig,
     sgRnaOligoTargets: sgRnaOligoTargetsRelationsConfig,
     cycles: cyclesRelationsConfig,
+    haPcrProducts: haPcrProductsRelationsConfig,
+    haPuc19PcrProducts: haPuc19PcrProductsRelationsConfig,
+    haPuc19GibsonProducts: haPuc19GibsonProductsRelationsConfig,
+    haPuc19Plasmids: haPuc19PlasmidsRelationsConfig,
+    clonalHas: clonalHasRelationsConfig,
+    clonalHaTargets: clonalHaTargetsRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     pcrExperimentTargets: pcrExperimentTargetsRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
@@ -1552,7 +1584,6 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     snvLibAmpProducts: snvLibAmpProductsRelationsConfig,
     snvLibLinProducts: snvLibLinProductsRelationsConfig,
     snvLibGibsonProducts: snvLibGibsonProductsRelationsConfig,
-    snvLibClonalDnaProducts: snvLibClonalDnaProductsRelationsConfig,
     snvLibGoldenGateProducts: snvLibGoldenGateProductsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,

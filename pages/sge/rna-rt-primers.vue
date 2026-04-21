@@ -25,7 +25,8 @@ const displayWithClause = Object.freeze({
     gene: {
         columns: {
             id: true,
-            name: true
+            symbol: true,
+            ncbiAccession: true,
         },
     },
     wellable: {
@@ -60,19 +61,16 @@ const columnDefs = {
     },
     geneId: {display: false},
     gene: {
-        path: 'gene.name',
+        format: (x: any) => {
+            return `${x.gene?.symbol} (${x.gene?.ncbiAccession})`
+        },
+        path: 'gene.displayValue',
         index: 2,
     },
     wellContents: {
         header: 'Location',
         format: (x: any) => {
-            if (!_.isEmpty(x?.wellable?.wellContents)) {
-                return _.map(x.wellable.wellContents, (wellContent) => {
-                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
-                }).join(', ')
-            } else {
-                return ''
-            }
+            return combinedWellLocations(x) as string
         },
         path: 'wellContents.displayValue',
         type: 'string',

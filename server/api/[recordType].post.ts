@@ -7,7 +7,7 @@ import { parsePutPostError } from '../utils/restApi'
 import { updateRelatedTargets } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
-import { sgRnaOligoTargets } from '../db/schema/sge/oligos'
+import { clonalHaTargets, sgRnaOligoTargets } from '../db/schema/sge/oligos'
 import { pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
 import { sgRnaPlasmidTargets } from '../db/schema/sge/plasmid'
 
@@ -79,6 +79,10 @@ export default defineEventHandler(async (event) => {
                     const sgRnaPlasmidTargetIds = _.compact(_.map(body[0].sgRnaPlasmidTargets, 'targetId'))
                     const targets = await updateRelatedTargets(sgRnaPlasmidTargets, 'sgRnaPlasmidId', 'targetId', insertedRecords[0].id, sgRnaPlasmidTargetIds, tx)
                     _.set(insertedRecords, '0.sgRnaPlasmidTargets', targets)
+                } else if (_.camelCase(recordType) == 'clonalHas' && _.isArray(body[0].clonalHaTargets)) {
+                    const clonalHaTargetIds = _.compact(_.map(body[0].clonalHaTargets, 'targetId'))
+                    const targets = await updateRelatedTargets(clonalHaTargets, 'clonalHaId', 'targetId', insertedRecords[0].id, clonalHaTargetIds, tx)
+                    _.set(insertedRecords, '0.clonalHaTargets', targets)
                 }
             }
             return insertedRecords

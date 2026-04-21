@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets } from '~/server/db/schema/sge/primer'
+import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets, homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
 import { insertRecords } from '~/server/services/generic-services'
 import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRelatedTargets, wellContentsCount } from '~/server/utils/sge'

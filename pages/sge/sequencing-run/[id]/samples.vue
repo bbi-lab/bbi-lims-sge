@@ -38,9 +38,26 @@ const invalidRecords = computed(() => {
     const recordsWithRepeatedDna = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
         return _.get(sampleNameCounts, record.sampleName) > 1
     }).map((record) => ({id: record.id, count: sampleNameCounts[record.sampleName]}))
-    return _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
+    const invalidDna = _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
         return {messages: [`Repeated (${val?.count}x)`]}
     })
+
+    const repeatedPrimerCombinations = _.countBy(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        return [record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')
+    })
+    const recordsWithRepeatedPrimerCombinations = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        const combinationKey = [record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')
+        return _.get(repeatedPrimerCombinations, combinationKey) > 1
+    }).map((record) => ({id: record.id, count: repeatedPrimerCombinations[[record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')]}))
+
+    const invalidPrimerCombinations = _.mapValues(_.keyBy(recordsWithRepeatedPrimerCombinations, 'id'), (val, id) => {
+        return {messages: [`Repeated index primers (${val?.count}x)`]}
+    })
+
+    return {
+        ...invalidDna,
+        ...invalidPrimerCombinations,
+    }
 })
 
 watch (selectedPlateId, async (newValue) => {
@@ -193,6 +210,8 @@ const addSelectedExternalSamples = async () => {
             sequencingRunId: sequencingRun.value.id,
             customIndexSeq1: selectedSample.customIndexSeq1,
             customIndexSeq2: selectedSample.customIndexSeq2,
+            indexPrimer1Id: selectedSample.indexPrimer1Id,
+            indexPrimer2Id: selectedSample.indexPrimer2Id,
         }
     })
 
@@ -274,12 +293,12 @@ const columnDefs = {
     sampleName: { index: 1 },
     sampleType: { index: 2 },
     indexPrimer1: {
-        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer1Label : data.customIndexSeq1,
+        format: (data: any) => data.indexPrimer1Label || data.customIndexSeq1,
         path: 'indexPrimer1.displayValue',
         index: 3,
     },
     indexPrimer2: {
-        format: (data: any) => data.sampleType == 'internal' ? data.indexPrimer2Label : data.customIndexSeq2,
+        format: (data: any) => data.indexPrimer2Label || data.customIndexSeq2,
         path: 'indexPrimer2.displayValue',
         index: 4,
     },
@@ -295,6 +314,7 @@ const columnDefs = {
 const internalSampleFieldDefs = {
     sequencingRunId: { display: false },
     dnaId: { display: false },
+    rnaId: { display: false },
     indexPrimer1Id: { display: false },
     indexPrimer2Id: { display: false },
     sourceWellId: { display: false },
@@ -302,9 +322,13 @@ const internalSampleFieldDefs = {
 }
 const externalSampleFieldDefs = {
     sequencingRunId: { display: false },
-    customIndexSeq1: { label: 'Custom Index Sequence 1' },
-    customIndexSeq2: { label: 'Custom Index Sequence 2' },
+    customIndexSeq1: { display: false },
+    customIndexSeq2: { display: false },
     createdAt: { display: false },
+    externalSampleId: { display: false },
+    indexPrimer1Id: { display: false },
+    indexPrimer2Id: { display: false },
+    sourceWellId: { display: false },
 }
 const externalSamplesColumnDefs = {
     sequencingRuns: { display: false },
@@ -333,6 +357,9 @@ const externalSamplesColumnDefs = {
             >
                 <template #title>
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
+                    <span v-if="_.size(invalidRecords) > 0" class="ml-4 p-2 bg-red-100 text-red-800 rounded">
+                        {{ _.size(invalidRecords) }} invalid sample(s)
+                    </span>
                 </template>
                 <template #header-buttons>
                     <span>

@@ -19,7 +19,7 @@ import { nucleicAcids, dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibClonalDnaProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -98,6 +98,10 @@ const selectHaPuc19PlasmidsSchema = createSelectSchema(haPuc19Plasmids, {transfo
 const insertHaPuc19PlasmidsSchema = selectHaPuc19PlasmidsSchema.omit({id: true})
 const updateHaPuc19PlasmidsSchema = insertHaPuc19PlasmidsSchema
 
+const selectClonalHasSchema = createSelectSchema(clonalHas, {orderedOn: nullableDateSchema})
+const insertClonalHasSchema = selectClonalHasSchema.omit({id: true})
+const updateClonalHasSchema = insertClonalHasSchema
+
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
 const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
@@ -113,10 +117,6 @@ const updateSnvLibLinProductsSchema = insertSnvLibLinProductsSchema
 const selectSnvLibGibsonProductsSchema = createSelectSchema(snvLibGibsonProducts, {gibsonOn: nullableDateSchema, cleanedOn: nullableDateSchema, transformedOn: nullableDateSchema, preppedOn: nullableDateSchema, benchlingLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()})
 const insertSnvLibGibsonProductsSchema = selectSnvLibGibsonProductsSchema.omit({id: true})
 const updateSnvLibGibsonProductsSchema = insertSnvLibGibsonProductsSchema
-
-const selectSnvLibClonalDnaProductsSchema = createSelectSchema(snvLibClonalDnaProducts, {gelExtractedOn: nullableDateSchema})
-const insertSnvLibClonalDnaProductsSchema = selectSnvLibClonalDnaProductsSchema.omit({id: true})
-const updateSnvLibClonalDnaProductsSchema = insertSnvLibClonalDnaProductsSchema
 
 const selectSnvLibGoldenGateProductsSchema = createSelectSchema(snvLibGoldenGateProducts)
 const insertSnvLibGoldenGateProductsSchema = selectSnvLibGoldenGateProductsSchema.omit({id: true})
@@ -160,8 +160,10 @@ const updateSequencingRunSamples = insertSequencingRunSamples
 
 const selectExternalSamples = createSelectSchema(externalSamples, {createdAt: nullableDateSchema})
 const insertExternalSamples = createSelectSchema(externalSamples, {
-    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)),
-    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable(),
+    customIndexSeq1: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable().optional(),
+    customIndexSeq2: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable().optional(),
+    indexPrimer1Id: z.string().uuid().nullable().optional(),
+    indexPrimer2Id: z.string().uuid().nullable().optional(),
 }).omit({id: true, createdAt: true}).partial()
 const updateExternalSamples = insertExternalSamples
 
@@ -326,6 +328,11 @@ export const schemas = {
         insert: insertHaPuc19PlasmidsSchema,
         update: updateHaPuc19PlasmidsSchema,
     },
+    clonalHas: {
+        select: selectClonalHasSchema,
+        insert: insertClonalHasSchema,
+        update: updateClonalHasSchema,
+    },
     snvLibCloningExperiments: {
         select: selectSnvLibCloningExperimentsSchema,
         insert: insertSnvLibCloningExperimentsSchema,
@@ -345,11 +352,6 @@ export const schemas = {
         select: selectSnvLibGibsonProductsSchema,
         insert: insertSnvLibGibsonProductsSchema,
         update: updateSnvLibGibsonProductsSchema,
-    },
-    snvLibClonalDnaProducts: {
-        select: selectSnvLibClonalDnaProductsSchema,
-        insert: insertSnvLibClonalDnaProductsSchema,
-        update: updateSnvLibClonalDnaProductsSchema,
     },
     snvLibGoldenGateProducts: {
         select: selectSnvLibGoldenGateProductsSchema,

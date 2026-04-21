@@ -134,20 +134,22 @@ const columnDefs = {
         index: 3,
     },
     wellContents: {
-        header: 'Location',
+        header: 'Wells',
         format: (x: any) => {
-            //return _.has(x, 'wellContents.well.plate') ? ` ${_.get(x, 'wellContents.well.plate.name')}: ${wellCoordinateToChar(x.wellContents?.well?.y)}${x.wellContents?.well?.x}` : ''},
-            if (!_.isEmpty(x?.wellable?.wellContents)) {
-                return _.map(x.wellable.wellContents, (wellContent) => {
-                    return `${_.get(wellContent, 'well.plate.name')}: ${wellCoordinateToChar(wellContent?.well?.y)}${wellContent?.well?.x}`
-                }).join(', ')
-            } else {
-                return ''
-            }
+            return _.values(combinedWellLocations(x, {asDict: true, includePlateIds: [route.params.id as string]})).join(', ')
         },
         path: 'wellContents.displayValue',
         type: 'string',
-        index: 2,
+        index: 4,
+    },
+    otherLocations: {
+        header: 'Other locations',
+        format: (x: any) => {
+            return combinedWellLocations(x, {excludePlateIds: [route.params.id as string]})
+        },
+        path: 'otherLocations.displayValue',
+        type: 'string',
+        index: 5,
     },
 }
 const rowActions = {

@@ -1,0 +1,3 @@
+ALTER TABLE "clonal_has" ADD COLUMN "quant" double precision;--> statement-breakpoint
+ALTER TABLE "snv_lib_cloning_experiments" ADD COLUMN "clonal_ha_id" uuid;--> statement-breakpoint
+ALTER TABLE "snv_lib_cloning_experiments" ADD CONSTRAINT "snv_lib_cloning_experiments_clonal_ha_id_clonal_has_id_fk" FOREIGN KEY ("clonal_ha_id") REFERENCES "public"."clonal_has"("id") ON DELETE no action ON UPDATE no action;
