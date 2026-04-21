@@ -153,6 +153,7 @@ const fieldDefs: FieldDefinitions = {
                 title="Homology Arm PUC 19 Primers"
                 :with-clause="withClause"
                 :column-defs="columnDefs"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             >
