@@ -11,7 +11,7 @@ const importDialogVisible = ref(false)
 const submitExternalSamples = async (data: any[]) => {
     try {
         const filteredData = _.filter(data, (item) => {
-            return !_.includes(_.toLower(item.notes || ''), 'sample row')
+            return !_.includes(_.toLower(item.description || ''), 'sample row')
         })
         if (_.isEmpty(filteredData)) {
             toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
@@ -53,12 +53,12 @@ const columnDefs: ColumnDefinitions = {
     },
     indexPrimer1: {
         header: 'Index Primer 1',
-        format: (x: any) => `${x.indexPrimer1?.indexSequence} (${x.indexPrimer1?.primerType})`,
+        format: (x: any) => x.indexPrimer1 ? `${x.indexPrimer1.indexSequence} (${x.indexPrimer1.primerType})` : '',
         path: 'indexPrimer1.displayValue',
     },
     indexPrimer2: {
         header: 'Index Primer 2',
-        format: (x: any) => `${x.indexPrimer2?.indexSequence} (${x.indexPrimer2?.primerType})`,
+        format: (x: any) => x.indexPrimer2 ? `${x.indexPrimer2.indexSequence} (${x.indexPrimer2.primerType})` : '',
         path: 'indexPrimer2.displayValue',
     },
 }
