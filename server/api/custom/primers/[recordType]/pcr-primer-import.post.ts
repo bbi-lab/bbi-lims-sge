@@ -45,16 +45,6 @@ const RECORD_TYPE_CONFIG_MAP = {
         zodSchema: schemas.preseq2Primers.insert,
         plateType: 'dna-preseq-2-primer-storage'
     },
-    'ha-primers': {
-        table: homologyArmPrimers,
-        zodSchema: schemas.homologyArmPrimers.insert,
-        updateRelatedTargetParams: {
-            table: homologyArmPrimerTargets,
-            parentIdKey: 'homologyArmPrimerId',
-            targetIdKey: 'targetId',
-        },
-        plateType: 'ha-primer-storage'
-    },
 }
 
 export default defineEventHandler(async (event) => {
@@ -152,10 +142,6 @@ export default defineEventHandler(async (event) => {
             // preseq1 primers do not include adapter sequences, so only set if present in the row
             if (_.has(row, 'adapterSequence')) {
                 _.set(primerRecord, 'adapterSequence', _.trim(row.adapterSequence || ''))
-            }
-            // ha-primers optionally include cloning strategy
-            if (_.has(row, 'cloningStrategy') && row.cloningStrategy) {
-                _.set(primerRecord, 'cloningStrategy', _.toLower(_.trim(row.cloningStrategy || '')))
             }
             return primerRecord
         })

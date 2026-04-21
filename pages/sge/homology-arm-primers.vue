@@ -17,7 +17,7 @@ const submitHaPrimers = async (data: any[]) => {
             toast.add({ severity: 'warn', summary: 'No records found', life: 5000 })
             return
         }
-        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/ha-primers/pcr-primer-import`, {
+        const response: { primers: { id: string }[]; insertedCount: number } = await $fetch(`${config.public.apiBase}/custom/primers/ha-primers/import`, {
             method: 'POST',
             body: filteredData,
         })
