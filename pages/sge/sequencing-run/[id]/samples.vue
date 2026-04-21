@@ -38,9 +38,26 @@ const invalidRecords = computed(() => {
     const recordsWithRepeatedDna = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
         return _.get(sampleNameCounts, record.sampleName) > 1
     }).map((record) => ({id: record.id, count: sampleNameCounts[record.sampleName]}))
-    return _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
+    const invalidDna = _.mapValues(_.keyBy(recordsWithRepeatedDna, 'id'), (val, id) => {
         return {messages: [`Repeated (${val?.count}x)`]}
     })
+
+    const repeatedPrimerCombinations = _.countBy(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        return [record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')
+    })
+    const recordsWithRepeatedPrimerCombinations = _.filter(sequencingRunAllSamplesTable.value?.records || [], (record) => {
+        const combinationKey = [record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')
+        return _.get(repeatedPrimerCombinations, combinationKey) > 1
+    }).map((record) => ({id: record.id, count: repeatedPrimerCombinations[[record.indexPrimer1Label || '', record.indexPrimer2Label || '', record.customIndexSeq1 || '', record.customIndexSeq2 || ''].sort().join(';')]}))
+
+    const invalidPrimerCombinations = _.mapValues(_.keyBy(recordsWithRepeatedPrimerCombinations, 'id'), (val, id) => {
+        return {messages: [`Repeated index primers (${val?.count}x)`]}
+    })
+
+    return {
+        ...invalidDna,
+        ...invalidPrimerCombinations,
+    }
 })
 
 watch (selectedPlateId, async (newValue) => {
@@ -340,6 +357,9 @@ const externalSamplesColumnDefs = {
             >
                 <template #title>
                     <span class="text-2xl font-bold m-0">{{ sequencingRun.name }} samples</span>
+                    <span v-if="_.size(invalidRecords) > 0" class="ml-4 p-2 bg-red-100 text-red-800 rounded">
+                        {{ _.size(invalidRecords) }} invalid sample(s)
+                    </span>
                 </template>
                 <template #header-buttons>
                     <span>
