@@ -2,7 +2,6 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 
 const config = useRuntimeConfig()
@@ -198,9 +197,7 @@ const fieldDefs: FieldDefinitions = {
         <slot name="header">
             <span class="flex justify-center mt-3 font-bold">Import Homology Arm PUC 19 Primers</span>
         </slot>
-        <p class="text-sm text-center mt-3 mb-5 text-surface-500">
-            Expected columns: HA Primer Name, Name (optional), Sequence (optional), Ordered On, Notes, Plate Storage Box Name, Well Tube Coordinates
-        </p>
+        <a href="/templates/ha_puc19_primer_import_template.xlsx" download class="flex justify-center mt-3 mb-2 text-primary">Download template</a>
         <div class="flex justify-center">
             <FileUpload
                 mode="basic"

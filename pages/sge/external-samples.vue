@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { index } from 'd3'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
-const router = useRouter()
 const crudTable = useCrudTable()
 const config = useRuntimeConfig()
 const toast = useToast()
@@ -171,9 +168,7 @@ const withClause = {
         <slot name="header">
             <span class="flex justify-center mt-3 font-bold">Import External Samples</span>
         </slot>
-        <p class="text-sm text-center mt-3 mb-5 text-surface-500">
-            Expected columns: Name, Description, Custom Index Seq 1, Custom Index Seq 2, Index Primer 1 Name, Index Primer 2 Name
-        </p>
+        <a href="/templates/external_samples_import_template.xlsx" download class="flex justify-center mt-3 mb-2 text-primary">Download template</a>
         <div class="flex justify-center">
             <FileUpload
                 mode="basic"
