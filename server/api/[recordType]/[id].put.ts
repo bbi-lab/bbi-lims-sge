@@ -52,10 +52,11 @@ export default defineEventHandler(async (event) => {
                 const sgRnaOligoTargetIds = _.compact(_.map(body.sgRnaOligoTargets, 'targetId'))
                 const targets = await updateRelatedTargets(sgRnaOligoTargets, 'sgRnaOligoId', 'targetId', id, sgRnaOligoTargetIds, tx)
                 _.set(recordUpdated, 'sgRnaOligoTargets', targets)
-            } else if (_.camelCase(recordType) == 'sgRnaPlasmids' && _.isArray(body[0].sgRnaPlasmidTargets)) {
+            } else if (_.camelCase(recordType) == 'sgRnaPlasmids' && _.isArray(body.sgRnaPlasmidTargets)) {
+                console.log('Updating sgRNA plasmid targets...')
                 const sgRnaPlasmidTargetIds = _.compact(_.map(body.sgRnaPlasmidTargets, 'targetId'))
                 const targets = await updateRelatedTargets(sgRnaPlasmidTargets, 'sgRnaPlasmidId', 'targetId', id, sgRnaPlasmidTargetIds, tx)
-                _.set(recordUpdated, '0.sgRnaPlasmidTargets', targets)
+                _.set(recordUpdated, 'sgRnaPlasmidTargets', targets)
             } else if (_.camelCase(recordType) == 'clonalHas' && _.isArray(body.clonalHaTargets)) {
                 const clonalHaTargetIds = _.compact(_.map(body.clonalHaTargets, 'targetId'))
                 const targets = await updateRelatedTargets(clonalHaTargets, 'clonalHaId', 'targetId', id, clonalHaTargetIds, tx)
