@@ -57,6 +57,9 @@ const columnDefs: ColumnDefinitions = {
         },
         path: 'cycleTarget.displayValue',
     },
+    gelImagesLink: {
+        format: 'hyperlink',
+    },
     pcrExperimentTargets: {
         display: false,
     },
