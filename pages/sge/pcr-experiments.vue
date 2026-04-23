@@ -1,7 +1,6 @@
 
 <script setup lang="ts">
 import _ from 'lodash'
-import { read } from 'xlsx'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
@@ -57,6 +56,9 @@ const columnDefs: ColumnDefinitions = {
                 return t.transfectTarget ? `${t.transfectTarget?.experiment?.cycle?.name}: ${t.transfectTarget?.target?.name}` : ''}).join('; ')
         },
         path: 'cycleTarget.displayValue',
+    },
+    gelImagesLink: {
+        format: 'hyperlink',
     },
     pcrExperimentTargets: {
         display: false,

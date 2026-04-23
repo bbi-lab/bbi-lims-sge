@@ -3,7 +3,6 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
 
 const route = useRoute()
@@ -103,12 +102,19 @@ const columnDefs: ColumnDefinitions = {
     },
     concentration: {
         header: 'Concentration (ng/μL)',
+        index: 6,
     },
     volume: {
         header: 'Volume (μL)',
+        index: 7,
     },
     yield: {
         header: 'Yield (μg)',
+        format: (x: any) => {
+            return calculateYield(x.concentration, x.volume) || ''
+        },
+        path: 'yield.displayValue',
+        index: 8,
     },
 }
 const fieldDefs: FieldDefinitions = {
@@ -139,9 +145,9 @@ const fieldDefs: FieldDefinitions = {
     },
     volume: {
         label: 'Volume (μL)',
-    },
-    yield: {
-        label: 'Yield (μg)',
+        subtext: (record) => {
+            return `Yield: ${calculateYield(record.concentration, record.volume) || '-' } µg`
+        }
     },
 }
 // const whereClauses = _.map(Object.entries(queryParams), (x) => { return {"==": [{"var": x[0]}, x[1]] }})

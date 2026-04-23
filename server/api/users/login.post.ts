@@ -1,13 +1,14 @@
 import { getUserByEmail } from '~/server/services/user-services'
 import { schemas, type LoginUser } from '~/server/db/schema/user'
 import argon2 from 'argon2'
+import _ from 'lodash'
 
 export default defineEventHandler<{ body: LoginUser }>(async (event) => {
     try {
         const body = await readBody(event)
         const values = schemas.loginSchema.parse(body)
         const existingUser = await getUserByEmail(values.email)
-        
+
         if (!existingUser) {
             throw createError({
                 statusCode: 404,
@@ -20,7 +21,7 @@ export default defineEventHandler<{ body: LoginUser }>(async (event) => {
                 message: 'Pending verification'
             })
         }
-        
+
         const matchPassword = await argon2.verify(
             existingUser.password,
             values.password
@@ -32,8 +33,8 @@ export default defineEventHandler<{ body: LoginUser }>(async (event) => {
             })
         }
         const tokens = generateTokens(existingUser.id)
-
-        await setUserSession(event, {user: existingUser, secure: tokens, loggedInAt: new Date()})          
+        const sessionUser = _.omit(existingUser, ['password', 'code'])
+        await setUserSession(event, {user: sessionUser, secure: tokens, loggedInAt: new Date()})
         return {success: true}
     } catch (e: any) {
         throw createError({

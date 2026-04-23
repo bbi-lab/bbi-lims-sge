@@ -22,7 +22,7 @@ onMounted(async() => {
         tooltip: (well: any) => {
             const wellCoordinate = `${wellCoordinateToChar(well.y)}${well.x}`
             const oligos = _.map(well.wellContents, 'wellable.sgRnaOligo')
-            return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, 'name').join('<br>') : wellCoordinate
+            return oligos ? `${wellCoordinate}:<br>` + _.map(oligos, (x) => `${x.name}<br>${x.sequence}`).join('<br>') : wellCoordinate
         },
         symbol: (well: any) => {
             const oligos = _.compact(_.map(well.wellContents, 'sgRnaOligo'))

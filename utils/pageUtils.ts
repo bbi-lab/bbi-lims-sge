@@ -123,3 +123,12 @@ export const combinedWellLocations = <T extends boolean>(x: any, options: {asDic
 
     return (options.asDict ? result : _.join(_.map(result, (val, key) => `${key}: ${val}`), '; ')) as any
 }
+
+export const calculateYield = (concentration: string, volume: string): string | null => {
+    const concentrationNum = parseFloat(concentration)
+    const volumeNum = parseFloat(volume)
+    if (!isNaN(concentrationNum) && !isNaN(volumeNum)) {
+        return ((concentrationNum * volumeNum) / 1000).toFixed(1)
+    }
+    return null
+}

@@ -20,11 +20,11 @@ export async function insertWellContentsAndSources(records: WellContentWithSourc
 
     // wrap in single transaction to prevent partial submissions
     const transactionResult = await db.transaction(async (tx) => {
-        await db.insert(wellContents).values(newWellContents)
+        await tx.insert(wellContents).values(newWellContents)
         if (!_.isEmpty(newWellContentSources)) {
-            await db.insert(wellContentSources).values(newWellContentSources)
+            await tx.insert(wellContentSources).values(newWellContentSources)
         }
-        return db.select().from(wellContents).where(inArray(wellContents.id, _.map(newWellContents, 'id') as string[]))
+        return tx.select().from(wellContents).where(inArray(wellContents.id, _.map(newWellContents, 'id') as string[]))
     })
 
     return transactionResult

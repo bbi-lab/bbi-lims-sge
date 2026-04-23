@@ -1,11 +1,8 @@
-// import { type InferSelectModel, eq, sql } from 'drizzle-orm'
 import { pgTable, smallint, uuid, varchar, boolean } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
-// import { pcrExperiments } from './pcr-experiment'
 import { ENUM_LOOKUPS } from './enum-lookups'
-// import { sgRnaCloningExperiments } from './plasmid-experiment'
 import { type InferSelectModel } from 'drizzle-orm/table'
 
 export type PlateType = 'pellet-storage' |
@@ -33,6 +30,7 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-preseq-2' |
  'snv-lib-preseq-3' |
  'seq-index' |
+ 'clonal-ha' |
  'dna-preseq-1-primer-storage' |
  'dna-preseq-2-primer-storage' |
  'rna-rt-primer-storage' |
@@ -47,13 +45,10 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-lin-product-storage' |
  'snv-lib-gibson-product-storage' |
  'snv-lib-plasmid-storage' |
- // 'snv-lib-clonal-dna-product-storage' |
  'snv-lib-golden-gate-product-storage'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
-  // pcrExperimentId: uuid('pcr_experiment_id').references(() => pcrExperiments.id),
-  // sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
   name: varchar('name', { length: 255 }).notNull().unique(),
   sizeX: smallint('size_x').notNull().default(12),
   sizeY: smallint('size_y').notNull().default(8),

@@ -1,4 +1,4 @@
-import { changePassword } from '~/server/services/user-services'
+import { changePassword, getUserById } from '~/server/services/user-services'
 import { schemas, type ChangePassword } from '~/server/db/schema/user'
 import argon2 from 'argon2'
 import _ from 'lodash'
@@ -8,11 +8,19 @@ export default defineEventHandler<{ body: ChangePassword }>(async (event) => {
     try {
         const body = await readBody(event)
         const values = schemas.changePasswordSchema.parse(body)
-        
+
         const session = await getUserSession(event)
-        
+        const userId = _.get(session.user, 'id', '')
+        const dbUser = await getUserById(userId)
+        if (!dbUser) {
+            throw createError({
+                statusCode: 401,
+                statusMessage: 'UNAUTHORIZED'
+            })
+        }
+
         const matchPassword = await argon2.verify(
-            _.get(session.user, 'password', ''),
+            dbUser.password,
             values.oldPassword
         )
         if (!matchPassword) {

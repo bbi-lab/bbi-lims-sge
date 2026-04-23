@@ -185,6 +185,8 @@ onMounted (async () => {
         return acc as PcrEntry
     }, {})
 
+    _.set(pellet.value, 'dna.yield', calculateYield(pellet.value.dna?.concentration, pellet.value.dna?.volume))
+    _.set(pellet.value, 'rna.yield', calculateYield(pellet.value.rna?.concentration, pellet.value.rna?.volume))
 })
 </script>
 <template>
@@ -256,7 +258,7 @@ onMounted (async () => {
                     <strong>Volume:</strong> {{ pellet.dna.volume ? `${pellet.dna.volume} µL` : '' }}
                 </div>
                 <div>
-                    <strong>Yield:</strong> {{ pellet.dna.yield ? `${pellet.dna.yield} ng` : '' }}
+                    <strong>Yield:</strong> {{ pellet.dna.yield ? `${pellet.dna.yield} µg` : '' }}
                 </div>
                 <div>
                     <strong>Protocol:</strong> {{ pellet.dna.protocol }}
@@ -304,7 +306,7 @@ onMounted (async () => {
                     <strong>Volume:</strong> {{ pellet.rna.volume ? `${pellet.rna.volume} µL` : '' }}
                 </div>
                 <div>
-                    <strong>Yield:</strong> {{ pellet.rna.yield ? `${pellet.rna.yield} ng` : '' }}
+                    <strong>Yield:</strong> {{ pellet.rna.yield ? `${pellet.rna.yield} µg` : '' }}
                 </div>
                 <div>
                     <strong>Protocol:</strong> {{ pellet.rna.protocol }}
@@ -331,4 +333,5 @@ onMounted (async () => {
             </template>
         </div>
     </div>
+    <br/>
 </template>

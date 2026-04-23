@@ -12,13 +12,14 @@ export async function insertPlate(values: NewPlate, tx?: PgTransaction<any, any,
         .returning()
     )
 
+    const allWells = []
     if (newPlate) {
         for (let x = 1; x <= newPlate.sizeX; x++) {
             for (let y = 1; y <= newPlate.sizeY; y++) {
-                await (tx ?? db).insert(wells).values({plateId: newPlate.id, x, y})
+                allWells.push({plateId: newPlate.id, x, y})
             }
         }
     }
-
+    await (tx ?? db).insert(wells).values(allWells)
     return newPlate
   }

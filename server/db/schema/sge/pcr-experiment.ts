@@ -1,4 +1,5 @@
-import { pgTable, timestamp, uuid, varchar, text } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm/sql'
+import { pgTable, timestamp, uuid, varchar, text, check } from 'drizzle-orm/pg-core'
 import _ from 'lodash'
 import { users } from '../user'
 import { ENUM_LOOKUPS } from './enum-lookups'
@@ -14,8 +15,11 @@ export const pcrExperiments = pgTable('pcr_experiments', {
   technician: uuid('technician').references(() => users.id),
   startedOn: timestamp('started_on').defaultNow(),
   plateId: uuid('plate_id').references(() => plates.id),
+  gelImagesLink: text('gel_images_link'),
   notes: text('notes'),
-})
+}, (table) => [
+  check("gel_images_link_check", sql`${table.gelImagesLink} ~* '^https?://.+$'`),
+])
 
 export const pcrExperimentTargets = pgTable('pcr_experiment_targets', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

@@ -1,0 +1,2 @@
+ALTER TABLE "pcr_experiments" ADD COLUMN "gel_images_link" text;--> statement-breakpoint
+ALTER TABLE "pcr_experiments" ADD CONSTRAINT "gel_images_link_check" CHECK ("pcr_experiments"."gel_images_link" ~* '^https?://.+$');

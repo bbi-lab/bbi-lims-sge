@@ -204,6 +204,10 @@ const dnaRnaColumnDefs = {
     },
     yield: {
         header: 'Yield (μg)',
+        format: (x: any) => {
+            return calculateYield(x.concentration, x.volume) || ''
+        },
+        path: 'yield.displayValue',
     },
 }
 const dnaRnaFieldDefs: FieldDefinitions = {
@@ -227,9 +231,6 @@ const dnaRnaFieldDefs: FieldDefinitions = {
     },
     volume: {
         label: 'Volume (μL)',
-    },
-    yield: {
-        label: 'Yield (μg)',
     },
 }
 </script>

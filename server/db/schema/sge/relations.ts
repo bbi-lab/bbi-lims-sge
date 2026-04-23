@@ -288,6 +288,11 @@ const wellablesRelationsConfig: RelationsConfig = {
             referenceTable: snvLibGibsonProducts,
             references: [snvLibGibsonProducts.id],
         },
+        clonalHa: {
+            fields: [wellables.id],
+            referenceTable: clonalHas,
+            references: [clonalHas.id],
+        },
     },
     many: {
         wellContents: {
@@ -834,6 +839,13 @@ const haPuc19PlasmidsRelationsConfig: RelationsConfig = {
 export const haPuc19PlasmidsRelations = relationsConfigToRelations(haPuc19Plasmids, haPuc19PlasmidsRelationsConfig)
 
 const clonalHasRelationsConfig: RelationsConfig = {
+    one: {
+        wellable: {
+            fields: [haPuc19Plasmids.id],
+            referenceTable: wellables,
+            references: [wellables.id],
+        },
+    },
     many: {
         clonalHaTargets: {
             table: clonalHaTargets,

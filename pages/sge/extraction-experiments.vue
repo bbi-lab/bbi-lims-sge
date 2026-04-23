@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import type { extractionLotUsage } from '~/server/db/schema/sge/extraction-experiment'
-import { nucleicAcids } from '~/server/db/schema/sge/nucleic-acid'
 import BeakerOutline from '~icons/mdi/beaker-outline'
 import Molecule from '~icons/mdi/molecule'
 
@@ -111,6 +109,9 @@ const fieldDefs = {
                 :rowActions="rowActions"
                 :withClause="displayWithClause"
                 :columnDefs="columnDefs"
+                sortField="extractedOn"
+                :sortOrder="-1"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
