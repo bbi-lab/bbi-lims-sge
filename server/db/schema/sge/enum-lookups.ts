@@ -112,6 +112,10 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Sequencing index plate',
                 label: 'Seq index',
             },
+            'clonal-ha': {
+                desc: 'Clonal HA plate',
+                label: 'Clonal HA plate',
+            },
             'dna-preseq-1-primer-storage': {
                 desc: 'DNA PreSeq 1 primer storage',
                 label: 'DNA PreSeq 1 primer storage',
@@ -168,10 +172,6 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'SNVlib plasmid storage',
                 label: 'SNVlib plasmid storage',
             },
-            // 'snv-lib-clonal-dna-product-storage': {
-            //     desc: 'SNVlib clonal DNA product storage',
-            //     label: 'SNVlib clonal DNA product storage',
-            // },
             'snv-lib-golden-gate-product-storage': {
                 desc: 'SNVlib Golden Gate product storage',
                 label: 'SNVlib Golden Gate product storage',
@@ -192,18 +192,6 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Homology arm primer PCR',
                 label: 'HA PCR',
             },
-            // 'preseq-1': {
-            //     desc: 'PreSeq 1',
-            //     label: 'PreSeq 1',
-            // },
-            // 'preseq-2': {
-            //     desc: 'PreSeq 2',
-            //     label: 'PreSeq 2',
-            // },
-            // 'preseq-3': {
-            //     desc: 'PreSeq 3',
-            //     label: 'PreSeq 3',
-            // },
             'dna-preseq-1': {
                 desc: 'DNA PreSeq 1',
                 label: 'DNA PreSeq 1',
