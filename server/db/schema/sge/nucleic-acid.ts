@@ -29,7 +29,6 @@ export const rna = pgTable('rna', {
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
   concentration: doublePrecision('concentration'),
   volume: doublePrecision('volume'),
-  yield: doublePrecision('yield'),
   protocol: varchar('protocol', {enum: RNA_PROTOCOLS as [string, ...string[]]}),
   notes: text('notes'),
 })
@@ -44,7 +43,6 @@ export const dna = pgTable('dna', {
   pelletId: uuid('pellet_id').references(() => pellets.id).unique(),
   concentration: doublePrecision('concentration'),
   volume: doublePrecision('volume'),
-  yield: doublePrecision('yield'),
   protocol: varchar('protocol', {enum: DNA_PROTOCOLS as [string, ...string[]]}),
   notes: text('notes'),
 })
