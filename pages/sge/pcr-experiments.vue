@@ -74,7 +74,16 @@ const rowActions = {
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Layout',
-    }
+    },
+    volume: {
+        action: (data: any) => {
+            router.push({path: `/sge/preseq-1/volume-calcs/${data.id}`})
+        },
+        visible: (data: any) => ['dna-preseq-1', 'rna-preseq-1'].includes(data.pcrType),
+        tooltip: 'Volume calcs',
+        icon: 'pi pi-calculator',
+        iconPos: 'right',
+    },
 }
 const addFieldDefs = {
     name: {
