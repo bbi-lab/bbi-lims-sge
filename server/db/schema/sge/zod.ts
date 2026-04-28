@@ -7,7 +7,7 @@ import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
-import { pcrExperiments } from './pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { pellets } from './pellet'
 import { createSelectSchema } from 'drizzle-zod'
@@ -125,6 +125,10 @@ const updateSnvLibGoldenGateProductsSchema = insertSnvLibGoldenGateProductsSchem
 const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn: nullableDateSchema})
 const insertPcrExperimentsSchema = selectPcrExperimentsSchema.omit({id: true})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
+
+const pcr1ExperimentMasterMixVolumesSchema = createSelectSchema(pcr1ExperimentMasterMixVolumes)
+const insertPcr1ExperimentMasterMixVolumesSchema = pcr1ExperimentMasterMixVolumesSchema.omit({id: true})
+const updatePcr1ExperimentMasterMixVolumesSchema = insertPcr1ExperimentMasterMixVolumesSchema
 
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
 const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
@@ -362,6 +366,11 @@ export const schemas = {
         select: selectPcrExperimentsSchema,
         insert: insertPcrExperimentsSchema,
         update: updatePcrExperimentsSchema,
+    },
+    pcr1ExperimentMasterMixVolumes: {
+        select: pcr1ExperimentMasterMixVolumesSchema,
+        insert: insertPcr1ExperimentMasterMixVolumesSchema,
+        update: updatePcr1ExperimentMasterMixVolumesSchema,
     },
     plates: {
         select: selectPlatesSchema,

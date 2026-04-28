@@ -1,6 +1,6 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
@@ -58,7 +58,12 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
             schema: createSelectSchema(pcrExperimentTargets),
             fields: [pcrExperimentTargets.pcrExperimentId],
         },
-    }
+    },
+    oneToOne: {
+        pcr1ExperimentMasterMixVolumes: {
+            table: pcr1ExperimentMasterMixVolumes
+        },
+    },
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
 
@@ -77,6 +82,17 @@ const pcrExperimentTargetsRelationsConfig: RelationsConfig = {
     }
 }
 export const pcrExperimentTargetsRelations = relationsConfigToRelations(pcrExperimentTargets, pcrExperimentTargetsRelationsConfig)
+
+const pcr1ExperimentMasterMixVolumesRelationsConfig: RelationsConfig = {
+    one:{
+        pcrExperiment: {
+            fields: [pcr1ExperimentMasterMixVolumes.pcrExperimentId],
+            referenceTable: pcrExperiments,
+            references: [pcrExperiments.id],
+        },
+    },
+}
+export const pcr1ExperimentMasterMixVolumesRelations = relationsConfigToRelations(pcr1ExperimentMasterMixVolumes, pcr1ExperimentMasterMixVolumesRelationsConfig)
 
 const wellContentsRelationsConfig: RelationsConfig = {
     one:{
