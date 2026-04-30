@@ -113,6 +113,7 @@ const fieldDefs: FieldDefinitions = {
                 title="Linearization Primers"
                 :with-clause="displayWithClause"
                 :columnDefs="columnDefs"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
