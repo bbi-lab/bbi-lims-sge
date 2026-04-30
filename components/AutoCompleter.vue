@@ -16,7 +16,7 @@ const props = defineProps({
   iftaLabel: {type: String},
   inputId: {type: String},
   placeholderValue: {type: String},
-  inputClass: {type: String},
+  inputClass: {type: [String, Function]},
   searchMode: {type: String as PropType<'JsonLogic' | 'simple'>, default: 'JsonLogic'},
 })
 
@@ -32,11 +32,10 @@ const emit = defineEmits([
 ])
 
 function getDisplayValue(record: any) {
-    const result = []
-
     if (_.isFunction(props.displayFormat)) {
         return props.displayFormat(record)
     } else {
+        const result = []
         for (const field of props.displayFields as string[]) {
             result.push(_.get(record, field))
         }
@@ -56,7 +55,7 @@ watch(modelValue, async (newValue, oldValue) => {
 
         if (_.isString(modelValue.value)) {
             const record = await RecordService.getRecord(props.searchBaseUrl, modelValue.value, props.searchWithClause)
-            currentValue.value = {code: modelValue.value, label: getDisplayValue(record) }
+            currentValue.value = {code: modelValue.value, label: getDisplayValue(record), record: record}
         }
     } else if (_.isEmpty(newValue)) {
         clearValue()
@@ -115,7 +114,7 @@ defineExpose({
     <component :is="_.isEmpty(iftaLabel) ? 'span' : 'IftaLabel'">
         <AutoComplete
             v-model="currentValue"
-            :inputClass="inputClass"
+            :inputClass="_.isFunction(inputClass) ? inputClass(currentValue) : inputClass"
             :id="inputId"
             :suggestions="suggestions"
             optionLabel="label"
@@ -124,7 +123,11 @@ defineExpose({
             @blur="lostFocus"
             :placeholder="placeholderValue"
             :dropdown="dropdown"
-            :disabled="disabled" />
+            :disabled="disabled">
+            <template #option="{ option }">
+                <span :class="_.isFunction(inputClass) ? inputClass(option) : inputClass">{{ option.label }}</span>
+            </template>
+        </AutoComplete>
         <label v-if="!_.isEmpty(iftaLabel)" :for="inputId">{{ iftaLabel }}</label>
     </component>
 
