@@ -241,6 +241,9 @@ const frozenRecordIds = computed(() => {
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>

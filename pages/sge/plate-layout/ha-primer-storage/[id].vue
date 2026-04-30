@@ -196,6 +196,9 @@ const frozenRecordIds = computed(() => {
                 :sortBy="['wellContents.displayValue']"
                 :sortByOrder="['desc']"
                 emptyMessage=""
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>
