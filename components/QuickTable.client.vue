@@ -113,6 +113,7 @@ const props = defineProps({
   invalidRecords: {type: Object},
   sortField: {type: String },
   sortOrder: {type: Number },
+  rowStyle: {type: Function},
 })
 
 watch(() => props.invalidRecords, (newValue) => {
@@ -489,6 +490,7 @@ function filteringComplete() {
         :globalFilterFields="globalFilterFields"
         :sort-field="props.sortField"
         :sort-order="props.sortOrder"
+        :row-style="props.rowStyle"
         @update:filters="filteringInProgress = true"
         @filter="filteringComplete"
     >
