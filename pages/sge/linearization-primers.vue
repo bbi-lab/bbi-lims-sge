@@ -114,6 +114,11 @@ const fieldDefs: FieldDefinitions = {
                 :with-clause="displayWithClause"
                 :columnDefs="columnDefs"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
+                sortField="name"
+                :sortOrder="1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />
