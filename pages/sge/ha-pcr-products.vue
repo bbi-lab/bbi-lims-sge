@@ -39,8 +39,14 @@ const columnDefs = {
     },
     haPrimers: {
         header: 'HA Primers',
-        format: (data: any) => {
-            return _.compact([data.haPrimerForward?.name, data.haPrimerReverse?.name ]).join(', ')
+        type: 'element',
+        element: (data: any) => {
+            return _.compact(_.map([data.haPrimerForward, data.haPrimerReverse], (primer: any) => {
+                return primer?.id ? `<span class="${primer?.archived ? 'line-through' : ''}">${primer.name}</span>` : null
+            })).join(', ')
+        },
+        exportValue: (data: any) => {
+            return _.compact([data.haPrimerForward?.name, data.haPrimerReverse?.name]).join(', ')
         },
         path: 'haPrimers.displayValue',
         index: 2,
@@ -112,6 +118,9 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             searchWhereClause: {"==": [{"var": "sequenceType"}, "forward"]},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -124,6 +133,9 @@ const fieldDefs: FieldDefinitions = {
             valueField: 'id',
             displayFields: ['name'],
             searchWhereClause: {"==": [{"var": "sequenceType"}, "reverse"]},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -149,10 +161,10 @@ const displayWithClause = {
         columns: {id: true, name: true},
     },
     haPrimerForward: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     haPrimerReverse: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     haPuc19PcrProducts: {
         columns: {id: true, name: true},
@@ -190,6 +202,8 @@ const displayWithClause = {
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                sortField="name"
+                :sortOrder="1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

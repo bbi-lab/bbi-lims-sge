@@ -284,6 +284,9 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {targets: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -297,6 +300,9 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {targets: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -342,6 +348,9 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {homologyArmPrimer: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -355,6 +364,9 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {homologyArmPrimer: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -496,6 +508,8 @@ const haPuc19PlasmidFieldDefinitions: FieldDefinitions = {
                 :withClause="withClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"
+                sortField="startedOn"
+                :sortOrder="-1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

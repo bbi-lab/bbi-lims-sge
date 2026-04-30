@@ -40,7 +40,13 @@ const columnDefs: ColumnDefinitions = {
     },
     ampPrimers: {
         header: 'AMP Primers',
-        format: (data: any) => {
+        type: 'element',
+        element: (data: any) => {
+            return _.compact(_.map([data.ampPrimerForward, data.ampPrimerReverse], (primer: any) => {
+                return primer?.id ? `<span class="${primer?.archived ? 'line-through' : ''}">${primer.name}</span>` : null
+            })).join(', ')
+        },
+        exportValue: (data: any) => {
             return _.compact([data.ampPrimerForward?.name, data.ampPrimerReverse?.name ]).join(', ')
         },
         path: 'ampPrimers.displayValue',
@@ -111,6 +117,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 2,
@@ -128,6 +137,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId] },
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 3,
@@ -168,10 +180,10 @@ const displayWithClause = {
         columns: {id: true, name: true, targetId: true},
     },
     ampPrimerForward: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     ampPrimerReverse: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     twistLot: {
         columns: {id: true, lotNumber: true},

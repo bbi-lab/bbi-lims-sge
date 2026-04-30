@@ -95,6 +95,13 @@ const columnDefs: ColumnDefinitions = {
     },
     homologyArmPrimerId: { display: false },
     homologyArmPrimer: {
+        type: 'element',
+        element: (data: any) => {
+            return data.homologyArmPrimer?.id
+                ? `<span class="${data.homologyArmPrimer?.archived ? 'line-through' : ''}">${data.homologyArmPrimer.name}</span>`
+                : ''
+        },
+        exportValue: (data: any) => data.homologyArmPrimer?.name || '',
         path: 'homologyArmPrimer.name',
         index: 2,
     },
@@ -116,6 +123,9 @@ const fieldDefs: FieldDefinitions = {
             searchFields: ['name'],
             valueField: 'id',
             displayFields: ['name'],
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         events: {
             change: async (record: any, recordOld: any) => {
