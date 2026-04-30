@@ -101,21 +101,22 @@ export default defineEventHandler(async (event) => {
                 const rows = await db.query.preseq1PrimerTargets.findMany({
                     where: (t, { inArray }) => inArray(t.targetId, targetIds),
                     columns: { targetId: true },
-                    with: { preseq1Primer: { columns: { id: true, sequenceType: true } } }
+                    with: { preseq1Primer: { columns: { id: true, sequenceType: true, archived: true } } }
                 })
                 rows.forEach((row) => {
                     if (!primersByTargetId[row.targetId]) primersByTargetId[row.targetId] = {}
-                    const primer = row.preseq1Primer as { id: string; sequenceType: string } | null
-                    if (primer?.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
-                    else if (primer?.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
+                    const primer = row.preseq1Primer as { id: string; sequenceType: string; archived: boolean | null } | null
+                    if (!primer || primer.archived === true) return
+                    if (primer.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
+                    else if (primer.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
                 })
             } else if (primerType === 'dna-preseq-2') {
                 const rows = await db.query.preseq2Primers.findMany({
                     where: (t, { inArray }) => inArray(t.targetId, targetIds),
-                    columns: { id: true, targetId: true, sequenceType: true }
+                    columns: { id: true, targetId: true, sequenceType: true, archived: true }
                 })
                 rows.forEach((row) => {
-                    if (!row.targetId) return
+                    if (!row.targetId || row.archived === true) return
                     if (!primersByTargetId[row.targetId]) primersByTargetId[row.targetId] = {}
                     if (row.sequenceType === 'forward') primersByTargetId[row.targetId].forward = row.id
                     else if (row.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = row.id
@@ -124,25 +125,27 @@ export default defineEventHandler(async (event) => {
                 const rows = await db.query.rnaPreseq1PrimerTargets.findMany({
                     where: (t, { inArray }) => inArray(t.targetId, targetIds),
                     columns: { targetId: true },
-                    with: { rnaPreseq1Primer: { columns: { id: true, sequenceType: true } } }
+                    with: { rnaPreseq1Primer: { columns: { id: true, sequenceType: true, archived: true } } }
                 })
                 rows.forEach((row) => {
                     if (!primersByTargetId[row.targetId]) primersByTargetId[row.targetId] = {}
-                    const primer = row.rnaPreseq1Primer as { id: string; sequenceType: string } | null
-                    if (primer?.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
-                    else if (primer?.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
+                    const primer = row.rnaPreseq1Primer as { id: string; sequenceType: string; archived: boolean | null } | null
+                    if (!primer || primer.archived === true) return
+                    if (primer.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
+                    else if (primer.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
                 })
             } else if (primerType === 'rna-preseq-2') {
                 const rows = await db.query.rnaPreseq2PrimerTargets.findMany({
                     where: (t, { inArray }) => inArray(t.targetId, targetIds),
                     columns: { targetId: true },
-                    with: { rnaPreseq2Primer: { columns: { id: true, sequenceType: true } } }
+                    with: { rnaPreseq2Primer: { columns: { id: true, sequenceType: true, archived: true } } }
                 })
                 rows.forEach((row) => {
                     if (!primersByTargetId[row.targetId]) primersByTargetId[row.targetId] = {}
-                    const primer = row.rnaPreseq2Primer as { id: string; sequenceType: string } | null
-                    if (primer?.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
-                    else if (primer?.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
+                    const primer = row.rnaPreseq2Primer as { id: string; sequenceType: string; archived: boolean | null } | null
+                    if (!primer || primer.archived === true) return
+                    if (primer.sequenceType === 'forward') primersByTargetId[row.targetId].forward = primer.id
+                    else if (primer.sequenceType === 'reverse') primersByTargetId[row.targetId].reverse = primer.id
                 })
             }
         }
