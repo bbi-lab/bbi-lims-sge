@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
@@ -49,11 +48,8 @@ const importDnaPreseq2Primers = (event: any) => {
 }
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -161,7 +157,7 @@ const fieldDefs: FieldDefinitions = {
                 :ref="crudTable.setTableRef"
                 tableName="preseq-2-primers"
                 schemaName="select"
-                title="PreSeq 2 Primers"
+                title="DNA PreSeq 2 Primers"
                 :withClause="displayWithClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"

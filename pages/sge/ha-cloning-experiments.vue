@@ -23,11 +23,8 @@ const readonlyValues = ref<Record<string, any>>({})
 const currentHaCloningExperimentId = ref<string>()
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
