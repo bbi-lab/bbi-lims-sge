@@ -24,7 +24,7 @@ export const updateRelatedTargets = async (
         const existing = await tx.select().from(table).where(eq(parentIdCol, id))
 
         const missingIds = _.difference(_.map(existing, targetIdKey), targetIds)
-        await tx.delete(table).where(inArray(targetIdCol, missingIds))
+        await tx.delete(table).where(and(eq(parentIdCol, id), inArray(targetIdCol, missingIds)))
 
         const idsToInsert = _.difference(targetIds, _.map(existing, targetIdKey))
         if (!_.isEmpty(idsToInsert)) {
