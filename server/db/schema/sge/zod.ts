@@ -47,10 +47,10 @@ const updateGeneSchema = createSelectSchema(genes, {
 
 const selectRegionSchema = createSelectSchema(regions)
 const insertRegionSchema = createSelectSchema(regions, {
-    ampliconStart: z.bigint({ coerce: true }),
-    ampliconEnd: z.bigint({ coerce: true }),
-    snvLibraryStart: z.bigint({ coerce: true }),
-    snvLibraryEnd: z.bigint({ coerce: true })
+    ampliconStart: z.bigint({ coerce: true }).nullable(),
+    ampliconEnd: z.bigint({ coerce: true }).nullable(),
+    snvLibraryStart: z.bigint({ coerce: true }).nullable(),
+    snvLibraryEnd: z.bigint({ coerce: true }).nullable(),
 }).omit({id: true}).partial()
 const updateRegionSchema = insertRegionSchema
 
