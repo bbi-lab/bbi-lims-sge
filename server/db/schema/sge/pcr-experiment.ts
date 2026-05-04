@@ -33,6 +33,7 @@ export const pcr1ExperimentMasterMixVolumes = pgTable('pcr1_experiment_master_mi
   twoXKapaHifiReadyMix: doublePrecision('two_x_kapa_hifi_ready_mix').default(12.5).notNull(),
   tenUmForwardPrimer: doublePrecision('ten_um_forward_primer').default(0.75).notNull(),
   tenUmReversePrimer: doublePrecision('ten_um_reverse_primer').default(0.75).notNull(),
+  tenXSybrGreen: doublePrecision('ten_x_sybr_green').default(0).notNull(),
   dnaAmount: doublePrecision('dna_amount').default(250).notNull(),
   total: doublePrecision('total').default(25).notNull(),
 })

@@ -1233,6 +1233,13 @@
       "when": 1777910643302,
       "tag": "0175_careful_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 176,
+      "version": "7",
+      "when": 1777932924089,
+      "tag": "0176_open_galactus",
+      "breakpoints": true
     }
   ]
 }
