@@ -5,7 +5,7 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showExperimentValuesForm = ref(false)
-const experiment = ref<{ name?: string; pcr1ExperimentMasterMixVolumes?: any; plate?: any }>({})
+const experiment = ref<{ name: string; pcrType: string; pcr1ExperimentMasterMixVolumes?: any; plate?: any }>({})
 const sampleStats = ref<Record<string, { sampleName: string; numberOfWells: number; quant: number | null; pelletId: string | null }>>({})
 
 const config = useRuntimeConfig()
@@ -20,6 +20,7 @@ const calcs = ref<{
     twoXKapaHifiReadyMix: string;
     tenUmForwardPrimer: string;
     tenUmReversePrimer: string;
+    tenXSybrGreen: string;
     dnaAmount: string;
     water: string;
     total: string }[]>([])
@@ -54,6 +55,7 @@ const withClause = {
             twoXKapaHifiReadyMix: true,
             tenUmForwardPrimer: true,
             tenUmReversePrimer: true,
+            tenXSybrGreen: true,
             dnaAmount: true,
             total: true,
         }
@@ -109,7 +111,7 @@ const refreshExperiment = async () => {
                         _.set(result, sample.id, {
                             sampleName: sample.dna?.pellet?.name || sample.rna?.pellet?.name || 'Unknown Sample',
                             numberOfWells: 0,
-                            quant: sample.dna?.concentration || sample.rna?.concentration || null,
+                            quant: experiment.value.pcrType == 'dna-preseq-1' ? sample.dna?.concentration : experiment.value.pcrType == 'rna-preseq-1' ? sample.rna?.concentration : null,
                             pelletId: sample.dna?.pellet?.id || sample.rna?.pellet?.id || null,
                         })
                     }
@@ -121,13 +123,15 @@ const refreshExperiment = async () => {
     }
 
     calcs.value = _.map(sampleStats.value, (value, key) => {
-        const quant = _.get(value, 'quant', null)
+        const quant = experiment.value.pcrType == 'dna-preseq-1' ? _.get(value, 'quant', null) : null
         const numberOfWells = _.get(value, 'numberOfWells', 0)
-        const totalVol = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.total', 0) * _.get(value, 'numberOfWells', 0)
-        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * _.get(value, 'numberOfWells', 0)
-        const tenUmForwardPrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * _.get(value, 'numberOfWells', 0)
-        const tenUmReversePrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * _.get(value, 'numberOfWells', 0)
-        const dnaAmount = quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * _.get(value, 'numberOfWells', 0) * 1/quant : null
+        const totalVol = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.total', 0) * numberOfWells
+        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * numberOfWells
+        const tenUmForwardPrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * numberOfWells
+        const tenUmReversePrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * numberOfWells
+        const tenXSybrGreen = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenXSybrGreen', 0) * numberOfWells
+        // for RNA preseq-1, cDNA volume is alwasy 2.5uL per well, for DNA preseq-1, calculate DNA volume based on quant and number of wells, if quant is not available, set DNA volume to null
+        const dnaAmount = experiment.value.pcrType == 'rna-preseq-1' ? 2.5 * numberOfWells : quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * numberOfWells * 1/quant : null
 
         return {
             sampleId: key,
@@ -137,8 +141,9 @@ const refreshExperiment = async () => {
             twoXKapaHifiReadyMix: _.round(twoXKapaHifiReadyMix, 1).toFixed(1),
             tenUmForwardPrimer: _.round(tenUmForwardPrimer, 1).toFixed(1),
             tenUmReversePrimer: _.round(tenUmReversePrimer, 1).toFixed(1),
+            tenXSybrGreen: _.round(tenXSybrGreen, 1).toFixed(1),
             dnaAmount: dnaAmount ? _.round(dnaAmount, 1).toFixed(1) : '-',
-            water: dnaAmount ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + dnaAmount), 1).toFixed(1) : '-',
+            water: dnaAmount ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + tenXSybrGreen + dnaAmount), 1).toFixed(1) : '-',
             total: _.round(totalVol, 1).toFixed(1),
         }
     })
@@ -151,23 +156,28 @@ const fieldDefs: FieldDefinitions = {
         display: false,
     },
     twoXKapaHifiReadyMix: {
-        label: '2X Kapa Hifi Ready Mix (uL)',
+        label: '2X Kapa Hifi Ready Mix (μL)',
         type: 'number',
     },
     tenUmForwardPrimer: {
-        label: '10uM Forward Primer (uL)',
+        label: '10uM Forward Primer (μL)',
         type: 'number',
     },
     tenUmReversePrimer: {
-        label: '10uM Reverse Primer (uL)',
+        label: '10uM Reverse Primer (μL)',
+        type: 'number',
+    },
+    tenXSybrGreen: {
+        label: '10X Sybr Green (μL)',
         type: 'number',
     },
     dnaAmount: {
         label: 'DNA Amount (ng)',
         type: 'number',
+        display: experiment.value.pcrType === 'dna-preseq-1',
     },
     total: {
-        label: 'Total Volume (uL)',
+        label: 'Total Volume (μL)',
         type: 'number',
     },
 }
@@ -202,23 +212,27 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                 <tbody>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">2X Kapa Hifi Ready Mix</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.twoXKapaHifiReadyMix }} uL</td>
+                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.twoXKapaHifiReadyMix }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Forward Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmForwardPrimer }} uL</td>
+                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmForwardPrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Reverse Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmReversePrimer }} uL</td>
+                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmReversePrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
+                        <td class="px-4 py-4">10X Sybr Green</td>
+                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
+                    </tr>
+                    <tr v-if="experiment?.pcrType === 'dna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">DNA Amount</td>
                         <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.dnaAmount }} ng</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">Total Volume</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.total }} uL</td>
+                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.total }} μL</td>
                     </tr>
                 </tbody>
             </table>
@@ -243,7 +257,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                 <DataTable :value="_.map(sampleStats, (value, key) => ({ ...value, sampleId: key }))" class="mt-3 text-sm">
                     <Column field="sampleName" header="Sample Name"></Column>
                     <Column field="numberOfWells" header="Number of Wells"></Column>
-                    <Column field="quant" header="Quant (ng/uL)">
+                    <Column v-if="experiment.pcrType === 'dna-preseq-1'" field="quant" header="Quant (ng/μL)">
                         <template #body="slotProps">
                             {{ slotProps.data.quant || '-'}}
                             <Button
@@ -274,29 +288,32 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
             <div class="font-semibold">Sample</div>
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
             <!-- Quant row -->
-            <div class="font-semibold">Quant (ng/uL)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.quant ?? '-' }}</div>
+            <div class="font-semibold">Quant (ng/μL)</div>
+            <div v-for="calc in orderedCalcs">{{ experiment.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
             <!-- Number of wells row -->
             <div  class="font-semibold">Number of Wells</div>
             <div v-for="calc in orderedCalcs">{{ calc.numberOfWells }}</div>
             <!-- 2X Kapa row -->
-            <div class="font-semibold">2X Kapa Hifi Ready Mix (uL)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.twoXKapaHifiReadyMix }}</div>
+            <div class="font-semibold border-t-2">2X Kapa Hifi Ready Mix (μL)</div>
+            <div v-for="calc in orderedCalcs" class="border-t-2">{{ calc.twoXKapaHifiReadyMix }}</div>
             <!-- Forward primer row -->
-            <div class="font-semibold">10uM Forward Primer (uL)</div>
+            <div class="font-semibold">10uM Forward Primer (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.tenUmForwardPrimer }}</div>
             <!-- Reverse primer row -->
-            <div class="font-semibold">10uM Reverse Primer (uL)</div>
+            <div class="font-semibold">10uM Reverse Primer (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.tenUmReversePrimer }}</div>
+            <!-- 10X Sybr Green row -->
+            <div class="font-semibold">10X Sybr Green (μL)</div>
+            <div v-for="calc in orderedCalcs">{{ calc.tenXSybrGreen }}</div>
             <!-- DNA amount row -->
-            <div class="font-semibold">DNA Amount (ng)</div>
+            <div class="font-semibold">{{ experiment.pcrType == 'rna-preseq-1' ? 'cDNA' : 'DNA' }} (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.dnaAmount }}</div>
             <!-- Water row -->
-            <div class="font-semibold">Water (uL)</div>
+            <div class="font-semibold">Water (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.water }}</div>
             <!-- Total row -->
-            <div class="font-semibold">Total (uL)</div>
-            <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.total }}</div>
+            <div class="font-semibold border-t-2">Total (μL)</div>
+            <div v-for="calc in orderedCalcs" class="font-semibold border-t-2">{{ calc.total }}</div>
         </div>
     </div>
 
