@@ -221,9 +221,6 @@ onMounted (async () => {
                 <strong>Is current:</strong> {{ pellet.isCurrent ? 'Yes' : 'No' }}
             </div>
             <div>
-                <strong>Quant:</strong> {{ pellet.quant }}
-            </div>
-            <div>
                 <strong>D3 confluencey:</strong> {{ pellet.d3Confluency }}
             </div>
             <div>

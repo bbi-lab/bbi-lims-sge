@@ -1,0 +1,1 @@
+ALTER TABLE "pellets" DROP COLUMN "quant";

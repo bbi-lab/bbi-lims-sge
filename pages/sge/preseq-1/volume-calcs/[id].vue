@@ -109,7 +109,7 @@ const refreshExperiment = async () => {
                         _.set(result, sample.id, {
                             sampleName: sample.dna?.pellet?.name || sample.rna?.pellet?.name || 'Unknown Sample',
                             numberOfWells: 0,
-                            quant: sample.dna?.pellet?.quant || sample.rna?.pellet?.quant || null,
+                            quant: sample.dna?.concentration || sample.rna?.concentration || null,
                             pelletId: sample.dna?.pellet?.id || sample.rna?.pellet?.id || null,
                         })
                     }
