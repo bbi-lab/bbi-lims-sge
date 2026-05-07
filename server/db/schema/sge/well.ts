@@ -57,7 +57,6 @@ export const wellables = pgTable('wellables', {
       'preseq_1_primers',
       'preseq_2_primers',
       'index_primers',
-      'nucleic_acids',
       'dna',
       'rna',
       'pellets',

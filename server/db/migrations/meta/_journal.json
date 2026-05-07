@@ -1240,6 +1240,13 @@
       "when": 1777932924089,
       "tag": "0176_open_galactus",
       "breakpoints": true
+    },
+    {
+      "idx": 177,
+      "version": "7",
+      "when": 1778187710866,
+      "tag": "0177_luxuriant_terrax",
+      "breakpoints": true
     }
   ]
 }

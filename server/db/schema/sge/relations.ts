@@ -15,7 +15,7 @@ import { pellets } from './pellet'
 import { relationsConfigToRelations } from '../relations'
 import { lots } from './lots'
 import { reagents } from './reagents'
-import { nucleicAcids, dna, rna } from './nucleic-acid'
+import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets, rnaRtPrimers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { clonalHas, clonalHaTargets, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, sgRnaOligoTargets, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
@@ -101,66 +101,6 @@ const wellContentsRelationsConfig: RelationsConfig = {
             referenceTable: wells,
             references: [wells.id],
         },
-        // amplificationPrimer: {
-        //     fields: [wellContents.amplificationPrimerId],
-        //     referenceTable: amplificationPrimers,
-        //     references: [amplificationPrimers.id],
-        // },
-        // linearizationPrimer: {
-        //     fields: [wellContents.linearizationPrimerId],
-        //     referenceTable: linearizationPrimers,
-        //     references: [linearizationPrimers.id],
-        // },
-        // homologyArmPrimer: {
-        //     fields: [wellContents.homologyArmPrimerId],
-        //     referenceTable: homologyArmPrimers,
-        //     references: [homologyArmPrimers.id],
-        // },
-        // preseq1Primer: {
-        //     fields: [wellContents.preseq1PrimerId],
-        //     referenceTable: preseq1Primers,
-        //     references: [preseq1Primers.id],
-        // },
-        // preseq2Primer: {
-        //     fields: [wellContents.preseq2PrimerId],
-        //     referenceTable: preseq2Primers,
-        //     references: [preseq2Primers.id],
-        // },
-        // indexPrimer: {
-        //     fields: [wellContents.indexPrimerId],
-        //     referenceTable: indexPrimers,
-        //     references: [indexPrimers.id],
-        // },
-        // nucleicAcid: {
-        //     fields: [wellContents.nucleicAcidId],
-        //     referenceTable: nucleicAcids,
-        //     references: [nucleicAcids.id],
-        // },
-        // pellet: {
-        //     fields: [wellContents.pelletId],
-        //     referenceTable: pellets,
-        //     references: [pellets.id],
-        // },
-        // sgRnaPlasmid: {
-        //     fields: [wellContents.sgRnaPlasmidId],
-        //     referenceTable: sgRnaPlasmids,
-        //     references: [sgRnaPlasmids.id],
-        // },
-        // snvLibPlasmid: {
-        //     fields: [wellContents.snvLibPlasmidId],
-        //     referenceTable: snvLibPlasmids,
-        //     references: [snvLibPlasmids.id],
-        // },
-        // sgRnaOligo: {
-        //     fields: [wellContents.sgRnaOligoId],
-        //     referenceTable: sgRnaOligos,
-        //     references: [sgRnaOligos.id],
-        // },
-        // externalSample: {
-        //     fields: [wellContents.externalSampleId],
-        //     referenceTable: externalSamples,
-        //     references: [externalSamples.id],
-        // },
         wellable: {
             fields: [wellContents.wellableId],
             referenceTable: wellables,
@@ -228,11 +168,6 @@ const wellablesRelationsConfig: RelationsConfig = {
             fields: [wellables.id],
             referenceTable: indexPrimers,
             references: [indexPrimers.id],
-        },
-        nucleicAcid: {
-            fields: [wellables.id],
-            referenceTable: nucleicAcids,
-            references: [nucleicAcids.id],
         },
         dna: {
             fields: [wellables.id],
@@ -1143,9 +1078,6 @@ const pelletsRelationsConfig: RelationsConfig = {
         },
     },
     oneToOne: {
-        nucleicAcid: {
-            table: nucleicAcids
-        },
         dna: {
             table: dna
         },
@@ -1237,34 +1169,6 @@ const snvLibPlasmidsRelationsConfig: RelationsConfig = {
     // },
 }
 export const snvLibPlasmidsRelations = relationsConfigToRelations(snvLibPlasmids, snvLibPlasmidsRelationsConfig)
-
-const nucleicAcidsRelationsConfig: RelationsConfig = {
-    one: {
-        extractionExperiment: {
-            fields: [nucleicAcids.extractionExperimentId],
-            referenceTable: extractionExperiments,
-            references: [extractionExperiments.id],
-        },
-        pellet: {
-            fields: [nucleicAcids.pelletId],
-            referenceTable: pellets,
-            references: [pellets.id],
-        },
-        wellable: {
-            fields: [nucleicAcids.id],
-            referenceTable: wellables,
-            references: [wellables.id],
-        },
-    },
-    // many: {
-    //     wellContents: {
-    //         table: wellContents,
-    //         schema: createSelectSchema(wellContents),
-    //         fields: [wellContents.nucleicAcidId],
-    //     }
-    // },
-}
-export const nucleicAcidsRelations = relationsConfigToRelations(nucleicAcids, nucleicAcidsRelationsConfig)
 
 const dnaRelationsConfig: RelationsConfig = {
     one: {

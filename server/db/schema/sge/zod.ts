@@ -15,7 +15,7 @@ import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { nucleicAcids, dna, rna } from './nucleic-acid'
+import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
@@ -201,10 +201,6 @@ const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
 const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
 const insertSgRnaOligosSchema = createSelectSchema(sgRnaOligos).omit({id: true})
 const updateSgRnaOligosSchema = insertSgRnaOligosSchema
-
-const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
-const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
-const updateNucleicAcidsSchema = insertNucleicAcidsSchema
 
 const selectDnaSchema = createSelectSchema(dna)
 const insertDnaSchema = createSelectSchema(dna).omit({id: true}).partial()
@@ -431,11 +427,6 @@ export const schemas = {
         select: selectSnvLibPlasmidsSchema,
         insert: insertSnvLibPlasmidsSchema,
         update: updateSnvLibPlasmidsSchema,
-    },
-    nucleicAcids: {
-        select: selectNucleicAcidsSchema,
-        insert: insertNucleicAcidsSchema,
-        update: updateNucleicAcidsSchema,
     },
     dna: {
         select: selectDnaSchema,
