@@ -152,7 +152,7 @@ const columnDefs = {
         searchable: false,
         exportable: false,
     },
-    sequence: { display: false },
+    direction: { display: false },
     kit: {display: false},
     name: {
         index: 1,
