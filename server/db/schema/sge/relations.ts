@@ -1,6 +1,6 @@
 import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
-import { pcr1ExperimentMasterMixVolumes, pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperiments, pcrExperimentTargets } from './pcr-experiment'
 import { transfectExperiments, transfectTargets, transfectLotUsage } from './transfect-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
 import { plates } from './plate'
@@ -63,6 +63,9 @@ const pcrExperimentsRelationsConfig: RelationsConfig = {
         pcr1ExperimentMasterMixVolumes: {
             table: pcr1ExperimentMasterMixVolumes
         },
+        pcr2ExperimentMasterMixVolumes: {
+            table: pcr2ExperimentMasterMixVolumes
+        },
     },
 }
 export const pcrExperimentsRelations = relationsConfigToRelations(pcrExperiments, pcrExperimentsRelationsConfig)
@@ -93,6 +96,17 @@ const pcr1ExperimentMasterMixVolumesRelationsConfig: RelationsConfig = {
     },
 }
 export const pcr1ExperimentMasterMixVolumesRelations = relationsConfigToRelations(pcr1ExperimentMasterMixVolumes, pcr1ExperimentMasterMixVolumesRelationsConfig)
+
+const pcr2ExperimentMasterMixVolumesRelationsConfig: RelationsConfig = {
+    one:{
+        pcrExperiment: {
+            fields: [pcr2ExperimentMasterMixVolumes.pcrExperimentId],
+            referenceTable: pcrExperiments,
+            references: [pcrExperiments.id],
+        },
+    },
+}
+export const pcr2ExperimentMasterMixVolumesRelations = relationsConfigToRelations(pcr2ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumesRelationsConfig)
 
 const wellContentsRelationsConfig: RelationsConfig = {
     one:{
@@ -1509,6 +1523,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     clonalHaTargets: clonalHaTargetsRelationsConfig,
     pcrExperiments: pcrExperimentsRelationsConfig,
     pcrExperimentTargets: pcrExperimentTargetsRelationsConfig,
+    pcr1ExperimentMasterMixVolumes: pcr1ExperimentMasterMixVolumesRelationsConfig,
+    pcr2ExperimentMasterMixVolumes: pcr2ExperimentMasterMixVolumesRelationsConfig,
     sgRnaCloningExperiments: sgRnaCloningExperimentsRelationsConfig,
     haCloningExperimentTargets: haCloningExperimentTargetsRelationsConfig,
     haCloningExperiments: haCloningExperimentsRelationsConfig,

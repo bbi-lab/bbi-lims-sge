@@ -7,6 +7,7 @@ const { breakpoints } = useLayout()
 const route = useRoute()
 const plateLayout = usePlateLayout()
 const toast = useToast()
+const router = useRouter()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -92,8 +93,12 @@ const loadPlate = async () => {
     pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
         {
-            transfectTarget: {
-                columns: {id: true},
+            pcrExperimentTargets: {
+                with: {
+                    transfectTarget: {
+                        columns: {id: true},
+                    }
+                }
             }
         },
         {
@@ -163,6 +168,12 @@ const displayWithClause = computed(() => {
 const columnDefs = computed(() => {
     if (selectionTableName.value === 'view-plates-with-well-counts') {
         return {
+            name: {
+                type: 'element',
+                element: (data: any) => {
+                    return `<a href="/sge/plate-layout/dna-preseq-1/${data.id}" class="text-blue-500 hover:underline">${data.name}</a>`
+                },
+            },
             plateType: { display: false },
             plateTypeLabel: { header: 'Type' },
             cycleName: { header: 'Cycle' },
@@ -323,12 +334,19 @@ const assignPrimers = async () => {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                selectionMode="single"
                 :sortBy="selectionTableName === 'dna' ? ['wellContents.displayValue'] : undefined"
                 :sortByOrder="selectionTableName === 'dna' ? ['desc'] : undefined"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-2/volume-calcs/${pcrExperiment.id}`})" />
                 </template>
             </QuickTable>
         </SplitterPanel>

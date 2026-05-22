@@ -8,7 +8,7 @@ import { updateRelatedTargets } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
 import { clonalHaTargets, sgRnaOligoTargets } from '../db/schema/sge/oligos'
-import { pcr1ExperimentMasterMixVolumes, pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
 import { sgRnaPlasmidTargets } from '../db/schema/sge/plasmid'
 
 export default defineEventHandler(async (event) => {
@@ -101,6 +101,13 @@ export default defineEventHandler(async (event) => {
                         pcrExperimentId: experiment.id,
                     }
                     await tx.insert(pcr1ExperimentMasterMixVolumes).values(masterMixValues)
+                }
+                const pcr2Experiments = _.filter(insertedRecords, (record) => ['rna-preseq-2', 'dna-preseq-2'].includes(record.pcrType))
+                for (const experiment of pcr2Experiments) {
+                    const masterMixValues = {
+                        pcrExperimentId: experiment.id,
+                    }
+                    await tx.insert(pcr2ExperimentMasterMixVolumes).values(masterMixValues)
                 }
             }
 

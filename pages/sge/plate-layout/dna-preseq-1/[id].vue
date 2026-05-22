@@ -7,6 +7,7 @@ const { breakpoints } = useLayout()
 const route = useRoute()
 const plateLayout = usePlateLayout()
 const toast = useToast()
+const router = useRouter()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -295,11 +296,21 @@ const frozenRecordIds = computed(() => {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
+                selectionMode="single"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :sortBy="['wellContents.displayValue']"
                 :sortByOrder="['desc']"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
+            >
+                <template #header-buttons>
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-1/volume-calcs/${pcrExperiment.id}`})" />
+                </template>
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">

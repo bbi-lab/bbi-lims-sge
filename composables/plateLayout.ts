@@ -369,7 +369,7 @@ export const usePlateLayout = () => {
         type DnaWithPelletAndWellIds = DnaWithPellet & {wellIds: String[]}
 
         const pooledDna = _.sortBy(_.values(dnaPreSeq1Plate.wells.reduce((acc, well: WellWithContents) => {
-            const dna = _.get(well, ['wellContents', 0, 'wellable', 'dna'])
+            const dna = _.get(_.find(well.wellContents, (wellContent) => wellContent.wellable.dna), 'wellable.dna') as DnaWithPellet
             if (dna?.id) {
                 const existingWellIds = _.get(acc, [dna.id, 'wellIds'], [])
                 _.set(acc, dna.id, {...dna, wellIds: [...existingWellIds, well.id]})

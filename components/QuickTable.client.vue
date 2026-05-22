@@ -104,7 +104,7 @@ const props = defineProps({
   canExport: {type: Boolean, default: true},
   hideSettings: {type: Boolean, default: false},
   rowsPerPageOptions: {type: Array as PropType<Array<number>> },
-  selectionMode: {type: String, default: 'multiple'},
+  selectionMode: {type: String as PropType<'multiple' | 'single'>, default: 'multiple'},
   rowActions: {type: Object},
   showColumnFilters: {type: Boolean, default: false},
   selectionDisabled: {type: Boolean, default: false},
