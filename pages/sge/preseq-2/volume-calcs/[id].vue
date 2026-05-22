@@ -6,25 +6,10 @@ import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showExperimentValuesForm = ref(false)
 const experiment = ref<{ name: string; pcrType: string; pcr2ExperimentMasterMixVolumes?: any; plate?: any }>({})
-const sampleStats = ref<Record<string, { sampleName: string; numberOfWells: number; numberOfWellsAdjustment: number, quant: number | null; pelletId: string | null }>>({})
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
-
-const calcs = ref<{
-    sampleId: string;
-    sampleName: string;
-    quant: number | null;
-    numberOfWells: number;
-    numberOfWellsAdjustment: number;
-    twoXKapaHifiReadyMix: string;
-    tenUmForwardPrimer: string;
-    tenUmReversePrimer: string;
-    tenXSybrGreen: string;
-    dnaAmount: string;
-    water: string;
-    total: string }[]>([])
 
 const withClause = {
     pcrExperimentTargets: {
@@ -71,7 +56,21 @@ const withClause = {
                                 with: {
                                     dna: {
                                         with: {
-                                            pellet: true
+                                            pellet: {
+                                                with: {
+                                                    transfectTarget: {
+                                                        columns: {},
+                                                        with: {
+                                                            target: {
+                                                                columns: {
+                                                                    id: true,
+                                                                    name: true
+                                                                },
+                                                            },
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         },
                                     },
                                     rna: {
@@ -92,19 +91,14 @@ onMounted(async() => {
     await refreshExperiment()
 })
 
-const refreshExperiment = async () => {
-    experiment.value = await RecordService.getRecord(`${config.public.apiBase}/pcr-experiments`, route.params.id as string, withClause)
-
-    // calculate well contents per sample, keyed by sample id, value is an array of objects with the following shape:
-    // {
-    //     sampleName: string,
-    //     numberOfWells: number,
-    //     quant: number | null,
-    //     pelletId: string | null,
-    // }
+const sampleStatsComputed: ComputedRef<Record<string, { sampleName: string; numberOfWells: number; pelletId: string | null }>> = computed(() => {
+    if (experiment.value.pcrType !== 'rna-preseq-2') {
+        return {}
+    }
+    let sampleStats
     if (_.has(experiment.value, 'plate.wells')) {
         const wells = _.get(experiment.value, 'plate.wells')
-        sampleStats.value = _.reduce(wells || [], (result, well: any) => {
+        sampleStats = _.reduce(wells || [], (result, well: any) => {
             _.forEach(well.wellContents, (wellContent) => {
                 const sample = wellContent.wellable
                 if (sample?.id && (sample.dna?.pellet || sample.rna?.pellet)) {
@@ -112,7 +106,6 @@ const refreshExperiment = async () => {
                         _.set(result, sample.id, {
                             sampleName: sample.dna?.pellet?.name || sample.rna?.pellet?.name || 'Unknown Sample',
                             numberOfWells: 0,
-                            quant: experiment.value.pcrType == 'dna-preseq-1' ? sample.dna?.concentration : experiment.value.pcrType == 'rna-preseq-1' ? sample.rna?.concentration : null,
                             pelletId: sample.dna?.pellet?.id || sample.rna?.pellet?.id || null,
                         })
                     }
@@ -122,24 +115,67 @@ const refreshExperiment = async () => {
             return result
         }, {})
     }
+    return sampleStats || {}
+})
 
-    calcs.value = _.map(sampleStats.value, (value, key) => {
-        const quant = experiment.value.pcrType == 'dna-preseq-1' ? _.get(value, 'quant', null) : null
+const targetStatsComputed: ComputedRef<Record<string, { targetName: string; numberOfWells: number }>> = computed(() => {
+    if (experiment.value.pcrType !== 'dna-preseq-2') {
+        return {}
+    }
+    let targetStats
+    if (_.has(experiment.value, 'plate.wells')) {
+        const wells = _.get(experiment.value, 'plate.wells')
+        targetStats = _.reduce(wells || [], (result, well: any) => {
+            _.forEach(well.wellContents, (wellContent) => {
+                const target = wellContent.wellable.dna?.pellet?.transfectTarget?.target
+                if (target?.id) {
+                    if (!_.has(result, target.id)) {
+                        _.set(result, target.id, {
+                            targetName: target.name || 'Unknown Target',
+                            numberOfWells: 0,
+                        })
+                    }
+                    _.set(result, `${target.id}.numberOfWells`, _.get(result, `${target.id}.numberOfWells`, 0) + 1)
+                }
+            })
+            return result
+        }, {})
+    }
+    return targetStats || {}
+})
+
+const calcsComputed: ComputedRef<Array<{
+    sampleId: string;
+    sampleName: string;
+    numberOfWells: number;
+    multimixMultiplier: string;
+    twoXKapaHifiReadyMix: string;
+    tenUmForwardPrimer: string;
+    tenUmReversePrimer: string;
+    tenXSybrGreen: string;
+    dnaAmount: string;
+    water: string;
+    total: string;
+}>> = computed(() => {
+    // use targetStats for dna-preseq-2 and sampleStats for rna-preseq-2
+    const stats = experiment.value.pcrType == 'dna-preseq-2' ? targetStatsComputed.value : sampleStatsComputed.value
+    const nameKey = experiment.value.pcrType == 'dna-preseq-2' ? 'targetName' : 'sampleName'
+
+    return _.map(stats, (value, key) => {
         const numberOfWells = _.get(value, 'numberOfWells', 0)
-        const numberOfWellsAdjustment = _.get(value, 'numberOfWells', 0) > 0 ? 0.5 : 0
-        const totalVol = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.total', 0) * (numberOfWells + numberOfWellsAdjustment)
-        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * (numberOfWells + numberOfWellsAdjustment)
-        const tenUmForwardPrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * (numberOfWells + numberOfWellsAdjustment)
-        const tenUmReversePrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * (numberOfWells + numberOfWellsAdjustment)
-        const tenXSybrGreen = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenXSybrGreen', 0) * (numberOfWells + numberOfWellsAdjustment)
-        const dnaAmount = dnaVolume.value ? dnaVolume.value * (numberOfWells + numberOfWellsAdjustment) : null
+        const multimixMultiplier = numberOfWells * 1.125
+        const totalVol = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.total', 0) * multimixMultiplier
+        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * multimixMultiplier
+        const tenUmForwardPrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * multimixMultiplier
+        const tenUmReversePrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * multimixMultiplier
+        const tenXSybrGreen = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenXSybrGreen', 0) * multimixMultiplier
+        const dnaAmount = dnaVolume.value ? dnaVolume.value * multimixMultiplier : null
 
         return {
             sampleId: key,
-            sampleName: _.get(value, 'sampleName', '??'),
-            quant,
+            sampleName: _.get(value, nameKey, '??'),
             numberOfWells,
-            numberOfWellsAdjustment,
+            multimixMultiplier: _.round(multimixMultiplier, 1).toFixed(1),
             twoXKapaHifiReadyMix: _.round(twoXKapaHifiReadyMix, 1).toFixed(1),
             tenUmForwardPrimer: _.round(tenUmForwardPrimer, 1).toFixed(1),
             tenUmReversePrimer: _.round(tenUmReversePrimer, 1).toFixed(1),
@@ -149,7 +185,10 @@ const refreshExperiment = async () => {
             total: _.round(totalVol, 1).toFixed(1),
         }
     })
+})
 
+const refreshExperiment = async () => {
+    experiment.value = await RecordService.getRecord(`${config.public.apiBase}/pcr-experiments`, route.params.id as string, withClause)
     showExperimentValuesForm.value = false
 }
 
@@ -179,7 +218,7 @@ const fieldDefs: FieldDefinitions = {
     },
 }
 
-const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc']))
+const orderedCalcs = computed(() => _.orderBy(calcsComputed.value, ['sampleName'], ['asc']))
 
 const dnaVolume = computed(() => {
     return experiment.value.pcrType === 'rna-preseq-2' ? 2.5 : experiment.value.pcrType === 'dna-preseq-2' ? 2.0 : null
@@ -240,7 +279,7 @@ const dnaVolume = computed(() => {
 
         <div>
             <span>
-                <span class="text-xl font-bold mr-5">Samples</span>
+                <span class="text-xl font-bold mr-5">{{ experiment.pcrType == 'dna-preseq-2' ? 'Targets' : 'Samples' }}</span>
                 <Button
                     class="p-button-sm"
                     icon="pi pi-pencil"
@@ -254,21 +293,12 @@ const dnaVolume = computed(() => {
                 </Button>
             </span>
             <div>
-                <DataTable :value="_.map(sampleStats, (value, key) => ({ ...value, sampleId: key }))" class="mt-3 text-sm">
-                    <Column field="sampleName" header="Sample Name"></Column>
-                    <Column field="numberOfWells" header="Number of Wells"></Column>
-                    <Column v-if="experiment.pcrType === 'dna-preseq-1'" field="quant" header="Quant (ng/μL)">
-                        <template #body="slotProps">
-                            {{ slotProps.data.quant || '-'}}
-                            <Button
-                                class="p-button-sm"
-                                icon="pi pi-pencil"
-                                severity="info"
-                                text
-                                @click="router.push(`/sge/pellets?id=${slotProps.data.pelletId}`)"
-                            />
-                        </template>
+                <DataTable :value="_.map(experiment.pcrType == 'dna-preseq-2'  ? targetStatsComputed : sampleStatsComputed, (value, key) => ({ ...value, sampleId: key }))" class="mt-3 text-sm">
+                    <Column
+                        :field="experiment.pcrType == 'dna-preseq-2' ? 'targetName' : 'sampleName'"
+                        :header="experiment.pcrType == 'dna-preseq-2' ? 'Target' : 'Sample'">
                     </Column>
+                    <Column field="numberOfWells" header="Number of Wells"></Column>
                 </DataTable>
             </div>
         </div>
@@ -278,18 +308,21 @@ const dnaVolume = computed(() => {
     </DataTable> -->
 
     <!-- Calcs Grid -->
-    <div class="m-5 text-xl font-bold mb-5">Calculated volumes</div>
-    <div v-if="calcs.length" class="m-5 overflow-x-auto">
+    <div>
+        <span class="m-5 text-xl font-bold mb-5">Calculated volumes</span>
+        <span class="italic">(Note: Values shown here are rounded to one decimal place. Underlying calculations use precise values.)</span>
+    </div>
+    <div v-if="calcsComputed.length" class="m-5 overflow-x-auto">
         <div
             class="calcs-grid mb-5 border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-600 rounded text-sm grid"
             :style="`width: max-content; grid-template-columns: minmax(180px, max-content) repeat(${orderedCalcs.length}, minmax(120px, max-content))`"
         >
             <!-- Sample name row -->
-            <div class="font-semibold">Sample</div>
+            <div class="font-semibold">{{ experiment.pcrType == 'dna-preseq-2' ? 'Target' : 'Sample' }}</div>
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
             <!-- Number of wells row -->
-            <div  class="font-semibold">Number of Wells (+0.5)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.numberOfWells + calc.numberOfWellsAdjustment }}</div>
+            <div  class="font-semibold">Number of Wells (*1.125)</div>
+            <div v-for="calc in orderedCalcs">{{ calc.multimixMultiplier }}</div>
             <!-- 2X Kapa row -->
             <div class="font-semibold border-t-2">2X Kapa Hifi Ready Mix (μL)</div>
             <div v-for="calc in orderedCalcs" class="border-t-2">{{ calc.twoXKapaHifiReadyMix }}</div>
@@ -303,7 +336,7 @@ const dnaVolume = computed(() => {
             <div class="font-semibold">10X Sybr Green (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.tenXSybrGreen }}</div>
             <!-- DNA amount row -->
-            <div class="font-semibold">{{ experiment.pcrType == 'rna-preseq-1' ? 'cDNA' : 'DNA' }} (μL)</div>
+            <div class="font-semibold">{{ experiment.pcrType == 'rna-preseq-2' ? 'cDNA' : 'DNA' }} (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.dnaAmount }}</div>
             <!-- Water row -->
             <div class="font-semibold">Water (μL)</div>
