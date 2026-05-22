@@ -7,6 +7,7 @@ import {v4 as uuidv4} from 'uuid'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
+const router = useRouter()
 const plateLayout = usePlateLayout()
 const sourcePlateLayout = usePlateLayout()
 const sourcePlateWithWellSpecs = ref()
@@ -429,6 +430,12 @@ const assignPrimers = async () => {
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton class="record-type-select" v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-1/volume-calcs/${pcrExperiment.id}`})" />
                 </template>
             </QuickTable>
         </SplitterPanel>

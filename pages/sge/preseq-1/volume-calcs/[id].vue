@@ -21,7 +21,7 @@ const calcs = ref<{
     tenUmForwardPrimer: string;
     tenUmReversePrimer: string;
     tenXSybrGreen: string;
-    dnaAmount: string;
+    dnaVolume: string;
     water: string;
     total: string }[]>([])
 
@@ -131,7 +131,7 @@ const refreshExperiment = async () => {
         const tenUmReversePrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * numberOfWells
         const tenXSybrGreen = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenXSybrGreen', 0) * numberOfWells
         // for RNA preseq-1, cDNA volume is alwasy 2.5uL per well, for DNA preseq-1, calculate DNA volume based on quant and number of wells, if quant is not available, set DNA volume to null
-        const dnaAmount = experiment.value.pcrType == 'rna-preseq-1' ? 2.5 * numberOfWells : quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * numberOfWells * 1/quant : null
+        const dnaVolume = experiment.value.pcrType == 'rna-preseq-1' ? 2.5 * numberOfWells : quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * numberOfWells * 1/quant : null
 
         return {
             sampleId: key,
@@ -142,8 +142,8 @@ const refreshExperiment = async () => {
             tenUmForwardPrimer: _.round(tenUmForwardPrimer, 1).toFixed(1),
             tenUmReversePrimer: _.round(tenUmReversePrimer, 1).toFixed(1),
             tenXSybrGreen: _.round(tenXSybrGreen, 1).toFixed(1),
-            dnaAmount: dnaAmount ? _.round(dnaAmount, 1).toFixed(1) : '-',
-            water: dnaAmount ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + tenXSybrGreen + dnaAmount), 1).toFixed(1) : '-',
+            dnaVolume: dnaVolume ? _.round(dnaVolume, 1).toFixed(1) : '-',
+            water: dnaVolume ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + tenXSybrGreen + dnaVolume), 1).toFixed(1) : '-',
             total: _.round(totalVol, 1).toFixed(1),
         }
     })
@@ -230,6 +230,10 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                         <td class="px-4 py-4">DNA Amount</td>
                         <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.dnaAmount }} ng</td>
                     </tr>
+                    <tr v-if="experiment?.pcrType === 'rna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
+                        <td class="px-4 py-4">cDNA Volume</td>
+                        <td class="px-4 py-4">2.5 μL</td>
+                    </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">Total Volume</td>
                         <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.total }} μL</td>
@@ -307,7 +311,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
             <div v-for="calc in orderedCalcs">{{ calc.tenXSybrGreen }}</div>
             <!-- DNA amount row -->
             <div class="font-semibold">{{ experiment.pcrType == 'rna-preseq-1' ? 'cDNA' : 'DNA' }} (μL)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.dnaAmount }}</div>
+            <div v-for="calc in orderedCalcs">{{ calc.dnaVolume }}</div>
             <!-- Water row -->
             <div class="font-semibold">Water (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.water }}</div>

@@ -7,7 +7,7 @@ import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
-import { pcr1ExperimentMasterMixVolumes, pcrExperiments } from './pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { pellets } from './pellet'
 import { createSelectSchema } from 'drizzle-zod'
@@ -129,6 +129,10 @@ const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 const pcr1ExperimentMasterMixVolumesSchema = createSelectSchema(pcr1ExperimentMasterMixVolumes)
 const insertPcr1ExperimentMasterMixVolumesSchema = pcr1ExperimentMasterMixVolumesSchema.omit({id: true})
 const updatePcr1ExperimentMasterMixVolumesSchema = insertPcr1ExperimentMasterMixVolumesSchema
+
+const pcr2ExperimentMasterMixVolumesSchema = createSelectSchema(pcr2ExperimentMasterMixVolumes)
+const insertPcr2ExperimentMasterMixVolumesSchema = pcr2ExperimentMasterMixVolumesSchema.omit({id: true})
+const updatePcr2ExperimentMasterMixVolumesSchema = insertPcr2ExperimentMasterMixVolumesSchema
 
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
 const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
@@ -367,6 +371,11 @@ export const schemas = {
         select: pcr1ExperimentMasterMixVolumesSchema,
         insert: insertPcr1ExperimentMasterMixVolumesSchema,
         update: updatePcr1ExperimentMasterMixVolumesSchema,
+    },
+    pcr2ExperimentMasterMixVolumes: {
+        select: pcr2ExperimentMasterMixVolumesSchema,
+        insert: insertPcr2ExperimentMasterMixVolumesSchema,
+        update: updatePcr2ExperimentMasterMixVolumesSchema,
     },
     plates: {
         select: selectPlatesSchema,

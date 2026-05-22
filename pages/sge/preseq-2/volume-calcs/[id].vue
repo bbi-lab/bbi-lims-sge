@@ -127,13 +127,12 @@ const refreshExperiment = async () => {
         const quant = experiment.value.pcrType == 'dna-preseq-1' ? _.get(value, 'quant', null) : null
         const numberOfWells = _.get(value, 'numberOfWells', 0)
         const numberOfWellsAdjustment = _.get(value, 'numberOfWells', 0) > 0 ? 0.5 : 0
-        const totalVol = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.total', 0) * numberOfWells
-        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * numberOfWells
-        const tenUmForwardPrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * numberOfWells
-        const tenUmReversePrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * numberOfWells
-        const tenXSybrGreen = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenXSybrGreen', 0) * numberOfWells
-        // for RNA preseq-2, cDNA volume is alwasy 2.5uL per well, for DNA preseq-2 DNA volume is 2uL per well
-        const dnaAmount = experiment.value.pcrType == 'rna-preseq-2' ? 2.5 * (numberOfWells + numberOfWellsAdjustment) : experiment.value.pcrType == 'dna-preseq-2' ? 2.0 * (numberOfWells + numberOfWellsAdjustment) : null
+        const totalVol = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.total', 0) * (numberOfWells + numberOfWellsAdjustment)
+        const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * (numberOfWells + numberOfWellsAdjustment)
+        const tenUmForwardPrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * (numberOfWells + numberOfWellsAdjustment)
+        const tenUmReversePrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * (numberOfWells + numberOfWellsAdjustment)
+        const tenXSybrGreen = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenXSybrGreen', 0) * (numberOfWells + numberOfWellsAdjustment)
+        const dnaAmount = dnaVolume.value ? dnaVolume.value * (numberOfWells + numberOfWellsAdjustment) : null
 
         return {
             sampleId: key,
@@ -182,6 +181,9 @@ const fieldDefs: FieldDefinitions = {
 
 const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc']))
 
+const dnaVolume = computed(() => {
+    return experiment.value.pcrType === 'rna-preseq-2' ? 2.5 : experiment.value.pcrType === 'dna-preseq-2' ? 2.0 : null
+})
 </script>
 <template>
     <h3 class="p-5">
@@ -224,9 +226,9 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                         <td class="px-4 py-4">10X Sybr Green</td>
                         <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
                     </tr>
-                    <tr v-if="experiment?.pcrType === 'dna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
-                        <td class="px-4 py-4">DNA Amount</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.dnaAmount }} ng</td>
+                    <tr class="border-b border-surface-200 dark:border-surface-600">
+                        <td class="px-4 py-4">{{ experiment?.pcrType === 'rna-preseq-2' ? 'cDNA Volume' : 'DNA Volume' }}</td>
+                        <td class="px-4 py-4">{{ dnaVolume || '-' }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">Total Volume</td>
@@ -285,9 +287,6 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
             <!-- Sample name row -->
             <div class="font-semibold">Sample</div>
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
-            <!-- Quant row -->
-            <div class="font-semibold">Quant (ng/μL)</div>
-            <div v-for="calc in orderedCalcs">{{ experiment.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
             <!-- Number of wells row -->
             <div  class="font-semibold">Number of Wells (+0.5)</div>
             <div v-for="calc in orderedCalcs">{{ calc.numberOfWells + calc.numberOfWellsAdjustment }}</div>
@@ -322,7 +321,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
         :style="{width: '350px'}"
         >
         <QuickForm
-            tableName="pcr-1-experiment-master-mix-volumes"
+            tableName="pcr-2-experiment-master-mix-volumes"
             schemaName="update"
             :fieldDefs="fieldDefs"
             :recordId="experiment?.pcr2ExperimentMasterMixVolumes?.id"

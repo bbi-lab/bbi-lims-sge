@@ -3,17 +3,20 @@ import _ from 'lodash'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
-import HugeiconsLayerSendToBack from '~icons/hugeicons/layer-send-to-back'
 import {v4 as uuidv4} from 'uuid'
+import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
+const router = useRouter()
+const config = useRuntimeConfig()
 const plateLayout = usePlateLayout()
 const toast = useToast()
 const { user } = useUserSession()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
+const pcrExperiment = ref()
 const selectionTableName = ref<'rna' | 'rna-rt-storage' | 'rna-preseq-1-plate'>('rna-rt-storage')
 const selectionTableKey = ref(0)
 
@@ -155,6 +158,15 @@ const loadPlate = async () => {
         ...plateLayout.plateWithWellContents.value,
         wells: _.values(plateLayout.wellSpecs.value),
     }
+
+
+    pcrExperiment.value = _.first(await RecordService.getRecords(
+        `${config.public.apiBase}/pcr-experiments`,
+        {},
+        {
+            '==': [{'var': 'plateId'}, plateWithWellSpecs.value.id],
+        }
+    ))
 }
 
 const displayWithClause = computed(() => {
@@ -438,6 +450,12 @@ const assignPrimers = async () => {
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton class="record-type-select" v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-2/volume-calcs/${pcrExperiment.id}`})" />
                 </template>
             </QuickTable>
         </SplitterPanel>
