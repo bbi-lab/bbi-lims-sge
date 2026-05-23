@@ -65,7 +65,7 @@ export async function selectRecordFromView(view: PgViewWithSelection, id: string
             statusMessage: `View does not have an id column`
         })
     }
-    const record = await (tx ?? db).select().from(view).where(eq(view.id, id))
+    const record = await (tx ?? db).select().from(view).where(eq((view as any).id, id))
     return _.first(record)
 }
 

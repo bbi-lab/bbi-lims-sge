@@ -1,7 +1,7 @@
 import { schemas } from '@/server/db/schema/sge/zod'
 import { relationsConfigs } from '@/server/db/schema/sge/relations'
 import _ from 'lodash'
-import { ZodObject, ZodTypeAny } from 'zod'
+import type { ZodObject } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { type RelationsConfig } from '~/server/utils/db'
 import { ENUM_LOOKUPS, type EnumLookup } from '~/server/db/schema/sge/enum-lookups'

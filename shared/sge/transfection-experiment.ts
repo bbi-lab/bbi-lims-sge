@@ -6,8 +6,7 @@ import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { dateSchema } from '../../server/db/helpers/schemas'
 import { z } from 'zod'
 import _ from 'lodash'
-import { parsePutPostError } from '../../server/utils/restApi'
-import { eq, inArray, ne } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 const baseUrl = '/api/transfect-experiments'
 const pelletsUrl = '/api/pellets'
@@ -200,7 +199,7 @@ export class TransfectionExperiment {
             const targetsToAdd = _.difference(targetIds, existingTargetIds)
 
             if (targetsToAdd?.length > 0)
-                await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string}}))
+                await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string, transfectionCount: 1}}))
             if (targetsToRemove?.length > 0)
                 await db.delete(transfectTargets).where(inArray(transfectTargets.targetId, targetsToRemove))
         }

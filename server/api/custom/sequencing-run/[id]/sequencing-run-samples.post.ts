@@ -1,4 +1,4 @@
-import { eq, InferInsertModel } from "drizzle-orm"
+import { eq, type InferInsertModel } from "drizzle-orm"
 import { sequencingRunSamples } from "~/server/db/schema/sge/sequencing-run"
 import _ from 'lodash'
 import { wellCoordinateToChar } from "~/lib/plate-diagram"

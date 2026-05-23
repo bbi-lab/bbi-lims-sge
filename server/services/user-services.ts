@@ -1,7 +1,6 @@
 import crypto from 'node:crypto'
 import { type NewUserGroup, type UpdateUserGroup, type NewUser, type UpdateUser, type AdminUpdateUser, type User, users, userGroups, userGroupMemberships, preVerifiedUsers } from '@/server/db/schema/user'
 import { db } from '@/server/utils/db'
-// import { sendVerificationEmail } from '@/utils/email'
 import argon2 from 'argon2'
 import { eq, inArray } from 'drizzle-orm'
 import _ from 'lodash'

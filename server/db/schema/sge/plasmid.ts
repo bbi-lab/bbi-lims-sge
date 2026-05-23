@@ -1,11 +1,10 @@
-import { pgTable, uuid, varchar, text, doublePrecision, check, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, doublePrecision, check, timestamp, boolean } from 'drizzle-orm/pg-core'
 import { type InferSelectModel } from 'drizzle-orm/table'
 import { snvLibCloningExperiments } from './plasmid-experiment'
 import { targets } from './target'
 import { sql } from 'drizzle-orm/sql'
 import { haPuc19GibsonProducts } from './oligos'
 import { users } from '../user'
-import { boolean } from 'drizzle-orm/gel-core'
 
 export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
