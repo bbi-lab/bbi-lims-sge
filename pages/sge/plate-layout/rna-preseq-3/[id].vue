@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Rna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { IndexPrimer } from '~/server/db/schema/sge/primer'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user';
 import IxMoveLayerDown from '~icons/ix/move-layer-down';
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
-const sourcePlateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null; indexPrimer: IndexPrimer | null }>()
+const sourcePlateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null; indexPrimer: IndexPrimer | null }>()
 const sourcePlateWithWellSpecs = ref()
 // const sourcePlateDiagramKey = ref<string>()
 const toast = useToast()

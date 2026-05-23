@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { ExternalSample } from '~/server/db/schema/sge/external-samples'
+import type { Dna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { IndexPrimer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
-const sourcePlateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ externalSample: ExternalSample | null; indexPrimer: IndexPrimer | null }>()
+const sourcePlateLayout = usePlateLayout<{ dna: (Dna & { pellet: Pellet | null }) | null; indexPrimer: IndexPrimer | null }>()
 const sourcePlateWithWellSpecs = ref()
 const toast = useToast()
 const { user } = useUserSession()

@@ -1,4 +1,5 @@
 import { check, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import { type InferSelectModel } from 'drizzle-orm/table'
 import { users } from "../user"
 import { indexPrimers } from "./primer"
 import { sql } from "drizzle-orm/sql"
@@ -21,3 +22,5 @@ export const externalSamples = pgTable('external_samples', {
     (${t.indexPrimer1Id} IS NOT NULL AND COALESCE(TRIM(${t.customIndexSeq1}), '') = '' AND COALESCE(TRIM(${t.customIndexSeq2}), '') = '')
   `),
 ])
+
+export type ExternalSample = InferSelectModel<typeof externalSamples>

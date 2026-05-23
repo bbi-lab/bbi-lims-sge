@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Dna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { preseq2Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ dna: (Dna & { pellet: Pellet | null }) | null; preseq2Primer: preseq2Primer | null }>()
 const toast = useToast()
 const router = useRouter()
 

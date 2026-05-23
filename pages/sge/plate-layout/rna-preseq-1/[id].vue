@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Rna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { RnaPreseq1Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 import type { User } from '~/server/db/schema/user'
@@ -8,8 +11,8 @@ import {v4 as uuidv4} from 'uuid'
 const { breakpoints } = useLayout()
 const route = useRoute()
 const router = useRouter()
-const plateLayout = usePlateLayout()
-const sourcePlateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null; rnaPreseq1Primer: RnaPreseq1Primer | null }>()
+const sourcePlateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null }>()
 const sourcePlateWithWellSpecs = ref()
 const sourcePlateDiagramKey = ref<string>()
 const plateDiagramKey = ref<string>()

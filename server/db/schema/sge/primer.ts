@@ -178,3 +178,6 @@ export type HomologyArmPuc19Primer = InferSelectModel<typeof homologyArmPuc19Pri
 export type IndexPrimer = InferSelectModel<typeof indexPrimers>
 export type preseq1Primer = InferSelectModel<typeof preseq1Primers>
 export type preseq2Primer = InferSelectModel<typeof preseq2Primers>
+export type RnaPreseq1Primer = InferSelectModel<typeof rnaPreseq1Primers>
+export type RnaPreseq2Primer = InferSelectModel<typeof rnaPreseq2Primers>
+export type RnaRtPrimer = InferSelectModel<typeof rnaRtPrimers>

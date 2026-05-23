@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { HomologyArmPrimer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ homologyArmPrimer: HomologyArmPrimer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')

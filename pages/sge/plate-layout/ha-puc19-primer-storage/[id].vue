@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { HomologyArmPuc19Primer, HomologyArmPrimer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
 const config = useRuntimeConfig()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ homologyArmPuc19Primer: (HomologyArmPuc19Primer & { homologyArmPrimer: HomologyArmPrimer | null }) | null }>()
 const selectedSourcePlateId = ref<string>()
 const showHaPrimerPlateSelector = ref(false)
-const sourcePlateLayout = usePlateLayout()
+const sourcePlateLayout = usePlateLayout<{ homologyArmPrimer: HomologyArmPrimer | null }>()
 const sourcePlateWithWellSpecs = ref()
 const toast = useToast()
 const { user } = useUserSession()

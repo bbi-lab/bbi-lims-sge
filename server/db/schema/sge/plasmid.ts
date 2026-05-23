@@ -1,4 +1,5 @@
 import { pgTable, uuid, varchar, text, doublePrecision, check, timestamp } from 'drizzle-orm/pg-core'
+import { type InferSelectModel } from 'drizzle-orm/table'
 import { snvLibCloningExperiments } from './plasmid-experiment'
 import { targets } from './target'
 import { sql } from 'drizzle-orm/sql'
@@ -54,3 +55,7 @@ export const haPuc19Plasmids = pgTable('ha_puc19_plasmids', {
   preppedBy: uuid('prepped_by').references(() => users.id),
   notes: text('notes'),
 })
+
+export type SgRnaPlasmid = InferSelectModel<typeof sgRnaPlasmids>
+export type SnvLibPlasmid = InferSelectModel<typeof snvLibPlasmids>
+export type HaPuc19Plasmid = InferSelectModel<typeof haPuc19Plasmids>

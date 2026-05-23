@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { RnaPreseq2Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ rnaPreseq2Primer: RnaPreseq2Primer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')

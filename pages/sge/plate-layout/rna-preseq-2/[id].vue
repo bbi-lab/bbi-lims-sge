@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Rna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { RnaPreseq2Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { User } from '~/server/db/schema/user'
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
@@ -10,7 +13,7 @@ const { breakpoints } = useLayout()
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null; rnaPreseq2Primer: RnaPreseq2Primer | null }>()
 const toast = useToast()
 const { user } = useUserSession()
 
@@ -20,7 +23,7 @@ const pcrExperiment = ref()
 const selectionTableName = ref<'rna' | 'rna-rt-storage' | 'rna-preseq-1-plate'>('rna-rt-storage')
 const selectionTableKey = ref(0)
 
-const sourcePlateLayout = usePlateLayout()
+const sourcePlateLayout = usePlateLayout<{ rna: (Rna & { pellet: Pellet | null }) | null }>()
 const sourcePlateWithWellSpecs = ref()
 const sourcePlateDiagramKey = ref<string>()
 const plateDiagramKey = ref<string>()

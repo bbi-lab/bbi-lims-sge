@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { SgRnaOligo } from '~/server/db/schema/sge/oligos'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ sgRnaOligo: SgRnaOligo | null }>()
 const config = useRuntimeConfig()
 const { showLoginModal } = useLayout()
 const toast = useToast()

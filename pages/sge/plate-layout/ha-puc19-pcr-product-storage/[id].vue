@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { HaPuc19PcrProduct } from '~/server/db/schema/sge/oligos'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ haPuc19PcrProduct: HaPuc19PcrProduct | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')

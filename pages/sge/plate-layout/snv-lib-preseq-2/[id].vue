@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { SnvLibPlasmid } from '~/server/db/schema/sge/plasmid'
+import type { IndexPrimer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ snvLibPlasmid: SnvLibPlasmid | null; indexPrimer: IndexPrimer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
