@@ -372,7 +372,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 :where="whereClause"
                 :columnDefs="plateTableColumnDefs"
                 :sortBy="['name']"
-                :selectionMode="transformed ? 'none' : 'single'"
+                :selectionMode="transformed ? undefined : 'single'"
                 :showColumnFilters="true"
                 emptyMessage="">
             </QuickTable>

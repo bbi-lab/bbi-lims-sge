@@ -64,7 +64,7 @@ async function onDidClickSignUp() {
                             :feedback="false"
                         ></Password>
                         <Message :class="{ invisible: !(confirmPassword && !passwordsMatch), 'mb-6': true }" severity="error">Passwords don't match</Message>
-                        <Button label="Register" :class="w-full" :disabled="!passwordsMatch || !name || !email" @click="onDidClickSignUp"></Button>
+                        <Button label="Register" class="w-full" :disabled="!passwordsMatch || !name || !email" @click="onDidClickSignUp"></Button>
                     </div>
                 </div>
             </div>
