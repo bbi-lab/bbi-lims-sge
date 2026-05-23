@@ -28,6 +28,7 @@ import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } fr
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, sgRnaOligoTargets, clonalHas, clonalHaTargets } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from '../db/schema/sge/views'
+import fs from 'node:fs'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
 const { relationsConfigs, ...sgeRelationships } = sgeRelations
@@ -117,17 +118,48 @@ export const schema = {
   ...sgeRelationships,
 }
 
-const ssl = config?.ssl != null ? config.ssl
-    : (process.env.NUXT_DB_SSL != null ? process.env.NUXT_DB_SSL.toLowerCase() == 'true' : false)
+const ssl = config?.dbSsl != null ? (config.dbSsl as boolean)
+    : (process.env.NUXT_DB_SSL != null ? process.env.NUXT_DB_SSL.toLowerCase() === 'true' : false)
+const sslCaFromConfig: string | undefined = (config?.dbSslCa as string | undefined) || process.env.NUXT_DB_SSL_CA
+const sslCaPathFromConfig: string | undefined = (config?.dbSslCaPath as string | undefined) || process.env.NUXT_DB_SSL_CA_PATH
+
+// SSL certificate validation must only be bypassed explicitly in development.
+// Never disable it in production as it allows silent MITM interception of DB traffic.
+let poolSslConfig: false | { ca: string, rejectUnauthorized: true } = false
+
+let caCertificate
+if (ssl && (sslCaFromConfig || sslCaPathFromConfig)) {
+  if (sslCaFromConfig && sslCaPathFromConfig) {
+    throw new Error('Both NUXT_DB_SSL_CA and NUXT_DB_SSL_CA_PATH are set. Please provide only one of these for the DB SSL CA certificate.')
+  } else if (sslCaFromConfig) {
+    caCertificate = sslCaFromConfig.replace(/\\n/g, '\n').trim()
+  } else if (sslCaPathFromConfig) {
+    try {
+      caCertificate = fs.readFileSync(sslCaPathFromConfig, 'utf8').trim()
+    } catch (error) {
+      throw new Error(`Failed to read DB SSL CA certificate at "${sslCaPathFromConfig}": ${(error as Error).message}`)
+    }
+  }
+
+  if (!caCertificate) {
+    throw new Error('Database SSL is enabled, but no CA certificate was provided. Set NUXT_DB_SSL_CA or NUXT_DB_SSL_CA_PATH.')
+  }
+
+  poolSslConfig = {
+    ca: caCertificate,
+    rejectUnauthorized: true
+  }
+}
+
+// const ssl = config?.ssl != null ? config.ssl
+//     : (process.env.NUXT_DB_SSL != null ? process.env.NUXT_DB_SSL.toLowerCase() == 'true' : false)
 const pool = new pg.Pool({
   host: config?.dbHost || process.env.NUXT_DB_HOST || 'localhost',
   port: config?.dbPort || (process.env.NUXT_DB_PORT ? parseInt(process.env.NUXT_DB_PORT) : null) || 5432,
   database: config?.dbDatabaseName || process.env.NUXT_DB_DATABASE_NAME || 'sge_prod',
   user: config?.dbUsername || process.env.NUXT_DB_USERNAME || 'postgres',
   password: config?.dbPassword || process.env.NUXT_DB_PASSWORD || 'postgres',
-  ssl: ssl ? {
-    rejectUnauthorized: false
-  } : false
+  ssl: poolSslConfig,
 })
 
 // Add logger: true to options to get query logging.
