@@ -6,9 +6,13 @@ import { eq, inArray } from 'drizzle-orm'
 import _ from 'lodash'
 import { applySelectParamsToRecords } from '~/server/utils/restApi'
 
+const USERS_EXCLUDED_COLUMNS = { password: false, code: false } as const
+
 export async function getAllUsers(selectParams: SelectParams) {
+  // Always exclude sensitive fields regardless of client-supplied columns
+  const safeColumns = { ...selectParams.columns, ...USERS_EXCLUDED_COLUMNS }
   const allUsers = await db.query.users.findMany({
-    columns: selectParams.columns,
+    columns: safeColumns,
     with: selectParams.with,
   })
   return applySelectParamsToRecords(selectParams, allUsers)
