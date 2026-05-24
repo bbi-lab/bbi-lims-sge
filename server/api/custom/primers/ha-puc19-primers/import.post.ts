@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { eq, inArray } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 import { homologyArmPrimers, homologyArmPuc19Primers } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { insertRecords } from '~/server/services/generic-services'
+import { insertRecords, type RecordValues } from '~/server/services/generic-services'
 import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, wellContentsCount } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
 
@@ -120,7 +120,7 @@ export default defineEventHandler(async (event) => {
         // Validate against Zod schema
         const recordsForValidation = _.map(primerRecords, (record) =>
             _.omit(record, 'plateStorageBoxName', 'wellTubeCoordinates')
-        )
+        ) as Array<RecordValues>
 
         try {
             _.forEach(recordsForValidation, (record) => {

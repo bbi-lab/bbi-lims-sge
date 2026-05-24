@@ -16,20 +16,38 @@ export default defineEventHandler(async (event) => {
         const existingSequencingRunSamples = await db.query.sequencingRunSamples.findMany({
             where: eq(sequencingRunSamples.sequencingRunId, sequencingRunId),
             with: {
-                indexPrimer1: true,
-                indexPrimer2: true,
+                indexPrimer1: {
+                    columns: {
+                        indexSequence: true,
+                        primerType: true,
+                    }
+                },
+                indexPrimer2: {
+                    columns: {
+                        indexSequence: true,
+                        primerType: true,
+                    }
+                },
                 sourceWell: {
+                    columns: {
+                        x: true,
+                        y: true,
+                    },
                     with: {
-                        plate: true,
+                        plate: {
+                            columns: {
+                                name: true,
+                            }
+                        },
                     },
                 },
             },
-        })
+        }) as Array<SequencingRunSample & {indexPrimer1: {indexSequence: string, primerType: string} | null, indexPrimer2: {indexSequence: string, primerType: string} | null, sourceWell: {x: number, y: number, plate: {name: string}} | null}>
         const sourceWellConflicts = _.filter(existingSequencingRunSamples, (x) => {
             return _.some(body, (sample) => sample.sourceWellId == x.sourceWellId)
         })
         if (!_.isEmpty(sourceWellConflicts)) {
-            throw new Error(`Samples from these wells already exist in this sequencing run: ${_.map(sourceWellConflicts, (x) => `${x.sourceWell?.plate?.name}: ${wellCoordinateToChar(x.sourceWell?.y)}${x.sourceWell?.x}`).join(', ')}`)
+            throw new Error(`Samples from these wells already exist in this sequencing run: ${_.map(sourceWellConflicts, (x) => `${x.sourceWell?.plate?.name}: ${x.sourceWell ? wellCoordinateToChar(x.sourceWell.y) : ''}${x.sourceWell?.x || ''}`).join(', ')}`)
         }
 
         const indexPrimerConflicts = _.filter(existingSequencingRunSamples, (x) => {

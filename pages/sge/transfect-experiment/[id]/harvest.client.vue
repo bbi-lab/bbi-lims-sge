@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import moment from 'moment'
 import _ from 'lodash'
-import  {
+import {
     TransfectionExperiment,
     type TranfectionExperimentPellet,
 } from '~/shared/sge/transfection-experiment'
@@ -10,6 +10,7 @@ import { RecordService } from '~/utils/service/RecordService'
 import type { WellContent } from '~/server/db/schema/sge/well'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
 
 const { user } = useUserSession()
 const config = useRuntimeConfig()

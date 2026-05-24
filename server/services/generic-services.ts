@@ -9,7 +9,7 @@ import '../db/schema/sge/relations'
 import { useDrizzle } from '../utils/db'
 import { ENUM_LOOKUPS } from '../db/schema/sge/enum-lookups'
 
-interface RecordValues {[key: string]: string | number | boolean | null | undefined }
+export interface RecordValues {[key: string]: string | number | boolean | null | undefined }
 
 const db = useDrizzle()
 
@@ -91,7 +91,7 @@ export async function updateRecord(table: PgTable<any>, id: string | number, val
     const [updatedRecord] = await (tx ?? db)
         .update(table)
         .set(trimObjectValues([values])[0])
-        .where(eq(table.id, id))
+        .where(eq((table as any).id, id))
         .returning()
 
     return updatedRecord
@@ -101,7 +101,7 @@ export async function updateRecords(table: PgTable<any>, ids: string[] | number[
     const updatedRecords = await (tx ?? db)
         .update(table)
         .set(trimObjectValues([values])[0])
-        .where(inArray(table.id, ids))
+        .where(inArray((table as any).id, ids))
         .returning()
 
     return updatedRecords
@@ -110,7 +110,7 @@ export async function updateRecords(table: PgTable<any>, ids: string[] | number[
 export async function deleteRecord(table: PgTable<any>, id: string | number, tx?: PgTransaction<any, any, any>) {
     const [deletedRecord] = await (tx ?? db)
         .delete(table)
-        .where(eq(table.id, id))
+        .where(eq((table as any).id, id))
         .returning()
 
     return deletedRecord

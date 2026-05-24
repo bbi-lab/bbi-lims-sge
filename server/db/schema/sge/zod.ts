@@ -10,7 +10,7 @@ import { extractionExperiments, extractionLotUsage } from './extraction-experime
 import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { pellets } from './pellet'
-import { createSelectSchema } from 'drizzle-zod'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
@@ -223,8 +223,8 @@ const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {se
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
 const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {orderedOn: nullableDateSchema})
-const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)), orderedOn: nullableDateSchema}).omit({id: true}).partial()
-const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
+const insertHomologyArmPuc19PrimerSchema = createInsertSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)).optional(), orderedOn: nullableDateSchema.optional()}).omit({id: true})
+const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema.partial()
 
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {orderedOn: nullableDateSchema})
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})

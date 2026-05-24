@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { insertRecords } from '~/server/services/generic-services'
+import { insertRecords, type RecordValues } from '~/server/services/generic-services'
 import {
     getWellIdFromPlateNameAndWellLocation,
     plateStorageBoxNamesToIdsMap,
@@ -130,7 +130,7 @@ export default defineEventHandler(async (event) => {
         // Validate against Zod schema (strip relationship/well fields before validation)
         const recordsForValidation = _.map(primerRecords, (record) =>
             _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates')
-        )
+        ) as Array<RecordValues>
 
         try {
             _.forEach(recordsForValidation, (record) => {

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
         return transactionResult
     } catch (e: any) {
-        await parseDeleteError(e, id)
+        await parseDeleteError(e)
 
         throw createError({
             statusCode: 400,
