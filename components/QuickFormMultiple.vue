@@ -51,7 +51,7 @@ const revertToConflictingValue = (key: string) => {
     _.unset(combinedRecord.value, [key, 'valClearedByUser'])
 }
 const revertNestedSelectToConflictingValue = (key: string) => {
-    const nestedSelectRef = inputRefs.value[key]
+    const nestedSelectRef = _.get(inputRefs.value, key)
     nestedSelectRef.parentValue = null
     revertToConflictingValue(key)
 }
@@ -118,7 +118,6 @@ const refreshForm = async function() {
         })
     }
 
-    console.log(records)
     combinedRecord.value = _.reduce(records.value, (acc: any, record) => {
         _.forEach(record, (value, key) => {
             if (key == 'id') return  // ignore ids
@@ -210,6 +209,19 @@ function getLabel(key: string) {
         return _.get(props.fieldDefs, [`${key}.*`, 'label'], formatFieldLabel(key))
     }
 }
+
+function getSubtext(key: string) {
+    const subtext = _.get(props.fieldDefs, [key, 'subtext'])
+    const combinedRecordForSubText = _.mapValues(combinedRecord.value, (value, key) => {
+        return _.get(value, 'val')
+    })
+    if (_.isFunction(subtext)) {
+        return subtext(combinedRecordForSubText, _.cloneDeep(relatedRecords.value))
+    } else {
+        return subtext
+    }
+}
+
 function isArrayInputDisabled(key: string, arrayIndex: number) {
     // disable input if canUpdate is false and any of the records being edited has any id values for the given key
     const hasIds = _.some(records.value, (record) => _.get(record, [key, arrayIndex, 'id']) !== null)
@@ -242,7 +254,7 @@ function hasFixedSize(key: string) {
                             :inputClass="inputClasses[key]"
                             v-model="combinedRecord[key].val"
                             v-model:obj="relatedRecords[key]"
-                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                            v-bind="(_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) as any)"
                             :placeholderValue="placeholders[key]"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
@@ -263,7 +275,7 @@ function hasFixedSize(key: string) {
                             :inputClass="inputClasses[key]"
                             :ref="(el) => _.set(inputRefs, key, el)"
                             v-model="combinedRecord[key].val"
-                            v-bind="_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue'])"
+                            v-bind="(_.omit(_.get(fieldDefs, [key, 'props']), ['defaultValue']) as any)"
                             :placeholderValue="_.has(combinedRecord, [key, 'conflictingValueCount']) && !_.get(combinedRecord, [key, 'valClearedByUser'], false) ? `${_.get(combinedRecord, [key, 'conflictingValueCount'])} values` : ''"
                             :disabled="isReadOnly(key)"
                             @clearedValue="changedToNullCheck(key)"
@@ -482,7 +494,7 @@ function hasFixedSize(key: string) {
                                 <InputArray
                                     v-model="combinedRecord[key].val[arrayIndex]"
                                     v-bind=" _.get(fieldDefs, [`${key}.*`, 'props'])"
-                                    :disabled="isArrayInputDisabled(key, arrayIndex)"
+                                    :disabled="isArrayInputDisabled(key, arrayIndex as number)"
                                     :canDelete="_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(combinedRecord[key].val[arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField'])))"
                                     @did-click-delete="combinedRecord[key].val.splice(arrayIndex, 1)"
                                 />
@@ -491,25 +503,25 @@ function hasFixedSize(key: string) {
                             <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                                 <template v-for="itemKey in Object.keys(arrayItem)" :key="itemKey">
                                     <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                     </span>
                                     <!-- don't display UUID fields, values should not change -->
                                     <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
+                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="combinedRecord[key].val[arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" />
                                     </span>
                                 </template>
-                                <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='string'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" />
-                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex as number)" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='integer'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex)" :showButtons="!isArrayInputDisabled(key, arrayIndex)" :minFractionDigits="0" :maxFractionDigits="0" />
-                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
+                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="combinedRecord[key].val[arrayIndex]"  :disabled="isArrayInputDisabled(key, arrayIndex as number)" :showButtons="!isArrayInputDisabled(key, arrayIndex as number)" :minFractionDigits="0" :maxFractionDigits="0" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="combinedRecord[key].val.splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <!-- Array properties not covered by JSON schema -->

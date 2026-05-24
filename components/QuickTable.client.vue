@@ -41,7 +41,7 @@ const refreshFormattedValues = (ids?: string[]) => {
 }
 const loadTableData = async () => {
     tableSchema.value = props.schemaName ? await RecordService.getSchema(schemasUrl.value, props.schemaName) : null
-    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums)
+    records.value = await RecordService.getRecords(apiBaseUrl.value, props.withClause, props.where, props.expandEnums) || []
 
     refreshFormattedValues()
 
@@ -251,7 +251,7 @@ watch(sortedColumnDefs, (newValue, oldValue) => {
         } else {
             return x.path ?? x.key
         }
-  })
+  }) as GlobalFilterField[]
 
     if (props.showColumnFilters) {
         const filtersEntries = newValue.reduce((acc, colDef) => {
@@ -490,7 +490,7 @@ function filteringComplete() {
         :globalFilterFields="globalFilterFields"
         :sort-field="props.sortField"
         :sort-order="props.sortOrder"
-        :row-style="props.rowStyle"
+        :row-style="_.isFunction(props.rowStyle) ? props.rowStyle : undefined"
         @update:filters="filteringInProgress = true"
         @filter="filteringComplete"
     >
