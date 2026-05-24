@@ -65,9 +65,10 @@ const columnDefs: ColumnDefinitions = {
         header: 'Length (bp)',
         format: (data: any) => {
             if (data.startPosition && data.stopPosition) {
-                return Math.abs(data.stopPosition - data.startPosition) + 1
+                return _.toString(Math.abs(data.stopPosition - data.startPosition) + 1)
+            } else {
+                return ''
             }
-            return null
         },
         path: 'length.displayValue',
         index: 5,

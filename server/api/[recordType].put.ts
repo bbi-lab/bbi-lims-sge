@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { updateRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
+import type { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
 
@@ -18,11 +18,11 @@ export default defineEventHandler(async (event) => {
     try {
         const {ids, values} = await readBody(event)
 
-        const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
+        const updateSchema = _.get(schemas, [_.camelCase(recordType), 'update']) as ZodObject<any>
         const valuesWithEmptyAsNull = _.mapValues(values, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
 
         // excludes fields from schema that are not present in incoming values
-        const schemaPicks = _.mapValues(values, () => true)
+        const schemaPicks = _.mapValues(values, () => true) as Record<string, true>
         const parsedValues = updateSchema.pick(schemaPicks).parse(valuesWithEmptyAsNull)
 
         const updatedRecords = await updateRecords(_.get(db, ['query', _.camelCase(recordType), 'table']), ids, parsedValues)

@@ -5,7 +5,7 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showExperimentValuesForm = ref(false)
-const experiment = ref<{ name: string; pcrType: string; pcr2ExperimentMasterMixVolumes?: any; plate?: any }>({})
+const experiment = ref<{ name: string; pcrType: string; pcr2ExperimentMasterMixVolumes?: any; plate?: any } | undefined>()
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -92,7 +92,7 @@ onMounted(async() => {
 })
 
 const sampleStatsComputed: ComputedRef<Record<string, { sampleName: string; numberOfWells: number; pelletId: string | null }>> = computed(() => {
-    if (experiment.value.pcrType !== 'rna-preseq-2') {
+    if (experiment.value?.pcrType !== 'rna-preseq-2') {
         return {}
     }
     let sampleStats
@@ -119,7 +119,7 @@ const sampleStatsComputed: ComputedRef<Record<string, { sampleName: string; numb
 })
 
 const targetStatsComputed: ComputedRef<Record<string, { targetName: string; numberOfWells: number }>> = computed(() => {
-    if (experiment.value.pcrType !== 'dna-preseq-2') {
+    if (experiment.value?.pcrType !== 'dna-preseq-2') {
         return {}
     }
     let targetStats
@@ -158,8 +158,8 @@ const calcsComputed: ComputedRef<Array<{
     total: string;
 }>> = computed(() => {
     // use targetStats for dna-preseq-2 and sampleStats for rna-preseq-2
-    const stats = experiment.value.pcrType == 'dna-preseq-2' ? targetStatsComputed.value : sampleStatsComputed.value
-    const nameKey = experiment.value.pcrType == 'dna-preseq-2' ? 'targetName' : 'sampleName'
+    const stats = experiment.value?.pcrType == 'dna-preseq-2' ? targetStatsComputed.value : sampleStatsComputed.value
+    const nameKey = experiment.value?.pcrType == 'dna-preseq-2' ? 'targetName' : 'sampleName'
 
     return _.map(stats, (value, key) => {
         const numberOfWells = _.get(value, 'numberOfWells', 0)
@@ -221,16 +221,16 @@ const fieldDefs: FieldDefinitions = {
 const orderedCalcs = computed(() => _.orderBy(calcsComputed.value, ['sampleName'], ['asc']))
 
 const dnaVolume = computed(() => {
-    return experiment.value.pcrType === 'rna-preseq-2' ? 2.5 : experiment.value.pcrType === 'dna-preseq-2' ? 2.0 : null
+    return experiment.value?.pcrType === 'rna-preseq-2' ? 2.5 : experiment.value?.pcrType === 'dna-preseq-2' ? 2.0 : null
 })
 </script>
 <template>
     <h3 class="p-5">
-        {{ experiment.name }}
+        {{ experiment?.name }}
     </h3>
     <hr/>
 
-    <div class="flex flex-row gap-4 m-5 space-x-4">
+    <div v-if="experiment" class="flex flex-row gap-4 m-5 space-x-4">
         <div>
             <span>
                 <span class="text-xl font-bold mr-5">Master Mix Volumes</span>
@@ -255,23 +255,23 @@ const dnaVolume = computed(() => {
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Forward Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.tenUmForwardPrimer }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr2ExperimentMasterMixVolumes?.tenUmForwardPrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Reverse Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.tenUmReversePrimer }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr2ExperimentMasterMixVolumes?.tenUmReversePrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10X Sybr Green</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr2ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
-                        <td class="px-4 py-4">{{ experiment?.pcrType === 'rna-preseq-2' ? 'cDNA Volume' : 'DNA Volume' }}</td>
+                        <td class="px-4 py-4">{{ experiment.pcrType === 'rna-preseq-2' ? 'cDNA Volume' : 'DNA Volume' }}</td>
                         <td class="px-4 py-4">{{ dnaVolume || '-' }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">Total Volume</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr2ExperimentMasterMixVolumes?.total }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr2ExperimentMasterMixVolumes?.total }} μL</td>
                     </tr>
                 </tbody>
             </table>
@@ -285,7 +285,7 @@ const dnaVolume = computed(() => {
                     icon="pi pi-pencil"
                     severity="info"
                     v-tooltip="'Plate Layout'"
-                    @click="router.push(`/sge/plate-layout/${experiment.plate.plateType}/${experiment.plate.id}`)"
+                    @click="router.push(`/sge/plate-layout/${experiment.plate?.plateType}/${experiment.plate?.id}`)"
                 >
                     <template #icon>
                         <PhGridNineFill />
@@ -312,7 +312,7 @@ const dnaVolume = computed(() => {
         <span class="m-5 text-xl font-bold mb-5">Calculated volumes</span>
         <span class="italic">(Note: Values shown here are rounded to one decimal place. Underlying calculations use precise values.)</span>
     </div>
-    <div v-if="calcsComputed.length" class="m-5 overflow-x-auto">
+    <div v-if="experiment && calcsComputed.length" class="m-5 overflow-x-auto">
         <div
             class="calcs-grid mb-5 border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-600 rounded text-sm grid"
             :style="`width: max-content; grid-template-columns: minmax(180px, max-content) repeat(${orderedCalcs.length}, minmax(120px, max-content))`"

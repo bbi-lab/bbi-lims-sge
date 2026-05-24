@@ -19,10 +19,11 @@ export default defineEventHandler<{ body: ChangePassword }>(async (event) => {
             })
         }
 
-        const matchPassword = await argon2.verify(
+        const matchPassword = _.has(dbUser, 'password') ? await argon2.verify(
             dbUser.password,
             values.oldPassword
-        )
+        ) : false
+
         if (!matchPassword) {
             throw createError({
                 statusCode: 400,

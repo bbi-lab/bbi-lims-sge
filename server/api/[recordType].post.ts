@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { insertRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
+import type { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
 import { updateRelatedTargets } from '../utils/sge'
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     const db = useDrizzle()
     try {
         const body = await readBody(event)
-        const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>
+        const insertSchema = _.get(schemas, [_.camelCase(recordType), 'insert']) as ZodObject<any>
         const records = _.map(body, (x) => {
             const record = _.mapValues(x, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
             return insertSchema.parse(record)

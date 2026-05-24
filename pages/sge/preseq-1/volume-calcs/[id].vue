@@ -5,7 +5,7 @@ import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const showExperimentValuesForm = ref(false)
-const experiment = ref<{ name: string; pcrType: string; pcr1ExperimentMasterMixVolumes?: any; plate?: any }>({})
+const experiment = ref<{ name: string; pcrType: string; pcr1ExperimentMasterMixVolumes?: any; plate?: any } | undefined>()
 const sampleStats = ref<Record<string, { sampleName: string; numberOfWells: number; quant: number | null; pelletId: string | null }>>({})
 
 const config = useRuntimeConfig()
@@ -111,7 +111,7 @@ const refreshExperiment = async () => {
                         _.set(result, sample.id, {
                             sampleName: sample.dna?.pellet?.name || sample.rna?.pellet?.name || 'Unknown Sample',
                             numberOfWells: 0,
-                            quant: experiment.value.pcrType == 'dna-preseq-1' ? sample.dna?.concentration : experiment.value.pcrType == 'rna-preseq-1' ? sample.rna?.concentration : null,
+                            quant: experiment.value?.pcrType == 'dna-preseq-1' ? sample.dna?.concentration : experiment.value?.pcrType == 'rna-preseq-1' ? sample.rna?.concentration : null,
                             pelletId: sample.dna?.pellet?.id || sample.rna?.pellet?.id || null,
                         })
                     }
@@ -123,7 +123,7 @@ const refreshExperiment = async () => {
     }
 
     calcs.value = _.map(sampleStats.value, (value, key) => {
-        const quant = experiment.value.pcrType == 'dna-preseq-1' ? _.get(value, 'quant', null) : null
+        const quant = experiment.value?.pcrType == 'dna-preseq-1' ? _.get(value, 'quant', null) : null
         const numberOfWells = _.get(value, 'numberOfWells', 0)
         const totalVol = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.total', 0) * numberOfWells
         const twoXKapaHifiReadyMix = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.twoXKapaHifiReadyMix', 0) * numberOfWells
@@ -131,7 +131,7 @@ const refreshExperiment = async () => {
         const tenUmReversePrimer = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * numberOfWells
         const tenXSybrGreen = _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.tenXSybrGreen', 0) * numberOfWells
         // for RNA preseq-1, cDNA volume is alwasy 2.5uL per well, for DNA preseq-1, calculate DNA volume based on quant and number of wells, if quant is not available, set DNA volume to null
-        const dnaVolume = experiment.value.pcrType == 'rna-preseq-1' ? 2.5 * numberOfWells : quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * numberOfWells * 1/quant : null
+        const dnaVolume = experiment.value?.pcrType == 'rna-preseq-1' ? 2.5 * numberOfWells : quant ? _.get(experiment.value, 'pcr1ExperimentMasterMixVolumes.dnaAmount', 0) * numberOfWells * 1/quant : null
 
         return {
             sampleId: key,
@@ -174,7 +174,7 @@ const fieldDefs: FieldDefinitions = {
     dnaAmount: {
         label: 'DNA Amount (ng)',
         type: 'number',
-        display: experiment.value.pcrType === 'dna-preseq-1',
+        display: experiment.value?.pcrType === 'dna-preseq-1',
     },
     total: {
         label: 'Total Volume (μL)',
@@ -187,11 +187,11 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
 </script>
 <template>
     <h3 class="p-5">
-        {{ experiment.name }}
+        {{ experiment?.name }}
     </h3>
     <hr/>
 
-    <div class="flex flex-row gap-4 m-5 space-x-4">
+    <div v-if="experiment" class="flex flex-row gap-4 m-5 space-x-4">
         <div>
             <span>
                 <span class="text-xl font-bold mr-5">Master Mix Volumes</span>
@@ -212,31 +212,31 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                 <tbody>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">2X Kapa Hifi Ready Mix</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.twoXKapaHifiReadyMix }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.twoXKapaHifiReadyMix }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Forward Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmForwardPrimer }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.tenUmForwardPrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10uM Reverse Primer</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenUmReversePrimer }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.tenUmReversePrimer }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">10X Sybr Green</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
                     </tr>
-                    <tr v-if="experiment?.pcrType === 'dna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
+                    <tr v-if="experiment.pcrType === 'dna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">DNA Amount</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.dnaAmount }} ng</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.dnaAmount }} ng</td>
                     </tr>
-                    <tr v-if="experiment?.pcrType === 'rna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
+                    <tr v-if="experiment.pcrType === 'rna-preseq-1'" class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">cDNA Volume</td>
                         <td class="px-4 py-4">2.5 μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
                         <td class="px-4 py-4">Total Volume</td>
-                        <td class="px-4 py-4">{{ experiment?.pcr1ExperimentMasterMixVolumes?.total }} μL</td>
+                        <td class="px-4 py-4">{{ experiment.pcr1ExperimentMasterMixVolumes?.total }} μL</td>
                     </tr>
                 </tbody>
             </table>
@@ -250,7 +250,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
                     icon="pi pi-pencil"
                     severity="info"
                     v-tooltip="'Plate Layout'"
-                    @click="router.push(`/sge/plate-layout/${experiment.plate.plateType}/${experiment.plate.id}`)"
+                    @click="router.push(`/sge/plate-layout/${experiment.plate?.plateType}/${experiment.plate?.id}`)"
                 >
                     <template #icon>
                         <PhGridNineFill />
@@ -283,7 +283,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
 
     <!-- Calcs Grid -->
     <div class="m-5 text-xl font-bold mb-5">Calculated volumes</div>
-    <div v-if="calcs.length" class="m-5 overflow-x-auto">
+    <div v-if="experiment && calcs.length" class="m-5 overflow-x-auto">
         <div
             class="calcs-grid mb-5 border bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-600 rounded text-sm grid"
             :style="`width: max-content; grid-template-columns: minmax(180px, max-content) repeat(${orderedCalcs.length}, minmax(120px, max-content))`"
@@ -293,7 +293,7 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
             <!-- Quant row -->
             <div class="font-semibold">Quant (ng/μL)</div>
-            <div v-for="calc in orderedCalcs">{{ experiment.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
+            <div v-for="calc in orderedCalcs">{{ experiment?.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
             <!-- Number of wells row -->
             <div  class="font-semibold">Number of Wells</div>
             <div v-for="calc in orderedCalcs">{{ calc.numberOfWells }}</div>

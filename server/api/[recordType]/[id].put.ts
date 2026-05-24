@@ -1,7 +1,7 @@
 import { updateRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
+import type { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
 import { updateRelatedTargets } from '~/server/utils/sge'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'

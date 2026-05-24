@@ -71,7 +71,7 @@ export async function selectRecordFromView(view: PgViewWithSelection, id: string
 
 export async function selectRecord(queryBuilder: RelationalQueryBuilder<any, any>, table: PgTable<any>, id: string | number, withClause: any, columns: any, expandEnums: boolean = false) {
     const record = await queryBuilder.findFirst({
-        where: () => eq(table.id, id),
+        where: () => eq((table as any).id, id),
         with: withClause,
         columns
     })

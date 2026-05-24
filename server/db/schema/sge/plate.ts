@@ -3,7 +3,7 @@ import { createSelectSchema } from 'drizzle-zod'
 import _ from 'lodash'
 import { z, ZodObject } from 'zod'
 import { ENUM_LOOKUPS } from './enum-lookups'
-import { type InferSelectModel } from 'drizzle-orm/table'
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm/table'
 
 export type PlateType = 'pellet-storage' |
  'amp-primer-storage' |
@@ -68,5 +68,5 @@ export const schemas: Record<string, ZodObject<any>> = {
 }
 
 export type Plate = InferSelectModel<typeof plates>
-export type NewPlate = z.infer<typeof insertPlateSchema>
+export type NewPlate = InferInsertModel<typeof plates>
 export type UpdatePlate = z.infer<typeof updatePlateSchema>
