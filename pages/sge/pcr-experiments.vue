@@ -151,28 +151,24 @@ const addFieldDefs = {
                 {
                     variableField: 'transfectTargetId',
                     label: 'Target',
-                    component: 'NestedSelect',
+                    component: 'AutoCompleter',
                     display: (x: any) => {
                         return _.includes(['preseq-1','dna-preseq-1', 'rna-rt'], x.pcrType)
                     },
                     componentProps: {
-                        parentSearchBaseUrl: `${config.public.apiBase}/transfect-experiments`,
-                        parentSearchFields: ['cycle.name'],
-                        parentValueField: 'id',
-                        parentDisplayFields: ['cycle.name'],
-                        parentIftaLabel: 'Experiment',
-                        parentSearchWithClause: {
-                            cycle: {columns: {name: true}},
-                        },
-
                         searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
-                        searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name'],
+                        searchFields: ['target.name', 'target.region.gene.symbol', 'target.region.name', 'experiment.cycle.name'],
                         valueField: 'id',
-                        displayFormat: (x:any) => { return x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target.region.name}`},
-                        parentKeyField: 'experimentId',
+                        displayFormat: (x: any) => {
+                            const targetName = x.target?.name ?? `${x.target?.region?.gene?.symbol}:${x.target?.region?.name}`
+                            const cycleName = x.experiment?.cycle?.name
+                            return cycleName ? `${targetName} (${cycleName})` : targetName
+                        },
                         searchWithClause: {
                             target: {columns: {name: true}, with: {region: {columns: {name: true}, with: {gene: {columns: {symbol: true}}}}}},
+                            experiment: {columns: {}, with: {cycle: {columns: {name: true}}}},
                         },
+                        inputClass: 'w-64',
                     }
                 },
             ],
