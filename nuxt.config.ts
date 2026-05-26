@@ -67,12 +67,15 @@ export default defineNuxtConfig({
         dbUsername: 'postgres',
         dbPassword: 'postgres',
         dbSsl: false,
+        dbSslCa: '',
+        dbSslCaPath: '',
         authJwtAccessTokenExpiresIn: '5m',
         authJwtRefreshTokenExpiresIn: '60m',
         authJwtAccessTokenSecret: 'access-token-secret-base64',
         authJwtRefreshTokenSecret: 'refresh-token-secret-base64',
         public: {
             apiBase: '/api',
+            appUrl: 'http://localhost:3000',
         }
     },
 
