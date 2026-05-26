@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Dna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { preseq2Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ dna: (Dna & { pellet: Pellet | null }) | null; preseq2Primer: preseq2Primer | null }>()
 const toast = useToast()
+const router = useRouter()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -92,8 +96,12 @@ const loadPlate = async () => {
     pcrExperiment.value = _.first(await RecordService.getRecords(
         `${config.public.apiBase}/pcr-experiments`,
         {
-            transfectTarget: {
-                columns: {id: true},
+            pcrExperimentTargets: {
+                with: {
+                    transfectTarget: {
+                        columns: {id: true},
+                    }
+                }
             }
         },
         {
@@ -163,6 +171,12 @@ const displayWithClause = computed(() => {
 const columnDefs = computed(() => {
     if (selectionTableName.value === 'view-plates-with-well-counts') {
         return {
+            name: {
+                type: 'element',
+                element: (data: any) => {
+                    return `<a href="/sge/plate-layout/dna-preseq-1/${data.id}" class="text-blue-500 hover:underline">${data.name}</a>`
+                },
+            },
             plateType: { display: false },
             plateTypeLabel: { header: 'Type' },
             cycleName: { header: 'Cycle' },
@@ -323,12 +337,19 @@ const assignPrimers = async () => {
                 :rowActions="rowActions"
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                selectionMode="single"
                 :sortBy="selectionTableName === 'dna' ? ['wellContents.displayValue'] : undefined"
                 :sortByOrder="selectionTableName === 'dna' ? ['desc'] : undefined"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
                 <template #header-buttons>
                     <SelectButton v-model="selectionTableName" :options="selectionTableOptions" optionLabel="label" optionValue="value" dataKey="label" />
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-2/volume-calcs/${pcrExperiment.id}`})" />
                 </template>
             </QuickTable>
         </SplitterPanel>

@@ -342,6 +342,9 @@ const ampProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {target: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -355,6 +358,9 @@ const ampProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {target: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -401,6 +407,9 @@ const linProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {target: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -414,6 +423,9 @@ const linProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {target: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -691,6 +703,8 @@ const goldenGateProductFieldDefinitions: FieldDefinitions = {
                 :where="whereClauses"
                 :columnDefs="columnDefs"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
+                sortField="startedOn"
+                :sortOrder="-1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

@@ -3,8 +3,6 @@
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
-import { RecordService } from '~/utils/service/RecordService'
-import { clonalHaTargets } from '~/server/db/schema/sge/oligos'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()

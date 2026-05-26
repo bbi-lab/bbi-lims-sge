@@ -69,8 +69,6 @@ export function applySelectParamsToRecords<T>(selectParams: SelectParams, record
 export function parsePutPostError(error: any) {
     let data
 
-    console.log(JSON.stringify(error, null, 2))
-
     if (error?.cause?.routine == '_bt_check_unique' && error.cause.detail) {
         const sqlModifiersRegex = /^(.*)lower\(trim\(both from ([^\s]*)\)\)(.*)$/i
         const errorCauseDetail = error.cause.detail.replace(sqlModifiersRegex, "$1$2$3")
@@ -79,18 +77,18 @@ export function parsePutPostError(error: any) {
         const match = errorCauseDetail.match(regex)
 
         if (match) {
-            const fieldName = match[1]
-            data = fieldName ? [{
+            const fieldNameStr = match[1]
+            const fieldNames = _.split(fieldNameStr, ',').map(name => _.trim(name))
+            data = !_.isEmpty(fieldNames) ? _.map(fieldNames, (fieldName) => ({
                 code: 'duplicate_key_value',
                 path: [fieldName],
                 message: 'Must be unique',
                 description: `${match[2]} already exists`
-            }] : undefined
+            })) : undefined
         }
     } else if (error?.cause?.constraint === 'external_sample_index_check') {
         error.message = 'Either custom index sequences or internal index primers must be provided, but not both.'
     }
-
 
     if (!data) {
         try {

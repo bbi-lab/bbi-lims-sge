@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { RnaPreseq1Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ rnaPreseq1Primer: RnaPreseq1Primer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -241,6 +242,9 @@ const frozenRecordIds = computed(() => {
                 :showColumnFilters="true"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 emptyMessage=""
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>

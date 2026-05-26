@@ -3,7 +3,7 @@ import { pcrExperiments } from "../db/schema/sge/pcr-experiment"
 import {and, eq, inArray} from "drizzle-orm"
 import { deleteRecord } from "../services/generic-services"
 import { wellContents, wellContentSources, wells } from "../db/schema/sge/well"
-import { plates, PlateType } from "../db/schema/sge/plate"
+import { plates, type PlateType } from "../db/schema/sge/plate"
 import type { PgTable, PgTransaction } from "drizzle-orm/pg-core"
 import { sgRnaCloningExperiments } from "../db/schema/sge/plasmid-experiment"
 import { targets } from "../db/schema/sge/target"
@@ -24,7 +24,7 @@ export const updateRelatedTargets = async (
         const existing = await tx.select().from(table).where(eq(parentIdCol, id))
 
         const missingIds = _.difference(_.map(existing, targetIdKey), targetIds)
-        await tx.delete(table).where(inArray(targetIdCol, missingIds))
+        await tx.delete(table).where(and(eq(parentIdCol, id), inArray(targetIdCol, missingIds)))
 
         const idsToInsert = _.difference(targetIds, _.map(existing, targetIdKey))
         if (!_.isEmpty(idsToInsert)) {

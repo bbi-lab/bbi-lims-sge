@@ -23,11 +23,8 @@ const readonlyValues = ref<Record<string, any>>({})
 const currentHaCloningExperimentId = ref<string>()
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -284,6 +281,9 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {targets: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -297,6 +297,9 @@ const haPcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {targets: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -342,6 +345,9 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {homologyArmPrimer: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 2,
     },
@@ -355,6 +361,9 @@ const haPuc19PcrProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
             searchWithClause: {homologyArmPrimer: true},
+            inputClass: (data: any) => {
+                return data?.record?.archived ? 'line-through' : ''
+            },
         },
         index: 3,
     },
@@ -496,6 +505,8 @@ const haPuc19PlasmidFieldDefinitions: FieldDefinitions = {
                 :withClause="withClause"
                 :where="whereClauses"
                 :columnDefs="columnDefs"
+                sortField="startedOn"
+                :sortOrder="-1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

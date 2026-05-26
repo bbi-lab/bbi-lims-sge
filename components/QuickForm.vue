@@ -56,7 +56,7 @@ const refreshForm = async function() {
         formSchema.value = await RecordService.getSchema(schemasUrl.value, props.schemaName)
         record.value = _.mapValues(formSchema.value?.properties, (x) => null)
         // apply default values from fieldDefs
-        const defaultValues = _.mapValues(_.pickBy(props.fieldDefs, (x) => _.has(x, 'props.defaultValue')), (x) => x.props?.defaultValue)
+        const defaultValues = _.mapValues(_.pickBy(props.fieldDefs, (x) => _.has(x, 'props.defaultValue')), (x) => _.get(x, 'props.defaultValue'))
         record.value = _.assign(record.value, defaultValues)
     }
     if (formSchema.value?.properties) {
@@ -271,7 +271,7 @@ function getBoundProps(key: string) {
                         :input-id="key"
                         v-model="record[key]"
                         v-model:obj="relatedRecords[key]"
-                        v-bind="getBoundProps(key)"
+                        v-bind="(getBoundProps(key) as any)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -280,7 +280,7 @@ function getBoundProps(key: string) {
                     <NestedSelect
                         :input-id="key"
                         v-model="record[key]"
-                        v-bind="getBoundProps(key)"
+                        v-bind="(getBoundProps(key) as any)"
                         :disabled="isReadOnly(key)"
                         v-on="_.mapValues(_.pickBy(_.get(fieldDefs, [key, 'events'], {}), _.isFunction), (f) => f(record, recordOld))"
                     />
@@ -396,7 +396,7 @@ function getBoundProps(key: string) {
                                 <InputArray
                                     v-model="record[key][arrayIndex]"
                                     v-bind="getBoundProps(`${key}.*`)"
-                                    :disabled="isArrayInputDisabled(key, arrayIndex)"
+                                    :disabled="isArrayInputDisabled(key, arrayIndex as number)"
                                     :canDelete="!hasFixedSize(key) && (_.get(fieldDefs, [`${key}.*`, 'canDelete']) || _.isEmpty(_.get(record[key][arrayIndex], _.get(fieldDefs, [`${key}.*`, 'props', 'variableField']))))"
                                     @did-click-delete="record[key].splice(arrayIndex, 1)"
                                 />
@@ -405,25 +405,25 @@ function getBoundProps(key: string) {
                             <div class="mb-5" v-else-if="val.items.properties && arrayItem && _.isEqual(Object.keys(arrayItem).sort(), Object.keys(val.items.properties).sort())">
                                 <template v-for="itemKey in Object.keys(arrayItem)" :key="itemKey" >
                                     <span class="mr-5" v-if="_.get(val.items.properties, [itemKey, 'oneOf'])">
-                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
+                                        <Select :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" :options="_.get(val.items.properties, [itemKey, 'oneOf'])" optionLabel="title" optionValue="const" />
                                     </span>
                                     <!-- don't display UUID fields, values should not change -->
                                     <span class="mr-5" v-else-if="_.get(val.items.properties, [itemKey, 'format']) != 'uuid'">
-                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
+                                        <InputText :id="`${itemKey}_${arrayIndex}`" v-model="record[key][arrayIndex][itemKey]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" />
                                     </span>
                                 </template>
-                                <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                                <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='string'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex)" />
-                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                                    <InputText :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <div class="mt-2" v-else-if="val.items.type=='integer'">
                                 <div class="flex items-start quickform-input-wrapper">
-                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex)" :showButtons="!isArrayInputDisabled(key, arrayIndex)" :minFractionDigits="0" :maxFractionDigits="0" />
-                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
+                                    <InputNumber :id="`${key}_${arrayIndex}`" class="w-80" v-model="record[key][arrayIndex]" :disabled="isArrayInputDisabled(key, arrayIndex as number)" :showButtons="!isArrayInputDisabled(key, arrayIndex as number)" :minFractionDigits="0" :maxFractionDigits="0" />
+                                    <Button v-if="!hasFixedSize(key) && !isArrayInputDisabled(key, arrayIndex as number)" class="ml-2" icon="pi pi-times" severity="secondary" outlined @click="record[key].splice(arrayIndex, 1)" />
                                 </div>
                             </div>
                             <!-- Array properties not covered by JSON schema -->

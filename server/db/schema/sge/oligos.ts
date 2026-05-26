@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm/sql'
 import { pgTable, uuid, varchar, text, check, integer, timestamp, doublePrecision, boolean, uniqueIndex} from 'drizzle-orm/pg-core'
+import { type InferSelectModel } from 'drizzle-orm/table'
 import { targets } from './target'
 import { haCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, linearizationPrimers } from './primer'
@@ -148,3 +149,12 @@ export const clonalHaTargets = pgTable('clonal_ha_targets', {
 }, (t) => [
     uniqueIndex('unique_clonal_ha_target').on(t.clonalHaId, t.targetId),
 ])
+
+export type SgRnaOligo = InferSelectModel<typeof sgRnaOligos>
+export type HaPcrProduct = InferSelectModel<typeof haPcrProducts>
+export type HaPuc19PcrProduct = InferSelectModel<typeof haPuc19PcrProducts>
+export type HaPuc19GibsonProduct = InferSelectModel<typeof haPuc19GibsonProducts>
+export type SnvLibAmpProduct = InferSelectModel<typeof snvLibAmpProducts>
+export type SnvLibLinProduct = InferSelectModel<typeof snvLibLinProducts>
+export type SnvLibGibsonProduct = InferSelectModel<typeof snvLibGibsonProducts>
+export type ClonalHa = InferSelectModel<typeof clonalHas>

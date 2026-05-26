@@ -1,4 +1,4 @@
-import { plates, NewPlate} from '~/server/db/schema/sge/plate'
+import { plates, type NewPlate} from '~/server/db/schema/sge/plate'
 import { wells } from '~/server/db/schema/sge/well'
 import _ from 'lodash'
 import type { PgTransaction } from 'drizzle-orm/pg-core'

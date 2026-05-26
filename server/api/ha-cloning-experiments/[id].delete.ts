@@ -1,9 +1,7 @@
-import { deleteRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { parseDeleteError } from '~/server/utils/restApi'
 import { haCloningExperiments, haCloningExperimentTargets } from '~/server/db/schema/sge/plasmid-experiment'
 import { eq } from 'drizzle-orm/sql'
-import { tsv } from 'd3'
 import { haPcrProducts } from '~/server/db/schema/sge/oligos'
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +24,7 @@ export default defineEventHandler(async (event) => {
         return result
 
     } catch (e: any) {
-        await parseDeleteError(e, id)
+        await parseDeleteError(e)
 
         throw createError({
             statusCode: 400,

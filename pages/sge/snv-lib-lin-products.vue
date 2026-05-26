@@ -14,11 +14,8 @@ const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -40,8 +37,14 @@ const columnDefs: ColumnDefinitions = {
     },
     linPrimers: {
         header: 'LIN Primers',
-        format: (data: any) => {
-            return _.compact([data.linPrimerForward?.name, data.linPrimerReverse?.name ]).join(', ')
+        type: 'element',
+        element: (data: any) => {
+            return _.compact(_.map([data.linPrimerForward, data.linPrimerReverse], (primer: any) => {
+                return primer?.id ? `<span class="${primer?.archived ? 'line-through' : ''}">${primer.name}</span>` : null
+            })).join(', ')
+        },
+        exportValue: (data: any) => {
+            return _.compact([data.linPrimerForward?.name, data.linPrimerReverse?.name]).join(', ')
         },
         path: 'linPrimers.displayValue',
         index: 2,
@@ -101,6 +104,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 2,
@@ -118,6 +124,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 3,
@@ -169,10 +178,10 @@ const displayWithClause = {
         columns: {id: true, name: true},
     },
     linPrimerForward: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     linPrimerReverse: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     haPuc19Plasmid: {
         columns: {id: true, name: true},
@@ -193,6 +202,8 @@ const displayWithClause = {
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                sortField="name"
+                :sortOrder="1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

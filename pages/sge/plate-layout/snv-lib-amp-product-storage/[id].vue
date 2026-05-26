@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { SnvLibAmpProduct } from '~/server/db/schema/sge/oligos'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ snvLibAmpProduct: SnvLibAmpProduct | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')

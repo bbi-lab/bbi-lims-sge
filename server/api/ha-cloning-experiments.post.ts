@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
 import { parsePutPostError } from '../utils/restApi'
 import { haCloningExperiments, haCloningExperimentTargets } from '../db/schema/sge/plasmid-experiment'
 
@@ -13,7 +12,7 @@ export default defineEventHandler(async (event) => {
                 statusMessage: `Invalid request body: ${JSON.stringify(body)}. Expected a single object.`
             })
         }
-        const insertSchema = schemas.haCloningExperiments.insert as ZodObject<any>
+        const insertSchema = schemas.haCloningExperiments.insert
         const record = _.mapValues(body[0], (value) => _.isString(value) && _.isEmpty(value) ? null : value)
         const parsedRecord = insertSchema.parse(record)
 

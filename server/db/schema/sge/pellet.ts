@@ -14,7 +14,6 @@ export const pellets = pgTable('pellets', {
   harvestedBy: uuid('harvested_by').references(() => users.id),
   isCurrent: boolean('is_current'),
   isBackup: boolean('is_backup'),
-  quant: doublePrecision('quant'),
   d3Confluency: doublePrecision('d3_confluency'),
   pctPassaged: doublePrecision('pct_passaged'),
   pctHarvested: doublePrecision('pct_harvested'),

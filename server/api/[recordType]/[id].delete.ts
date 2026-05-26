@@ -5,7 +5,7 @@ import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
 import { clonalHaTargets, sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 import { deleteEmptyPlate } from '~/server/utils/sge'
-import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 
 export default defineEventHandler(async (event) => {
     const { recordType, id } = event.context.params as {recordType: string, id: string}
@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(sgRnaOligoTargets).where(eq(sgRnaOligoTargets.sgRnaOligoId, id))
             } else if (_.camelCase(recordType) == 'pcrExperiments') {
                 await tx.delete(pcrExperimentTargets).where(eq(pcrExperimentTargets.pcrExperimentId, id))
+                await tx.delete(pcr1ExperimentMasterMixVolumes).where(eq(pcr1ExperimentMasterMixVolumes.pcrExperimentId, id))
             } else if (_.camelCase(recordType) == 'clonalHas') {
                 await tx.delete(clonalHaTargets).where(eq(clonalHaTargets.clonalHaId, id))
             }

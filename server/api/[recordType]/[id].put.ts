@@ -1,7 +1,7 @@
 import { updateRecord } from '~/server/services/generic-services'
 import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
+import type { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
 import { updateRelatedTargets } from '~/server/utils/sge'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
     try {
         const body = await readBody(event)
-        const updateSchema = schemas[_.camelCase(recordType)].update as ZodObject<any>
+        const updateSchema = _.get(schemas, [_.camelCase(recordType), 'update']) as ZodObject<any>
         const values = _.mapValues(body, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
         const parsedValues = updateSchema.parse(values)
 

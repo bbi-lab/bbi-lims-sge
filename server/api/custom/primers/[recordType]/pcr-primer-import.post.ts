@@ -2,10 +2,10 @@ import _ from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { rnaPreseq2Primers, rnaPreseq1Primers, preseq2Primers, preseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets, preseq1PrimerTargets, homologyArmPrimers, homologyArmPrimerTargets } from '~/server/db/schema/sge/primer'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { insertRecords } from '~/server/services/generic-services'
+import { insertRecords, type RecordValues } from '~/server/services/generic-services'
 import { getWellIdFromPlateNameAndWellLocation, plateStorageBoxNamesToIdsMap, targetNamesToIdsMap, updateRelatedTargets, wellContentsCount } from '~/server/utils/sge'
 import { wellContents } from '~/server/db/schema/sge/well'
-import { PgTable } from 'drizzle-orm/pg-core'
+import type { PgTable } from 'drizzle-orm/pg-core'
 import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 
 // Configuration for processing different primer record types
@@ -181,7 +181,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // Validate against Zod schema (remove targetNames field for schema validation)
-        const recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates'))
+        const recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates')) as Array<RecordValues>
 
         try {
             _.forEach(recordsForValidation, (record) => {

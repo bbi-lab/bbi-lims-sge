@@ -11,7 +11,7 @@ const rowActions = {}
 const route = useRoute()
 
 onMounted(async() => {
-    const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id, {cycle: {columns: {name: true}}})
+    const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id as string, {cycle: {columns: {name: true}}})
     tableTitle.value = `${experiment.cycle.name}: Reagents`
 })
 

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import type { Dna, Rna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { IndexPrimer } from '~/server/db/schema/sge/primer'
 import { RecordService } from '~/utils/service/RecordService'
 import _ from 'lodash'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
@@ -12,7 +15,7 @@ const showExternalSamples = ref(false)
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const smallerThanLg = breakpoints.smaller('lg')
 const selectedPlateId = ref()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ dna: (Dna & { pellet: Pellet | null }) | null; rna: (Rna & { pellet: Pellet | null }) | null; indexPrimer: IndexPrimer | null }>()
 const plateWithWellSpecs = ref()
 const plateDiagramKey = ref(0)
 const toast = useToast()

@@ -1,14 +1,14 @@
 import _ from 'lodash'
 import { insertRecords } from '~/server/services/generic-services'
 import { schemas } from '~/server/db/schema/sge/zod'
-import { ZodObject } from 'zod'
+import type { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
 import { updateRelatedTargets } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
 import { clonalHaTargets, sgRnaOligoTargets } from '../db/schema/sge/oligos'
-import { pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
 import { sgRnaPlasmidTargets } from '../db/schema/sge/plasmid'
 
 export default defineEventHandler(async (event) => {
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     const db = useDrizzle()
     try {
         const body = await readBody(event)
-        const insertSchema = schemas[_.camelCase(recordType)].insert as ZodObject<any>
+        const insertSchema = _.get(schemas, [_.camelCase(recordType), 'insert']) as ZodObject<any>
         const records = _.map(body, (x) => {
             const record = _.mapValues(x, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
             return insertSchema.parse(record)
@@ -57,6 +57,13 @@ export default defineEventHandler(async (event) => {
                     _.set(insertedRecords, '0.targets', targets)
                 } else if (_.camelCase(recordType) == 'pcrExperiments' && _.isArray(body[0].pcrExperimentTargets)) {
                     const transfectTargetIds = _.compact(_.map(body[0].pcrExperimentTargets, 'transfectTargetId'))
+                    // if included in request, transfectTargetIds should not be empty, so throw error if no transfect target ids provided
+                    if (_.isEmpty(transfectTargetIds)) {
+                        throw createError({
+                            statusCode: 400,
+                            statusMessage: `Target(s) required`,
+                        })
+                    }
                     const targets = await updateRelatedTargets(pcrExperimentTargets, 'pcrExperimentId', 'transfectTargetId', insertedRecords[0].id, transfectTargetIds, tx)
                     _.set(insertedRecords, '0.pcrExperimentTargets', targets)
                 } else if (_.camelCase(recordType) == 'preseq1Primers' && _.isArray(body[0].preseq1PrimerTargets)) {
@@ -85,6 +92,25 @@ export default defineEventHandler(async (event) => {
                     _.set(insertedRecords, '0.clonalHaTargets', targets)
                 }
             }
+
+            // for each pcr1 experiment inserted, also insert default master mix values with reference to new pcr experiment id
+            if (_.camelCase(recordType) == 'pcrExperiments' && insertedRecords.length > 0) {
+                const pcr1Experiments = _.filter(insertedRecords, (record) => ['rna-preseq-1', 'dna-preseq-1'].includes(record.pcrType))
+                for (const experiment of pcr1Experiments) {
+                    const masterMixValues = {
+                        pcrExperimentId: experiment.id,
+                    }
+                    await tx.insert(pcr1ExperimentMasterMixVolumes).values(masterMixValues)
+                }
+                const pcr2Experiments = _.filter(insertedRecords, (record) => ['rna-preseq-2', 'dna-preseq-2'].includes(record.pcrType))
+                for (const experiment of pcr2Experiments) {
+                    const masterMixValues = {
+                        pcrExperimentId: experiment.id,
+                    }
+                    await tx.insert(pcr2ExperimentMasterMixVolumes).values(masterMixValues)
+                }
+            }
+
             return insertedRecords
         })
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
-import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import { v4 as uuidv4 } from 'uuid'
 
 const config = useRuntimeConfig()
@@ -13,11 +12,8 @@ const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -131,6 +127,12 @@ const fieldDefs: FieldDefinitions = {
                 :columnDefs="columnDefs"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
+                sortField="name"
+                :sortOrder="1"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

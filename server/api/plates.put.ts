@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
         const valuesWithEmptyAsNull = _.mapValues(values, (value) => _.isString(value) && _.isEmpty(value) ? null : value)
 
         // excludes fields from schema that are not present in incoming values
-        const schemaPicks = _.mapValues(values, () => true)
+        const schemaPicks = _.mapValues(values, () => true) as Record<string, true>
 
         const parsedValues = updateSchema.pick(schemaPicks).parse(valuesWithEmptyAsNull)
 

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { preseq2Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ preseq2Primer: preseq2Primer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -232,6 +233,9 @@ const frozenRecordIds = computed(() => {
                 :sortBy="['wellContents.displayValue']"
                 :sortByOrder="['desc']"
                 emptyMessage=""
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>

@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { Dna } from '~/server/db/schema/sge/nucleic-acid'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
+import type { preseq1Primer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 import { RecordService } from '~/utils/service/RecordService'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ dna: (Dna & { pellet: Pellet | null }) | null; preseq1Primer: preseq1Primer | null }>()
 const toast = useToast()
+const router = useRouter()
 
 const smallerThanLg = breakpoints.smaller('lg')
 const plateWithWellSpecs = ref()
@@ -295,11 +299,21 @@ const frozenRecordIds = computed(() => {
                 :columnDefs="columnDefs"
                 :rowActions="rowActions"
                 :showColumnFilters="true"
+                selectionMode="single"
                 :rowsPerPageOptions="[10, 25, 50, 100]"
                 :sortBy="['wellContents.displayValue']"
                 :sortByOrder="['desc']"
                 emptyMessage=""
                 v-model:frozenRecordIds="frozenRecordIds">
+            >
+                <template #header-buttons>
+                    <Button
+                        class="p-button-info"
+                        icon="pi pi-calculator"
+                        label="Volume Calcs"
+                        v-tooltip="{value: 'Volume calcs', showDelay: 500}"
+                        @click="router.push({path: `/sge/preseq-1/volume-calcs/${pcrExperiment.id}`})" />
+                </template>
             </QuickTable>
         </SplitterPanel>
         <SplitterPanel class="flex justify-center overflow-scroll mt-10" :size="40" :minSize="25">

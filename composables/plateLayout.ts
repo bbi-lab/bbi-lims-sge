@@ -2,33 +2,20 @@ import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
 import { RecordService } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
-import type { Dna, Rna } from "~/server/db/schema/sge/nucleic-acid"
+import type { Dna } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
 import type { User } from "~/server/db/schema/user"
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
-import type { AmplificationPrimer, HomologyArmPrimer, LinearizationPrimer, preseq1Primer, preseq2Primer } from "~/server/db/schema/sge/primer"
 import type { Plate } from "~/server/db/schema/sge/plate"
 
-type WellWithContents = Well & {
-    wellContents: WellContent & {
-        wellable: {
-            amplificationPrimer: AmplificationPrimer
-            linearizationPrimer: LinearizationPrimer
-            homologyArmPrimer: HomologyArmPrimer
-            preseq1Primer: preseq1Primer
-            preseq2Primer: preseq2Primer
-            dna: Dna & {
-                pellet: Pellet
-            },
-            rna: Rna & {
-                pellet: Pellet
-            },
-        }
-    }[]
+type WellWithContents<TWellable = Record<string, any>> = Well & {
+    wellContents: (WellContent & {
+        wellable: TWellable
+    })[]
 }
 
-type PlateWithWellContents = Plate & {
-    wells: WellWithContents[]
+type PlateWithWellContents<TWellable = Record<string, any>> = Plate & {
+    wells: WellWithContents<TWellable>[]
 }
 
 type WellSpecs = {
@@ -41,9 +28,7 @@ type WellSpecs = {
         color: string
         tooltip: string
         symbol: string
-        data: Well & {
-            wellContents: WellContent[]
-        }
+        data: WellWithContents
     }
 }
 
@@ -65,8 +50,8 @@ interface ExportPlateLayoutConfig {
     sortBy?: Function | string | string[],
 }
 
-export const usePlateLayout = () => {
-    const plateWithWellContents = ref<PlateWithWellContents>()
+export const usePlateLayout = <TWellable = Record<string, any>>() => {
+    const plateWithWellContents = ref<PlateWithWellContents<TWellable>>()
     const wellContentsDisplayConfig = ref<wellContentDisplayConfig>()
     const wellSpecs = ref<WellSpecs>({})
     const selectedWells = ref<WellSpecs[string][]>([])
@@ -363,13 +348,13 @@ export const usePlateLayout = () => {
                     },
                 },
             }
-        }) as PlateWithWellContents
+        }) as PlateWithWellContents<{ dna: Dna & { pellet: Pellet } }>
 
         type DnaWithPellet = Dna & {pellet: Pellet}
         type DnaWithPelletAndWellIds = DnaWithPellet & {wellIds: String[]}
 
-        const pooledDna = _.sortBy(_.values(dnaPreSeq1Plate.wells.reduce((acc, well: WellWithContents) => {
-            const dna = _.get(well, ['wellContents', 0, 'wellable', 'dna'])
+        const pooledDna = _.sortBy(_.values(dnaPreSeq1Plate.wells.reduce((acc, well: WellWithContents<{ dna: Dna & { pellet: Pellet } }>) => {
+            const dna = _.get(_.find(well.wellContents, (wellContent) => wellContent.wellable.dna), 'wellable.dna') as DnaWithPellet
             if (dna?.id) {
                 const existingWellIds = _.get(acc, [dna.id, 'wellIds'], [])
                 _.set(acc, dna.id, {...dna, wellIds: [...existingWellIds, well.id]})

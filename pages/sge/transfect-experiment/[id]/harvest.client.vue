@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import moment from 'moment'
 import _ from 'lodash'
-import  {
+import {
     TransfectionExperiment,
     type TranfectionExperimentPellet,
 } from '~/shared/sge/transfection-experiment'
@@ -10,6 +10,7 @@ import { RecordService } from '~/utils/service/RecordService'
 import type { WellContent } from '~/server/db/schema/sge/well'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
+import type { Pellet } from '~/server/db/schema/sge/pellet'
 
 const { user } = useUserSession()
 const config = useRuntimeConfig()
@@ -25,7 +26,7 @@ const harvestDateTime = ref()
 const selectedPlate = ref()
 const pelletPlateKey = ref(0) // used to force re-render of PlateDiagram
 const plateWithWellSpecs = ref()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ pellet: Pellet | null }>()
 const smallerThanLg = breakpoints.smaller('lg')
 const crudTable = useCrudTable()
 const crudTableKey = ref(0)

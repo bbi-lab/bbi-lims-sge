@@ -2,7 +2,7 @@ import { wellContentSources, wellContents} from '~/server/db/schema/sge/well'
 
 import { db } from '~/server/utils/db'
 import _ from 'lodash'
-import { WellContentWithSource } from '../api/well-contents.post'
+import type { WellContentWithSource } from '../api/well-contents.post'
 import { inArray } from 'drizzle-orm'
 
 export async function insertWellContentsAndSources(records: WellContentWithSource[]) {
@@ -10,7 +10,7 @@ export async function insertWellContentsAndSources(records: WellContentWithSourc
     const newWellContentSources = _.flatMap(records, (x) => {
         return _.map(x.sourceWellIds || [], (sourceWellId) => {
             return {
-                wellContentId: x.id,
+                wellContentId: x.id!,
                 sourceWellId: sourceWellId,
                 createdBy: x.createdBy || null,
             }

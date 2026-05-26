@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import _ from 'lodash'
+import type { AmplificationPrimer } from '~/server/db/schema/sge/primer'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ amplificationPrimer: AmplificationPrimer | null }>()
 const toast = useToast()
 
 const smallerThanLg = breakpoints.smaller('lg')
@@ -232,6 +233,9 @@ const frozenRecordIds = computed(() => {
                 :sortBy="['wellContents']"
                 :sortByOrder="['desc']"
                 emptyMessage=""
+                :rowStyle="(data: any) => {
+                    return data?.archived ? {textDecoration: 'line-through'} : {}
+                }"
                 v-model:frozenRecordIds="frozenRecordIds">
             </QuickTable>
         </SplitterPanel>

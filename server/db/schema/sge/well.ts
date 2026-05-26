@@ -56,8 +56,10 @@ export const wellables = pgTable('wellables', {
       'homology_arm_puc19_primers',
       'preseq_1_primers',
       'preseq_2_primers',
+      'rna_rt_primers',
+      'rna_preseq_1_primers',
+      'rna_preseq_2_primers',
       'index_primers',
-      'nucleic_acids',
       'dna',
       'rna',
       'pellets',
@@ -98,7 +100,7 @@ export const schemas: Record<string, ZodObject<any>> = {
     insertWellSchema
 }
 
-const insertWellContentSchema =  createSelectSchema(wellContents).omit({id: true}).partial()
+const insertWellContentSchema =  createSelectSchema(wellContents).omit({id: true})
 
 export type Well = InferSelectModel<typeof wells>
 export type NewWell = z.infer<typeof insertWellSchema>

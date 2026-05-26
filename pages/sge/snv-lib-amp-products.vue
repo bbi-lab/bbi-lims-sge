@@ -14,11 +14,8 @@ const whereClauses = ref()
 const readonlyValues = ref<Record<string, any>>({})
 
 watch(() => route.query, async (newValue, oldValue) => {
-    const queryParamFilters = _.map(newValue, (val, key) => {
-        return {"==": [{"var": key}, val] }
-    })
-    whereClauses.value = _.size(queryParamFilters) > 1 ? {and: queryParamFilters} : queryParamFilters
-    readonlyValues.value = newValue
+    whereClauses.value = queryParamsToJsonLogic(newValue)
+    readonlyValues.value = getSimpleQueryParams(newValue)
     tableKey.value = uuidv4()
 }, { immediate: true })
 
@@ -40,7 +37,13 @@ const columnDefs: ColumnDefinitions = {
     },
     ampPrimers: {
         header: 'AMP Primers',
-        format: (data: any) => {
+        type: 'element',
+        element: (data: any) => {
+            return _.compact(_.map([data.ampPrimerForward, data.ampPrimerReverse], (primer: any) => {
+                return primer?.id ? `<span class="${primer?.archived ? 'line-through' : ''}">${primer.name}</span>` : null
+            })).join(', ')
+        },
+        exportValue: (data: any) => {
             return _.compact([data.ampPrimerForward?.name, data.ampPrimerReverse?.name ]).join(', ')
         },
         path: 'ampPrimers.displayValue',
@@ -62,9 +65,10 @@ const columnDefs: ColumnDefinitions = {
         header: 'Length (bp)',
         format: (data: any) => {
             if (data.startPosition && data.stopPosition) {
-                return Math.abs(data.stopPosition - data.startPosition) + 1
+                return _.toString(Math.abs(data.stopPosition - data.startPosition) + 1)
+            } else {
+                return ''
             }
-            return null
         },
         path: 'length.displayValue',
         index: 5,
@@ -111,6 +115,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 2,
@@ -128,6 +135,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId] },
                 ]},
                 dropdown: true,
+                inputClass: (data: any) => {
+                    return data?.record?.archived ? 'line-through' : ''
+                },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
             index: 3,
@@ -168,10 +178,10 @@ const displayWithClause = {
         columns: {id: true, name: true, targetId: true},
     },
     ampPrimerForward: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     ampPrimerReverse: {
-        columns: {id: true, name: true},
+        columns: {id: true, name: true, archived: true},
     },
     twistLot: {
         columns: {id: true, lotNumber: true},

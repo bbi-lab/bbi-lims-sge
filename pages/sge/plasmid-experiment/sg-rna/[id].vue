@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { wellCoordinateToChar } from '~/lib/plate-diagram'
+import type { SgRnaOligo } from '~/server/db/schema/sge/oligos'
+import type { SgRnaPlasmid } from '~/server/db/schema/sge/plasmid'
 import type { User } from '~/server/db/schema/user'
 import { RecordService } from '~/utils/service/RecordService'
 import IxMoveLayerDown from '~icons/ix/move-layer-down'
 
 const { breakpoints, showLoginModal } = useLayout()
 const route = useRoute()
-const plateLayout = usePlateLayout()
-const sourcePlateLayout = usePlateLayout()
+const plateLayout = usePlateLayout<{ sgRnaOligo: SgRnaOligo | null; sgRnaPlasmid: SgRnaPlasmid | null }>()
+const sourcePlateLayout = usePlateLayout<{ sgRnaOligo: SgRnaOligo | null }>()
 const sourcePlateWithWellSpecs = ref()
 const toast = useToast()
 const { user } = useUserSession()
@@ -372,7 +374,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 :where="whereClause"
                 :columnDefs="plateTableColumnDefs"
                 :sortBy="['name']"
-                :selectionMode="transformed ? 'none' : 'single'"
+                :selectionMode="transformed ? undefined : 'single'"
                 :showColumnFilters="true"
                 emptyMessage="">
             </QuickTable>

@@ -74,7 +74,20 @@ const rowActions = {
         iconComponent: PhGridNineFill,
         iconPos: 'right',
         tooltip: 'Layout',
-    }
+    },
+    volume: {
+        action: (data: any) => {
+            if (['dna-preseq-1', 'rna-preseq-1'].includes(data.pcrType)) {
+                router.push({path: `/sge/preseq-1/volume-calcs/${data.id}`})
+            } else if (['dna-preseq-2', 'rna-preseq-2'].includes(data.pcrType)) {
+                router.push({path: `/sge/preseq-2/volume-calcs/${data.id}`})
+            }
+        },
+        visible: (data: any) => ['dna-preseq-1', 'rna-preseq-1', 'dna-preseq-2', 'rna-preseq-2'].includes(data.pcrType),
+        tooltip: 'Volume calcs',
+        icon: 'pi pi-calculator',
+        iconPos: 'right',
+    },
 }
 const addFieldDefs = {
     name: {

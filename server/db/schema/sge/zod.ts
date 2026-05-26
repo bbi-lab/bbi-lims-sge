@@ -7,15 +7,15 @@ import { cycles } from './cycle'
 import { transfectExperiments, transfectLotUsage, transfectTargets } from './transfect-experiment'
 import { haCloningExperiments, sgRnaCloningExperiments, snvLibCloningExperiments } from './plasmid-experiment'
 import { extractionExperiments, extractionLotUsage } from './extraction-experiment'
-import { pcrExperiments } from './pcr-experiment'
+import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperiments } from './pcr-experiment'
 import { plates } from './plate'
 import { pellets } from './pellet'
-import { createSelectSchema } from 'drizzle-zod'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { lots } from './lots'
 import { reagents } from './reagents'
 import { haPuc19Plasmids, sgRnaPlasmids, snvLibPlasmids } from './plasmid'
-import { nucleicAcids, dna, rna } from './nucleic-acid'
+import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
@@ -47,10 +47,10 @@ const updateGeneSchema = createSelectSchema(genes, {
 
 const selectRegionSchema = createSelectSchema(regions)
 const insertRegionSchema = createSelectSchema(regions, {
-    ampliconStart: z.bigint({ coerce: true }),
-    ampliconEnd: z.bigint({ coerce: true }),
-    snvLibraryStart: z.bigint({ coerce: true }),
-    snvLibraryEnd: z.bigint({ coerce: true })
+    ampliconStart: z.bigint({ coerce: true }).nullable(),
+    ampliconEnd: z.bigint({ coerce: true }).nullable(),
+    snvLibraryStart: z.bigint({ coerce: true }).nullable(),
+    snvLibraryEnd: z.bigint({ coerce: true }).nullable(),
 }).omit({id: true}).partial()
 const updateRegionSchema = insertRegionSchema
 
@@ -126,6 +126,14 @@ const selectPcrExperimentsSchema = createSelectSchema(pcrExperiments, {startedOn
 const insertPcrExperimentsSchema = selectPcrExperimentsSchema.omit({id: true})
 const updatePcrExperimentsSchema = insertPcrExperimentsSchema
 
+const pcr1ExperimentMasterMixVolumesSchema = createSelectSchema(pcr1ExperimentMasterMixVolumes)
+const insertPcr1ExperimentMasterMixVolumesSchema = pcr1ExperimentMasterMixVolumesSchema.omit({id: true})
+const updatePcr1ExperimentMasterMixVolumesSchema = insertPcr1ExperimentMasterMixVolumesSchema
+
+const pcr2ExperimentMasterMixVolumesSchema = createSelectSchema(pcr2ExperimentMasterMixVolumes)
+const insertPcr2ExperimentMasterMixVolumesSchema = pcr2ExperimentMasterMixVolumesSchema.omit({id: true})
+const updatePcr2ExperimentMasterMixVolumesSchema = insertPcr2ExperimentMasterMixVolumesSchema
+
 const selectExtractionExperimentsSchema = createSelectSchema(extractionExperiments, {extractedOn: nullableDateSchema})
 const insertExtractionExperimentsSchema = selectExtractionExperimentsSchema.omit({id: true})
 const updateExtractionExperimentsSchema = insertExtractionExperimentsSchema
@@ -198,10 +206,6 @@ const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
 const insertSgRnaOligosSchema = createSelectSchema(sgRnaOligos).omit({id: true})
 const updateSgRnaOligosSchema = insertSgRnaOligosSchema
 
-const selectNucleicAcidsSchema = createSelectSchema(nucleicAcids)
-const insertNucleicAcidsSchema = createSelectSchema(nucleicAcids).omit({id: true}).partial()
-const updateNucleicAcidsSchema = insertNucleicAcidsSchema
-
 const selectDnaSchema = createSelectSchema(dna)
 const insertDnaSchema = createSelectSchema(dna).omit({id: true}).partial()
 const updateDnaSchema = insertDnaSchema
@@ -219,8 +223,8 @@ const insertHomologyArmPrimerSchema = createSelectSchema(homologyArmPrimers, {se
 const updateHomologyArmPrimerSchema = insertHomologyArmPrimerSchema
 
 const selectHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {orderedOn: nullableDateSchema})
-const insertHomologyArmPuc19PrimerSchema = createSelectSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)), orderedOn: nullableDateSchema}).omit({id: true}).partial()
-const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema
+const insertHomologyArmPuc19PrimerSchema = createInsertSchema(homologyArmPuc19Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)).optional(), orderedOn: nullableDateSchema.optional()}).omit({id: true})
+const updateHomologyArmPuc19PrimerSchema = insertHomologyArmPuc19PrimerSchema.partial()
 
 const selectLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {orderedOn: nullableDateSchema})
 const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
@@ -363,6 +367,16 @@ export const schemas = {
         insert: insertPcrExperimentsSchema,
         update: updatePcrExperimentsSchema,
     },
+    pcr1ExperimentMasterMixVolumes: {
+        select: pcr1ExperimentMasterMixVolumesSchema,
+        insert: insertPcr1ExperimentMasterMixVolumesSchema,
+        update: updatePcr1ExperimentMasterMixVolumesSchema,
+    },
+    pcr2ExperimentMasterMixVolumes: {
+        select: pcr2ExperimentMasterMixVolumesSchema,
+        insert: insertPcr2ExperimentMasterMixVolumesSchema,
+        update: updatePcr2ExperimentMasterMixVolumesSchema,
+    },
     plates: {
         select: selectPlatesSchema,
         insert: insertPlatesSchema,
@@ -422,11 +436,6 @@ export const schemas = {
         select: selectSnvLibPlasmidsSchema,
         insert: insertSnvLibPlasmidsSchema,
         update: updateSnvLibPlasmidsSchema,
-    },
-    nucleicAcids: {
-        select: selectNucleicAcidsSchema,
-        insert: insertNucleicAcidsSchema,
-        update: updateNucleicAcidsSchema,
     },
     dna: {
         select: selectDnaSchema,
