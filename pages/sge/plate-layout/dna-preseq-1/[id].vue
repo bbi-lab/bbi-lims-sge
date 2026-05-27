@@ -223,7 +223,7 @@ const layoutPreseq1 = async () => {
 
     if (negativeControl) {
         // assign to the first column (8 wells)
-        const wellsToAssignTo = _.filter(plateWithWellSpecs.value.wells, (well) => well.x == 1)
+        const wellsToAssignTo = _.filter(plateWithWellSpecs.value.wells, (well) => well.x == 1 && well.y <= 2)
         const wellContentsToAdd = _.map(wellsToAssignTo, (well) => {
             return {
                 wellId: well.id,
