@@ -24,6 +24,7 @@ const modelValue = defineModel()
 const modelValueObj = defineModel('obj')
 const currentValue = ref()
 const suggestions = ref<{code: string | number, label: string, record: any }[]>([])
+const cachedSuggestions = ref<{code: string | number, label: string, record: any }[]>([])
 
 const emit = defineEmits([
     'update:modelValue',
@@ -78,8 +79,13 @@ async function autocompleteSearch(event: any) {
     }
 
     const filtered = await RecordService.getRecords(props.searchBaseUrl, props.searchWithClause, whereClause)
-
-    suggestions.value = _.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x), record: x }})
+    if (_.isEmpty(filtered)) {
+        if (!_.isEmpty(suggestions.value)) cachedSuggestions.value = suggestions.value
+        suggestions.value = _.filter(cachedSuggestions.value, (x) => { return _.startsWith(x.label.toLowerCase(), event.query.toLowerCase()) })
+    } else {
+        cachedSuggestions.value = []
+        suggestions.value = _.sortBy(_.map(filtered, (x) => { return {code: x[props.valueField], label: getDisplayValue(x), record: x }}), 'label')
+    }
 }
 
 function clearValue() {
