@@ -4,10 +4,10 @@ import { schemas } from '~/server/db/schema/sge/zod'
 import type { ZodObject } from 'zod'
 import { useDrizzle } from '../utils/db'
 import { parsePutPostError } from '../utils/restApi'
-import { updateRelatedTargets } from '../utils/sge'
+import { updateRelatedTargets, updateRelatedLots } from '../utils/sge'
 import { insertPlate } from '../services/plate-services'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '../db/schema/sge/primer'
-import { clonalHaTargets, sgRnaOligoTargets } from '../db/schema/sge/oligos'
+import { clonalHaTargets, sgRnaOligoTargets, sgeOligoLots } from '../db/schema/sge/oligos'
 import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperimentTargets } from '../db/schema/sge/pcr-experiment'
 import { sgRnaPlasmidTargets } from '../db/schema/sge/plasmid'
 
@@ -90,6 +90,10 @@ export default defineEventHandler(async (event) => {
                     const clonalHaTargetIds = _.compact(_.map(body[0].clonalHaTargets, 'targetId'))
                     const targets = await updateRelatedTargets(clonalHaTargets, 'clonalHaId', 'targetId', insertedRecords[0].id, clonalHaTargetIds, tx)
                     _.set(insertedRecords, '0.clonalHaTargets', targets)
+                } else if (_.camelCase(recordType) == 'sgeOligos' && _.isArray(body[0].sgeOligoLots)) {
+                    const lotIds = _.compact(_.map(body[0].sgeOligoLots, 'lotId'))
+                    const updatedLots = await updateRelatedLots(sgeOligoLots, 'sgeOligoId', 'lotId', insertedRecords[0].id, lotIds, tx)
+                    _.set(insertedRecords, '0.sgeOligoLots', updatedLots)
                 }
             }
 

@@ -3,7 +3,7 @@ import { parseDeleteError } from '~/server/utils/restApi'
 import { eq } from 'drizzle-orm'
 import { transfectTargets } from '~/server/db/schema/sge/transfect-experiment'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
-import { clonalHaTargets, sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
+import { clonalHaTargets, sgRnaOligoTargets, sgeOligoLots } from '~/server/db/schema/sge/oligos'
 import { deleteEmptyPlate } from '~/server/utils/sge'
 import { pcr1ExperimentMasterMixVolumes, pcr2ExperimentMasterMixVolumes, pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
 import { sgRnaPlasmidTargets } from '~/server/db/schema/sge/plasmid'
@@ -48,6 +48,10 @@ export default defineEventHandler(async (event) => {
                 await tx.delete(clonalHaTargets).where(eq(clonalHaTargets.clonalHaId, id))
             } else if (_.camelCase(recordType) == 'sgRnaPlasmids') {
                 await tx.delete(sgRnaPlasmidTargets).where(eq(sgRnaPlasmidTargets.sgRnaPlasmidId, id))
+            } else if (_.camelCase(recordType) == 'sgeOligos') {
+                await tx.delete(sgeOligoLots).where(eq(sgeOligoLots.sgeOligoId, id))
+            } else if (_.camelCase(recordType) == 'lots') {
+                await tx.delete(sgeOligoLots).where(eq(sgeOligoLots.lotId, id))
             }
 
             const deleteResult = await tx.delete(table)

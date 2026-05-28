@@ -18,7 +18,7 @@ import { reagents } from './reagents'
 import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPrimerTargets, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq1PrimerTargets, preseq2Primers, rnaPreseq1Primers, rnaPreseq1PrimerTargets, rnaPreseq2Primers, rnaPreseq2PrimerTargets, rnaRtPrimers } from './primer'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { clonalHas, clonalHaTargets, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, sgRnaOligoTargets, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, clonalHaTargets, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgeOligoLots, sgeOligos, sgRnaOligos, sgRnaOligoTargets, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { haPuc19Plasmids, sgRnaPlasmids, sgRnaPlasmidTargets, snvLibPlasmids } from './plasmid'
 import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments, haCloningExperimentTargets } from './plasmid-experiment'
 import { externalSamples } from './external-samples'
@@ -912,10 +912,10 @@ const snvLibAmpProductsRelationsConfig: RelationsConfig = {
             referenceTable: amplificationPrimers,
             references: [amplificationPrimers.id],
         },
-        twistLot: {
-            fields: [snvLibAmpProducts.twistLotId],
-            referenceTable: lots,
-            references: [lots.id],
+        sgeOligo: {
+            fields: [snvLibAmpProducts.sgeOligoId],
+            referenceTable: sgeOligos,
+            references: [sgeOligos.id],
         },
         wellable: {
             fields: [snvLibAmpProducts.id],
@@ -925,6 +925,45 @@ const snvLibAmpProductsRelationsConfig: RelationsConfig = {
     },
 }
 export const snvLibAmpProductsRelations = relationsConfigToRelations(snvLibAmpProducts, snvLibAmpProductsRelationsConfig)
+
+const sgeOligosRelationsConfig: RelationsConfig = {
+    one: {
+        target: {
+            fields: [sgeOligos.targetId],
+            referenceTable: targets,
+            references: [targets.id],
+        },
+    },
+    many: {
+        snvLibAmpProducts: {
+            table: snvLibAmpProducts,
+            schema: createSelectSchema(snvLibAmpProducts),
+            fields: [snvLibAmpProducts.sgeOligoId],
+        },
+        sgeOligoLots: {
+            table: sgeOligoLots,
+            schema: createSelectSchema(sgeOligoLots),
+            fields: [sgeOligoLots.sgeOligoId],
+        },
+    },
+}
+export const sgeOligosRelations = relationsConfigToRelations(sgeOligos, sgeOligosRelationsConfig)
+
+const sgeOligoLotsRelationsConfig: RelationsConfig = {
+    one: {
+        sgeOligo: {
+            fields: [sgeOligoLots.sgeOligoId],
+            referenceTable: sgeOligos,
+            references: [sgeOligos.id],
+        },
+        lot: {
+            fields: [sgeOligoLots.lotId],
+            referenceTable: lots,
+            references: [lots.id],
+        },
+    },
+}
+export const sgeOligoLotsRelations = relationsConfigToRelations(sgeOligoLots, sgeOligoLotsRelationsConfig)
 
 const snvLibLinProductsRelationsConfig: RelationsConfig = {
     one: {
@@ -1112,6 +1151,13 @@ const lotsRelationsConfig: RelationsConfig = {
             fields: [lots.reagent],
             referenceTable: reagents,
             references: [reagents.id],
+        },
+    },
+    many: {
+        sgeOligoLots: {
+            table: sgeOligoLots,
+            schema: createSelectSchema(sgeOligoLots),
+            fields: [sgeOligoLots.lotId],
         },
     },
 }
@@ -1533,6 +1579,8 @@ export const relationsConfigs: { [tableName: string] : RelationsConfig } = {
     snvLibLinProducts: snvLibLinProductsRelationsConfig,
     snvLibGibsonProducts: snvLibGibsonProductsRelationsConfig,
     snvLibGoldenGateProducts: snvLibGoldenGateProductsRelationsConfig,
+    sgeOligos: sgeOligosRelationsConfig,
+    sgeOligoLots: sgeOligoLotsRelationsConfig,
     transfectExperiments: transfectExperimentsRelationsConfig,
     extractionExperiments: extractionExperimentsRelationsConfig,
     transfectLotUsageRelations: transfectLotUsageRelationsConfig,

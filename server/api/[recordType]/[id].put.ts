@@ -3,10 +3,10 @@ import _ from 'lodash'
 import { schemas } from '~/server/db/schema/sge/zod'
 import type { ZodObject } from 'zod'
 import { parsePutPostError } from '~/server/utils/restApi'
-import { updateRelatedTargets } from '~/server/utils/sge'
+import { updateRelatedTargets, updateRelatedLots } from '~/server/utils/sge'
 import { homologyArmPrimerTargets, preseq1PrimerTargets, rnaPreseq1PrimerTargets, rnaPreseq2PrimerTargets } from '~/server/db/schema/sge/primer'
 import { pcrExperimentTargets } from '~/server/db/schema/sge/pcr-experiment'
-import { clonalHaTargets, sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
+import { clonalHaTargets, sgeOligoLots, sgRnaOligoTargets } from '~/server/db/schema/sge/oligos'
 import { sgRnaPlasmidTargets } from '~/server/db/schema/sge/plasmid'
 
 export default defineEventHandler(async (event) => {
@@ -61,6 +61,10 @@ export default defineEventHandler(async (event) => {
                 const clonalHaTargetIds = _.compact(_.map(body.clonalHaTargets, 'targetId'))
                 const targets = await updateRelatedTargets(clonalHaTargets, 'clonalHaId', 'targetId', id, clonalHaTargetIds, tx)
                 _.set(recordUpdated, 'clonalHaTargets', targets)
+            } else if (_.camelCase(recordType) == 'sgeOligos' && _.isArray(body.sgeOligoLots)) {
+                const lotIds = _.compact(_.map(body.sgeOligoLots, 'lotId'))
+                const updatedLots = await updateRelatedLots(sgeOligoLots, 'sgeOligoId', 'lotId', id, lotIds, tx)
+                _.set(recordUpdated, 'sgeOligoLots', updatedLots)
             }
 
             return recordUpdated

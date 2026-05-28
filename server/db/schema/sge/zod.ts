@@ -19,7 +19,7 @@ import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgeOligoLots, sgeOligos, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -105,6 +105,14 @@ const updateClonalHasSchema = insertClonalHasSchema
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
 const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
+
+const selectSgeOligosSchema = createSelectSchema(sgeOligos, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable()})
+const insertSgeOligosSchema = selectSgeOligosSchema.omit({id: true})
+const updateSgeOligosSchema = insertSgeOligosSchema
+
+const selectSgeOligoLotsSchema = createSelectSchema(sgeOligoLots)
+const insertSgeOligoLotsSchema = selectSgeOligoLotsSchema.omit({id: true})
+const updateSgeOligoLotsSchema = insertSgeOligoLotsSchema
 
 const selectSnvLibAmpProductsSchema = createSelectSchema(snvLibAmpProducts, {cleanedOn: nullableDateSchema})
 const insertSnvLibAmpProductsSchema = selectSnvLibAmpProductsSchema.omit({id: true})
@@ -341,6 +349,16 @@ export const schemas = {
         select: selectSnvLibCloningExperimentsSchema,
         insert: insertSnvLibCloningExperimentsSchema,
         update: updateSnvLibCloningExperimentsSchema,
+    },
+    sgeOligos: {
+        select: selectSgeOligosSchema,
+        insert: insertSgeOligosSchema,
+        update: updateSgeOligosSchema,
+    },
+    sgeOligoLots: {
+        select: selectSgeOligoLotsSchema,
+        insert: insertSgeOligoLotsSchema,
+        update: updateSgeOligoLotsSchema,
     },
     snvLibAmpProducts: {
         select: selectSnvLibAmpProductsSchema,
