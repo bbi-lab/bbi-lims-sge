@@ -55,12 +55,12 @@ const columnDefs: ColumnDefinitions = {
         path: 'sgeOligo.name',
         index: 3,
     },
-    lot: {
+    lots: {
         header: 'Lot(s)',
         format: (data: any) => {
-            return _.map(data.sgeOligo?.sgeOligoLots, (sgeOligoLot: any) => sgeOligoLot.lot?.lotNumber).filter(Boolean)
+            return _.join(_.compact(_.map(data.sgeOligo?.sgeOligoLots, (sgeOligoLot: any) => sgeOligoLot.lot?.lotNumber)), ', ')
         },
-        path: 'lot.displayValue',
+        path: 'lots.displayValue',
         index: 4,
     },
     startPosition: {
