@@ -25,7 +25,7 @@ export const amplificationPrimers = pgTable('amplification_primers', {
     name: varchar('name', { length: 255 }).notNull(),
     sequence: varchar('sequence', { length: 255 }).notNull(),
     sequenceType: varchar('sequence_type', {enum: ['forward', 'reverse']}),
-    cloningMethod: varchar('cloning_method', {enum: ['Gibson', 'Golden Gate']}),
+    cloningMethod: varchar('cloning_method', {enum: ['Gibson', 'Golden Gate']}).notNull(),
     temperature: smallint('temperature'),
     orderedOn: timestamp('ordered_on'),
     archived: boolean('archived'),

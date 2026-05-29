@@ -1,0 +1,1 @@
+ALTER TABLE "amplification_primers" ALTER COLUMN "cloning_method" SET NOT NULL;
