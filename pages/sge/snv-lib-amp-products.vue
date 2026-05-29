@@ -121,6 +121,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 searchWhereClause: {"and": [
                     {"==": [{"var": "sequenceType"}, "forward"]},
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
+                    {"==" : [ {"var":"cloningMethod"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.cloningStrategy ]},
                 ]},
                 dropdown: true,
                 inputClass: (data: any) => {
@@ -141,6 +142,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 searchWhereClause: {"and": [
                     {"==": [{"var": "sequenceType"}, "reverse"]},
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId] },
+                    {"==" : [ {"var":"cloningMethod"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.cloningStrategy ]},
                 ]},
                 dropdown: true,
                 inputClass: (data: any) => {
@@ -182,7 +184,7 @@ const displayWithClause = {
         columns: {id: true, name: true},
     },
     snvLibCloningExperiment: {
-        columns: {id: true, name: true, targetId: true},
+        columns: {id: true, name: true, targetId: true, cloningStrategy: true},
     },
     ampPrimerForward: {
         columns: {id: true, name: true, archived: true},

@@ -72,6 +72,10 @@ const columnDefs = {
     name: {
         index: 1
     },
+    cloningMethod: {
+        header: 'Cloning Method',
+        index: 2,
+    },
     targetId: {
         header: 'Target',
         format: (x: any) => {

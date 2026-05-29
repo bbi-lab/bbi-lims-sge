@@ -1,0 +1,1 @@
+ALTER TABLE "amplification_primers" ADD COLUMN "cloning_method" varchar;

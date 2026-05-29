@@ -40,10 +40,12 @@ const updateCurrentSnvLibCloningExperiment = (data: any) => {
     _.set(ampProductFieldDefinitions, 'ampPrimerForwardId.props.searchWhereClause', {"and": [
         {"==": [{"var": "sequenceType"}, "forward"]},
         {"==" : [ {"var":"targetId"}, data?.targetId ]},
+        {"==" : [ {"var":"cloningMethod"}, data?.cloningStrategy ]},
     ]})
     _.set(ampProductFieldDefinitions, 'ampPrimerReverseId.props.searchWhereClause', {"and": [
         {"==": [{"var": "sequenceType"}, "reverse"]},
         {"==" : [ {"var":"targetId"}, data?.targetId ]},
+        {"==" : [ {"var":"cloningMethod"}, data?.cloningStrategy ]},
     ]})
     _.set(ampProductFieldDefinitions, 'sgeOligoId.props.searchWhereClause',
         {"==" : [ {"var":"targetId"}, data?.targetId ]})
