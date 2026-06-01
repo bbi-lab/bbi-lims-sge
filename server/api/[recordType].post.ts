@@ -108,8 +108,10 @@ export default defineEventHandler(async (event) => {
                 }
                 const pcr2Experiments = _.filter(insertedRecords, (record) => ['rna-preseq-2', 'dna-preseq-2'].includes(record.pcrType))
                 for (const experiment of pcr2Experiments) {
+                    const totalVolume = experiment.pcrType === 'dna-preseq-2' ? 23 : undefined // default total volume for DNA preseq 2 is 23 to account for 2 uL of DNA
                     const masterMixValues = {
                         pcrExperimentId: experiment.id,
+                        total: totalVolume,
                     }
                     await tx.insert(pcr2ExperimentMasterMixVolumes).values(masterMixValues)
                 }

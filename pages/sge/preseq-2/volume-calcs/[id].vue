@@ -169,7 +169,7 @@ const calcsComputed: ComputedRef<Array<{
         const tenUmForwardPrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmForwardPrimer', 0) * multimixMultiplier
         const tenUmReversePrimer = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenUmReversePrimer', 0) * multimixMultiplier
         const tenXSybrGreen = _.get(experiment.value, 'pcr2ExperimentMasterMixVolumes.tenXSybrGreen', 0) * multimixMultiplier
-        const dnaAmount = dnaVolume.value ? dnaVolume.value * multimixMultiplier : null
+        const dnaAmount = experiment.value?.pcrType == 'dna-preseq-2' ? 0 : (dnaVolume.value ? dnaVolume.value * multimixMultiplier : null)
 
         return {
             sampleId: key,
@@ -181,7 +181,7 @@ const calcsComputed: ComputedRef<Array<{
             tenUmReversePrimer: _.round(tenUmReversePrimer, 1).toFixed(1),
             tenXSybrGreen: _.round(tenXSybrGreen, 1).toFixed(1),
             dnaAmount: dnaAmount ? _.round(dnaAmount, 1).toFixed(1) : '-',
-            water: dnaAmount ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + tenXSybrGreen + dnaAmount), 1).toFixed(1) : '-',
+            water: _.isNumber(dnaAmount) ? _.round(totalVol - (twoXKapaHifiReadyMix + tenUmForwardPrimer + tenUmReversePrimer + tenXSybrGreen + dnaAmount), 1).toFixed(1) : '-',
             total: _.round(totalVol, 1).toFixed(1),
         }
     })
@@ -265,8 +265,8 @@ const dnaVolume = computed(() => {
                         <td class="px-4 py-4">10X Sybr Green</td>
                         <td class="px-4 py-4">{{ experiment.pcr2ExperimentMasterMixVolumes?.tenXSybrGreen }} μL</td>
                     </tr>
-                    <tr class="border-b border-surface-200 dark:border-surface-600">
-                        <td class="px-4 py-4">{{ experiment.pcrType === 'rna-preseq-2' ? 'cDNA Volume' : 'DNA Volume' }}</td>
+                    <tr v-if="experiment.pcrType === 'rna-preseq-2'" class="border-b border-surface-200 dark:border-surface-600">
+                        <td class="px-4 py-4">cDNA Volume</td>
                         <td class="px-4 py-4">{{ dnaVolume || '-' }} μL</td>
                     </tr>
                     <tr class="border-b border-surface-200 dark:border-surface-600">
@@ -321,8 +321,8 @@ const dnaVolume = computed(() => {
             <div class="font-semibold">{{ experiment.pcrType == 'dna-preseq-2' ? 'Target' : 'Sample' }}</div>
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
             <!-- Number of wells row -->
-            <div  class="font-semibold">Number of Wells (*1.125)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.multimixMultiplier }}</div>
+            <div  class="font-semibold italic">Number of Wells (*1.125)</div>
+            <div v-for="calc in orderedCalcs" class="italic">x{{ calc.multimixMultiplier }}</div>
             <!-- 2X Kapa row -->
             <div class="font-semibold border-t-2">2X Kapa Hifi Ready Mix (μL)</div>
             <div v-for="calc in orderedCalcs" class="border-t-2">{{ calc.twoXKapaHifiReadyMix }}</div>
@@ -335,15 +335,18 @@ const dnaVolume = computed(() => {
             <!-- 10X Sybr Green row -->
             <div class="font-semibold">10X Sybr Green (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.tenXSybrGreen }}</div>
-            <!-- DNA amount row -->
-            <div class="font-semibold">{{ experiment.pcrType == 'rna-preseq-2' ? 'cDNA' : 'DNA' }} (μL)</div>
-            <div v-for="calc in orderedCalcs">{{ calc.dnaAmount }}</div>
+            <!-- cDNA amount row -->
+            <div v-if="experiment.pcrType == 'rna-preseq-2'" class="font-semibold">cDNA (μL)</div>
+            <div v-if="experiment.pcrType == 'rna-preseq-2'" v-for="calc in orderedCalcs">{{ calc.dnaAmount }}</div>
             <!-- Water row -->
             <div class="font-semibold">Water (μL)</div>
             <div v-for="calc in orderedCalcs">{{ calc.water }}</div>
             <!-- Total row -->
             <div class="font-semibold border-t-2">Total (μL)</div>
             <div v-for="calc in orderedCalcs" class="font-semibold border-t-2">{{ calc.total }}</div>
+            <!-- DNA amount row -->
+            <div v-if="experiment.pcrType == 'dna-preseq-2'" class="font-semibold border-t-2 italic">DNA (μL) per well</div>
+            <div v-if="experiment.pcrType == 'dna-preseq-2'" class="border-t-2 italic" v-for="calc in orderedCalcs">{{ dnaVolume?.toFixed(1) }}</div>
         </div>
     </div>
 
