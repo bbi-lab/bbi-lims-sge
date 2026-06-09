@@ -181,7 +181,21 @@ export default defineEventHandler(async (event) => {
         }
 
         // Validate against Zod schema (remove targetNames field for schema validation)
-        const recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates')) as Array<RecordValues>
+        let recordsForValidation: Array<RecordValues>
+        console.log(recordType)
+        if (recordType === 'preseq2-primers') {
+            // DNA preseq-2 primers are the only PCR primers that are single target, so we replace targetNames with corresponding targetId field for validation against the schema since the schema has targetId not targetNames
+            recordsForValidation = _.map(primerRecords, (record) => {
+                const targetName = record.targetNames[0] // Get the single target name
+                const targetId = targetIdsByName[targetName] // Get corresponding target ID
+                return {
+                    ..._.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates'),
+                    targetId, // Add targetId field for validation
+                } as RecordValues
+            })
+        } else {
+            recordsForValidation = _.map(primerRecords, (record) => _.omit(record, 'targetNames', 'plateStorageBoxName', 'wellTubeCoordinates')) as Array<RecordValues>
+        }
 
         try {
             _.forEach(recordsForValidation, (record) => {
