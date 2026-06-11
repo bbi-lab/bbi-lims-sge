@@ -1,10 +1,32 @@
 # .dockerignore
+.git
+.gitignore
+
+# Build artifacts (rebuilt inside Docker)
 /.nuxt
 /.output
 /node_modules
 
+# Local env files — never bake secrets into the image
 .env
 .env.*
+.env.local
+.env.*.local
 
-.gitignore
+# Dev/CI config — not needed at runtime
+*.log
+.DS_Store
 README.md
+Dockerfile
+.dockerignore
+
+# Test & tooling
+tests/
+.github/
+scripts/
+vitest.config.ts
+
+# Editor & local tooling
+.vscode/
+.planning/
+.playwright-mcp/

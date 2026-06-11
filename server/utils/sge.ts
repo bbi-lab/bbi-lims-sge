@@ -38,6 +38,37 @@ export const updateRelatedTargets = async (
     return tx ? await updateFunction(tx) : await db.transaction(async (tx) => await updateFunction(tx))
 }
 
+export const updateRelatedLots = async (
+    table: PgTable<any>,
+    parentIdKey: string,
+    lotIdKey: string,
+    id: string,
+    lotIds: string[],
+    tx?: PgTransaction<any, any, any>
+) => {
+    const parentIdCol = (table as any)[parentIdKey]
+    const lotIdCol = (table as any)[lotIdKey]
+
+    const updateFunction = async (tx: PgTransaction<any, any, any>) => {
+        const existing = await tx.select().from(table).where(eq(parentIdCol, id))
+
+        const removedIds = _.difference(_.map(existing, lotIdKey), lotIds)
+        if (!_.isEmpty(removedIds)) {
+            await tx.delete(table).where(and(eq(parentIdCol, id), inArray(lotIdCol, removedIds)))
+        }
+
+        const idsToInsert = _.difference(lotIds, _.map(existing, lotIdKey))
+        if (!_.isEmpty(idsToInsert)) {
+            existing.push(...await tx.insert(table).values(
+                idsToInsert.map(lotId => ({ [lotIdKey]: lotId, [parentIdKey]: id }))
+            ).returning())
+        }
+        return existing.filter(r => !removedIds.includes(r[lotIdKey]))
+    }
+
+    return tx ? await updateFunction(tx) : await db.transaction(async (tx) => await updateFunction(tx))
+}
+
 export async function deleteEmptyPlate(plateId: string, tx?: PgTransaction<any, any, any>) {
     const nonEmptyWells = await (tx ?? db).select()
         .from(wells)

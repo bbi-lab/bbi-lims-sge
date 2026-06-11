@@ -292,11 +292,11 @@ const orderedCalcs = computed(() => _.orderBy(calcs.value, ['sampleName'], ['asc
             <div class="font-semibold">Sample</div>
             <div v-for="calc in orderedCalcs" class="font-semibold">{{ calc.sampleName }}</div>
             <!-- Quant row -->
-            <div class="font-semibold">Quant (ng/μL)</div>
-            <div v-for="calc in orderedCalcs">{{ experiment?.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
+            <div class="font-semibold italic">Quant (ng/μL)</div>
+            <div v-for="calc in orderedCalcs" class="italic">{{ experiment?.pcrType == 'rna-preseq-1' ? 'up to 200 ng/uL' :calc.quant ?? '-' }}</div>
             <!-- Number of wells row -->
-            <div  class="font-semibold">Number of Wells</div>
-            <div v-for="calc in orderedCalcs">{{ calc.numberOfWells }}</div>
+            <div  class="font-semibold italic">Number of Wells</div>
+            <div v-for="calc in orderedCalcs" class="italic">x{{ calc.numberOfWells }}</div>
             <!-- 2X Kapa row -->
             <div class="font-semibold border-t-2">2X Kapa Hifi Ready Mix (μL)</div>
             <div v-for="calc in orderedCalcs" class="border-t-2">{{ calc.twoXKapaHifiReadyMix }}</div>

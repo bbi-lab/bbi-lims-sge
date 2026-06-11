@@ -3,6 +3,7 @@
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
+import { wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -29,6 +30,19 @@ const columnDefs = {
         },
         index: 1,
         path: 'sgRnaPlasmidTargets.displayValue',
+    },
+    plateWellLocation: {
+        header: 'Plate: Well Location',
+        format: (data: any) => {
+            const wellContents = data.wellable?.wellContents || []
+            if (wellContents.length > 0) {
+                const well = wellContents[0].well
+                return `${well.plate.name}: ${wellCoordinateToChar(well.y)}${well.x}`
+            }
+            return ''
+        },
+        path: 'plateWellLocation.displayValue',
+        index: 4,
     },
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
@@ -95,7 +109,7 @@ const displayWithClause = {
                 columns: {id: true, name: true},
                 with: {
                     well: {
-                        columns: {id: true, name: true},
+                        columns: {id: true, name: true, x: true, y: true},
                         with: {
                             plate: {
                                 columns: {id: true, name: true},
@@ -109,6 +123,16 @@ const displayWithClause = {
             },
         }
     },
+}
+
+const editWithClause = {
+    sgRnaPlasmidTargets: {
+        with: {
+            target: {
+                columns: {id: true, name: true},
+            }
+        }
+     },
 }
 const rowActions = {}
 </script>
@@ -136,7 +160,6 @@ const rowActions = {}
                 tableName="sg-rna-plasmids"
                 schemaName="insert"
                 :fieldDefs="fieldDefs"
-                :withClause="{sgRnaCloningExperiment: true}"
                 :readonlyValues="readonlyValues"
                 @cancel="crudTable.didClickCancelAddForm"
                 @recordAdd="crudTable.didAddRecord"
@@ -148,6 +171,7 @@ const rowActions = {}
                 schemaName="update"
                 :fieldDefs="fieldDefs"
                 :readonlyValues="readonlyValues"
+                :withClause="editWithClause"
                 @cancel="crudTable.didClickCancelEditForm"
                 @recordUpdate="crudTable.didUpdateRecord"
                 @recordDelete="crudTable.didDeleteRecord"

@@ -40,11 +40,15 @@ const updateCurrentSnvLibCloningExperiment = (data: any) => {
     _.set(ampProductFieldDefinitions, 'ampPrimerForwardId.props.searchWhereClause', {"and": [
         {"==": [{"var": "sequenceType"}, "forward"]},
         {"==" : [ {"var":"targetId"}, data?.targetId ]},
+        {"==" : [ {"var":"cloningMethod"}, data?.cloningStrategy ]},
     ]})
     _.set(ampProductFieldDefinitions, 'ampPrimerReverseId.props.searchWhereClause', {"and": [
         {"==": [{"var": "sequenceType"}, "reverse"]},
         {"==" : [ {"var":"targetId"}, data?.targetId ]},
+        {"==" : [ {"var":"cloningMethod"}, data?.cloningStrategy ]},
     ]})
+    _.set(ampProductFieldDefinitions, 'sgeOligoId.props.searchWhereClause',
+        {"==" : [ {"var":"targetId"}, data?.targetId ]})
 
     _.set(linProductFieldDefinitions, 'linPrimerForwardId.props.searchWhereClause', {"and": [
         {"==": [{"var": "sequenceType"}, "forward"]},
@@ -380,6 +384,17 @@ const ampProductFieldDefinitions: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/µL)',
+    },
+    sgeOligoId: {
+        label: 'SGE Oligo',
+        component: 'AutoCompleter',
+        props: {
+            searchBaseUrl: `${config.public.apiBase}/sge-oligos`,
+            searchFields: ['name'],
+            valueField: 'id',
+            displayFields: ['name'],
+            dropdown: true,
+        },
     },
 }
 

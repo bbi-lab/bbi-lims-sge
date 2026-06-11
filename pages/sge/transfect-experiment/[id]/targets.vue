@@ -233,7 +233,8 @@ editFormFieldDefs['sgRnaPlasmidId'] = {
         valueField: 'id',
         displayFields: ['name'],
         dropdown: true,
-        searchWhereClause: {"==" : [ {"var":"targetId"}, record.targetId] },
+        searchWithClause: {sgRnaPlasmidTargets: true},
+        searchWhereClause: {"some": [{"var": "sgRnaPlasmidTargets"}, {"==": [{"var": "targetId"}, record.targetId]}]},
     }),
     index: 8,
 }

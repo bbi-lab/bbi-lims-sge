@@ -19,7 +19,7 @@ import { dna, rna } from './nucleic-acid'
 import { amplificationPrimers, homologyArmPrimers, homologyArmPuc19Primers, indexPrimers, linearizationPrimers, preseq1Primers, preseq2Primers, rnaRtPrimers, rnaPreseq1Primers, rnaPreseq2Primers } from './primer'
 import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
-import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
+import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgeOligoLots, sgeOligos, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
 import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
 
@@ -105,6 +105,14 @@ const updateClonalHasSchema = insertClonalHasSchema
 const selectSnvLibCloningExperimentsSchema = createSelectSchema(snvLibCloningExperiments, {startedOn: nullableDateSchema, endedOn: nullableDateSchema})
 const insertSnvLibCloningExperimentsSchema = selectSnvLibCloningExperimentsSchema.omit({id: true})
 const updateSnvLibCloningExperimentsSchema = insertSnvLibCloningExperimentsSchema
+
+const selectSgeOligosSchema = createSelectSchema(sgeOligos, {sequence: z.string().regex(new RegExp(/^[ACGT]*$/i)).nullable()})
+const insertSgeOligosSchema = selectSgeOligosSchema.omit({id: true})
+const updateSgeOligosSchema = insertSgeOligosSchema
+
+const selectSgeOligoLotsSchema = createSelectSchema(sgeOligoLots)
+const insertSgeOligoLotsSchema = selectSgeOligoLotsSchema.omit({id: true})
+const updateSgeOligoLotsSchema = insertSgeOligoLotsSchema
 
 const selectSnvLibAmpProductsSchema = createSelectSchema(snvLibAmpProducts, {cleanedOn: nullableDateSchema})
 const insertSnvLibAmpProductsSchema = selectSnvLibAmpProductsSchema.omit({id: true})
@@ -231,27 +239,27 @@ const insertLinearizationPrimerSchema = createSelectSchema(linearizationPrimers,
 const updateLinearizationPrimerSchema = insertLinearizationPrimerSchema
 
 const selectIndexPrimerSchema = createSelectSchema(indexPrimers)
-const insertIndexPrimerSchema = createSelectSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
+const insertIndexPrimerSchema = createInsertSchema(indexPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), indexSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)) }).omit({id: true})
 const updateIndexPrimerSchema = insertIndexPrimerSchema
 
 const selectpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {orderedOn: nullableDateSchema})
-const insertpreseq1PrimerSchema = createSelectSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const insertpreseq1PrimerSchema = createInsertSchema(preseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updatepreseq1PrimerSchema = insertpreseq1PrimerSchema
 
 const selectpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {orderedOn: nullableDateSchema})
-const insertpreseq2PrimerSchema = createSelectSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const insertpreseq2PrimerSchema = createInsertSchema(preseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updatepreseq2PrimerSchema = insertpreseq2PrimerSchema
 
 const selectRnaRtPrimerSchema = createSelectSchema(rnaRtPrimers, {orderedOn: nullableDateSchema})
-const insertRnaRtPrimerSchema = createSelectSchema(rnaRtPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const insertRnaRtPrimerSchema = createInsertSchema(rnaRtPrimers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateRnaRtPrimerSchema = insertRnaRtPrimerSchema
 
 const selectRnaPreseq1PrimerSchema = createSelectSchema(rnaPreseq1Primers, {orderedOn: nullableDateSchema})
-const insertRnaPreseq1PrimerSchema = createSelectSchema(rnaPreseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const insertRnaPreseq1PrimerSchema = createInsertSchema(rnaPreseq1Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateRnaPreseq1PrimerSchema = insertRnaPreseq1PrimerSchema
 
 const selectRnaPreseq2PrimerSchema = createSelectSchema(rnaPreseq2Primers, {orderedOn: nullableDateSchema})
-const insertRnaPreseq2PrimerSchema = createSelectSchema(rnaPreseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
+const insertRnaPreseq2PrimerSchema = createInsertSchema(rnaPreseq2Primers, {sequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), adapterSequence: z.string().regex(new RegExp(/^[ACGT]+$/i)), orderedOn: nullableDateSchema}).omit({id: true})
 const updateRnaPreseq2PrimerSchema = insertRnaPreseq2PrimerSchema
 
 // views
@@ -341,6 +349,16 @@ export const schemas = {
         select: selectSnvLibCloningExperimentsSchema,
         insert: insertSnvLibCloningExperimentsSchema,
         update: updateSnvLibCloningExperimentsSchema,
+    },
+    sgeOligos: {
+        select: selectSgeOligosSchema,
+        insert: insertSgeOligosSchema,
+        update: updateSgeOligosSchema,
+    },
+    sgeOligoLots: {
+        select: selectSgeOligoLotsSchema,
+        insert: insertSgeOligoLotsSchema,
+        update: updateSgeOligoLotsSchema,
     },
     snvLibAmpProducts: {
         select: selectSnvLibAmpProductsSchema,

@@ -72,6 +72,10 @@ const columnDefs = {
     name: {
         index: 1
     },
+    cloningMethod: {
+        header: 'Cloning Method',
+        index: 2,
+    },
     targetId: {
         header: 'Target',
         format: (x: any) => {
@@ -95,7 +99,21 @@ const columnDefs = {
         },
         path: 'wellContents.displayValue',
         type: 'string',
+        index: 4,
+    },
+    sequence: {
         index: 5,
+    },
+    sequenceType: {
+        index: 6,
+    },
+    ggFwdRevAdapter: {
+        header: 'GG Fwd/Rev Adapter',
+        format: (x: any) => {
+            return x.cloningMethod === 'Golden Gate' ? (x.sequenceType === 'forward' ? 'ATGTCACCTGCCACT' : (x.sequenceType === 'reverse' ? 'CTAGCACCTGCCACA' : '?')) : ''
+        },
+        path: 'ggFwdRevAdapter.displayValue',
+        index: 7,
     },
 }
 

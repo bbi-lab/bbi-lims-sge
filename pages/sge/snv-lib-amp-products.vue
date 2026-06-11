@@ -49,17 +49,25 @@ const columnDefs: ColumnDefinitions = {
         path: 'ampPrimers.displayValue',
         index: 2,
     },
-    twistLotId: { display: false },
-    twistLot: {
-        header: 'Twist Lot #',
-        path: 'twistLot.lotNumber',
+    sgeOligoId: { display: false },
+    sgeOligo: {
+        header: 'SGE Oligo',
+        path: 'sgeOligo.name',
         index: 3,
     },
-    startPosition: {
+    lots: {
+        header: 'Lot(s)',
+        format: (data: any) => {
+            return _.join(_.compact(_.map(data.sgeOligo?.sgeOligoLots, (sgeOligoLot: any) => sgeOligoLot.lot?.lotNumber)), ', ')
+        },
+        path: 'lots.displayValue',
         index: 4,
     },
-    stopPosition: {
+    startPosition: {
         index: 5,
+    },
+    stopPosition: {
+        index: 6,
     },
     length: {
         header: 'Length (bp)',
@@ -71,7 +79,7 @@ const columnDefs: ColumnDefinitions = {
             }
         },
         path: 'length.displayValue',
-        index: 5,
+        index: 7,
     },
     snvLibCloningExperimentId: { display: false },
     ampPrimerForwardId: { display: false },
@@ -113,6 +121,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 searchWhereClause: {"and": [
                     {"==": [{"var": "sequenceType"}, "forward"]},
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId ]},
+                    {"==" : [ {"var":"cloningMethod"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.cloningStrategy ]},
                 ]},
                 dropdown: true,
                 inputClass: (data: any) => {
@@ -133,6 +142,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 searchWhereClause: {"and": [
                     {"==": [{"var": "sequenceType"}, "reverse"]},
                     {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId] },
+                    {"==" : [ {"var":"cloningMethod"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.cloningStrategy ]},
                 ]},
                 dropdown: true,
                 inputClass: (data: any) => {
@@ -155,17 +165,16 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 dropdown: true,
             }
         },
-        twistLotId: {
-            label: 'Twist Lot',
+        sgeOligoId: {
+            label: 'SGE Oligo',
             component: 'AutoCompleter',
             props: {
-                searchBaseUrl: `${config.public.apiBase}/lots`,
-                searchFields: ['lotNumber'],
+                searchBaseUrl: `${config.public.apiBase}/sge-oligos`,
+                searchFields: ['name'],
                 valueField: 'id',
-                displayFields: ['lotNumber'],
+                displayFields: ['name'],
                 dropdown: true,
-                searchWithClause: {reagent: true},
-                searchWhereClause: {"==": [{"toLower": {"var": "reagent.name"}}, "twist"]},
+                searchWhereClause: {"==" : [ {"var":"targetId"}, crudTable.state.editingRecord?.snvLibCloningExperiment?.targetId] },
             },
         },
     }
@@ -175,7 +184,7 @@ const displayWithClause = {
         columns: {id: true, name: true},
     },
     snvLibCloningExperiment: {
-        columns: {id: true, name: true, targetId: true},
+        columns: {id: true, name: true, targetId: true, cloningStrategy: true},
     },
     ampPrimerForward: {
         columns: {id: true, name: true, archived: true},
@@ -183,8 +192,17 @@ const displayWithClause = {
     ampPrimerReverse: {
         columns: {id: true, name: true, archived: true},
     },
-    twistLot: {
-        columns: {id: true, lotNumber: true},
+    sgeOligo: {
+        columns: {id: true, name: true},
+        with: {
+            sgeOligoLots: {
+                with: {
+                    lot: {
+                        columns: {id: true, lotNumber: true},
+                    },
+                },
+            },
+        }
     },
 }
 

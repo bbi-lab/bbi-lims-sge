@@ -67,11 +67,30 @@ export const haPuc19GibsonProducts = pgTable('ha_puc19_gibson_products', {
     notes: text('notes'),
 })
 
+export const sgeOligos = pgTable('sge_oligos', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull().unique(),
+    targetId: uuid('target_id').references(() => targets.id).notNull(),
+    sequence: varchar('sequence', { length: 255 }),
+    libraryType: varchar('library_type', { length: 100 }),
+    notes: text('notes'),
+}, (table) => [
+    check("sge_oligo_sequence_check", sql`${table.sequence} ~* '^[actg]*$'`),
+])
+
+export const sgeOligoLots = pgTable('sge_oligo_lots', {
+    id: uuid('id').notNull().primaryKey().defaultRandom(),
+    sgeOligoId: uuid('sge_oligo_id').references(() => sgeOligos.id).notNull(),
+    lotId: uuid('lot_id').references(() => lots.id).notNull(),
+}, (t) => [
+    uniqueIndex('unique_sge_oligo_lot').on(t.sgeOligoId, t.lotId),
+])
+
 export const snvLibAmpProducts = pgTable('snv_lib_amp_products', {
     id: uuid('id').notNull().primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull().unique(),
     snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).notNull().unique(),
-    twistLotId: uuid('twist_lot_id').references(() => lots.id),
+    sgeOligoId: uuid('sge_oligo_id').references(() => sgeOligos.id),
     ampPrimerForwardId: uuid('amp_primer_forward_id').references(() => amplificationPrimers.id).notNull(),
     ampPrimerReverseId: uuid('amp_primer_reverse_id').references(() => amplificationPrimers.id).notNull(),
     cleanedOn: timestamp('cleaned_on'),
@@ -150,6 +169,8 @@ export const clonalHaTargets = pgTable('clonal_ha_targets', {
     uniqueIndex('unique_clonal_ha_target').on(t.clonalHaId, t.targetId),
 ])
 
+export type SgeOligo = InferSelectModel<typeof sgeOligos>
+export type SgeOligoLot = InferSelectModel<typeof sgeOligoLots>
 export type SgRnaOligo = InferSelectModel<typeof sgRnaOligos>
 export type HaPcrProduct = InferSelectModel<typeof haPcrProducts>
 export type HaPuc19PcrProduct = InferSelectModel<typeof haPuc19PcrProducts>
