@@ -1,0 +1,1 @@
+ALTER TABLE "extraction_experiments" RENAME COLUMN "extractedOn" TO "extracted_on";

@@ -1275,6 +1275,13 @@
       "when": 1780086067091,
       "tag": "0181_equal_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 182,
+      "version": "7",
+      "when": 1781558823209,
+      "tag": "0182_easy_killmonger",
+      "breakpoints": true
     }
   ]
 }
