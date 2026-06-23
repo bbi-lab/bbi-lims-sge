@@ -74,7 +74,7 @@ const fieldDefs = {
             options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
                 // disable PCR plate types that should only be generated on experiment creation
                 const pattern = /^preseq-|-pcr$|^[d|r]na-preseq-/
-                if (pattern.test(key) && !_.endsWith(key, '-storage')) {
+                if (pattern.test(key) && !_.endsWith(key, '-storage') && key !== 'preseq-primer') {
                     return { label: value.label, code: key, disabled: true }
                 } else {
                     return { label: value.label, code: key }
