@@ -14,9 +14,11 @@
 --   4. Creates pcr_types lookup table and seeds all values
 --   5. Adds FK constraints on plates.plate_type and pcr_experiments.pcr_type
 --   6. Renames 18 user-FK columns to the new _id-suffix convention
---   7. Drops and recreates 3 views that reference renamed columns / new tables
+--   7. Drops and recreates 3 views that reference renamed columns / new tables,
+--      and creates the new view_mixed_preseq_primers view
 --   8. Registers the new baseline migrations with Drizzle's tracking table
---      (0000_sge_baseline, 0001_create_plate_and_pcr_types, 20260508153256_add_password_reset_tokens)
+--      (0000_sge_baseline, 0001_create_plate_and_pcr_types,
+--       0002_mixed_preseq_primer_view, 20260508153256_add_password_reset_tokens)
 --
 -- Safety:
 --   - Wrapped in a single transaction (all-or-nothing).
@@ -145,7 +147,9 @@ INSERT INTO public.plate_types (value, label, "desc") VALUES
   ('snv-lib-lin-product-storage',         'SNVlib LIN product storage',          'SNVlib LIN product storage'),
   ('snv-lib-gibson-product-storage',      'SNVlib Gibson product storage',       'SNVlib Gibson product storage'),
   ('snv-lib-plasmid-storage',             'SNVlib plasmid storage',              'SNVlib plasmid storage'),
-  ('snv-lib-golden-gate-product-storage', 'SNVlib Golden Gate product storage',  'SNVlib Golden Gate product storage')
+  ('snv-lib-golden-gate-product-storage', 'SNVlib Golden Gate product storage',  'SNVlib Golden Gate product storage'),
+  ('preseq-primer',                       'PreSeq primer plate',                 'PreSeq primer plate'),
+  ('preseq-primer-storage',               'PreSeq primer storage',               'PreSeq primer storage')
 ON CONFLICT (value) DO NOTHING;
 
 -- =============================================================================
@@ -602,6 +606,49 @@ GROUP BY
     sg_rna_cloning_experiments.id,
     pcr_experiments.id;
 
+-- ---------------------------------------------------------------------------
+-- 7d. view_mixed_preseq_primers (new)
+--     Added by sge-lims-app migration 0002_mixed_preseq_primer_view. Unions the
+--     four preseq primer tables (DNA preseq-1/2, RNA preseq-1/2) into a single
+--     queryable result with aggregated targets and projects. Not present in the
+--     old standalone repo, so this is a plain create rather than a recreate.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW public.view_mixed_preseq_primers AS
+  SELECT p.id, p.name, p.sequence_type, 'dna-preseq-1'::text AS primer_type, p.archived,
+    jsonb_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)) AS targets,
+    jsonb_agg(DISTINCT jsonb_build_object('id', pr.id, 'name', pr.name)) AS projects
+  FROM public.preseq_1_primers p
+  LEFT JOIN public.preseq_1_primer_targets pt ON pt.preseq_1_primer_id = p.id
+  LEFT JOIN public.targets t ON t.id = pt.target_id
+  LEFT JOIN public.projects pr ON pr.id = t.project_id
+  GROUP BY p.id
+  UNION ALL
+  SELECT p.id, p.name, p.sequence_type, 'dna-preseq-2'::text AS primer_type, p.archived,
+    jsonb_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)) AS targets,
+    jsonb_agg(DISTINCT jsonb_build_object('id', pr.id, 'name', pr.name)) AS projects
+  FROM public.preseq_2_primers p
+  LEFT JOIN public.targets t ON t.id = p.target_id
+  LEFT JOIN public.projects pr ON pr.id = t.project_id
+  GROUP BY p.id
+  UNION ALL
+  SELECT p.id, p.name, p.sequence_type, 'rna-preseq-1'::text AS primer_type, p.archived,
+    jsonb_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)) AS targets,
+    jsonb_agg(DISTINCT jsonb_build_object('id', pr.id, 'name', pr.name)) AS projects
+  FROM public.rna_preseq_1_primers p
+  LEFT JOIN public.rna_preseq_1_primer_targets pt ON pt.rna_preseq_1_primer_id = p.id
+  LEFT JOIN public.targets t ON t.id = pt.target_id
+  LEFT JOIN public.projects pr ON pr.id = t.project_id
+  GROUP BY p.id
+  UNION ALL
+  SELECT p.id, p.name, p.sequence_type, 'rna-preseq-2'::text AS primer_type, p.archived,
+    jsonb_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)) AS targets,
+    jsonb_agg(DISTINCT jsonb_build_object('id', pr.id, 'name', pr.name)) AS projects
+  FROM public.rna_preseq_2_primers p
+  LEFT JOIN public.rna_preseq_2_primer_targets pt ON pt.rna_preseq_2_primer_id = p.id
+  LEFT JOIN public.targets t ON t.id = pt.target_id
+  LEFT JOIN public.projects pr ON pr.id = t.project_id
+  GROUP BY p.id;
+
 -- =============================================================================
 -- SECTION 8: Register migrations with Drizzle's tracking table
 -- =============================================================================
@@ -624,6 +671,12 @@ ON CONFLICT DO NOTHING;
 -- sge-lims-app: plate_types and pcr_types tables (created above in Sections 3 and 4)
 INSERT INTO drizzle_migrations (hash, created_at)
 VALUES ('0001_create_plate_and_pcr_types', extract(epoch from now())::bigint * 1000)
+ON CONFLICT DO NOTHING;
+
+-- sge-lims-app: preseq-primer plate types + view_mixed_preseq_primers
+-- (plate types seeded in Section 3, view created above in Section 7d)
+INSERT INTO drizzle_migrations (hash, created_at)
+VALUES ('0002_mixed_preseq_primer_view', extract(epoch from now())::bigint * 1000)
 ON CONFLICT DO NOTHING;
 
 -- lims-layer: password_reset_tokens migration (applied above in Section 2)
@@ -654,6 +707,7 @@ COMMIT;
 --    SELECT COUNT(*) FROM view_plates_with_well_counts;
 --    SELECT COUNT(*) FROM view_ha_puc19_gibson_products_with_calcs;
 --    SELECT COUNT(*) FROM view_snv_lib_gibson_products;
+--    SELECT COUNT(*) FROM view_mixed_preseq_primers;
 --
 -- 5. Deploy the new monorepo app and confirm it starts without attempting to
 --    re-run the baseline migrations.
