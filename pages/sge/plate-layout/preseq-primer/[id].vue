@@ -23,9 +23,11 @@ onMounted(async () => {
     plateLayout.setPlateId(route.params.id as string)
     plateLayout.wellContentsDisplayConfig.value = {
         colorBy: [(wellContent: any) => {
+            if (_.get(wellContent, 'preseq2Primer')) {
+                return _.compact([_.get(wellContent, 'preseq2Primer.target.id')])
+            }
             return _.map(
                 _.get(wellContent, 'preseq1Primer.preseq1PrimerTargets') ||
-                _.get(wellContent, 'preseq2Primer') ||
                 _.get(wellContent, 'rnaPreseq1Primer.rnaPreseq1PrimerTargets') ||
                 _.get(wellContent, 'rnaPreseq2Primer.rnaPreseq2PrimerTargets'), 'target.id')
         }],
