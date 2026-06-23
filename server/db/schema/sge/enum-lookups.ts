@@ -176,6 +176,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'SNVlib Golden Gate product storage',
                 label: 'SNVlib Golden Gate product storage',
             },
+            'preseq-primer-plate': {
+                desc: 'PreSeq primer plate',
+                label: 'PreSeq primer plate',
+            },
+            'preseq-primer-storage': {
+                desc: 'PreSeq primer storage',
+                label: 'PreSeq primer storage',
+            },
         },
     },
     'pcrExperiments': {

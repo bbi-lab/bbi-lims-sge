@@ -21,7 +21,7 @@ import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgeOligoLots, sgeOligos, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
-import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples, viewMixedPreseqPrimers } from './views'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -267,6 +267,7 @@ const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWe
 const selectViewSequencingRunAllSamplesSchema = createSelectSchema(viewSequencingRunAllSamples)
 const selectViewHaPuc19GibsonProductsWithCalcsSchema = createSelectSchema(viewHaPuc19GibsonProductsWithCalcs)
 const selectViewSnvLibGibsonProductsSchema = createSelectSchema(viewSnvLibGibsonProducts)
+const selectViewMixedPreseqPrimersSchema = createSelectSchema(viewMixedPreseqPrimers)
 
 // export all schemas
 export const schemas = {
@@ -547,5 +548,8 @@ export const schemas = {
     },
     viewSnvLibGibsonProducts: {
         select: selectViewSnvLibGibsonProductsSchema
+    },
+    viewMixedPreseqPrimers: {
+        select: selectViewMixedPreseqPrimersSchema,
     },
 }

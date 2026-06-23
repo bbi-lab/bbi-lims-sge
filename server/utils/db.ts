@@ -27,7 +27,7 @@ import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPr
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, sgRnaOligoTargets, clonalHas, clonalHaTargets, sgeOligos, sgeOligoLots } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
-import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from '../db/schema/sge/views'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples, viewMixedPreseqPrimers } from '../db/schema/sge/views'
 import fs from 'node:fs'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
@@ -112,6 +112,7 @@ export const schema = {
   viewSequencingRunAllSamples,
   viewHaPuc19GibsonProductsWithCalcs,
   viewSnvLibGibsonProducts,
+  viewMixedPreseqPrimers,
 
   // relations
   usersRelations,

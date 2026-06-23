@@ -45,7 +45,9 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-lin-product-storage' |
  'snv-lib-gibson-product-storage' |
  'snv-lib-plasmid-storage' |
- 'snv-lib-golden-gate-product-storage'
+ 'snv-lib-golden-gate-product-storage' |
+ 'preseq-primer-plate' |
+ 'preseq-primer-storage'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
