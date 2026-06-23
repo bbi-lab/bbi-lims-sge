@@ -16,6 +16,7 @@
 --   6. Renames 18 user-FK columns to the new _id-suffix convention
 --   7. Drops and recreates 3 views that reference renamed columns / new tables
 --   8. Registers the new baseline migrations with Drizzle's tracking table
+--      (0000_sge_baseline, 0001_create_plate_and_pcr_types, 20260508153256_add_password_reset_tokens)
 --
 -- Safety:
 --   - Wrapped in a single transaction (all-or-nothing).
@@ -618,6 +619,11 @@ GROUP BY
 -- sge-lims-app: single baseline migration that consolidates all 180 old migrations
 INSERT INTO drizzle_migrations (hash, created_at)
 VALUES ('0000_sge_baseline', extract(epoch from now())::bigint * 1000)
+ON CONFLICT DO NOTHING;
+
+-- sge-lims-app: plate_types and pcr_types tables (created above in Sections 3 and 4)
+INSERT INTO drizzle_migrations (hash, created_at)
+VALUES ('0001_create_plate_and_pcr_types', extract(epoch from now())::bigint * 1000)
 ON CONFLICT DO NOTHING;
 
 -- lims-layer: password_reset_tokens migration (applied above in Section 2)
