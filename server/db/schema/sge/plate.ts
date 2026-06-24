@@ -31,11 +31,7 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-preseq-3' |
  'seq-index' |
  'clonal-ha' |
- 'dna-preseq-1-primer-storage' |
- 'dna-preseq-2-primer-storage' |
  'rna-rt-primer-storage' |
- 'rna-preseq-1-primer-storage' |
- 'rna-preseq-2-primer-storage' |
  'external-sample-indexing' |
  'ha-pcr-product-storage' |
  'ha-puc19-pcr-product-storage' |

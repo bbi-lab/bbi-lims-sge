@@ -1289,6 +1289,13 @@
       "when": 1782000000000,
       "tag": "0183_mixed-preseq-primer-view",
       "breakpoints": true
+    },
+    {
+      "idx": 184,
+      "version": "7",
+      "when": 1782247446120,
+      "tag": "0184_deprecate_preseq_primer_storage_plate_types",
+      "breakpoints": true
     }
   ]
 }
