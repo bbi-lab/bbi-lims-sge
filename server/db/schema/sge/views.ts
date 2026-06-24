@@ -423,7 +423,6 @@ export const viewMixedPreseqPrimers = pgView('view_mixed_preseq_primers', {
     targets: jsonb('targets').array(),
     projects: jsonb('projects').array(),
 }).as(sql`
-  CREATE OR REPLACE VIEW view_mixed_preseq_primers AS
   SELECT p.id, p.name, p.sequence_type, 'dna-preseq-1'::text AS primer_type, p.archived,
     jsonb_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)) AS targets,
     jsonb_agg(DISTINCT jsonb_build_object('id', pr.id, 'name', pr.name)) AS projects
