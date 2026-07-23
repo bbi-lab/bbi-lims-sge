@@ -14,6 +14,7 @@ export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   // targetId: uuid('target_id').references(() => targets.id).notNull(),
   // sgRnaCloningExperimentId: uuid('sg_rna_cloning_experiment_id').references(() => sgRnaCloningExperiments.id),
   verificationStatus: varchar('verification_status', {enum: ['passed', 'failed']}),
+  clonedOn: timestamp('cloned_on'),
   externalLink: text('external_link'),
   notes: text('notes'),
 }, (table) => [
@@ -34,7 +35,9 @@ export const snvLibPlasmids = pgTable('snv_lib_plasmids', {
   targetId: uuid('target_id').references(() => targets.id).notNull(),
   snvLibCloningExperimentId: uuid('snv_lib_cloning_experiment_id').references(() => snvLibCloningExperiments.id).unique(),
   plasmidsaurusVerification: boolean('plasmidsaurus_verification').default(false),
+  plasmidsaurusOrderId: varchar('plasmidsaurus_order_id', { length: 255 }),
   ngsVerificationStatus: varchar('ngs_verification_status', {enum: ['passed', 'failed']}),
+  clonedOn: timestamp('cloned_on'),
   externalLink: text('external_link'),
   notes: text('notes'),
 }, (table) => [

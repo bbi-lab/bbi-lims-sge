@@ -49,6 +49,9 @@ const columnDefs = {
     externalLink: {
         format: 'hyperlink',
     },
+    plasmidsaurusOrderId: {
+        header: 'Plasmidsaurus Order ID',
+    },
     targetId: { display: false},
 }
 const fieldDefs: FieldDefinitions = {
@@ -83,6 +86,12 @@ const fieldDefs: FieldDefinitions = {
     },
     quant: {
         label: 'Quant (ng/uL)',
+    },
+    clonedOn: {
+        type: 'date',
+    },
+    plasmidsaurusOrderId: {
+        label: 'Plasmidsaurus Order ID',
     },
 }
 const displayWithClause = {
@@ -132,6 +141,7 @@ const displayWithClause = {
                 :withClause="displayWithClause"
                 :where="whereClauses"
                 :canEditMultiple="true"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"

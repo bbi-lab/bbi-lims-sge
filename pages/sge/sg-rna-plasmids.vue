@@ -86,6 +86,9 @@ const fieldDefs: FieldDefinitions = {
     externalLink: {
         type: 'hyperlink',
     },
+    clonedOn: {
+        type: 'date',
+    },
 }
 const displayWithClause = {
     sgRnaPlasmidTargets: {
@@ -149,6 +152,7 @@ const rowActions = {}
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
