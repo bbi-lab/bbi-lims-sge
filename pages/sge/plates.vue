@@ -117,6 +117,7 @@ const fieldDefs = {
                 :canDelete="false"
                 :showColumnFilters="true"
                 :sortBy="['plateTypeLabel', 'name']"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
