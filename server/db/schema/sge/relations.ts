@@ -9,6 +9,7 @@ import { users } from '../user'
 import { projects } from './project'
 import { targets } from './target'
 import { genes } from './gene'
+import { ensemblRefseqIds } from './ensembl-refseq-ids'
 import { regions } from './region'
 import { cycles } from './cycle'
 import { pellets } from './pellet'
@@ -24,6 +25,13 @@ import { sgRnaCloningExperiments, snvLibCloningExperiments, haCloningExperiments
 import { externalSamples } from './external-samples'
 
 const genesRelationsConfig: RelationsConfig = {
+    one: {
+        ensemblRefseqId: {
+            fields: [genes.transcriptsAccession],
+            referenceTable: ensemblRefseqIds,
+            references: [ensemblRefseqIds.maneSelectRefseqAcc],
+        },
+    },
     many: {
         regions: {
             table: regions,

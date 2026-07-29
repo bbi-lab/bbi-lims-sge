@@ -10,6 +10,7 @@ import {wellContents, wells, wellContentSources, wellables} from '../db/schema/s
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
+import {ensemblRefseqIds} from '../db/schema/sge/ensembl-refseq-ids'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
@@ -53,6 +54,7 @@ export const schema = {
   projects,
   targets,
   genes,
+  ensemblRefseqIds,
   regions,
   cycles,
   snvLibPlasmids,
