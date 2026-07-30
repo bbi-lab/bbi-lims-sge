@@ -13,6 +13,9 @@ interface plasmidsToCreate {
     wellContentIds: string[],
 }
 
+// drizzle reports the failed SQL as the message; the reason (constraint violation, etc.) is on the cause
+const errorDetail = (error: any) => error.cause?.detail || error.cause?.message
+
 export default defineEventHandler(async (event) => {
     const { id: plateId } = event.context.params as {id: string}
 
@@ -80,6 +83,19 @@ export default defineEventHandler(async (event) => {
         }))
 
 
+        // plasmid names are unique, so report every collision up front rather than failing on the first insert
+        const plasmidNames = _.map(plasmidsToCreate, 'name')
+        const namesInUse = _.isEmpty(plasmidNames) ? [] : await db.query.sgRnaPlasmids.findMany({
+            columns: { name: true },
+            where: inArray(sgRnaPlasmids.name, plasmidNames),
+        })
+        if (!_.isEmpty(namesInUse)) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: `Plasmid name(s) already in use: ${_.map(namesInUse, 'name').sort().join(', ')}`,
+            })
+        }
+
         const result = await db.transaction(async (tx) => {
             for (const plasmid of plasmidsToCreate) {
                 try {
@@ -96,16 +112,18 @@ export default defineEventHandler(async (event) => {
                         wellableId: newPlasmid[0].id,
                     })
                 } catch (error: any) {
-                    throw new Error(`Failed to create plasmid ${plasmid.name}: ${error.message}`)
+                    const detail = errorDetail(error)
+                    throw new Error(`Failed to create plasmid ${plasmid.name}: ${detail || error.message}`)
                 }
             }
             await tx.update(plates).set({ plateType: 'sg-rna-plasmid' }).where(eq(plates.id, plateId))
         })
         return result
     } catch (error: any) {
+        const detail = errorDetail(error)
         throw createError({
             statusCode: 400,
-            statusMessage: error.message
+            statusMessage: detail ? `${error.message} — ${detail}` : error.message
         })
     }
 })

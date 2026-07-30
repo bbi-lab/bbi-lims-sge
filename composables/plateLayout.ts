@@ -137,11 +137,9 @@ export const usePlateLayout = <TWellable = Record<string, any>>() => {
         const colorCounts = _.countBy(_.values(_.filter(wellSpecs.value, 'color')), 'color')
         const syncedColorCounts = _.countBy(_.values(_.filter(toValue(wellContentsDisplayConfig.value?.syncedPlateWellSpecs), 'color')), 'color')
 
-        const unusedColors = _.difference(VALID_WELL_COLORS, _.keys(colorCounts ), _.keys(syncedColorCounts))
-        unusedColors.forEach((color) => {
-            colorCounts[color] = 0
-        })
-        return _.minBy(_.keys(colorCounts), (color) => colorCounts[color])
+        // rank the whole palette by use across this plate and the synced one, so an unused color still wins;
+        // choosing from the used colors alone yields undefined once the synced plate has taken every color
+        return _.minBy(VALID_WELL_COLORS, (color) => (colorCounts[color] || 0) + (syncedColorCounts[color] || 0))
     })
 
     const updateWellSpecs = () => {

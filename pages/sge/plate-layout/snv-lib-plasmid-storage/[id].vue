@@ -99,8 +99,8 @@ const columnDefs = {
     target: { path: 'target.name', index: 2 },
     targetId: { display: false },
     snvLibCloningExperimentId: { display: false },
-    externalLink: { display: false },
-    plasmidsaurusVerification: { display: false },
+    bacterialPlateImagesLink: { display: false },
+    benchlingLink: { display: false },
     ngsVerificationStatus: { display: false },
     wellContents: {
         header: 'Wells',

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { SgRnaPlasmid } from '~/server/db/schema/sge/plasmid'
-import { onTestFailed } from 'vitest'
 import { getWellTextColor, wellCoordinateToChar } from '~/lib/plate-diagram'
 
 const { breakpoints } = useLayout()

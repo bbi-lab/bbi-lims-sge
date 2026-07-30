@@ -41,16 +41,6 @@ const plamidPlateDisplayConfig = {
         const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
         return sgRnaPlasmid ? `${wellCoordinate}:<br>` + _.get(sgRnaPlasmid, 'name') : wellCoordinate
     },
-    symbol: (well: any) => {
-        const sgRnaPlasmid = _.get(well.wellContents, [0, 'wellable', 'sgRnaPlasmid'])
-        if (sgRnaPlasmid?.verificationStatus == 'passed') {
-            return '✓'
-        } else if (sgRnaPlasmid?.verificationStatus == 'failed') {
-            return 'x'
-        } else {
-            return ''
-        }
-    },
 }
 const sgRnaOligoPlateDisplayConfig = {
     colorBy: ['sgRnaOligo.id'],
@@ -274,6 +264,14 @@ const sgRnaPlasmidDisplayWithClause = {
                 columns: {
                     id: true,
                     name: true,
+                },
+                with: {
+                    project: {
+                        columns: {
+                            id: true,
+                            name: true,
+                        }
+                    }
                 }
             }
         },
@@ -308,7 +306,11 @@ const sgRnaPlasmidDisplayWithClause = {
     }
 }
 const sgRnaPlasmidTableColumnDefs = {
+    name: {
+        index: 0,
+    },
     sgRnaPlasmidTargets: {
+        header: 'Targets',
         format: (data: any) => {
             const targets = _.get(data, 'sgRnaPlasmidTargets', [])
             if (_.isEmpty(targets)) {
@@ -317,7 +319,16 @@ const sgRnaPlasmidTableColumnDefs = {
                 return _.map(targets, 'target.name')
             }
         },
+        index: 1,
         path: 'sgRnaPlasmidTargets.displayValue',
+    },
+    project: {
+        header: 'Project',
+        format: (data: any) => {
+            return _.join(_.uniq(_.compact(_.map(data.sgRnaPlasmidTargets, 'target.project.name'))), ',')
+        },
+        index: 2,
+        path: 'project.displayValue',
     },
     wellContents: { display: false },
     wellCoordinates: {
@@ -326,8 +337,17 @@ const sgRnaPlasmidTableColumnDefs = {
                 return `${wellContent.well?.plate?.name}: ${wellCoordinateToChar(wellContent.well?.y)}${wellContent.well?.x}`
             }).join(', ') || '-'
         },
+        index: 4,
         path: 'wellCoordinates.displayValue',
     },
+    benchlingLink: {
+        format: 'hyperlink',
+        index: 5,
+    },
+    genewizOrderNumber: {
+        header: 'GeneWiz Order Number',
+    },
+    targetId: { display: false},
 }
 const setCrudAndPlateLayoutTableRefs = (el: any) => {
     plateLayout.setSelectionTableRef(el)
@@ -470,7 +490,7 @@ const didUpdateMultipleRecords = async (record: any) => {
                 :columnDefs="sgRnaPlasmidTableColumnDefs"
                 :sortBy="['name']"
                 :withClause="sgRnaPlasmidDisplayWithClause"
-                :where="{'==': [{'var': 'wellContents.0.well.plateId'}, sgRnaCloningExperiment?.plates?.[0]?.id]}"
+                :where="{'some': [{'var': 'wellable.wellContents'}, {'==': [{'var': 'well.plateId'}, sgRnaCloningExperiment?.plate?.id]}]}"
                 :showColumnFilters="true"
                 emptyMessage=""
                 v-model:frozenRecordIds="sgRnaPlasmidTableFrozenRecordIds"

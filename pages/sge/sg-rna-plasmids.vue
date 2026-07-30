@@ -31,15 +31,21 @@ const columnDefs = {
         index: 1,
         path: 'sgRnaPlasmidTargets.displayValue',
     },
+    project: {
+        header: 'Project',
+        format: (data: any) => {
+            return _.join(_.uniq(_.compact(_.map(data.sgRnaPlasmidTargets, 'target.project.name'))), ',')
+        },
+        index: 2,
+        path: 'project.displayValue',
+    },
     plateWellLocation: {
         header: 'Plate: Well Location',
         format: (data: any) => {
-            const wellContents = data.wellable?.wellContents || []
-            if (wellContents.length > 0) {
-                const well = wellContents[0].well
+            return _.map(data.wellable?.wellContents || [], (wellContent: any) => {
+                const well = wellContent.well
                 return `${well.plate.name}: ${wellCoordinateToChar(well.y)}${well.x}`
-            }
-            return ''
+            }).join(', ')
         },
         path: 'plateWellLocation.displayValue',
         index: 4,
@@ -47,15 +53,19 @@ const columnDefs = {
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
         format: (data: any) => {
-            // each sgRNA plasmid should only be associated with one well and one cloning experiment
-            return data.wellable?.wellContents?.[0]?.well.plate?.sgRnaCloningExperiments?.[0]?.name || ''
+            return _.uniq(_.compact(_.flatMap(data.wellable?.wellContents || [], (wellContent: any) => {
+                return _.map(wellContent.well?.plate?.sgRnaCloningExperiments, 'name')
+            }))).join(', ')
         },
         path: 'sgRnaCloningExperiment.displayValue',
-        index: 2,
-    },
-    externalLink: {
-        format: 'hyperlink',
         index: 3,
+    },
+    benchlingLink: {
+        format: 'hyperlink',
+        index: 5,
+    },
+    genewizOrderNumber: {
+        header: 'GeneWiz Order Number',
     },
     targetId: { display: false},
     wellContents: { display: false },
@@ -83,8 +93,11 @@ const fieldDefs: FieldDefinitions = {
             ]
         },
     },
-    externalLink: {
+    benchlingLink: {
         type: 'hyperlink',
+    },
+    genewizOrderNumber: {
+        label: 'GeneWiz Order Number',
     },
     clonedOn: {
         type: 'date',
@@ -96,6 +109,7 @@ const displayWithClause = {
             target: {
                 columns: {name: true, id: true},
                 with: {
+                    project: {columns: {name: true}},
                     region: {
                         columns: {name: true},
                         with: {

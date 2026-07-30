@@ -27,6 +27,12 @@ const columnDefs = {
         type: 'string',
         index: 1,
     },
+    project: {
+        header: 'Project',
+        path: 'target.project.name',
+        type: 'string',
+        index: 2,
+    },
     snvLibCloningExperiment: {
         header: 'SNVlib Cloning Experiment',
         type: 'element',
@@ -37,20 +43,36 @@ const columnDefs = {
         exportValue: (data: any) => {
             return _.get(data, 'snvLibCloningExperiment.name', '')
         },
-        index: 1,
+        index: 3,
     },
     snvLibCloningExperimentId: { display: false},
     volume: {
         header: 'Volume (uL)',
+        index: 4,
     },
     quant: {
         header: 'Quant (ng/uL)',
+        index: 5,
     },
-    externalLink: {
+    clonedOn: {
+        header: 'Cloned On',
+        index: 6,
+    },
+    bacterialPlateImagesLink: {
         format: 'hyperlink',
+        index: 7,
+    },
+    benchlingLink: {
+        format: 'hyperlink',
+        index: 8,
     },
     plasmidsaurusOrderId: {
         header: 'Plasmidsaurus Order ID',
+        index: 9,
+    },
+    ngsVerificationStatus: {
+        header: 'NGS Verification Status',
+        index: 10,
     },
     targetId: { display: false},
 }
@@ -68,7 +90,10 @@ const fieldDefs: FieldDefinitions = {
             displayFields: ['name', 'region.gene.symbol', 'region.name'],
         }
     },
-    externalLink: {
+    bacterialPlateImagesLink: {
+        type: 'hyperlink',
+    },
+    benchlingLink: {
         type: 'hyperlink',
     },
     snvLibCloningExperimentId: {
@@ -93,11 +118,15 @@ const fieldDefs: FieldDefinitions = {
     plasmidsaurusOrderId: {
         label: 'Plasmidsaurus Order ID',
     },
+    ngsVerificationStatus: {
+        label: 'NGS Verification Status',
+    },
 }
 const displayWithClause = {
     target: {
         columns: {name: true},
         with: {
+            project: {columns: {name: true}},
             region: {
                 columns: {name: true},
                 with: {
