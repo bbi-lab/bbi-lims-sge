@@ -9,6 +9,34 @@ export type EnumLookup = {
     [fieldName: string]: EnumLookupEntry
 }
 
+// Shared progress status, applied to the `status` column of several tables.
+export const RECORD_STATUSES: EnumLookupEntry = {
+    'not-started': {
+        desc: 'Not started',
+        label: 'Not started',
+    },
+    'in-progress': {
+        desc: 'In progress',
+        label: 'In progress',
+    },
+    'on-hold': {
+        desc: 'On hold',
+        label: 'On hold',
+    },
+    'next-step-ready': {
+        desc: 'Next step ready',
+        label: 'Next step ready',
+    },
+    'complete': {
+        desc: 'Complete',
+        label: 'Complete',
+    },
+    'discarded': {
+        desc: 'Discarded',
+        label: 'Discarded',
+    },
+}
+
 export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
     'plates': {
         'plateType': {
@@ -221,6 +249,7 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'SNVlib PreSeq 3',
             },
         },
+        'status': RECORD_STATUSES,
     },
     'plasmidExperiments': {
         'experimentType': {
@@ -233,5 +262,23 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'SNVlib cloning',
             },
         },
+    },
+    'sgRnaPlasmids': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibPlasmids': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibAmpProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibLinProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibGibsonProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibGoldenGateProducts': {
+        'status': RECORD_STATUSES,
     },
 } as const

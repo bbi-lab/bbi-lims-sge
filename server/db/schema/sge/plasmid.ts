@@ -5,6 +5,7 @@ import { targets } from './target'
 import { sql } from 'drizzle-orm/sql'
 import { haPuc19GibsonProducts } from './oligos'
 import { users } from '../user'
+import { recordStatusEnum } from './status'
 
 export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
@@ -16,6 +17,7 @@ export const sgRnaPlasmids = pgTable('sg_rna_plasmids', {
   clonedOn: timestamp('cloned_on'),
   genewizOrderNumber: varchar('genewiz_order_number', { length: 255 }),
   benchlingLink: text('benchling_link'),
+  status: recordStatusEnum('status'),
   notes: text('notes'),
 }, (table) => [
   check("benchling_link_check", sql`${table.benchlingLink} ~* '^https?://.+$'`),
@@ -39,6 +41,7 @@ export const snvLibPlasmids = pgTable('snv_lib_plasmids', {
   bacterialPlateImagesLink: text('bacterial_plate_images_link'),
   benchlingLink: text('benchling_link'),
   ngsVerificationStatus: varchar('ngs_verification_status', {enum: ['passed', 'failed']}),
+  status: recordStatusEnum('status'),
   notes: text('notes'),
 }, (table) => [
   check("benchling_link_check", sql`${table.benchlingLink} ~* '^https?://.+$'`),
