@@ -14,9 +14,10 @@ export interface RecordValues {[key: string]: string | number | boolean | null |
 const db = useDrizzle()
 
 function expandEnumValues(records: any, tableName: string): void {
-    if (!ENUM_LOOKUPS[tableName]) return
+    // callers pass the Postgres table name, while ENUM_LOOKUPS is keyed by the camelCase record type
+    const enumLookup = ENUM_LOOKUPS[_.camelCase(tableName)]
+    if (!enumLookup) return
 
-    const enumLookup = ENUM_LOOKUPS[tableName]
     if (_.isArray(records)) {
         _.forEach(records, (record) => {
             _.forEach(record, (value, key) => {

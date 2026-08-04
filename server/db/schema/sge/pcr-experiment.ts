@@ -7,7 +7,7 @@ import { transfectTargets } from './transfect-experiment'
 import { plates } from './plate'
 import { recordStatusEnum } from './status'
 
-export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'preseq-1' | 'preseq-2' | 'preseq-3' | 'dna-preseq-1' | 'dna-preseq-2' | 'dna-preseq-3'| 'rna-rt' | 'rna-preseq-1' | 'rna-preseq-2' | 'rna-preseq-3'| 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
+export type PcrType = 'amp-pcr' | 'lin-pcr' | 'ha-pcr' | 'dna-preseq-1' | 'dna-preseq-2' | 'dna-preseq-3'| 'rna-rt' | 'rna-preseq-1' | 'rna-preseq-2' | 'rna-preseq-3'| 'snv-lib-preseq-2' | 'snv-lib-preseq-3'
 
 export const pcrExperiments = pgTable('pcr_experiments', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),
