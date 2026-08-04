@@ -17,9 +17,6 @@ export type PlateType = 'pellet-storage' |
  'amp-pcr' |
  'lin-pcr' |
  'ha-pcr' |
- 'preseq-1' |
- 'preseq-2' |
- 'preseq-3' |
  'dna-preseq-1' |
  'dna-preseq-2' |
  'dna-preseq-3' |

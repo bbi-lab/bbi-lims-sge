@@ -51,19 +51,19 @@ describe('queryParamsToJsonLogic', () => {
 
     it('creates "in" filter for simple param with multiple values', () => {
         const result = queryParamsToJsonLogic({
-            plateType: ['preseq-2', 'seq-index']
+            plateType: ['dna-preseq-2', 'seq-index']
         })
         expect(result).toEqual([{
-            "in": [{ "var": "plateType" }, ["preseq-2", "seq-index"]]
+            "in": [{ "var": "plateType" }, ["dna-preseq-2", "seq-index"]]
         }])
     })
 
     it('filters out null values from multi-value arrays', () => {
         const result = queryParamsToJsonLogic({
-            plateType: [null, 'preseq-2']
+            plateType: [null, 'dna-preseq-2']
         })
         expect(result).toEqual([{
-            "==": [{ "var": "plateType" }, "preseq-2"]
+            "==": [{ "var": "plateType" }, "dna-preseq-2"]
         }])
     })
 

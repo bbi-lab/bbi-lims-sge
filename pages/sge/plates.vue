@@ -48,7 +48,7 @@ const columnDefs = {
         header: 'Wells processed',
         index: 3,
         format: (data: any) => {
-            return _.includes(['preseq-1', 'preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
+            return _.includes(['dna-preseq-1', 'dna-preseq-2', 'rna-preseq-1', 'rna-preseq-2'], data.plateType) ? data.wellsProcessedCount : ''
         },
         path: 'wellsProcessed.displayValue',
     },
@@ -73,8 +73,8 @@ const fieldDefs = {
         props: {
             options: _.sortBy(_.map(ENUM_LOOKUPS.plates.plateType, (value, key) => {
                 // disable PCR plate types that should only be generated on experiment creation
-                const pattern = /^preseq-|-pcr$|^[d|r]na-preseq-/
-                if (pattern.test(key) && !_.endsWith(key, '-storage') && key !== 'preseq-primer') {
+                const pattern = /-pcr$|^[d|r]na-preseq-/
+                if (pattern.test(key) && !_.endsWith(key, '-storage')) {
                     return { label: value.label, code: key, disabled: true }
                 } else {
                     return { label: value.label, code: key }
