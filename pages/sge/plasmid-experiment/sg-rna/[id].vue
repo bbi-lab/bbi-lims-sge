@@ -309,6 +309,14 @@ const sgRnaPlasmidTableColumnDefs = {
     name: {
         index: 0,
     },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
     sgRnaPlasmidTargets: {
         header: 'Targets',
         format: (data: any) => {
@@ -319,7 +327,7 @@ const sgRnaPlasmidTableColumnDefs = {
                 return _.map(targets, 'target.name')
             }
         },
-        index: 1,
+        index: 2,
         path: 'sgRnaPlasmidTargets.displayValue',
     },
     project: {
@@ -327,7 +335,7 @@ const sgRnaPlasmidTableColumnDefs = {
         format: (data: any) => {
             return _.join(_.uniq(_.compact(_.map(data.sgRnaPlasmidTargets, 'target.project.name'))), ',')
         },
-        index: 2,
+        index: 3,
         path: 'project.displayValue',
     },
     wellContents: { display: false },
@@ -337,12 +345,12 @@ const sgRnaPlasmidTableColumnDefs = {
                 return `${wellContent.well?.plate?.name}: ${wellCoordinateToChar(wellContent.well?.y)}${wellContent.well?.x}`
             }).join(', ') || '-'
         },
-        index: 4,
+        index: 5,
         path: 'wellCoordinates.displayValue',
     },
     benchlingLink: {
         format: 'hyperlink',
-        index: 5,
+        index: 6,
     },
     genewizOrderNumber: {
         header: 'GeneWiz Order Number',
@@ -354,6 +362,12 @@ const setCrudAndPlateLayoutTableRefs = (el: any) => {
     crudTable.setTableRef(el)
 }
 const sgRnaPlasmidFieldDefs = {
+    name: {
+        index: 0,
+    },
+    status: {
+        index: 1,
+    },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',

@@ -25,13 +25,13 @@ const columnDefs = {
     target: {
         path: 'target.name',
         type: 'string',
-        index: 1,
+        index: 2,
     },
     project: {
         header: 'Project',
         path: 'target.project.name',
         type: 'string',
-        index: 2,
+        index: 3,
     },
     snvLibCloningExperiment: {
         header: 'SNVlib Cloning Experiment',
@@ -43,40 +43,54 @@ const columnDefs = {
         exportValue: (data: any) => {
             return _.get(data, 'snvLibCloningExperiment.name', '')
         },
-        index: 3,
+        index: 4,
     },
     snvLibCloningExperimentId: { display: false},
     volume: {
         header: 'Volume (uL)',
-        index: 4,
+        index: 5,
     },
     quant: {
         header: 'Quant (ng/uL)',
-        index: 5,
+        index: 6,
     },
     clonedOn: {
         header: 'Cloned On',
-        index: 6,
+        index: 7,
     },
     bacterialPlateImagesLink: {
         format: 'hyperlink',
-        index: 7,
+        index: 8,
     },
     benchlingLink: {
         format: 'hyperlink',
-        index: 8,
+        index: 9,
     },
     plasmidsaurusOrderId: {
         header: 'Plasmidsaurus Order ID',
-        index: 9,
+        index: 10,
     },
     ngsVerificationStatus: {
         header: 'NGS Verification Status',
-        index: 10,
+        index: 11,
     },
     targetId: { display: false},
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
 }
 const fieldDefs: FieldDefinitions = {
+    name: {
+        index: 0,
+    },
+    status: {
+        index: 1,
+    },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',

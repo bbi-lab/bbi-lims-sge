@@ -18,19 +18,19 @@ async function didAddRecord(event: any) {
 const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time',
-        index: 2,
+        index: 3,
     },
     plate: {
         display: false,
     },
     technician: {
         path: 'technician.name',
-        index: 3,
+        index: 4,
     },
     pcrType: {
         header: 'Type',
         path: 'pcrType.label',
-        index: 1,
+        index: 2,
     },
     transfectTargetId: {
         display: false,
@@ -57,6 +57,14 @@ const columnDefs: ColumnDefinitions = {
     },
     pcrExperimentTargets: {
         display: false,
+    },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
     },
 }
 const rowActions = {
@@ -90,8 +98,11 @@ const addFieldDefs = {
     name: {
         index: 1,
     },
-    technician: {
+    status: {
         index: 2,
+    },
+    technician: {
+        index: 3,
     },
     pcrType: {
         events: {
@@ -106,7 +117,7 @@ const addFieldDefs = {
                 }
             },
         },
-        index: 3,
+        index: 4,
     },
     plateId: {
         // only display with widget for RNA RT experiments, all other PCR experiments have 96-well plates created automatically
@@ -125,7 +136,7 @@ const addFieldDefs = {
                 '==': [{'var': 'plateType'}, 'rna-rt-storage'],
             },
         },
-        index: 4,
+        index: 5,
     },
     startedOn: {
         type: 'date',

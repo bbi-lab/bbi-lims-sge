@@ -28,7 +28,7 @@ const columnDefs = {
         format: (data: any) => {
             return _.map(data.sgRnaPlasmidTargets, 'target.name')
         },
-        index: 1,
+        index: 2,
         path: 'sgRnaPlasmidTargets.displayValue',
     },
     project: {
@@ -36,7 +36,7 @@ const columnDefs = {
         format: (data: any) => {
             return _.join(_.uniq(_.compact(_.map(data.sgRnaPlasmidTargets, 'target.project.name'))), ',')
         },
-        index: 2,
+        index: 3,
         path: 'project.displayValue',
     },
     plateWellLocation: {
@@ -48,7 +48,7 @@ const columnDefs = {
             }).join(', ')
         },
         path: 'plateWellLocation.displayValue',
-        index: 4,
+        index: 5,
     },
     sgRnaCloningExperiment: {
         header: 'sgRNA Cloning Experiment',
@@ -58,19 +58,33 @@ const columnDefs = {
             }))).join(', ')
         },
         path: 'sgRnaCloningExperiment.displayValue',
-        index: 3,
+        index: 4,
     },
     benchlingLink: {
         format: 'hyperlink',
-        index: 5,
+        index: 6,
     },
     genewizOrderNumber: {
         header: 'GeneWiz Order Number',
     },
     targetId: { display: false},
     wellContents: { display: false },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
 }
 const fieldDefs: FieldDefinitions = {
+    name: {
+        index: 0,
+    },
+    status: {
+        index: 1,
+    },
     'sgRnaPlasmidTargets.*': {
         label: 'Targets',
         component: 'InputArray',

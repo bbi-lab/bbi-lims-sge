@@ -33,7 +33,7 @@ const columnDefs: ColumnDefinitions = {
         exportValue: (data: any) => {
             return _.get(data.snvLibCloningExperiment, 'name', '')
         },
-        index: 1,
+        index: 2,
     },
     ampPrimers: {
         header: 'AMP Primers',
@@ -47,13 +47,13 @@ const columnDefs: ColumnDefinitions = {
             return _.compact([data.ampPrimerForward?.name, data.ampPrimerReverse?.name ]).join(', ')
         },
         path: 'ampPrimers.displayValue',
-        index: 2,
+        index: 3,
     },
     sgeOligoId: { display: false },
     sgeOligo: {
         header: 'SGE Oligo',
         path: 'sgeOligo.name',
-        index: 3,
+        index: 4,
     },
     lots: {
         header: 'Lot(s)',
@@ -61,13 +61,13 @@ const columnDefs: ColumnDefinitions = {
             return _.join(_.compact(_.map(data.sgeOligo?.sgeOligoLots, (sgeOligoLot: any) => sgeOligoLot.lot?.lotNumber)), ', ')
         },
         path: 'lots.displayValue',
-        index: 4,
-    },
-    startPosition: {
         index: 5,
     },
-    stopPosition: {
+    startPosition: {
         index: 6,
+    },
+    stopPosition: {
+        index: 7,
     },
     length: {
         header: 'Length (bp)',
@@ -79,7 +79,7 @@ const columnDefs: ColumnDefinitions = {
             }
         },
         path: 'length.displayValue',
-        index: 7,
+        index: 8,
     },
     snvLibCloningExperimentId: { display: false },
     ampPrimerForwardId: { display: false },
@@ -90,6 +90,14 @@ const columnDefs: ColumnDefinitions = {
     cleanedBy: {
         path: 'cleanedBy.name'
     },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
 }
 // fieldDefs is computed so we can access crudTable.state.editingRecord and crudTable.state.editingMultipleRecordsIds
 // to apply additional logic to certain properties (e.g. readOnly, searchWhereClause)
@@ -97,6 +105,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
     return {
         name: {
             index: 0,
+        },
+        status: {
+            index: 1,
         },
         snvLibCloningExperimentId: {
             label: 'SNV Library Cloning Experiment',
@@ -108,7 +119,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 displayFields: ['name'],
                 dropdown: true,
             },
-            index: 1,
+            index: 2,
         },
         ampPrimerForwardId: {
             label: 'AMP Primer Forward',
@@ -129,7 +140,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
-            index: 2,
+            index: 3,
         },
         ampPrimerReverseId: {
             label: 'AMP Primer Reverse',
@@ -150,7 +161,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
-            index: 3,
+            index: 4,
         },
         quant: {
             label: 'Quant (ng/µL)',

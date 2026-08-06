@@ -33,7 +33,7 @@ const columnDefs: ColumnDefinitions = {
         exportValue: (data: any) => {
             return _.get(data.snvLibCloningExperiment, 'name', '')
         },
-        index: 1,
+        index: 2,
     },
     linPrimers: {
         header: 'LIN Primers',
@@ -47,13 +47,13 @@ const columnDefs: ColumnDefinitions = {
             return _.compact([data.linPrimerForward?.name, data.linPrimerReverse?.name]).join(', ')
         },
         path: 'linPrimers.displayValue',
-        index: 2,
+        index: 3,
     },
     haPuc19PlasmidId: { display: false },
     haPuc19Plasmid: {
         header: 'HA pUC19 Plasmid',
         path: 'haPuc19Plasmid.name',
-        index: 3,
+        index: 4,
     },
     snvLibCloningExperimentId: { display: false },
     linPrimerForwardId: { display: false },
@@ -71,6 +71,14 @@ const columnDefs: ColumnDefinitions = {
     gelExtractedBy: {
         path: 'gelExtractedBy.name'
     },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
 }
 // fieldDefs is computed so we can access crudTable.state.editingRecord and crudTable.state.editingMultipleRecordsIds
 // to apply additional logic to certain properties (e.g. readOnly, searchWhereClause)
@@ -78,6 +86,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
     return {
         name: {
             index: 0,
+        },
+        status: {
+            index: 1,
         },
         snvLibCloningExperimentId: {
             label: 'SNV Library Cloning Experiment',
@@ -89,7 +100,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 displayFields: ['name'],
                 dropdown: true,
             },
-            index: 1,
+            index: 2,
         },
         linPrimerForwardId: {
             label: 'LIN Primer Forward',
@@ -109,7 +120,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
-            index: 2,
+            index: 3,
         },
         linPrimerReverseId: {
             label: 'LIN Primer Reverse',
@@ -129,7 +140,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 },
             },
             readOnly: !_.isEmpty(crudTable.state.editingMultipleRecordsIds),
-            index: 3,
+            index: 4,
         },
         quant: {
             label: 'Quant (ng/µL)',

@@ -3,7 +3,8 @@ const primeui = require("tailwindcss-primeui");
 const { addIconSelectors } = require("@iconify/tailwind");
 
 module.exports = {
-    content: ["./components/**/*.{js,vue,ts}", "./layouts/**/*.vue", "./pages/**/*.vue", "./plugins/**/*.{js,ts}", "./nuxt.config.{js,ts}", "./app.vue", "./error.vue"],
+    // utils is scanned because utils/recordStatus.ts holds the status pill class names
+    content: ["./components/**/*.{js,vue,ts}", "./layouts/**/*.vue", "./pages/**/*.vue", "./plugins/**/*.{js,ts}", "./utils/**/*.ts", "./nuxt.config.{js,ts}", "./app.vue", "./error.vue"],
     plugins: [
         primeui,
     // Iconify plugin for clean selectors, requires writing a list of icon sets to load
