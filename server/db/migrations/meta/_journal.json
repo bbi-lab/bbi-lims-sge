@@ -1352,6 +1352,13 @@
       "when": 1785884196495,
       "tag": "0192_drop_legacy_preseq_plate_types",
       "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1785891035203,
+      "tag": "0193_add_status_to_snv_lib_gibson_products_view",
+      "breakpoints": true
     }
   ]
 }

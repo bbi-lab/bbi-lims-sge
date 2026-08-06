@@ -2,6 +2,9 @@ export type EnumLookupEntry = {
     [value: string]: {
         desc: string
         label: string
+        // Tailwind palette name, not a class name. utils/recordStatus.ts maps it to the classes that
+        // draw the tag, so the class strings stay in a directory Tailwind scans.
+        color?: string
     }
 }
 
@@ -14,26 +17,32 @@ export const RECORD_STATUSES: EnumLookupEntry = {
     'not-started': {
         desc: 'Not started',
         label: 'Not started',
+        color: 'slate',
     },
     'in-progress': {
         desc: 'In progress',
         label: 'In progress',
+        color: 'blue',
     },
     'on-hold': {
         desc: 'On hold',
         label: 'On hold',
+        color: 'amber',
     },
     'next-step-ready': {
         desc: 'Next step ready',
         label: 'Next step ready',
+        color: 'violet',
     },
     'complete': {
         desc: 'Complete',
         label: 'Complete',
+        color: 'emerald',
     },
     'discarded': {
         desc: 'Discarded',
         label: 'Discarded',
+        color: 'red',
     },
 }
 
