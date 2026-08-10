@@ -103,7 +103,7 @@ const model = ref([
                     },
                     {
                         label: 'Primer3',
-                        url: 'https://bioinfo.ut.ee/primer3-0.4.0',
+                        url: 'https://primer3.ut.ee',
                         target: '_blank',
                     },
                 ]
