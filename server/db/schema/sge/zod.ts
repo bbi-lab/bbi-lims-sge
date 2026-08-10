@@ -21,7 +21,7 @@ import { wellContents, wellContentSources, wells } from './well'
 import { sequencingRuns, sequencingRunSamples, sequencingRunExternalSamples } from './sequencing-run'
 import { clonalHas, haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgeOligoLots, sgeOligos, sgRnaOligos, snvLibAmpProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, snvLibLinProducts } from './oligos'
 import { externalSamples } from './external-samples'
-import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from './views'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples, viewMixedPreseqPrimers } from './views'
 
 // tables
 const selectProjectSchema = createSelectSchema(projects, {startedOn: nullableDateSchema})
@@ -203,11 +203,11 @@ const insertReagentsSchema = createSelectSchema(reagents).omit({id: true})
 const updateReagentsSchema = insertReagentsSchema
 
 const selectSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids)
-const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
+const insertSgRnaPlasmidsSchema = createSelectSchema(sgRnaPlasmids, {benchlingLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable(), clonedOn: nullableDateSchema}).omit({id: true})
 const updateSgRnaPlasmidsSchema = insertSgRnaPlasmidsSchema
 
 const selectSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids)
-const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids, {externalLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable()}).omit({id: true})
+const insertSnvLibPlasmidsSchema = createSelectSchema(snvLibPlasmids, {benchlingLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable(), bacterialPlateImagesLink: z.string().regex(new RegExp(/^https?:\/\/[^\s\/$.?#].[^\s]*$/i)).nullable(), clonedOn: nullableDateSchema}).omit({id: true})
 const updateSnvLibPlasmidsSchema = insertSnvLibPlasmidsSchema
 
 const selectSgRnaOligosSchema = createSelectSchema(sgRnaOligos)
@@ -267,6 +267,7 @@ const selectViewPlatesWithWellCountsSchema = createSelectSchema(viewPlatesWithWe
 const selectViewSequencingRunAllSamplesSchema = createSelectSchema(viewSequencingRunAllSamples)
 const selectViewHaPuc19GibsonProductsWithCalcsSchema = createSelectSchema(viewHaPuc19GibsonProductsWithCalcs)
 const selectViewSnvLibGibsonProductsSchema = createSelectSchema(viewSnvLibGibsonProducts)
+const selectViewMixedPreseqPrimersSchema = createSelectSchema(viewMixedPreseqPrimers)
 
 // export all schemas
 export const schemas = {
@@ -547,5 +548,8 @@ export const schemas = {
     },
     viewSnvLibGibsonProducts: {
         select: selectViewSnvLibGibsonProductsSchema
+    },
+    viewMixedPreseqPrimers: {
+        select: selectViewMixedPreseqPrimersSchema,
     },
 }

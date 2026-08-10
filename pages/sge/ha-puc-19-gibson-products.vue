@@ -184,6 +184,7 @@ const fieldDefs: FieldDefinitions = {
                 :canEditMultiple="true"
                 :canDelete="false"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

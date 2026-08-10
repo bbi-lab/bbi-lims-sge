@@ -32,9 +32,13 @@ export async function refineJsonSchema(jsonSchema:JsonSchema7Type, relationsConf
       }
       if (enumLookup && Object.keys(enumLookup).includes(property)) {
         const enumLookupProperty = enumLookup[property]
+        // nullable columns arrive as an anyOf with a null branch; give those a (none) option so a
+        // value set by mistake can be cleared, the way the users property above does
+        const nullable = _.some(_.get(jsonSchema, ['properties', property, 'anyOf']), {type: 'null'})
+        const options = _.map(enumLookupProperty, (val, key) => { return { const: key, title: val.label } })
         const enumLookupJsonSchemaProperty:JsonSchema7AnyType = {
           type: 'string',
-          oneOf: _.map(enumLookupProperty, (val, key) => { return { const: key, title: val.label } }),
+          oneOf: nullable ? [{ const: null, title: '(none)' }, ...options] : options,
         }
         _.set(jsonSchema, ['properties', property], enumLookupJsonSchemaProperty)
       }

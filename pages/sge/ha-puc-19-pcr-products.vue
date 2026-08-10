@@ -45,11 +45,12 @@ const columnDefs = {
     haPcrProductId: { display: false },
     haPuc19PrimerForwardId: { display: false },
     haPuc19PrimerReverseId: { display: false },
+    haPuc19GibsonProducts: { display: false },
     temperatureUsed: {
         header: 'Temp. Used (°C)',
     },
     cleanedBy: {
-        path: 'performedBy.name'
+        path: 'cleanedBy.name'
     },
 }
 const fieldDefs: FieldDefinitions = {
@@ -95,7 +96,7 @@ const fieldDefs: FieldDefinitions = {
     wtHap1DnaConcentration: {
         label: 'WT HAP1 DNA Concentration (ng/µL)',
     },
-    performedBy: {
+    cleanedBy: {
         component: 'AutoCompleter',
         props: {
             searchBaseUrl: `${config.public.apiBase}/users`,
@@ -160,6 +161,7 @@ const displayWithClause = {
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

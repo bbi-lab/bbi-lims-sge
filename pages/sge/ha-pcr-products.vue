@@ -201,6 +201,7 @@ const displayWithClause = {
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
                 sortField="name"
                 :sortOrder="1"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

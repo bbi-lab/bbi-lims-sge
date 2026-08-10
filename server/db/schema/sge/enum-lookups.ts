@@ -2,11 +2,48 @@ export type EnumLookupEntry = {
     [value: string]: {
         desc: string
         label: string
+        // Tailwind palette name, not a class name. utils/recordStatus.ts maps it to the classes that
+        // draw the tag, so the class strings stay in a directory Tailwind scans.
+        color?: string
     }
 }
 
 export type EnumLookup = {
     [fieldName: string]: EnumLookupEntry
+}
+
+// Shared progress status, applied to the `status` column of several tables.
+export const RECORD_STATUSES: EnumLookupEntry = {
+    'not-started': {
+        desc: 'Not started',
+        label: 'Not started',
+        color: 'slate',
+    },
+    'in-progress': {
+        desc: 'In progress',
+        label: 'In progress',
+        color: 'blue',
+    },
+    'on-hold': {
+        desc: 'On hold',
+        label: 'On hold',
+        color: 'amber',
+    },
+    'next-step-ready': {
+        desc: 'Next step ready',
+        label: 'Next step ready',
+        color: 'violet',
+    },
+    'complete': {
+        desc: 'Complete',
+        label: 'Complete',
+        color: 'emerald',
+    },
+    'discarded': {
+        desc: 'Discarded',
+        label: 'Discarded',
+        color: 'red',
+    },
 }
 
 export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
@@ -60,18 +97,6 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Homology arm primer PCR',
                 label: 'HA PCR',
             },
-            'preseq-1': {
-                desc: 'PreSeq 1',
-                label: 'PreSeq 1',
-            },
-            'preseq-2': {
-                desc: 'PreSeq 2',
-                label: 'PreSeq 2',
-            },
-            'preseq-3': {
-                desc: 'PreSeq 3',
-                label: 'PreSeq 3',
-            },
             'dna-preseq-1': {
                 desc: 'DNA PreSeq 1',
                 label: 'DNA PreSeq 1',
@@ -116,25 +141,9 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 desc: 'Clonal HA plate',
                 label: 'Clonal HA plate',
             },
-            'dna-preseq-1-primer-storage': {
-                desc: 'DNA PreSeq 1 primer storage',
-                label: 'DNA PreSeq 1 primer storage',
-            },
-            'dna-preseq-2-primer-storage': {
-                desc: 'DNA PreSeq 2 primer storage',
-                label: 'DNA PreSeq 2 primer storage',
-            },
             'rna-rt-primer-storage': {
                 desc: 'RNA RT primer storage',
                 label: 'RNA RT primer storage',
-            },
-            'rna-preseq-1-primer-storage': {
-                desc: 'RNA PreSeq 1 primer storage',
-                label: 'RNA PreSeq 1 primer storage',
-            },
-            'rna-preseq-2-primer-storage': {
-                desc: 'RNA PreSeq 2 primer storage',
-                label: 'RNA PreSeq 2 primer storage',
             },
             'external-sample-indexing': {
                 desc: 'External sample indexing',
@@ -175,6 +184,14 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
             'snv-lib-golden-gate-product-storage': {
                 desc: 'SNVlib Golden Gate product storage',
                 label: 'SNVlib Golden Gate product storage',
+            },
+            'preseq-primer': {
+                desc: 'PreSeq primer plate',
+                label: 'PreSeq primer plate',
+            },
+            'preseq-primer-storage': {
+                desc: 'PreSeq primer storage',
+                label: 'PreSeq primer storage',
             },
         },
     },
@@ -229,6 +246,7 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'SNVlib PreSeq 3',
             },
         },
+        'status': RECORD_STATUSES,
     },
     'plasmidExperiments': {
         'experimentType': {
@@ -241,5 +259,23 @@ export const ENUM_LOOKUPS: {[tableName: string]: EnumLookup} = {
                 label: 'SNVlib cloning',
             },
         },
+    },
+    'sgRnaPlasmids': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibPlasmids': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibAmpProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibLinProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibGibsonProducts': {
+        'status': RECORD_STATUSES,
+    },
+    'snvLibGoldenGateProducts': {
+        'status': RECORD_STATUSES,
     },
 } as const

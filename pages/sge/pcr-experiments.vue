@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { ENUM_LOOKUPS } from '~/server/db/schema/sge/enum-lookups'
 import PhGridNineFill from '~icons/ph/grid-nine-fill'
 
 const router = useRouter()
@@ -14,20 +13,24 @@ async function didAddRecord(event: any) {
     crudTable.state.showAddForm = false
 }
 
+// the table requests expanded enums, so a table record's pcrType is {value, label, desc} rather
+// than the bare value. Form records are fetched unexpanded and still hold the bare value.
 const columnDefs: ColumnDefinitions = {
     startedOn: {
         format: 'date-time',
-        index: 2,
+        index: 3,
     },
     plate: {
         display: false,
     },
     technician: {
         path: 'technician.name',
-        index: 3,
+        index: 4,
     },
     pcrType: {
-        display: false,
+        header: 'Type',
+        path: 'pcrType.label',
+        index: 2,
     },
     transfectTargetId: {
         display: false,
@@ -40,14 +43,6 @@ const columnDefs: ColumnDefinitions = {
     },
     notes: {
         display: false,
-    },
-    pcrTypeLabel: {
-        header: 'Type',
-        format: (x: any) => {
-            return _.get(ENUM_LOOKUPS.pcrExperiments.pcrType, [x.pcrType, 'label'])
-        },
-        path: 'pcrTypeLabel.displayValue',
-        index: 1,
     },
     cycleTarget: {
         header: 'Cycle: target(s)',
@@ -63,12 +58,20 @@ const columnDefs: ColumnDefinitions = {
     pcrExperimentTargets: {
         display: false,
     },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
+    },
 }
 const rowActions = {
     plate: {
         label: (data: any) => { return `${data.plate ? 1 : 0}`},
         action: (data: any) => {
-            const plateType = data.pcrType == 'rna-rt' ? 'rna-rt-storage' : data.pcrType
+            const plateType = data.pcrType.value == 'rna-rt' ? 'rna-rt-storage' : data.pcrType.value
             router.push({path:`/sge/plate-layout/${plateType}/${data.plate?.id}`})
         },
         iconComponent: PhGridNineFill,
@@ -77,15 +80,15 @@ const rowActions = {
     },
     volume: {
         action: (data: any) => {
-            if (['dna-preseq-1', 'rna-preseq-1'].includes(data.pcrType)) {
+            if (['dna-preseq-1', 'rna-preseq-1'].includes(data.pcrType.value)) {
                 router.push({path: `/sge/preseq-1/volume-calcs/${data.id}`})
-            } else if (['dna-preseq-2', 'rna-preseq-2'].includes(data.pcrType)) {
+            } else if (['dna-preseq-2', 'rna-preseq-2'].includes(data.pcrType.value)) {
                 router.push({path: `/sge/preseq-2/volume-calcs/${data.id}`})
-            } else if (['dna-preseq-3', 'rna-preseq-3'].includes(data.pcrType)) {
+            } else if (['dna-preseq-3', 'rna-preseq-3'].includes(data.pcrType.value)) {
                 router.push({path: `/sge/preseq-3/volume-calcs/${data.id}`})
             }
         },
-        visible: (data: any) => ['dna-preseq-1', 'rna-preseq-1', 'dna-preseq-2', 'rna-preseq-2', 'dna-preseq-3', 'rna-preseq-3'].includes(data.pcrType),
+        visible: (data: any) => ['dna-preseq-1', 'rna-preseq-1', 'dna-preseq-2', 'rna-preseq-2', 'dna-preseq-3', 'rna-preseq-3'].includes(data.pcrType.value),
         tooltip: 'Volume calcs',
         icon: 'pi pi-calculator',
         iconPos: 'right',
@@ -95,8 +98,11 @@ const addFieldDefs = {
     name: {
         index: 1,
     },
-    technician: {
+    status: {
         index: 2,
+    },
+    technician: {
+        index: 3,
     },
     pcrType: {
         events: {
@@ -111,7 +117,7 @@ const addFieldDefs = {
                 }
             },
         },
-        index: 3,
+        index: 4,
     },
     plateId: {
         // only display with widget for RNA RT experiments, all other PCR experiments have 96-well plates created automatically
@@ -130,7 +136,7 @@ const addFieldDefs = {
                 '==': [{'var': 'plateType'}, 'rna-rt-storage'],
             },
         },
-        index: 4,
+        index: 5,
     },
     startedOn: {
         type: 'date',
@@ -155,7 +161,7 @@ const addFieldDefs = {
                     label: 'Target',
                     component: 'AutoCompleter',
                     display: (x: any) => {
-                        return _.includes(['preseq-1','dna-preseq-1', 'rna-rt'], x.pcrType)
+                        return _.includes(['dna-preseq-1', 'rna-rt'], x.pcrType)
                     },
                     componentProps: {
                         searchBaseUrl: `${config.public.apiBase}/transfect-targets`,
@@ -257,6 +263,8 @@ const formWithClause = {
                 :rowActions="rowActions"
                 :withClause="withClause"
                 :columnDefs="columnDefs"
+                :expandEnums="true"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

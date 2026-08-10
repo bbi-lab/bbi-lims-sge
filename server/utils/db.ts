@@ -10,6 +10,7 @@ import {wellContents, wells, wellContentSources, wellables} from '../db/schema/s
 import {projects} from '../db/schema/sge/project'
 import {targets} from '../db/schema/sge/target'
 import {genes} from '../db/schema/sge/gene'
+import {ensemblRefseqIds} from '../db/schema/sge/ensembl-refseq-ids'
 import {regions} from '../db/schema/sge/region'
 import {cycles} from '../db/schema/sge/cycle'
 import {pellets} from '../db/schema/sge/pellet'
@@ -27,7 +28,7 @@ import { amplificationPrimers, linearizationPrimers, homologyArmPrimers, indexPr
 import { sequencingRunExternalSamples, sequencingRuns, sequencingRunSamples } from '../db/schema/sge/sequencing-run'
 import { haPcrProducts, haPuc19GibsonProducts, haPuc19PcrProducts, sgRnaOligos, snvLibAmpProducts, snvLibLinProducts, snvLibGibsonProducts, snvLibGoldenGateProducts, sgRnaOligoTargets, clonalHas, clonalHaTargets, sgeOligos, sgeOligoLots } from '../db/schema/sge/oligos'
 import { externalSamples } from '../db/schema/sge/external-samples'
-import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples } from '../db/schema/sge/views'
+import { viewHaPuc19GibsonProductsWithCalcs, viewSnvLibGibsonProducts, viewPlatesWithWellCounts, viewSequencingRunAllSamples, viewMixedPreseqPrimers } from '../db/schema/sge/views'
 import fs from 'node:fs'
 
 // Evertyhing from relations module except relationsConfigs will be included in schema (assumes all other exports are relationships)
@@ -53,6 +54,7 @@ export const schema = {
   projects,
   targets,
   genes,
+  ensemblRefseqIds,
   regions,
   cycles,
   snvLibPlasmids,
@@ -112,6 +114,7 @@ export const schema = {
   viewSequencingRunAllSamples,
   viewHaPuc19GibsonProductsWithCalcs,
   viewSnvLibGibsonProducts,
+  viewMixedPreseqPrimers,
 
   // relations
   usersRelations,

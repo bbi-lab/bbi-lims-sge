@@ -311,6 +311,9 @@ const withClause = {
 }
 const ampProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
+    status: {
+        index: 1,
+    },
     snvLibCloningExperimentId: {
         label: 'SNV Library Cloning Experiment',
         component: 'AutoCompleter',
@@ -321,7 +324,7 @@ const ampProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 1,
+        index: 2,
     },
     twistLotId: {
         label: 'Twist Lot',
@@ -350,7 +353,7 @@ const ampProductFieldDefinitions: FieldDefinitions = {
                 return data?.record?.archived ? 'line-through' : ''
             },
         },
-        index: 2,
+        index: 3,
     },
     ampPrimerReverseId: {
         label: 'AMP Primer Reverse',
@@ -366,7 +369,7 @@ const ampProductFieldDefinitions: FieldDefinitions = {
                 return data?.record?.archived ? 'line-through' : ''
             },
         },
-        index: 3,
+        index: 4,
     },
     cleanedBy: {
         label: 'Cleaned By',
@@ -400,6 +403,9 @@ const ampProductFieldDefinitions: FieldDefinitions = {
 
 const linProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
+    status: {
+        index: 1,
+    },
     snvLibCloningExperimentId: {
         label: 'SNV Library Cloning Experiment',
         component: 'AutoCompleter',
@@ -410,7 +416,7 @@ const linProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 1,
+        index: 2,
     },
     linPrimerForwardId: {
         label: 'LIN Primer Forward',
@@ -426,7 +432,7 @@ const linProductFieldDefinitions: FieldDefinitions = {
                 return data?.record?.archived ? 'line-through' : ''
             },
         },
-        index: 2,
+        index: 3,
     },
     linPrimerReverseId: {
         label: 'LIN Primer Reverse',
@@ -442,7 +448,7 @@ const linProductFieldDefinitions: FieldDefinitions = {
                 return data?.record?.archived ? 'line-through' : ''
             },
         },
-        index: 3,
+        index: 4,
     },
     haPuc19PlasmidId: {
         label: 'HA pUC19 Plasmid',
@@ -515,6 +521,9 @@ const linProductFieldDefinitions: FieldDefinitions = {
 }
 const gibsonProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
+    status: {
+        index: 1,
+    },
     snvLibCloningExperimentId: {
         label: 'SNV Library Cloning Experiment',
         component: 'AutoCompleter',
@@ -525,14 +534,14 @@ const gibsonProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 1,
+        index: 2,
     },
     linProductVectorAmount: {
         label: 'LIN Product Vector Amount (ng)',
         props:{
             defaultValue: 50,
         },
-        index: 2,
+        index: 3,
     },
     gibsonBy: {
         label: 'Gibson By',
@@ -595,6 +604,12 @@ const gibsonProductFieldDefinitions: FieldDefinitions = {
     },
 }
 const plasmidFieldDefinitions: FieldDefinitions = {
+    name: {
+        index: 0,
+    },
+    status: {
+        index: 1,
+    },
     targetId: {
         label: 'Target',
         component: 'AutoCompleter',
@@ -605,7 +620,7 @@ const plasmidFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 0,
+        index: 2,
     },
     snvLibCloningExperimentId: {
         label: 'SNV Library Cloning Experiment',
@@ -617,7 +632,7 @@ const plasmidFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 1,
+        index: 3,
     },
     volume: {
         label: 'Volume (µL)',
@@ -660,6 +675,9 @@ const plasmidFieldDefinitions: FieldDefinitions = {
 // }
 const goldenGateProductFieldDefinitions: FieldDefinitions = {
     name: { index: 0 },
+    status: {
+        index: 1,
+    },
     snvLibCloningExperimentId: {
         label: 'SNV Library Cloning Experiment',
         component: 'AutoCompleter',
@@ -670,7 +688,7 @@ const goldenGateProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 1,
+        index: 2,
     },
     snvLibAmpProductId: {
         label: 'AMP Product',
@@ -682,7 +700,7 @@ const goldenGateProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 2,
+        index: 3,
     },
     clonalHaId: {
         label: 'Clonal HA',
@@ -694,14 +712,14 @@ const goldenGateProductFieldDefinitions: FieldDefinitions = {
             displayFields: ['name'],
             dropdown: true,
         },
-        index: 3,
+        index: 4,
     },
     goldenGateProductVectorAmount: {
         label: 'Golden Gate Product Vector Amount (ng)',
         props:{
             defaultValue: 50,
         },
-        index: 4,
+        index: 5,
     },
 }
 </script>

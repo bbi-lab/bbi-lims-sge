@@ -17,9 +17,6 @@ export type PlateType = 'pellet-storage' |
  'amp-pcr' |
  'lin-pcr' |
  'ha-pcr' |
- 'preseq-1' |
- 'preseq-2' |
- 'preseq-3' |
  'dna-preseq-1' |
  'dna-preseq-2' |
  'dna-preseq-3' |
@@ -31,11 +28,7 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-preseq-3' |
  'seq-index' |
  'clonal-ha' |
- 'dna-preseq-1-primer-storage' |
- 'dna-preseq-2-primer-storage' |
  'rna-rt-primer-storage' |
- 'rna-preseq-1-primer-storage' |
- 'rna-preseq-2-primer-storage' |
  'external-sample-indexing' |
  'ha-pcr-product-storage' |
  'ha-puc19-pcr-product-storage' |
@@ -45,7 +38,9 @@ export type PlateType = 'pellet-storage' |
  'snv-lib-lin-product-storage' |
  'snv-lib-gibson-product-storage' |
  'snv-lib-plasmid-storage' |
- 'snv-lib-golden-gate-product-storage'
+ 'snv-lib-golden-gate-product-storage' |
+ 'preseq-primer' |
+ 'preseq-primer-storage'
 
 export const plates = pgTable('plates', {
   id: uuid('id').notNull().primaryKey().defaultRandom(),

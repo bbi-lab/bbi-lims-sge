@@ -507,6 +507,7 @@ const haPuc19PlasmidFieldDefinitions: FieldDefinitions = {
                 :columnDefs="columnDefs"
                 sortField="startedOn"
                 :sortOrder="-1"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
             />

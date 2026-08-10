@@ -33,7 +33,7 @@ const columnDefs: ColumnDefinitions = {
         exportValue: (data: any) => {
             return _.get(data.snvLibCloningExperiment, 'name', '')
         },
-        index: 1,
+        index: 2,
     },
     snvLibCloningExperimentId: { display: false },
     snvLibAmpProduct: {
@@ -46,7 +46,7 @@ const columnDefs: ColumnDefinitions = {
         exportValue: (data: any) => {
             return _.get(data.snvLibAmpProduct, 'name', '')
         },
-        index: 2,
+        index: 3,
     },
     snvLibAmpProductId: { display: false },
     clonalHa: {
@@ -59,11 +59,19 @@ const columnDefs: ColumnDefinitions = {
         exportValue: (data: any) => {
             return _.get(data.clonalHa, 'name', '')
         },
-        index: 3,
+        index: 4,
     },
     clonalHaId: { display: false },
     goldenGateProductVectorAmount: {
         header: 'Golden Gate Product Vector Amount (ng)',
+    },
+    status: {
+        type: 'element',
+        element: (data: any) => recordStatusTag(data.status),
+        // format sets status.displayValue, which the column sorts, searches and exports on
+        format: (data: any) => recordStatusLabel(data.status),
+        path: 'status.displayValue',
+        index: 1,
     },
 }
 // fieldDefs is computed so we can access crudTable.state.editingRecord and crudTable.state.editingMultipleRecordsIds
@@ -72,6 +80,9 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
     return {
         name: {
             index: 0,
+        },
+        status: {
+            index: 1,
         },
         snvLibCloningExperimentId: {
             label: 'SNV Library Cloning Experiment',
@@ -83,7 +94,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 displayFields: ['name'],
                 dropdown: true,
             },
-            index: 1,
+            index: 2,
         },
         snvLibAmpProductId: {
             label: 'SNVlib AMP Product',
@@ -95,7 +106,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 displayFields: ['name'],
                 dropdown: true,
             },
-            index: 2,
+            index: 3,
         },
         clonalHaId: {
             label: 'SNVlib Clonal HA',
@@ -107,7 +118,7 @@ const fieldDefs: ComputedRef<FieldDefinitions> = computed(() => {
                 displayFields: ['name'],
                 dropdown: true,
             },
-            index: 3,
+            index: 4,
         }
     }
 })
@@ -137,6 +148,7 @@ const displayWithClause = {
                 :where="whereClauses"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"

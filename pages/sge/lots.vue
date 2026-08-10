@@ -102,6 +102,7 @@ const fieldDefs: FieldDefinitions = {
                 :withClause="{reagent: true}"
                 :canEditMultiple="true"
                 :selectionDisabled="crudTable.state.showAddForm || crudTable.state.showEditForm || crudTable.state.showMultipleEditForm"
+                :rowsPerPageOptions="[10, 25, 50, 100]"
                 @clickedRecordEdit="crudTable.didClickRecordEdit"
                 @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
                 @clickedRecordAdd="crudTable.didClickRecordAdd"
