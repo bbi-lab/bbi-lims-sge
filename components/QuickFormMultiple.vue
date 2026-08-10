@@ -18,6 +18,8 @@ const apiBaseUrl = computed(() => `${config.public.apiBase}/${props.tableName}`)
 const schemasUrl = computed(() => `${config.public.apiBase}/schemas/${props.tableName}`)
 
 const formSchemPropertiesComputed = computed(() => _.mapValues(formSchema.value?.properties || {}, (x) => x.anyOf ? _.find(x.anyOf, (x) => x.type != 'null') : x))
+// order fields by their fieldDefs index, the same way QuickForm does
+const formSchemPropertiesComputedSorted = computed(() => _.sortBy(_.entries(formSchemPropertiesComputed.value), ([key, value]) => _.get(props.fieldDefs, [key, 'index'])))
 
 const props = defineProps({
   recordIds: {type: Array as PropType<Array<string>>, required: true},
@@ -244,7 +246,7 @@ function hasFixedSize(key: string) {
     </div>
     <div ref="formElement" class="pl-8 pb-24 h-full overflow-y-scroll">
         <slot name="form-element-header" />
-        <div v-for="(val, key) in formSchemPropertiesComputed" :key="key" class="mt-5">
+        <div v-for="([key, val]) in formSchemPropertiesComputedSorted" :key="key" class="mt-5">
             <div class="mb-5" v-if="combinedRecord && key in combinedRecord && _.get(fieldDefs, [key, 'display'])!==false">
                 <label v-if="!(getFieldType(val, key, fieldDefs)=='array' && val?.items)" :for="key" class="block font-bold mb-3">{{ getLabel(key) }}</label>
                 <template v-if="_.get(fieldDefs, [key, 'component'])=='AutoCompleter'">

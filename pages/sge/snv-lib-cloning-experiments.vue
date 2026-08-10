@@ -93,8 +93,9 @@ const columnDefs: ColumnDefinitions = {
         index: 5,
         element: (data: any) => {
             const ampProduct = _.get(data, 'snvLibAmpProducts.0')
-            const href = ampProduct?.id ? `/sge/snv-lib-amp-products?id=${ampProduct?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${ampProduct.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+            return ampProduct?.id
+                ? recordStatusLink(ampProduct.status, ampProduct.name, `/sge/snv-lib-amp-products?id=${ampProduct.id}`)
+                : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
         elementClick: (data: any) => {
             if (_.isEmpty(data.snvLibAmpProducts)) {
@@ -121,15 +122,20 @@ const columnDefs: ColumnDefinitions = {
         type: 'element',
         index: 6,
         element: (data: any) => {
-            let product, href
+            const addButton = `<a href="#" class="p-button p-button-outlined p-button-info">${data?.cloningStrategy == 'Gibson' ? 'Add' : 'Select'}</a>`
             if (data?.cloningStrategy == 'Gibson') {
-                product = _.get(data, 'snvLibLinProducts.0')
-                href = product?.id ? `/sge/snv-lib-lin-products?id=${product?.id}` : null
+                const product = _.get(data, 'snvLibLinProducts.0')
+                return product?.id
+                    ? recordStatusLink(product.status, product.name, `/sge/snv-lib-lin-products?id=${product.id}`)
+                    : addButton
             } else if (data?.cloningStrategy == 'Golden Gate') {
-                product = _.get(data, 'clonalHa')
-                href = product?.id ? `/sge/clonal-has?id=${product?.id}` : null
+                // clonal HAs have no status column, so this one stays a plain link
+                const product = _.get(data, 'clonalHa')
+                return product?.id
+                    ? `<a href="/sge/clonal-has?id=${product.id}" class="text-blue-500 hover:underline">${product.name}</a>`
+                    : addButton
             }
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${product.name}</a>` : `<a href="#" class="p-button p-button-outlined p-button-info">${data?.cloningStrategy == 'Gibson' ? 'Add' : 'Select'}</a>`
+            return addButton
         },
         elementClick: (data: any) => {
             if (data?.cloningStrategy == 'Gibson' && _.isEmpty(data.snvLibLinProducts)) {
@@ -162,15 +168,19 @@ const columnDefs: ColumnDefinitions = {
         type: 'element',
         index: 7,
         element: (data: any) => {
-            let product, href
+            const addButton = '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
             if (data?.cloningStrategy == 'Gibson') {
-                product = _.get(data, 'snvLibGibsonProducts.0')
-                href = product?.id ? `/sge/snv-lib-gibson-products?id=${product?.id}` : null
+                const product = _.get(data, 'snvLibGibsonProducts.0')
+                return product?.id
+                    ? recordStatusLink(product.status, product.name, `/sge/snv-lib-gibson-products?id=${product.id}`)
+                    : addButton
             } else if (data?.cloningStrategy == 'Golden Gate') {
-                product = _.get(data, 'snvLibGoldenGateProducts.0')
-                href = product?.id ? `/sge/snv-lib-golden-gate-products?id=${product?.id}` : null
+                const product = _.get(data, 'snvLibGoldenGateProducts.0')
+                return product?.id
+                    ? recordStatusLink(product.status, product.name, `/sge/snv-lib-golden-gate-products?id=${product.id}`)
+                    : addButton
             }
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${product.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+            return addButton
         },
         elementClick: (data: any) => {
             if (data?.cloningStrategy == 'Gibson' && _.isEmpty(data.snvLibGibsonProducts)) {
@@ -221,8 +231,9 @@ const columnDefs: ColumnDefinitions = {
         index: 8,
         element: (data: any) => {
             const plasmid = _.get(data, 'snvLibPlasmids.0')
-            const href = plasmid?.id ? `/sge/snv-lib-plasmids?id=${plasmid?.id}` : null
-            return href ? `<a href="${href}" class="text-blue-500 hover:underline">${plasmid.name}</a>` : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
+            return plasmid?.id
+                ? recordStatusLink(plasmid.status, plasmid.name, `/sge/snv-lib-plasmids?id=${plasmid.id}`)
+                : '<a href="#" class="p-button p-button-outlined p-button-info">Add</a>'
         },
         elementClick: (data: any) => {
             if (_.isEmpty(data.snvLibPlasmids)) {

@@ -16,6 +16,9 @@ const TAG_COLORS: Record<string, string> = {
     red: 'bg-red-100 text-red-800 ring-red-300 dark:bg-red-400/15 dark:text-red-300 dark:ring-red-400/30',
 }
 
+// used by recordStatusLink when a record has no status yet, so the tag still reads as a button
+const TAG_UNSET = 'bg-white text-slate-600 ring-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-600'
+
 // A status reaches these helpers in one of three shapes:
 //   'complete'                     a plain table column, or a view (views are never expanded)
 //   {value, label, desc}           a table fetched with expandEnums, as on the PCR experiments page
@@ -30,11 +33,24 @@ export function recordStatusLabel(status: any): string {
     return value ? _.get(RECORD_STATUSES, [value, 'label'], '') : ''
 }
 
+function tagColors(value: string | null): string {
+    if (!value) return TAG_UNSET
+    return _.get(TAG_COLORS, _.get(RECORD_STATUSES, [value, 'color'], 'slate'), TAG_COLORS.slate)
+}
+
 // Returns the tag as an HTML string, for QuickTable column defs of type 'element'.
 export function recordStatusTag(status: any): string {
     const label = recordStatusLabel(status)
     if (!label) return ''
 
-    const palette = _.get(RECORD_STATUSES, [statusValue(status) as string, 'color'], 'slate')
-    return `<span class="${TAG_BASE} ${_.get(TAG_COLORS, palette, TAG_COLORS.slate)}">${label}</span>`
+    return `<span class="${TAG_BASE} ${tagColors(statusValue(status))}">${label}</span>`
+}
+
+// A link wearing the status tag: colour indicates the linked record's status, text is its name, and
+// the status label is the hover tooltip. QuickTable injects element column content as raw HTML, so
+// this escapes its inputs and uses the native title attribute rather than PrimeVue's v-tooltip.
+export function recordStatusLink(status: any, text: string, href: string): string {
+    const tooltip = recordStatusLabel(status) || 'No status set'
+    const classes = `${TAG_BASE} ${tagColors(statusValue(status))} hover:opacity-80`
+    return `<a href="${_.escape(href)}" title="${_.escape(tooltip)}" class="${classes}">${_.escape(text)}</a>`
 }

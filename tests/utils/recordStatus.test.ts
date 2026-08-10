@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { recordStatusLabel, recordStatusTag } from '~/utils/recordStatus'
+import { recordStatusLabel, recordStatusLink, recordStatusTag } from '~/utils/recordStatus'
 
 describe('recordStatusLabel', () => {
     it('resolves the label for a bare enum value', () => {
@@ -51,5 +51,31 @@ describe('recordStatusTag', () => {
         expect(recordStatusTag(null)).toBe('')
         expect(recordStatusTag({ originalValue: null, displayValue: '' })).toBe('')
         expect(recordStatusTag('retired-value')).toBe('')
+    })
+})
+
+describe('recordStatusLink', () => {
+    it('links to the record and carries its name', () => {
+        const link = recordStatusLink('in-progress', 'BRCA1_X1_AMP', '/sge/snv-lib-amp-products?id=abc')
+        expect(link).toContain('href="/sge/snv-lib-amp-products?id=abc"')
+        expect(link).toContain('>BRCA1_X1_AMP<')
+    })
+
+    it('colours by status and shows the status label as the tooltip', () => {
+        expect(recordStatusLink('on-hold', 'x', '/y')).toContain('bg-amber-100')
+        expect(recordStatusLink('on-hold', 'x', '/y')).toContain('title="On hold"')
+    })
+
+    it('falls back to a neutral tag when the record has no status', () => {
+        const link = recordStatusLink(null, 'CLONAL_HA_1', '/sge/clonal-has?id=abc')
+        expect(link).toContain('title="No status set"')
+        expect(link).toContain('bg-white')
+        expect(link).not.toContain('bg-slate-100')
+    })
+
+    it('escapes the name and href, since the column is injected as raw HTML', () => {
+        const link = recordStatusLink('complete', 'a"><script>b', '/x?n="y')
+        expect(link).not.toContain('<script>')
+        expect(link).toContain('&quot;')
     })
 })
