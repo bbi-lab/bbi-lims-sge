@@ -9,11 +9,12 @@ const route = useRoute()
 
 const tableTitle = ref<string>()
 const rowActions = {}
+const experiment = ref<any>()
 
 onMounted(async() => {
     if (route.params.id) {
-        const experiment = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id as string, {cycle: {columns: {name: true}}})
-        tableTitle.value = `${experiment.cycle.name}: targets`
+        experiment.value = await RecordService.getRecord(`${config.public.apiBase}/transfect-experiments`, route.params.id as string, {cycle: {columns: {name: true}}})
+        tableTitle.value = `${experiment.value.cycle.name}: targets`
     } else {
         tableTitle.value = 'Transfection experiment targets'
     }
@@ -28,8 +29,6 @@ const columnDefs = {
     },
     replicateCount: {
         header: 'Number of replicates',
-        format: (x: any) => { return x.experiment.replicateCount || '' },
-        path: 'replicateCount.displayValue',
         index: 1,
     },
     transfectionCount: {
@@ -44,8 +43,8 @@ const columnDefs = {
     totalTransfections: {
         header: 'Total transfections',
         format: (x: any) => {
-            return (x.experiment.replicateCount && x.transfectionCount) ?
-                (x.experiment.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)) :
+            return (x.replicateCount && x.transfectionCount) ?
+                (x.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)) :
                 ''
         },
         index: 4,
@@ -128,8 +127,8 @@ const columnDefs = {
     snvLibNeeded: {
         header: 'SNV library needed (μL)',
         format: (x: any) => {
-            if (x.experiment.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount && x.snvLibraryQuantity) {
-                const totalTransfections = x.experiment.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)
+            if (x.replicateCount && x.transfectionCount && x.snvLibraryConc && x.transfectionCount && x.snvLibraryQuantity) {
+                const totalTransfections = x.replicateCount * x.transfectionCount + (x.negativeControl ? 1 : 0)
                 return _.round((x.snvLibraryQuantity * 1000) / x.snvLibraryConc * totalTransfections, 1).toFixed(1)
             } else {
                 return ''
@@ -141,8 +140,8 @@ const columnDefs = {
     sgRnaNeeded: {
         header: 'sgRNA needed (μL)',
         format: (x: any) => {
-            if (x.experiment.replicateCount && x.transfectionCount && x.sgRnaConc && x.transfectionCount && x.sgRnaQuantity) {
-                const totalTransfections = x.experiment.replicateCount * x.transfectionCount
+            if (x.replicateCount && x.transfectionCount && x.sgRnaConc && x.transfectionCount && x.sgRnaQuantity) {
+                const totalTransfections = x.replicateCount * x.transfectionCount
                 return _.round((x.sgRnaQuantity * 1000) / x.sgRnaConc * totalTransfections, 1).toFixed(1)
             } else {
                 return ''
@@ -187,6 +186,18 @@ editFormFieldDefs['targetId'] = {
     },
     index: 0,
 }
+editFormFieldDefs['replicateCount'] = {
+    label: 'Number of replicates',
+    component: 'InputNumber',
+    props: {
+        inputClass: 'w-40',
+        showButtons: true,
+        allowEmpty: false,
+        min: 1,
+        max: 9,
+    },
+    index: 1,
+}
 editFormFieldDefs['transfectionCount'] = {
     label: 'Transfections per replicate',
     component: 'InputNumber',
@@ -197,7 +208,7 @@ editFormFieldDefs['transfectionCount'] = {
         allowEmpty: false,
         min: 1,
     },
-    index: 1,
+    index: 2,
 }
 editFormFieldDefs['snvLibPlasmidId'] = {
     label: 'SNV library',
@@ -239,12 +250,17 @@ editFormFieldDefs['sgRnaPlasmidId'] = {
     index: 8,
 }
 
-const addFormFieldDefs = _.cloneDeep(editFormFieldDefs)
-_.set(addFormFieldDefs, 'targetId.readOnly', false)
-_.set(addFormFieldDefs, 'snvLibraryQuantity.props.defaultValue', 5)
-_.set(addFormFieldDefs, 'sgRnaQuantity.props.defaultValue', 10)
-_.set(addFormFieldDefs, 'xfectBuffer.props.defaultValue', 700)
-_.set(addFormFieldDefs, 'xfectPolymerPerTransfect.props.defaultValue', 9)
+// default the replicate count to the value set on the parent experiment, leaving the user free to override it
+const addFormFieldDefs = computed(() => {
+    const fieldDefs = _.cloneDeep(editFormFieldDefs)
+    _.set(fieldDefs, 'targetId.readOnly', false)
+    if (experiment.value?.replicateCount) _.set(fieldDefs, 'replicateCount.props.defaultValue', experiment.value.replicateCount)
+    _.set(fieldDefs, 'snvLibraryQuantity.props.defaultValue', 5)
+    _.set(fieldDefs, 'sgRnaQuantity.props.defaultValue', 10)
+    _.set(fieldDefs, 'xfectBuffer.props.defaultValue', 700)
+    _.set(fieldDefs, 'xfectPolymerPerTransfect.props.defaultValue', 9)
+    return fieldDefs
+})
 
 const readonlyValues = {experimentId: route.params.id}
 
@@ -261,9 +277,6 @@ const displayWithClause = {
                 }
             }
         }
-    },
-    experiment: {
-        columns: {cycle: true, replicateCount: true},
     },
     snvLib: true,
     sgRna: true,

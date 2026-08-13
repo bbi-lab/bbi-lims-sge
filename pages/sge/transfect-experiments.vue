@@ -46,7 +46,9 @@ const displayWithClause = Object.freeze({
     },
     transfectTargets:{
         columns: {
+            replicateCount: true,
             transfectionCount: true,
+            negativeControl: true,
         },
         with: {
             target:  {
@@ -96,6 +98,17 @@ const columnDefs: ColumnDefinitions = {
     },
     replicateCount: {
         header: 'Number of replicates',
+        format: (x) => {
+            const replicateCounts = _.map(x.transfectTargets, 'replicateCount')
+            const minReplicateCount = _.min(replicateCounts)
+            const maxReplicateCount = _.max(replicateCounts)
+            if (!minReplicateCount) {
+                return ''
+            } else {
+                return minReplicateCount == maxReplicateCount ? _.toString(minReplicateCount) : `${minReplicateCount} - ${maxReplicateCount}`
+            }
+        },
+        path: 'replicateCount.displayValue',
         index: 4,
     },
     transfectionCount: {
@@ -112,30 +125,21 @@ const columnDefs: ColumnDefinitions = {
         path: 'transfectionsPerReplicate.displayValue',
         index: 5,
     },
-    // negativeControlCount: {
-    //     header: 'Negative control',
-    //     format: (x) => {
-    //         return x.negativeControl ? '1' : '0'
-    //     },
-    //     path: 'negativeControlCount.displayValue',
-    //     type: 'string',
-    //     index: 6,
-    // },
     // negativeControl: {
     //     display: false,
     // },
     totalTransfections: {
-        header: 'Total transfections',
+        header: 'Total transfections per target',
         format: (x) => {
-            const transfectionCountsWithNegControl = _.map(x.transfectTargets, (target) => { return target.transfectionCount + (target.negativeControl ? 1 : 0) })
-            const minTransfectionsPerReplicate = _.min(transfectionCountsWithNegControl)
-            const maxTransfectionsPerReplicate = _.max(transfectionCountsWithNegControl)
-            if (!minTransfectionsPerReplicate) {
+            const totalsByTarget = _.map(x.transfectTargets, (target) => { return target.replicateCount * target.transfectionCount + (target.negativeControl ? 1 : 0) })
+            const minTotalTransfections = _.min(totalsByTarget)
+            const maxTotalTransfections = _.max(totalsByTarget)
+            if (!minTotalTransfections) {
                 return ''
             } else {
-                return minTransfectionsPerReplicate == maxTransfectionsPerReplicate ?
-                    _.toString(minTransfectionsPerReplicate * x.replicateCount) :
-                    `${minTransfectionsPerReplicate * x.replicateCount} - ${maxTransfectionsPerReplicate * x.replicateCount}`
+                return minTotalTransfections == maxTotalTransfections ?
+                    _.toString(minTotalTransfections) :
+                    `${minTotalTransfections} - ${maxTotalTransfections}`
             }
         },
         path: 'totalTransfections.displayValue',
@@ -217,6 +221,7 @@ const fieldDefs: FieldDefinitions = {
     },
     replicateCount: {
         label: 'Number of replicates',
+        subtext: 'Default number of replicates for targets added to this experiment. Each target can override it.',
         min: 1,
         max: 9,
     },
@@ -243,6 +248,18 @@ const fieldDefs: FieldDefinitions = {
                             return x.name ?? `${x.region?.gene?.symbol}: ${x.region?.name}`
                         },
                         searchWithClause: {region: {columns: {name: true}, with: {gene: {columns: {symbol:true}}}}},
+                    },
+                },
+                {
+                    variableField: 'replicateCount',
+                    component: 'InputNumber',
+                    label: 'replicates',
+                    componentProps:{
+                        inputClass: 'w-40',
+                        defaultValue: 3,
+                        showButtons: true,
+                        allowEmpty: false,
+                        min: 1,
                     },
                 },
                 {

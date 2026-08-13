@@ -1359,6 +1359,13 @@
       "when": 1785891035203,
       "tag": "0193_add_status_to_snv_lib_gibson_products_view",
       "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1786637682465,
+      "tag": "0194_add_replicate_count_to_transfect_targets",
+      "breakpoints": true
     }
   ]
 }

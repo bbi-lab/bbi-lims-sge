@@ -29,6 +29,7 @@ export const transfectTargets = pgTable('transfect_targets', {
   hprt1SgRnaConc: doublePrecision('hprt1_sg_rna_conc'),
   xfectBuffer: doublePrecision('xfect_buffer'),
   xfectPolymerPerTransfect: doublePrecision('xfect_polymer_per_transfect'),
+  replicateCount: integer('replicate_count').notNull(),
   transfectionCount: integer('transfection_count').notNull(),
   negativeControl: boolean('negative_control'),
   notes: text('notes'),

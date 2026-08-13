@@ -19,8 +19,8 @@ const toast = useToast()
 const { breakpoints } = useLayout()
 const experimentId = route.params.id as string
 const loaded = ref(false)
-const displayDeleteConfirmation = ref(false)
-const selectedExistingPellets = ref()
+// const displayDeleteConfirmation = ref(false)
+// const selectedExistingPellets = ref()
 const experiment =  ref<TransfectionExperiment>()
 const harvestDateTime = ref()
 const selectedPlate = ref()
@@ -36,7 +36,18 @@ const showPelletEditDialog = computed(() => {
 })
 
 const allTargets = computed(() => {
-    return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: `${x.target.name} (${x.transfectionCount} transfections per replicate)`, code: x.id}})
+    return currentHarvestDay.value != 5 ? [] : _.map(experiment.value?.transfectTargets, (x) => {return {label: `${x.target.name} (${x.replicateCount} replicates, ${x.transfectionCount} transfections per replicate)`, code: x.id}})
+})
+
+const replicateCountRange = computed(() => {
+    const replicateCounts = _.map(experiment.value?.transfectTargets, 'replicateCount')
+    const minReplicateCount = _.min(replicateCounts)
+    const maxReplicateCount = _.max(replicateCounts)
+    if (!minReplicateCount) {
+        return ''
+    } else {
+        return minReplicateCount == maxReplicateCount ? _.toString(minReplicateCount) : `${minReplicateCount} - ${maxReplicateCount}`
+    }
 })
 const existingTargetReplicates = computed(() => {
     if (currentHarvestDay.value == 5) return []
@@ -130,6 +141,11 @@ const selectedTransfectionTarget = computed(() => {
     return _.find(experiment.value?.transfectTargets, (x) => x.id == selectedTarget.value?.code)
 })
 
+// the valid transfections depend on the selected target, so drop any selection carried over from the previous one
+watch(selectedTarget, () => {
+    selectedTransfections.value = []
+})
+
 const harvestBy = ref()
 const harvestProtocol = ref()
 const now = ref(new Date())
@@ -137,12 +153,11 @@ const now = ref(new Date())
 const validTransfectionsLimited = computed(() => {
     const transfectionList: string[] = []
 
-    const experimentReplicateCount = experiment.value?.data?.replicateCount || 0
     if (selectedTransfectionTarget.value) {
         if (selectedTransfectionTarget.value?.negativeControl) {
             transfectionList.push('NC')
         }
-        const transfectionCount = selectedTransfectionTarget.value.transfectionCount * experimentReplicateCount
+        const transfectionCount = selectedTransfectionTarget.value.transfectionCount * selectedTransfectionTarget.value.replicateCount
         for (let i = 1; i <= transfectionCount; i++) {
             transfectionList.push(`T${i}`)
         }
@@ -244,8 +259,8 @@ async function addPellets() {
                 if (match) {
                     const lastReplicate = match[1]
                     const nextReplicate = parseInt(lastReplicate) + 1
-                    // check to make sure we are not exceeding replicate count for experiment
-                    if (experiment.value?.data?.replicateCount && nextReplicate > experiment.value.data.replicateCount) {
+                    // check to make sure we are not exceeding replicate count for target
+                    if (selectedTransfectionTarget.value?.replicateCount && nextReplicate > selectedTransfectionTarget.value.replicateCount) {
                         toast.add({ severity: 'error', summary: 'Warning', detail: `Maximum number of day 5 replicates reached for target: ${selectedTransfectionTarget.value?.target.name}`, life: 10000 })
                         throw new Error('Maximum number of day 5 replicates reached for target')
                     }
@@ -292,16 +307,8 @@ async function addPellets() {
     }
     submitPellets(pellets)
 }
-async function didClickDeleteSelectedRecords() {
-    const pelletIds = _.map(selectedExistingPellets.value, 'id')
-    const response = await experiment.value?.deletePellets(pelletIds)
-    if (response?.success) {
-        toast.add({ severity: 'success', summary: 'Successful', detail: `${response?.data?.length} Records deleted`, life: 3000 })
-        await refreshExperiment()
-    } else {
-        toast.add({ severity: 'error', summary: 'Error deleting pellets', life: 3000 })
-    }
-    displayDeleteConfirmation.value = false
+function didDeleteSelectedRecords(event: any) {
+    refreshExperiment()
 }
 
 async function submitPellets(pellets: DraftPellet[]) {
@@ -590,7 +597,7 @@ const fieldDefs: FieldDefinitions = {
                 <h5>{{ experiment?.name }} transfection</h5>
                 <div>Started on: {{ experimentStartedOn }}</div>
                 <div v-if="experimentStartedOn">Time elapsed: {{ timeElapsed }}</div>
-                <div>Number of replicates: {{ experiment?.data?.replicateCount }}</div>
+                <div>Number of replicates: {{ replicateCountRange }}</div>
             </div>
             <hr class="col-span-12">
             <div class="col-span-12 text-xl font-bold mb-5">New harvest</div>
@@ -704,6 +711,7 @@ const fieldDefs: FieldDefinitions = {
                             :canEditMultiple="true"
                             @clickedRecordEdit="crudTable.didClickRecordEdit"
                             @clickedMultipleRecordEdit="crudTable.didClickMultipleRecordEdit"
+                            @didDeleteMultipleRecords="didDeleteSelectedRecords"
                         />
                     </SplitterPanel>
                     <SplitterPanel class="flex flex-col overflow-scroll mt-10" :size="40" :minSize="25" v-if="plateWithWellSpecs">
@@ -736,7 +744,7 @@ const fieldDefs: FieldDefinitions = {
                         </div>
                     </SplitterPanel>
                 </Splitter>
-                <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
+                <!-- <Dialog header="Confirmation" v-model:visible="displayDeleteConfirmation" :style="{ width: '350px' }" :modal="true">
                     <div class="flex items-center justify-center">
                         <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem" />
                         <span>Are you sure you want to proceed?</span>
@@ -745,7 +753,7 @@ const fieldDefs: FieldDefinitions = {
                         <Button label="No" icon="pi pi-times" @click="displayDeleteConfirmation=!displayDeleteConfirmation" text severity="secondary" />
                         <Button label="Yes" icon="pi pi-check" @click="didClickDeleteSelectedRecords" severity="danger" outlined autofocus />
                     </template>
-                </Dialog>
+                </Dialog> -->
                 <Dialog v-model:visible="showPelletEditDialog" modal header="Edit" class="w-auto" :closable="false">
                     <QuickForm
                         v-if="crudTable.state.editingRecordId && crudTable.state.showEditForm"

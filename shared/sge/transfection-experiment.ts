@@ -80,6 +80,7 @@ export class TransfectionExperiment {
                     transfectTargets: {
                         columns: {
                             id: true,
+                            replicateCount: true,
                             transfectionCount: true,
                             negativeControl: true,
                         },
@@ -199,7 +200,7 @@ export class TransfectionExperiment {
             const targetsToAdd = _.difference(targetIds, existingTargetIds)
 
             if (targetsToAdd?.length > 0)
-                await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string, transfectionCount: 1}}))
+                await db.insert(transfectTargets).values(_.map(targetsToAdd, (x) => { return {targetId: x, experimentId: this.id as string, transfectionCount: 1, replicateCount: this.data?.replicateCount as number}}))
             if (targetsToRemove?.length > 0)
                 await db.delete(transfectTargets).where(inArray(transfectTargets.targetId, targetsToRemove))
         }
