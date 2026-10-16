@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { RecordService } from '@/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import moment from 'moment'
 
@@ -147,6 +147,7 @@ function deleteRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record deleted', life: 5000 })
             emit('record-delete', result)
         }).catch(error => {
+            if (error instanceof AuthRedirectError) return
             toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 5000 })
         })
     }
@@ -211,6 +212,7 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record updated', life: 5000 });
             emit('record-update', result)
         }).catch(error => {
+            if (error instanceof AuthRedirectError) return
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {
@@ -225,6 +227,7 @@ async function saveRecord() {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Record added', life: 5000 });
             emit('record-add', result)
         }).catch(error => {
+            if (error instanceof AuthRedirectError) return
             if (formElement.value && _.isArray(error.data?.data)) {
                 addErrorsToForm(formElement.value, error.data.data)
             } else {

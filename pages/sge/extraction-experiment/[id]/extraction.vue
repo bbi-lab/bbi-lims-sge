@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { RecordService } from '~/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '~/utils/service/RecordService'
 import type { Dna, Rna } from '~/server/db/schema/sge/nucleic-acid'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 
@@ -103,6 +103,7 @@ const extractFromSelectedPellets = async () => {
             })
         }
     } catch (e: any) {
+        if (e instanceof AuthRedirectError) return
         toast.add({
             severity: 'error',
             summary: 'Error adding nucleic acids',

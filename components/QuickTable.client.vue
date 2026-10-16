@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { FilterMatchMode } from '@primevue/core/api'
-import { RecordService } from '@/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '@/utils/service/RecordService'
 import Papa from 'papaparse'
 import { utils as XlsxUtils, writeFileXLSX } from 'xlsx'
 import {v4 as uuidv4} from 'uuid'
@@ -286,6 +286,7 @@ function didClickDeleteSelectedRecords(event: MouseEvent) {
             emit('did-delete-multiple-records', result)
         }
     }).catch(error => {
+        if (error instanceof AuthRedirectError) return
         toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
     })
     displayDeleteConfirmation.value = false

@@ -3,7 +3,7 @@ import { wellCoordinateToChar } from '~/lib/plate-diagram'
 import type { Dna, Rna } from '~/server/db/schema/sge/nucleic-acid'
 import type { Pellet } from '~/server/db/schema/sge/pellet'
 import type { IndexPrimer } from '~/server/db/schema/sge/primer'
-import { RecordService } from '~/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '~/utils/service/RecordService'
 import _ from 'lodash'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
@@ -180,6 +180,7 @@ const removeSelectedSamplesFromRun = () => {
                 }
             })
             .catch((error: any) => {
+                if (error instanceof AuthRedirectError) return
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
@@ -198,6 +199,7 @@ const removeSelectedSamplesFromRun = () => {
                 }
             })
             .catch((error: any) => {
+                if (error instanceof AuthRedirectError) return
                 toast.add({
                     severity: 'error',
                     summary: 'Error',
@@ -225,6 +227,7 @@ const addSelectedExternalSamples = async () => {
             showExternalSamples.value = false
         })
         .catch((error: any) => {
+            if (error instanceof AuthRedirectError) return
             toast.add({
                 severity: 'error',
                 summary: 'Error',
@@ -267,6 +270,7 @@ const addToSequencingRun = async (selectedWells: any) => {
             }
         }
     } catch (error: any) {
+        if (error instanceof AuthRedirectError) return
         toast.add({
             severity: 'error',
             summary: 'Error',

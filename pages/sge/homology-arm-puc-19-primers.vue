@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import type { FieldDefinitions } from '~/components/QuickForm.vue'
 import type { ColumnDefinitions } from '~/components/QuickTable.client.vue'
-import { RecordService } from '~/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '~/utils/service/RecordService'
 
 const config = useRuntimeConfig()
 const crudTable = useCrudTable()
@@ -135,12 +135,17 @@ const fieldDefs: FieldDefinitions = {
                         record.name = ''
                         record.sequence = ''
                     } else {
-                        const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
-                        record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
-                        if (haPrimer.sequenceType == 'forward') {
-                            record.sequence = `GTTTTCCCAGTCACGACGTTGTAAAACGACGGCCAGT${haPrimer.sequence}`
-                        } else if (haPrimer.sequenceType == 'reverse') {
-                            record.sequence = `GATTACGCCAAGCTTGCATGCCTGCAGGT${haPrimer.sequence}`
+                        try {
+                            const haPrimer = await RecordService.getRecord(`${config.public.apiBase}/homology-arm-primers`, record.homologyArmPrimerId as string, {})
+                            record.name = _.replace(_.replace(haPrimer.name, /_F$/gi , '_pUC19_F'), /_R$/gi , '_pUC19_R')
+                            if (haPrimer.sequenceType == 'forward') {
+                                record.sequence = `GTTTTCCCAGTCACGACGTTGTAAAACGACGGCCAGT${haPrimer.sequence}`
+                            } else if (haPrimer.sequenceType == 'reverse') {
+                                record.sequence = `GATTACGCCAAGCTTGCATGCCTGCAGGT${haPrimer.sequence}`
+                            }
+                        } catch (error: any) {
+                            if (error instanceof AuthRedirectError) return
+                            throw error
                         }
                     }
                 }

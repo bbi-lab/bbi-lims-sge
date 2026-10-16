@@ -3,6 +3,18 @@ import _ from 'lodash'
 
 const { showLoginModal } = useLayout()
 
+export class AuthRedirectError extends Error {
+    constructor() { super('AUTH_REDIRECT') }
+}
+
+function handleAuthError(error: any): never {
+    if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
+        showLoginModal()
+        throw new AuthRedirectError()
+    }
+    throw error
+}
+
 export const RecordService = {
     async getRecord(baseUrl: string, id: string, withClause: Object | undefined, expandEnums: boolean = false) {
         const fetchOptions = {query: {expandEnums}}
@@ -11,11 +23,7 @@ export const RecordService = {
             const record = await $fetch(`${baseUrl}/${id}`, fetchOptions)
             return record
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -29,8 +37,12 @@ export const RecordService = {
         const fetchOptions = {query: {expandEnums, where: {"in": [{"var": "id"}, ids]}}}
         if (withClause) _.set(fetchOptions, ['query', 'with'], withClause)
         // use search POST endpoint with request body to avoid URL length issues with large ids array
-        const records = await $fetch(`${baseUrl}/search`, {method: 'POST', body: fetchOptions}) as any[]
-        return records
+        try {
+            const records = await $fetch(`${baseUrl}/search`, {method: 'POST', body: fetchOptions}) as any[]
+            return records
+        } catch (error: any) {
+            handleAuthError(error)
+        }
     },
 
     async getRecords(baseUrl: string, withClause?: Object, where?: Object, expandEnums: boolean = false) {
@@ -41,11 +53,7 @@ export const RecordService = {
             const records =  await $fetch(`${baseUrl}`, fetchOptions) as any[]
             return records
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -55,11 +63,7 @@ export const RecordService = {
             const schema = await $fetch(`${schemaBaseUrl}/${schemaName}${query}`)
             return schema
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -75,11 +79,7 @@ export const RecordService = {
                 return updatedRecords
             }
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -95,11 +95,7 @@ export const RecordService = {
                 return updatedRecords
             }
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -109,11 +105,7 @@ export const RecordService = {
             const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: [values]})
             return _.get(newRecords, 0)
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -123,11 +115,7 @@ export const RecordService = {
             const newRecords = await $fetch(`${baseUrl}`, {method: 'POST', body: recordsCopy})
             return newRecords
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -136,11 +124,7 @@ export const RecordService = {
             const deletedRecord = await $fetch(`${baseUrl}/${id}`, {method: 'DELETE'})
             return deletedRecord
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -153,11 +137,7 @@ export const RecordService = {
             }
             return deletedRecords
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 
@@ -170,11 +150,7 @@ export const RecordService = {
             }
             return deletedRecords
         } catch (error: any) {
-            if (error.data?.statusCode == 401 && error.data?.statusMessage == 'TOKEN EXPIRED') {
-                showLoginModal()
-            } else {
-                throw error
-            }
+            handleAuthError(error)
         }
     },
 }

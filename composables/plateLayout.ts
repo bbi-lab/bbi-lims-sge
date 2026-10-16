@@ -1,6 +1,6 @@
 import _ from "lodash"
 import { VALID_WELL_COLORS, type PlateDiagramWell } from "~/lib/plate-diagram"
-import { RecordService } from "~/utils/service/RecordService"
+import { RecordService, AuthRedirectError } from "~/utils/service/RecordService"
 import type { Well, WellContent } from "~/server/db/schema/sge/well"
 import type { Dna } from "~/server/db/schema/sge/nucleic-acid"
 import type { Pellet } from "~/server/db/schema/sge/pellet"
@@ -91,6 +91,7 @@ export const usePlateLayout = <TWellable = Record<string, any>>() => {
         try {
             await loadPlate(wellContentsWithClause.value)
         } catch (error: any) {
+            if (error instanceof AuthRedirectError) return
             toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
         }
     }
@@ -213,6 +214,7 @@ export const usePlateLayout = <TWellable = Record<string, any>>() => {
                 wellContentsToDelete
             )
         } catch (error: any) {
+            if (error instanceof AuthRedirectError) return
             toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }
@@ -264,6 +266,7 @@ export const usePlateLayout = <TWellable = Record<string, any>>() => {
                 recordsToAdd
             ) as WellContent[]
         } catch (error: any) {
+            if (error instanceof AuthRedirectError) return
             toast.add({ severity: 'error', summary: 'Error', detail: error.data?.statusMessage, life: 3000 })
             return
         }

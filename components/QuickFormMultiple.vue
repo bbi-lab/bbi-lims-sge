@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import _ from 'lodash'
-import { RecordService } from '@/utils/service/RecordService'
+import { RecordService, AuthRedirectError } from '@/utils/service/RecordService'
 import { formatFieldLabel, getFieldType, addNewItemToArray, addErrorsToForm } from '@/utils/formUtils'
 import GrommetIconsRevert from '~icons/grommet-icons/revert'
 import { useActiveElement } from '@vueuse/core'
@@ -165,6 +165,7 @@ async function saveRecords() {
         toast.add({ severity: 'success', summary: 'Successful', detail: `${result.length} records updated`, life: 3000 });
         emit('records-update', result)
     }).catch(error => {
+        if (error instanceof AuthRedirectError) return
         if (formElement.value && _.isArray(error.data?.data)) {
             addErrorsToForm(formElement.value, error.data.data)
         } else {
